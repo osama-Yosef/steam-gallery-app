@@ -12,6 +12,11 @@ class GoRouterRefreshStream extends ChangeNotifier {
     _subscription = stream.asBroadcastStream().listen((_) => notifyListeners());
   }
 
+  /// Lets external code (e.g. a `ref.listen` on a provider the redirect
+  /// logic depends on, such as the profile fetch) force go_router to
+  /// re-run its redirect callback even when no new auth event fired.
+  void ping() => notifyListeners();
+
   @override
   void dispose() {
     _subscription.cancel();

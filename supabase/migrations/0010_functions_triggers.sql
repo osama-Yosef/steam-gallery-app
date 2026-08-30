@@ -690,7 +690,7 @@ $$;
 --      exposes any other customer's data.
 -- ----------------------------------------------------------------------------
 create or replace function public.rpc_my_maintenance_position(p_request_id uuid)
-returns table (position int, people_ahead int, total_active int)
+returns table (queue_position int, people_ahead int, total_active int)
 language plpgsql security definer set search_path = public as $$
 declare
   v_created_at timestamptz;
@@ -714,7 +714,7 @@ begin
 
   return query
     select
-      count(*) filter (where mr.created_at <= v_created_at)::int as position,
+      count(*) filter (where mr.created_at <= v_created_at)::int as queue_position,
       count(*) filter (where mr.created_at < v_created_at)::int as people_ahead,
       count(*)::int as total_active
     from public.maintenance_requests mr

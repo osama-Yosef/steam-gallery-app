@@ -17,17 +17,19 @@ insert into public.expense_categories (name) values
 -- This cannot be done in a plain SQL migration because it requires creating
 -- an auth.users row with a hashed password, which must go through
 -- Supabase Auth (not a raw INSERT). After deploying this schema, run ONCE
--- from a trusted machine (never from Flutter):
+-- from a trusted machine (never from Flutter) — Node/Deno REPL or a small
+-- script using the SERVICE ROLE KEY (see supabase/functions/create-user/README.md):
 --
 --   supabase.auth.admin.createUser({
---     email: 'admin@yourgallery.com',
+--     phone: '+201xxxxxxxxx',
 --     password: '<strong-password>',
---     email_confirm: true,
+--     phone_confirm: true,
 --     app_metadata: { role: 'admin' },
 --     user_metadata: { full_name: 'المدير العام' }
 --   })
 --
--- using the SERVICE ROLE KEY (see supabase/functions/create-user/README.md).
 -- The handle_new_auth_user() trigger will then create the matching
--- public.users row with role='admin' automatically.
+-- public.users row with role='admin' automatically. Every subsequent
+-- admin/technician account can be created normally through the app by an
+-- existing admin, which calls the create-user Edge Function instead.
 -- ============================================================================

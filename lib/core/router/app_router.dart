@@ -33,6 +33,13 @@ GoRouter appRouter(Ref ref) {
   );
   ref.onDispose(refreshStream.dispose);
 
+  // A raw auth event alone isn't enough: currentUserProfileProvider keeps
+  // fetching asynchronously AFTER the SIGNED_IN event already fired, and
+  // nothing else tells go_router to re-run redirect once that resolves —
+  // without this, the app gets stuck on the splash screen forever right
+  // after sign-in/sign-up.
+  ref.listen(currentUserProfileProvider, (_, _) => refreshStream.ping());
+
   return GoRouter(
     initialLocation: Routes.splash,
     refreshListenable: refreshStream,
