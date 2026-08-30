@@ -27,6 +27,11 @@ class TechnicianQueueScreen extends ConsumerWidget {
         title: const Text('طلبات الصيانة'),
         actions: [
           IconButton(
+            icon: const Icon(Icons.work_outline),
+            tooltip: 'شنطتي',
+            onPressed: () => context.push(Routes.technicianBag),
+          ),
+          IconButton(
             icon: const Icon(Icons.logout),
             tooltip: 'تسجيل الخروج',
             onPressed: () async {

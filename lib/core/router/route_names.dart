@@ -30,4 +30,13 @@ abstract final class Routes {
   static String technicianMaintenanceDetail(String id) => '/technician/maintenance/$id';
   static const adminMaintenance = '/admin/maintenance';
   static String adminMaintenanceDetail(String id) => '/admin/maintenance/$id';
+
+  // Warehouse & Technician Bag (Module 5)
+  static const adminWarehouse = '/admin/warehouse';
+  static const adminReceivePurchase = '/admin/warehouse/receive';
+  static const adminIssueStock = '/admin/warehouse/issue';
+  static const adminStockMovements = '/admin/warehouse/movements';
+  static const adminTechnicianBags = '/admin/warehouse/bags';
+  static String adminTechnicianBagDetail(String technicianId) => '/admin/warehouse/bags/$technicianId';
+  static const technicianBag = '/technician/bag';
 }

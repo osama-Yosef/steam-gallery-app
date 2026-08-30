@@ -7,6 +7,13 @@ import '../../features/auth/presentation/screens/register_screen.dart';
 import '../../features/auth/presentation/screens/splash_screen.dart';
 import '../../features/cart/presentation/screens/cart_screen.dart';
 import '../../features/home/presentation/screens/admin_home_screen.dart';
+import '../../features/inventory/presentation/screens/admin/admin_issue_stock_screen.dart';
+import '../../features/inventory/presentation/screens/admin/admin_receive_purchase_screen.dart';
+import '../../features/inventory/presentation/screens/admin/admin_stock_movements_screen.dart';
+import '../../features/inventory/presentation/screens/admin/admin_technician_bag_detail_screen.dart';
+import '../../features/inventory/presentation/screens/admin/admin_technician_bag_list_screen.dart';
+import '../../features/inventory/presentation/screens/admin/admin_warehouse_screen.dart';
+import '../../features/inventory/presentation/screens/technician/technician_bag_screen.dart';
 import '../../features/maintenance/presentation/screens/admin/admin_maintenance_detail_screen.dart';
 import '../../features/maintenance/presentation/screens/admin/admin_maintenance_list_screen.dart';
 import '../../features/maintenance/presentation/screens/customer/customer_maintenance_home_screen.dart';
@@ -139,6 +146,19 @@ GoRouter appRouter(Ref ref) {
         path: '/admin/maintenance/:id',
         builder: (_, state) => AdminMaintenanceDetailScreen(requestId: state.pathParameters['id']!),
       ),
+
+      // Warehouse & Technician Bag (Module 5)
+      GoRoute(path: Routes.adminWarehouse, builder: (_, _) => const AdminWarehouseScreen()),
+      GoRoute(path: Routes.adminReceivePurchase, builder: (_, _) => const AdminReceivePurchaseScreen()),
+      GoRoute(path: Routes.adminIssueStock, builder: (_, _) => const AdminIssueStockScreen()),
+      GoRoute(path: Routes.adminStockMovements, builder: (_, _) => const AdminStockMovementsScreen()),
+      GoRoute(path: Routes.adminTechnicianBags, builder: (_, _) => const AdminTechnicianBagListScreen()),
+      GoRoute(
+        path: '/admin/warehouse/bags/:id',
+        builder: (_, state) =>
+            AdminTechnicianBagDetailScreen(technicianId: state.pathParameters['id']!),
+      ),
+      GoRoute(path: Routes.technicianBag, builder: (_, _) => const TechnicianBagScreen()),
     ],
   );
 }
