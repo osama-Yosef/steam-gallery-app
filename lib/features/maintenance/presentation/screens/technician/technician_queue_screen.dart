@@ -32,6 +32,11 @@ class TechnicianQueueScreen extends ConsumerWidget {
             onPressed: () => context.push(Routes.technicianBag),
           ),
           IconButton(
+            icon: const Icon(Icons.account_balance_wallet_outlined),
+            tooltip: 'حسابي',
+            onPressed: () => context.push(Routes.technicianAccount),
+          ),
+          IconButton(
             icon: const Icon(Icons.logout),
             tooltip: 'تسجيل الخروج',
             onPressed: () async {

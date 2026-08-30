@@ -31,6 +31,12 @@ import '../../features/products/presentation/screens/admin/admin_product_form_sc
 import '../../features/products/presentation/screens/admin/admin_product_list_screen.dart';
 import '../../features/products/presentation/screens/customer/customer_catalog_screen.dart';
 import '../../features/products/presentation/screens/customer/product_detail_screen.dart';
+import '../../features/technician_account/presentation/screens/technician/technician_account_history_screen.dart';
+import '../../features/technician_account/presentation/screens/technician/technician_account_screen.dart';
+import '../../features/technician_account/presentation/screens/technician/technician_sale_detail_screen.dart';
+import '../../features/technician_account/presentation/screens/technician/technician_sale_screen.dart';
+import '../../features/technician_account/presentation/screens/technician/technician_sales_list_screen.dart';
+import '../../features/technician_account/presentation/screens/technician/technician_supply_screen.dart';
 import '../config/env.dart';
 import '../screens/config_missing_screen.dart';
 import '../supabase/supabase_client_provider.dart';
@@ -159,6 +165,32 @@ GoRouter appRouter(Ref ref) {
             AdminTechnicianBagDetailScreen(technicianId: state.pathParameters['id']!),
       ),
       GoRoute(path: Routes.technicianBag, builder: (_, _) => const TechnicianBagScreen()),
+
+      // Technician Sales & Account (Module 6)
+      GoRoute(path: Routes.technicianBagSell, builder: (_, _) => const TechnicianSaleScreen()),
+      GoRoute(path: Routes.technicianSales, builder: (_, _) => const TechnicianSalesListScreen()),
+      GoRoute(
+        path: '/technician/bag/sales/:id',
+        builder: (_, state) => TechnicianSaleDetailScreen(saleId: state.pathParameters['id']!),
+      ),
+      GoRoute(path: Routes.technicianAccount, builder: (_, _) => const TechnicianAccountScreen()),
+      GoRoute(path: Routes.technicianAccountSupply, builder: (_, _) => const TechnicianSupplyScreen()),
+      GoRoute(
+        path: Routes.technicianAccountHistory,
+        builder: (_, _) => const TechnicianAccountHistoryScreen(),
+      ),
+      GoRoute(
+        path: '/admin/technicians/:id/account',
+        builder: (_, state) => TechnicianAccountScreen(technicianId: state.pathParameters['id']!),
+      ),
+      GoRoute(
+        path: '/admin/technicians/:id/account/supply',
+        builder: (_, state) => TechnicianSupplyScreen(technicianId: state.pathParameters['id']!),
+      ),
+      GoRoute(
+        path: '/admin/technicians/:id/account/history',
+        builder: (_, state) => TechnicianAccountHistoryScreen(technicianId: state.pathParameters['id']!),
+      ),
     ],
   );
 }
