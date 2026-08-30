@@ -1,11 +1,13 @@
 {
-    "name": "steam_gallery_app",
-    "short_name": "steam_gallery_app",
+    "name": "معرض أجهزة البخار",
+    "short_name": "معرض البخار",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#F7F8FA",
+    "theme_color": "#0F766E",
+    "description": "نظام إدارة معرض أجهزة البخار — مبيعات، مخازن، صيانة، وحسابات.",
+    "lang": "ar",
+    "dir": "rtl",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

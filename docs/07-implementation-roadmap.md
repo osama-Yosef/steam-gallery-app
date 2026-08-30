@@ -37,10 +37,17 @@
 - تفعيل Realtime على `orders`, `maintenance_requests`, `notifications`.
 
 **متبقٍّ (يحتاج اختبارًا حيًّا فعليًا على جهاز/متصفح حقيقي متصل بمشروعك، وليس مجرد كود):**
-- اختبار Race Condition فعليًا (طلبان متزامنان لآخر قطعة من نفس المنتج).
-- محاولة وصول غير مصرَّح بها يدويًا (مثال: طلب REST مباشر بتوكن عميل لقراءة `cash_transactions` يجب أن يُرفض).
-- ضبط أيقونة التطبيق واسمه النهائي (حاليًا الافتراضي من `flutter create`).
-- بناء نسخة Release فعلية لأندرويد/iOS وتجربتها على جهاز حقيقي (تم اختبار Web فقط حتى الآن).
+- ~~اختبار Race Condition فعليًا~~ و~~محاولة وصول غير مصرَّح بها~~ — **أداة جاهزة**: `tool/hardening_check.dart` تنفِّذ الاثنين فعليًا ضد مشروعك الحي عبر HTTP مباشر (بدون أي حزمة إضافية). شغِّلها بحساب عميل حقيقي (وصنايعي + منتج له رصيد فعلي إن أردت اختبار الـ Race Condition):
+  ```bash
+  dart run tool/hardening_check.dart \
+    --url=https://xxxx.supabase.co --anon-key=sb_publishable_xxx \
+    --customer-phone=01099998888 --customer-password=xxxxxxxx \
+    --technician-phone=01011112222 --technician-password=xxxxxxxx \
+    --product-id=<uuid-لمنتج-برصيد-معروف-في-شنطة-الصنايعي> --run-race-test
+  ```
+  بدون `--run-race-test` تُنفَّذ فحوصات RLS/RPC فقط (قراءة، بدون أي أثر جانبي). Exit code 0 = كل الفحوصات نجحت (كل محاولة غير مصرَّح بها اتُّرفضت فعليًا، ولم يحدث بيع مزدوج). **لم يُشغَّل بعد فعليًا لأنه يحتاج بيانات دخول حقيقية على مشروعك — شغِّله أنت (أو ابعتلي بيانات حساب اختباري لأشغّله بنفسي).**
+- ✅ ضبط أيقونة التطبيق واسمه (Android/iOS/Web) — أيقونة بسيطة بلون الهوية (`assets/icon/app_icon.png`) عبر `flutter_launcher_icons`، والاسم "معرض أجهزة البخار" في كل المنصات.
+- بناء نسخة Release فعلية: **Web ✅** (`flutter build web --release` ناجح). **Android** لم يكتمل — بيئة التطوير الحالية بلا Android SDK مثبَّت (`ANDROID_HOME` غير موجود)، والتوقيع حاليًا بمفتاح Debug فقط (`android/app/build.gradle.kts`) وليس مفتاح إنتاج حقيقي. **iOS** يحتاج macOS/Xcode غير متاح هنا. هذه قيود بيئة، وليست مشكلة كود.
 
 ## ملاحظات على الترتيب
 - **Module 0-1 إلزاميان أولًا** (لا شيء يعمل بدون Auth وRouting).
