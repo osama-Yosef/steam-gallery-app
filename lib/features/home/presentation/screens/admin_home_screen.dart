@@ -60,7 +60,11 @@ class AdminHomeScreen extends ConsumerWidget {
             label: 'المخزن',
             onTap: () => context.push(Routes.adminWarehouse),
           ),
-          const _MenuTile(icon: Icons.payments_outlined, label: 'الخزنة', enabled: false),
+          _MenuTile(
+            icon: Icons.payments_outlined,
+            label: 'الخزنة',
+            onTap: () => context.push(Routes.adminCashbox),
+          ),
         ],
       ),
     );

@@ -52,4 +52,9 @@ abstract final class Routes {
       '/admin/technicians/$technicianId/account/supply';
   static String adminTechnicianAccountHistory(String technicianId) =>
       '/admin/technicians/$technicianId/account/history';
+
+  // Cashbox & Expenses (Module 7)
+  static const adminCashbox = '/admin/cashbox';
+  static const adminExpenses = '/admin/expenses';
+  static const adminExpenseNew = '/admin/expenses/new';
 }

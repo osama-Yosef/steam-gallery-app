@@ -6,6 +6,9 @@ import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/auth/presentation/screens/register_screen.dart';
 import '../../features/auth/presentation/screens/splash_screen.dart';
 import '../../features/cart/presentation/screens/cart_screen.dart';
+import '../../features/cashbox/presentation/screens/admin/admin_cashbox_screen.dart';
+import '../../features/cashbox/presentation/screens/admin/admin_expenses_list_screen.dart';
+import '../../features/cashbox/presentation/screens/admin/admin_record_expense_screen.dart';
 import '../../features/home/presentation/screens/admin_home_screen.dart';
 import '../../features/inventory/presentation/screens/admin/admin_issue_stock_screen.dart';
 import '../../features/inventory/presentation/screens/admin/admin_receive_purchase_screen.dart';
@@ -191,6 +194,11 @@ GoRouter appRouter(Ref ref) {
         path: '/admin/technicians/:id/account/history',
         builder: (_, state) => TechnicianAccountHistoryScreen(technicianId: state.pathParameters['id']!),
       ),
+
+      // Cashbox & Expenses (Module 7)
+      GoRoute(path: Routes.adminCashbox, builder: (_, _) => const AdminCashboxScreen()),
+      GoRoute(path: Routes.adminExpenses, builder: (_, _) => const AdminExpensesListScreen()),
+      GoRoute(path: Routes.adminExpenseNew, builder: (_, _) => const AdminRecordExpenseScreen()),
     ],
   );
 }
