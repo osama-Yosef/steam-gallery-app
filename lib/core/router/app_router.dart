@@ -9,6 +9,9 @@ import '../../features/cart/presentation/screens/cart_screen.dart';
 import '../../features/cashbox/presentation/screens/admin/admin_cashbox_screen.dart';
 import '../../features/cashbox/presentation/screens/admin/admin_expenses_list_screen.dart';
 import '../../features/cashbox/presentation/screens/admin/admin_record_expense_screen.dart';
+import '../../features/customer_account/presentation/screens/admin/admin_customer_account_detail_screen.dart';
+import '../../features/customer_account/presentation/screens/admin/admin_customer_payment_screen.dart';
+import '../../features/customer_account/presentation/screens/admin/admin_customers_list_screen.dart';
 import '../../features/home/presentation/screens/admin_home_screen.dart';
 import '../../features/inventory/presentation/screens/admin/admin_issue_stock_screen.dart';
 import '../../features/inventory/presentation/screens/admin/admin_receive_purchase_screen.dart';
@@ -199,6 +202,17 @@ GoRouter appRouter(Ref ref) {
       GoRoute(path: Routes.adminCashbox, builder: (_, _) => const AdminCashboxScreen()),
       GoRoute(path: Routes.adminExpenses, builder: (_, _) => const AdminExpensesListScreen()),
       GoRoute(path: Routes.adminExpenseNew, builder: (_, _) => const AdminRecordExpenseScreen()),
+
+      // Customer Accounts (Module 8)
+      GoRoute(path: Routes.adminCustomers, builder: (_, _) => const AdminCustomersListScreen()),
+      GoRoute(
+        path: '/admin/customers/:id',
+        builder: (_, state) => AdminCustomerAccountDetailScreen(customerId: state.pathParameters['id']!),
+      ),
+      GoRoute(
+        path: '/admin/customers/:id/payment',
+        builder: (_, state) => AdminCustomerPaymentScreen(customerId: state.pathParameters['id']!),
+      ),
     ],
   );
 }

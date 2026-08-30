@@ -65,6 +65,11 @@ class AdminHomeScreen extends ConsumerWidget {
             label: 'الخزنة',
             onTap: () => context.push(Routes.adminCashbox),
           ),
+          _MenuTile(
+            icon: Icons.people_outline,
+            label: 'العملاء',
+            onTap: () => context.push(Routes.adminCustomers),
+          ),
         ],
       ),
     );

@@ -57,4 +57,9 @@ abstract final class Routes {
   static const adminCashbox = '/admin/cashbox';
   static const adminExpenses = '/admin/expenses';
   static const adminExpenseNew = '/admin/expenses/new';
+
+  // Customer Accounts (Module 8)
+  static const adminCustomers = '/admin/customers';
+  static String adminCustomerDetail(String customerId) => '/admin/customers/$customerId';
+  static String adminCustomerPayment(String customerId) => '/admin/customers/$customerId/payment';
 }
