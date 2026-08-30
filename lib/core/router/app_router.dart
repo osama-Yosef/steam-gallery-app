@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../features/auth/data/models/app_user.dart';
@@ -8,7 +7,13 @@ import '../../features/auth/presentation/screens/register_screen.dart';
 import '../../features/auth/presentation/screens/splash_screen.dart';
 import '../../features/cart/presentation/screens/cart_screen.dart';
 import '../../features/home/presentation/screens/admin_home_screen.dart';
-import '../../features/home/presentation/screens/role_home_screen.dart';
+import '../../features/maintenance/presentation/screens/admin/admin_maintenance_detail_screen.dart';
+import '../../features/maintenance/presentation/screens/admin/admin_maintenance_list_screen.dart';
+import '../../features/maintenance/presentation/screens/customer/customer_maintenance_home_screen.dart';
+import '../../features/maintenance/presentation/screens/customer/maintenance_detail_screen.dart';
+import '../../features/maintenance/presentation/screens/customer/new_maintenance_request_screen.dart';
+import '../../features/maintenance/presentation/screens/technician/technician_maintenance_detail_screen.dart';
+import '../../features/maintenance/presentation/screens/technician/technician_queue_screen.dart';
 import '../../features/orders/presentation/screens/admin/admin_order_detail_screen.dart';
 import '../../features/orders/presentation/screens/admin/admin_orders_list_screen.dart';
 import '../../features/orders/presentation/screens/customer/checkout_screen.dart';
@@ -88,10 +93,7 @@ GoRouter appRouter(Ref ref) {
       GoRoute(path: Routes.login, builder: (_, _) => const LoginScreen()),
       GoRoute(path: Routes.register, builder: (_, _) => const RegisterScreen()),
       GoRoute(path: Routes.adminHome, builder: (_, _) => const AdminHomeScreen()),
-      GoRoute(
-        path: Routes.technicianHome,
-        builder: (_, _) => const RoleHomeScreen(roleLabel: 'تطبيق الصنايعي', icon: Icons.build_outlined),
-      ),
+      GoRoute(path: Routes.technicianHome, builder: (_, _) => const TechnicianQueueScreen()),
       GoRoute(path: Routes.customerHome, builder: (_, _) => const CustomerCatalogScreen()),
 
       // Products & Catalog (Module 2)
@@ -119,6 +121,23 @@ GoRouter appRouter(Ref ref) {
       GoRoute(
         path: '/admin/orders/:id',
         builder: (_, state) => AdminOrderDetailScreen(orderId: state.pathParameters['id']!),
+      ),
+
+      // Maintenance (Module 4)
+      GoRoute(path: Routes.customerMaintenance, builder: (_, _) => const CustomerMaintenanceHomeScreen()),
+      GoRoute(path: Routes.customerMaintenanceNew, builder: (_, _) => const NewMaintenanceRequestScreen()),
+      GoRoute(
+        path: '/customer/maintenance/:id',
+        builder: (_, state) => MaintenanceDetailScreen(requestId: state.pathParameters['id']!),
+      ),
+      GoRoute(
+        path: '/technician/maintenance/:id',
+        builder: (_, state) => TechnicianMaintenanceDetailScreen(requestId: state.pathParameters['id']!),
+      ),
+      GoRoute(path: Routes.adminMaintenance, builder: (_, _) => const AdminMaintenanceListScreen()),
+      GoRoute(
+        path: '/admin/maintenance/:id',
+        builder: (_, state) => AdminMaintenanceDetailScreen(requestId: state.pathParameters['id']!),
       ),
     ],
   );

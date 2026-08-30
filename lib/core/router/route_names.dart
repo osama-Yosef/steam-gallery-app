@@ -22,4 +22,12 @@ abstract final class Routes {
   static String customerOrderDetail(String id) => '/customer/orders/$id';
   static const adminOrders = '/admin/orders';
   static String adminOrderDetail(String id) => '/admin/orders/$id';
+
+  // Maintenance (Module 4)
+  static const customerMaintenance = '/customer/maintenance';
+  static const customerMaintenanceNew = '/customer/maintenance/new';
+  static String customerMaintenanceDetail(String id) => '/customer/maintenance/$id';
+  static String technicianMaintenanceDetail(String id) => '/technician/maintenance/$id';
+  static const adminMaintenance = '/admin/maintenance';
+  static String adminMaintenanceDetail(String id) => '/admin/maintenance/$id';
 }

@@ -42,6 +42,11 @@ class _CustomerCatalogScreenState extends ConsumerState<CustomerCatalogScreen> {
         title: const Text('معرض أجهزة البخار'),
         actions: [
           IconButton(
+            icon: const Icon(Icons.build_outlined),
+            tooltip: 'الصيانة',
+            onPressed: () => context.push(Routes.customerMaintenance),
+          ),
+          IconButton(
             icon: const Icon(Icons.receipt_long_outlined),
             tooltip: 'طلباتي',
             onPressed: () => context.push(Routes.customerOrders),
