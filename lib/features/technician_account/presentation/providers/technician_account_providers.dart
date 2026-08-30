@@ -19,6 +19,11 @@ Future<TechnicianAccountSummary?> technicianAccountSummary(Ref ref, String techn
 }
 
 @riverpod
+Future<List<TechnicianAccountSummary>> allTechnicianAccountSummaries(Ref ref) {
+  return ref.watch(technicianAccountRepositoryProvider).getAllAccountSummaries();
+}
+
+@riverpod
 Future<List<TechnicianAccountTransaction>> technicianAccountTransactions(Ref ref, String technicianId) {
   return ref.watch(technicianAccountRepositoryProvider).getAccountTransactions(technicianId);
 }
