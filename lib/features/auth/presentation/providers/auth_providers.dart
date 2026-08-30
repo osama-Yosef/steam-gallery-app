@@ -19,3 +19,8 @@ Future<AppUser?> currentUserProfile(Ref ref) async {
   final repo = ref.watch(authRepositoryProvider);
   return repo.getMyProfile();
 }
+
+@riverpod
+Future<AppUser?> userProfileById(Ref ref, String userId) {
+  return ref.watch(authRepositoryProvider).getProfileById(userId);
+}

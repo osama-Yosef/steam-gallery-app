@@ -6,8 +6,14 @@ import '../../features/auth/presentation/providers/auth_providers.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/auth/presentation/screens/register_screen.dart';
 import '../../features/auth/presentation/screens/splash_screen.dart';
+import '../../features/cart/presentation/screens/cart_screen.dart';
 import '../../features/home/presentation/screens/admin_home_screen.dart';
 import '../../features/home/presentation/screens/role_home_screen.dart';
+import '../../features/orders/presentation/screens/admin/admin_order_detail_screen.dart';
+import '../../features/orders/presentation/screens/admin/admin_orders_list_screen.dart';
+import '../../features/orders/presentation/screens/customer/checkout_screen.dart';
+import '../../features/orders/presentation/screens/customer/customer_order_detail_screen.dart';
+import '../../features/orders/presentation/screens/customer/customer_orders_list_screen.dart';
 import '../../features/products/presentation/screens/admin/admin_category_list_screen.dart';
 import '../../features/products/presentation/screens/admin/admin_product_form_screen.dart';
 import '../../features/products/presentation/screens/admin/admin_product_list_screen.dart';
@@ -99,6 +105,20 @@ GoRouter appRouter(Ref ref) {
       GoRoute(
         path: '/customer/product/:id',
         builder: (_, state) => ProductDetailScreen(productId: state.pathParameters['id']!),
+      ),
+
+      // Cart & Orders (Module 3)
+      GoRoute(path: Routes.customerCart, builder: (_, _) => const CartScreen()),
+      GoRoute(path: Routes.customerCheckout, builder: (_, _) => const CheckoutScreen()),
+      GoRoute(path: Routes.customerOrders, builder: (_, _) => const CustomerOrdersListScreen()),
+      GoRoute(
+        path: '/customer/orders/:id',
+        builder: (_, state) => CustomerOrderDetailScreen(orderId: state.pathParameters['id']!),
+      ),
+      GoRoute(path: Routes.adminOrders, builder: (_, _) => const AdminOrdersListScreen()),
+      GoRoute(
+        path: '/admin/orders/:id',
+        builder: (_, state) => AdminOrderDetailScreen(orderId: state.pathParameters['id']!),
       ),
     ],
   );

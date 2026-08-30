@@ -95,3 +95,73 @@ final class CurrentUserProfileProvider
 
 String _$currentUserProfileHash() =>
     r'ff0ca977312dce0e14a55ddedcbb65a9b92ee53c';
+
+@ProviderFor(userProfileById)
+const userProfileByIdProvider = UserProfileByIdFamily._();
+
+final class UserProfileByIdProvider
+    extends
+        $FunctionalProvider<AsyncValue<AppUser?>, AppUser?, FutureOr<AppUser?>>
+    with $FutureModifier<AppUser?>, $FutureProvider<AppUser?> {
+  const UserProfileByIdProvider._({
+    required UserProfileByIdFamily super.from,
+    required String super.argument,
+  }) : super(
+         retry: null,
+         name: r'userProfileByIdProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
+  @override
+  String debugGetCreateSourceHash() => _$userProfileByIdHash();
+
+  @override
+  String toString() {
+    return r'userProfileByIdProvider'
+        ''
+        '($argument)';
+  }
+
+  @$internal
+  @override
+  $FutureProviderElement<AppUser?> $createElement($ProviderPointer pointer) =>
+      $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<AppUser?> create(Ref ref) {
+    final argument = this.argument as String;
+    return userProfileById(ref, argument);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is UserProfileByIdProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$userProfileByIdHash() => r'7f7d347982e6a720b99b5d7061d14e659b685dbb';
+
+final class UserProfileByIdFamily extends $Family
+    with $FunctionalFamilyOverride<FutureOr<AppUser?>, String> {
+  const UserProfileByIdFamily._()
+    : super(
+        retry: null,
+        name: r'userProfileByIdProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  UserProfileByIdProvider call(String userId) =>
+      UserProfileByIdProvider._(argument: userId, from: this);
+
+  @override
+  String toString() => r'userProfileByIdProvider';
+}

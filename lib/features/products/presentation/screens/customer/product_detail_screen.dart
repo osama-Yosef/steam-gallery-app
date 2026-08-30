@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../../core/utils/formatters.dart';
 import '../../../../../core/widgets/state_views.dart';
+import '../../../../cart/presentation/providers/cart_provider.dart';
 import '../../../presentation/providers/product_providers.dart';
 
 class ProductDetailScreen extends ConsumerWidget {
@@ -93,7 +94,22 @@ class ProductDetailScreen extends ConsumerWidget {
                 ),
               ],
               const SizedBox(height: 24),
-              // Cart / order actions land in Module 3 (see docs/07-implementation-roadmap.md).
+              FilledButton.icon(
+                onPressed: !product.isAvailable
+                    ? null
+                    : () {
+                        ref.read(cartProvider.notifier).add(
+                              productId: product.id,
+                              name: product.name,
+                              unitPrice: product.sellingPrice,
+                            );
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('تمت إضافة ${product.name} إلى السلة')),
+                        );
+                      },
+                icon: const Icon(Icons.add_shopping_cart_outlined),
+                label: Text(product.isAvailable ? 'أضف للسلة' : 'غير متاح حاليًا'),
+              ),
             ],
           );
         },

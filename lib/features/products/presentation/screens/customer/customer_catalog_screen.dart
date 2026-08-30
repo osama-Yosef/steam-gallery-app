@@ -6,6 +6,7 @@ import '../../../../../core/utils/formatters.dart';
 import '../../../../../core/widgets/confirm_dialog.dart';
 import '../../../../../core/widgets/state_views.dart';
 import '../../../../auth/presentation/providers/auth_providers.dart';
+import '../../../../cart/presentation/providers/cart_provider.dart';
 import '../../../data/models/product_public.dart';
 import '../../../presentation/providers/product_providers.dart';
 
@@ -34,10 +35,26 @@ class _CustomerCatalogScreenState extends ConsumerState<CustomerCatalogScreen> {
       customerProductsProvider(search: _search.isEmpty ? null : _search, categoryId: _categoryId),
     );
 
+    final cartCount = ref.watch(cartItemCountProvider);
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('معرض أجهزة البخار'),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.receipt_long_outlined),
+            tooltip: 'طلباتي',
+            onPressed: () => context.push(Routes.customerOrders),
+          ),
+          IconButton(
+            icon: Badge(
+              label: Text('$cartCount'),
+              isLabelVisible: cartCount > 0,
+              child: const Icon(Icons.shopping_cart_outlined),
+            ),
+            tooltip: 'السلة',
+            onPressed: () => context.push(Routes.customerCart),
+          ),
           IconButton(
             icon: const Icon(Icons.logout),
             tooltip: 'تسجيل الخروج',

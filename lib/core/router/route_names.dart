@@ -14,4 +14,12 @@ abstract final class Routes {
   static const adminCategories = '/admin/categories';
   static String adminProductEdit(String id) => '/admin/products/$id/edit';
   static String customerProductDetail(String id) => '/customer/product/$id';
+
+  // Cart & Orders (Module 3)
+  static const customerCart = '/customer/cart';
+  static const customerCheckout = '/customer/checkout';
+  static const customerOrders = '/customer/orders';
+  static String customerOrderDetail(String id) => '/customer/orders/$id';
+  static const adminOrders = '/admin/orders';
+  static String adminOrderDetail(String id) => '/admin/orders/$id';
 }

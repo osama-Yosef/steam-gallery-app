@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/router/route_names.dart';
 import '../../../../core/widgets/confirm_dialog.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
 
@@ -41,10 +42,14 @@ class AdminHomeScreen extends ConsumerWidget {
           _MenuTile(
             icon: Icons.inventory_2_outlined,
             label: 'المنتجات',
-            onTap: () => context.push('/admin/products'),
+            onTap: () => context.push(Routes.adminProducts),
           ),
           const _MenuTile(icon: Icons.dashboard_outlined, label: 'لوحة التحكم', enabled: false),
-          const _MenuTile(icon: Icons.receipt_long_outlined, label: 'الطلبات', enabled: false),
+          _MenuTile(
+            icon: Icons.receipt_long_outlined,
+            label: 'الطلبات',
+            onTap: () => context.push(Routes.adminOrders),
+          ),
           const _MenuTile(icon: Icons.build_outlined, label: 'الصيانة', enabled: false),
           const _MenuTile(icon: Icons.warehouse_outlined, label: 'المخزن', enabled: false),
           const _MenuTile(icon: Icons.payments_outlined, label: 'الخزنة', enabled: false),

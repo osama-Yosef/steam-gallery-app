@@ -21,6 +21,12 @@ abstract class AuthRepository {
   Future<void> signOut();
 
   Future<AppUser?> getMyProfile();
+
+  /// Admin/technician lookup of another user's profile — e.g. showing a
+  /// customer's name on an order or maintenance ticket. RLS still governs
+  /// what's actually visible: an admin sees anyone, a technician only
+  /// customers tied to work assigned to them (see 0011_rls_policies.sql).
+  Future<AppUser?> getProfileById(String userId);
 }
 
 class SupabaseAuthRepository implements AuthRepository {
@@ -76,6 +82,16 @@ class SupabaseAuthRepository implements AuthRepository {
       final row = await _client.from('users').select().eq('id', uid).maybeSingle();
       if (row == null) return null;
       return AppUser.fromRow(row);
+    } catch (e) {
+      throw AppException.from(e);
+    }
+  }
+
+  @override
+  Future<AppUser?> getProfileById(String userId) async {
+    try {
+      final row = await _client.from('users').select().eq('id', userId).maybeSingle();
+      return row == null ? null : AppUser.fromRow(row);
     } catch (e) {
       throw AppException.from(e);
     }
