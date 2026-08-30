@@ -68,11 +68,6 @@ class _AdminWarehouseScreenState extends ConsumerState<AdminWarehouseScreen> {
             tooltip: 'شنط الصنايعية',
             onPressed: () => context.push(Routes.adminTechnicianBags),
           ),
-          IconButton(
-            icon: const Icon(Icons.checklist_outlined),
-            tooltip: 'الجرد',
-            onPressed: () => context.push(Routes.adminInventoryCounts),
-          ),
         ],
         // A fixed footer would sit under the FAB (which floats independently
         // of body layout), so the running total lives in the AppBar instead.

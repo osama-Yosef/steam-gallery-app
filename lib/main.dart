@@ -10,8 +10,6 @@ Future<void> main() async {
   if (Env.isConfigured) {
     await Supabase.initialize(url: Env.supabaseUrl, publishableKey: Env.supabasePublishableKey);
   }
-  // If not configured, the router redirects straight to ConfigMissingScreen
-  // instead of crashing (see core/router/app_router.dart).
 
   runApp(const ProviderScope(child: SteamGalleryApp()));
 }

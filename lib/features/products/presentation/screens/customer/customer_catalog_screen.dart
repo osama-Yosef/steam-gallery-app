@@ -7,7 +7,6 @@ import '../../../../../core/widgets/confirm_dialog.dart';
 import '../../../../../core/widgets/state_views.dart';
 import '../../../../auth/presentation/providers/auth_providers.dart';
 import '../../../../cart/presentation/providers/cart_provider.dart';
-import '../../../../notifications/presentation/widgets/notification_bell_icon.dart';
 import '../../../data/models/product_public.dart';
 import '../../../presentation/providers/product_providers.dart';
 
@@ -42,7 +41,6 @@ class _CustomerCatalogScreenState extends ConsumerState<CustomerCatalogScreen> {
       appBar: AppBar(
         title: const Text('معرض أجهزة البخار'),
         actions: [
-          const NotificationBellIcon(),
           IconButton(
             icon: const Icon(Icons.build_outlined),
             tooltip: 'الصيانة',

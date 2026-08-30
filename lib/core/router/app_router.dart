@@ -1,6 +1,5 @@
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import '../../features/audit_log/presentation/screens/admin_audit_log_screen.dart';
 import '../../features/auth/data/models/app_user.dart';
 import '../../features/auth/presentation/providers/auth_providers.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
@@ -10,10 +9,6 @@ import '../../features/cart/presentation/screens/cart_screen.dart';
 import '../../features/cashbox/presentation/screens/admin/admin_cashbox_screen.dart';
 import '../../features/cashbox/presentation/screens/admin/admin_expenses_list_screen.dart';
 import '../../features/cashbox/presentation/screens/admin/admin_record_expense_screen.dart';
-import '../../features/customer_account/presentation/screens/admin/admin_customer_account_detail_screen.dart';
-import '../../features/customer_account/presentation/screens/admin/admin_customer_payment_screen.dart';
-import '../../features/customer_account/presentation/screens/admin/admin_customers_list_screen.dart';
-import '../../features/dashboard/presentation/screens/admin_dashboard_screen.dart';
 import '../../features/home/presentation/screens/admin_home_screen.dart';
 import '../../features/inventory/presentation/screens/admin/admin_issue_stock_screen.dart';
 import '../../features/inventory/presentation/screens/admin/admin_receive_purchase_screen.dart';
@@ -22,8 +17,6 @@ import '../../features/inventory/presentation/screens/admin/admin_technician_bag
 import '../../features/inventory/presentation/screens/admin/admin_technician_bag_list_screen.dart';
 import '../../features/inventory/presentation/screens/admin/admin_warehouse_screen.dart';
 import '../../features/inventory/presentation/screens/technician/technician_bag_screen.dart';
-import '../../features/inventory_count/presentation/screens/admin/admin_inventory_count_detail_screen.dart';
-import '../../features/inventory_count/presentation/screens/admin/admin_inventory_counts_list_screen.dart';
 import '../../features/maintenance/presentation/screens/admin/admin_maintenance_detail_screen.dart';
 import '../../features/maintenance/presentation/screens/admin/admin_maintenance_list_screen.dart';
 import '../../features/maintenance/presentation/screens/customer/customer_maintenance_home_screen.dart';
@@ -31,7 +24,6 @@ import '../../features/maintenance/presentation/screens/customer/maintenance_det
 import '../../features/maintenance/presentation/screens/customer/new_maintenance_request_screen.dart';
 import '../../features/maintenance/presentation/screens/technician/technician_maintenance_detail_screen.dart';
 import '../../features/maintenance/presentation/screens/technician/technician_queue_screen.dart';
-import '../../features/notifications/presentation/screens/notifications_screen.dart';
 import '../../features/orders/presentation/screens/admin/admin_order_detail_screen.dart';
 import '../../features/orders/presentation/screens/admin/admin_orders_list_screen.dart';
 import '../../features/orders/presentation/screens/customer/checkout_screen.dart';
@@ -42,16 +34,12 @@ import '../../features/products/presentation/screens/admin/admin_product_form_sc
 import '../../features/products/presentation/screens/admin/admin_product_list_screen.dart';
 import '../../features/products/presentation/screens/customer/customer_catalog_screen.dart';
 import '../../features/products/presentation/screens/customer/product_detail_screen.dart';
-import '../../features/reports/presentation/screens/admin_report_detail_screen.dart';
-import '../../features/reports/presentation/screens/admin_reports_home_screen.dart';
 import '../../features/technician_account/presentation/screens/technician/technician_account_history_screen.dart';
 import '../../features/technician_account/presentation/screens/technician/technician_account_screen.dart';
 import '../../features/technician_account/presentation/screens/technician/technician_sale_detail_screen.dart';
 import '../../features/technician_account/presentation/screens/technician/technician_sale_screen.dart';
 import '../../features/technician_account/presentation/screens/technician/technician_sales_list_screen.dart';
 import '../../features/technician_account/presentation/screens/technician/technician_supply_screen.dart';
-import '../../features/users_admin/presentation/screens/admin_create_user_screen.dart';
-import '../../features/users_admin/presentation/screens/admin_users_list_screen.dart';
 import '../config/env.dart';
 import '../screens/config_missing_screen.dart';
 import '../supabase/supabase_client_provider.dart';
@@ -211,44 +199,6 @@ GoRouter appRouter(Ref ref) {
       GoRoute(path: Routes.adminCashbox, builder: (_, _) => const AdminCashboxScreen()),
       GoRoute(path: Routes.adminExpenses, builder: (_, _) => const AdminExpensesListScreen()),
       GoRoute(path: Routes.adminExpenseNew, builder: (_, _) => const AdminRecordExpenseScreen()),
-
-      // Customer Accounts (Module 8)
-      GoRoute(path: Routes.adminCustomers, builder: (_, _) => const AdminCustomersListScreen()),
-      GoRoute(
-        path: '/admin/customers/:id',
-        builder: (_, state) => AdminCustomerAccountDetailScreen(customerId: state.pathParameters['id']!),
-      ),
-      GoRoute(
-        path: '/admin/customers/:id/payment',
-        builder: (_, state) => AdminCustomerPaymentScreen(customerId: state.pathParameters['id']!),
-      ),
-
-      // Inventory Count (Module 9)
-      GoRoute(path: Routes.adminInventoryCounts, builder: (_, _) => const AdminInventoryCountsListScreen()),
-      GoRoute(
-        path: '/admin/warehouse/counts/:id',
-        builder: (_, state) => AdminInventoryCountDetailScreen(countId: state.pathParameters['id']!),
-      ),
-
-      // Dashboard (Module 10)
-      GoRoute(path: Routes.adminDashboard, builder: (_, _) => const AdminDashboardScreen()),
-
-      // Reports (Module 11)
-      GoRoute(path: Routes.adminReports, builder: (_, _) => const AdminReportsHomeScreen()),
-      GoRoute(
-        path: '/admin/reports/:type',
-        builder: (_, state) => AdminReportDetailScreen(reportType: state.pathParameters['type']!),
-      ),
-
-      // Notifications (Module 12) — one shared screen for every role
-      GoRoute(path: Routes.notifications, builder: (_, _) => const NotificationsScreen()),
-
-      // Users & Roles (Module 13)
-      GoRoute(path: Routes.adminUsers, builder: (_, _) => const AdminUsersListScreen()),
-      GoRoute(path: Routes.adminUserNewTechnician, builder: (_, _) => const AdminCreateUserScreen()),
-
-      // Audit Log (Module 14)
-      GoRoute(path: Routes.adminAuditLog, builder: (_, _) => const AdminAuditLogScreen()),
     ],
   );
 }

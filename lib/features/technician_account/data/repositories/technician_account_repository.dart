@@ -6,11 +6,6 @@ import '../models/technician_account_summary.dart';
 import '../models/technician_account_transaction.dart';
 
 abstract class TechnicianAccountRepository {
-  /// All technicians' summaries at once — used by the admin Technicians
-  /// report (Module 11). Admin sees every row via RLS on the underlying
-  /// tables the view joins.
-  Future<List<TechnicianAccountSummary>> getAllAccountSummaries();
-
   Future<TechnicianAccountSummary?> getAccountSummary(String technicianId);
 
   Future<List<TechnicianAccountTransaction>> getAccountTransactions(String technicianId);
@@ -39,17 +34,6 @@ abstract class TechnicianAccountRepository {
 class SupabaseTechnicianAccountRepository implements TechnicianAccountRepository {
   final SupabaseClient _client;
   SupabaseTechnicianAccountRepository(this._client);
-
-  @override
-  Future<List<TechnicianAccountSummary>> getAllAccountSummaries() async {
-    try {
-      final rows = await _client.from('technician_account_summary').select();
-      return rows.map(TechnicianAccountSummary.fromRow).toList()
-        ..sort((a, b) => b.amountDue.compareTo(a.amountDue));
-    } catch (e) {
-      throw AppException.from(e);
-    }
-  }
 
   @override
   Future<TechnicianAccountSummary?> getAccountSummary(String technicianId) async {

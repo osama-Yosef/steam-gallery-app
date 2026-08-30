@@ -48,8 +48,6 @@ class AppException implements Exception {
     if (msg.contains('FORBIDDEN_OR_NOT_IN_PROGRESS')) return 'لا يمكن إنهاء طلب لم يبدأ تنفيذه بعد';
     if (msg.contains('FORBIDDEN_OR_NOT_CANCELLABLE')) return 'لا يمكن إلغاء هذا الطلب الآن';
     if (msg.contains('COUNT_NOT_DRAFT')) return 'الجرد مُعتمَد بالفعل ولا يمكن تعديله';
-    if (msg.contains('ITEM_NOT_FOUND_OR_COUNT_CLOSED')) return 'لا يمكن تعديل هذا الصنف بعد اعتماد الجرد';
-    if (msg.contains('chk_reason_required_if_diff')) return 'لازم تكتب سبب الفرق في الكمية';
     if (msg.contains('row-level security')) return 'ليست لديك صلاحية للوصول لهذه البيانات';
     return 'تعذَّر تنفيذ العملية. حاول مرة أخرى.';
   }

@@ -5,7 +5,6 @@ import '../../../../../core/router/route_names.dart';
 import '../../../../../core/widgets/confirm_dialog.dart';
 import '../../../../../core/widgets/state_views.dart';
 import '../../../../auth/presentation/providers/auth_providers.dart';
-import '../../../../notifications/presentation/widgets/notification_bell_icon.dart';
 import '../../../data/models/maintenance_request.dart';
 import '../../providers/maintenance_providers.dart';
 
@@ -27,7 +26,6 @@ class TechnicianQueueScreen extends ConsumerWidget {
       appBar: AppBar(
         title: const Text('طلبات الصيانة'),
         actions: [
-          const NotificationBellIcon(),
           IconButton(
             icon: const Icon(Icons.work_outline),
             tooltip: 'شنطتي',
