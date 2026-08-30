@@ -6,7 +6,13 @@ import '../../features/auth/presentation/providers/auth_providers.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/auth/presentation/screens/register_screen.dart';
 import '../../features/auth/presentation/screens/splash_screen.dart';
+import '../../features/home/presentation/screens/admin_home_screen.dart';
 import '../../features/home/presentation/screens/role_home_screen.dart';
+import '../../features/products/presentation/screens/admin/admin_category_list_screen.dart';
+import '../../features/products/presentation/screens/admin/admin_product_form_screen.dart';
+import '../../features/products/presentation/screens/admin/admin_product_list_screen.dart';
+import '../../features/products/presentation/screens/customer/customer_catalog_screen.dart';
+import '../../features/products/presentation/screens/customer/product_detail_screen.dart';
 import '../config/env.dart';
 import '../screens/config_missing_screen.dart';
 import '../supabase/supabase_client_provider.dart';
@@ -75,17 +81,24 @@ GoRouter appRouter(Ref ref) {
       GoRoute(path: Routes.configMissing, builder: (_, _) => const ConfigMissingScreen()),
       GoRoute(path: Routes.login, builder: (_, _) => const LoginScreen()),
       GoRoute(path: Routes.register, builder: (_, _) => const RegisterScreen()),
-      GoRoute(
-        path: Routes.adminHome,
-        builder: (_, _) => const RoleHomeScreen(roleLabel: 'لوحة تحكم الأدمن', icon: Icons.admin_panel_settings_outlined),
-      ),
+      GoRoute(path: Routes.adminHome, builder: (_, _) => const AdminHomeScreen()),
       GoRoute(
         path: Routes.technicianHome,
         builder: (_, _) => const RoleHomeScreen(roleLabel: 'تطبيق الصنايعي', icon: Icons.build_outlined),
       ),
+      GoRoute(path: Routes.customerHome, builder: (_, _) => const CustomerCatalogScreen()),
+
+      // Products & Catalog (Module 2)
+      GoRoute(path: Routes.adminProducts, builder: (_, _) => const AdminProductListScreen()),
+      GoRoute(path: Routes.adminProductNew, builder: (_, _) => const AdminProductFormScreen()),
+      GoRoute(path: Routes.adminCategories, builder: (_, _) => const AdminCategoryListScreen()),
       GoRoute(
-        path: Routes.customerHome,
-        builder: (_, _) => const RoleHomeScreen(roleLabel: 'معرض أجهزة البخار', icon: Icons.storefront_outlined),
+        path: '/admin/products/:id/edit',
+        builder: (_, state) => AdminProductFormScreen(productId: state.pathParameters['id']),
+      ),
+      GoRoute(
+        path: '/customer/product/:id',
+        builder: (_, state) => ProductDetailScreen(productId: state.pathParameters['id']!),
       ),
     ],
   );
