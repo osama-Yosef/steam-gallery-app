@@ -17,6 +17,7 @@ abstract class ProductPublic with _$ProductPublic {
     required double sellingPrice,
     required bool isAvailable,
     required DateTime createdAt,
+    String? primaryImageUrl,
   }) = _ProductPublic;
 
   factory ProductPublic.fromRow(Map<String, dynamic> row) => ProductPublic(
@@ -32,5 +33,6 @@ abstract class ProductPublic with _$ProductPublic {
         sellingPrice: (row['selling_price'] as num).toDouble(),
         isAvailable: row['is_available'] as bool? ?? false,
         createdAt: DateTime.parse(row['created_at'] as String),
+        primaryImageUrl: row['primary_image_url'] as String?,
       );
 }

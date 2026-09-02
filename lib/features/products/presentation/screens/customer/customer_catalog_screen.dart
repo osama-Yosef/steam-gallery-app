@@ -1,12 +1,10 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../../core/router/route_names.dart';
 import '../../../../../core/utils/formatters.dart';
-import '../../../../../core/widgets/confirm_dialog.dart';
 import '../../../../../core/widgets/state_views.dart';
-import '../../../../auth/presentation/providers/auth_providers.dart';
-import '../../../../cart/presentation/providers/cart_provider.dart';
 import '../../../data/models/product_public.dart';
 import '../../../presentation/providers/product_providers.dart';
 
@@ -35,45 +33,8 @@ class _CustomerCatalogScreenState extends ConsumerState<CustomerCatalogScreen> {
       customerProductsProvider(search: _search.isEmpty ? null : _search, categoryId: _categoryId),
     );
 
-    final cartCount = ref.watch(cartItemCountProvider);
-
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('معرض أجهزة البخار'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.build_outlined),
-            tooltip: 'الصيانة',
-            onPressed: () => context.push(Routes.customerMaintenance),
-          ),
-          IconButton(
-            icon: const Icon(Icons.receipt_long_outlined),
-            tooltip: 'طلباتي',
-            onPressed: () => context.push(Routes.customerOrders),
-          ),
-          IconButton(
-            icon: Badge(
-              label: Text('$cartCount'),
-              isLabelVisible: cartCount > 0,
-              child: const Icon(Icons.shopping_cart_outlined),
-            ),
-            tooltip: 'السلة',
-            onPressed: () => context.push(Routes.customerCart),
-          ),
-          IconButton(
-            icon: const Icon(Icons.logout),
-            tooltip: 'تسجيل الخروج',
-            onPressed: () async {
-              final confirmed = await showConfirmDialog(
-                context,
-                title: 'تسجيل الخروج',
-                message: 'هل تريد تسجيل الخروج من حسابك؟',
-              );
-              if (confirmed) await ref.read(authRepositoryProvider).signOut();
-            },
-          ),
-        ],
-      ),
+      appBar: AppBar(title: const Text('معرض أجهزة البخار')),
       body: Column(
         children: [
           Padding(
@@ -184,7 +145,15 @@ class _ProductCard extends StatelessWidget {
             Expanded(
               child: Container(
                 color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                child: const Icon(Icons.local_fire_department_outlined, size: 40),
+                child: product.primaryImageUrl == null
+                    ? const Icon(Icons.local_fire_department_outlined, size: 40)
+                    : CachedNetworkImage(
+                        imageUrl: product.primaryImageUrl!,
+                        fit: BoxFit.cover,
+                        width: double.infinity,
+                        placeholder: (_, _) => const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                        errorWidget: (_, _, _) => const Icon(Icons.local_fire_department_outlined, size: 40),
+                      ),
               ),
             ),
             Padding(

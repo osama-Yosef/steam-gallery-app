@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../../core/router/route_names.dart';
+import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/utils/formatters.dart';
 import '../../../../../core/widgets/money_text.dart';
 import '../../../../../core/widgets/state_views.dart';
@@ -115,7 +116,7 @@ class AdminCashboxScreen extends ConsumerWidget {
     if (isIncome == null) return const Icon(Icons.swap_horiz);
     return Icon(
       isIncome ? Icons.arrow_downward : Icons.arrow_upward,
-      color: isIncome ? Colors.green.shade700 : Theme.of(context).colorScheme.error,
+      color: isIncome ? AppColors.success : Theme.of(context).colorScheme.error,
     );
   }
 }

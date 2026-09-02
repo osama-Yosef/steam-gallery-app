@@ -62,7 +62,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    const Icon(Icons.storefront_rounded, size: 56),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(18),
+                      child: Image.asset('assets/icon/icon.png', width: 72, height: 72),
+                    ),
                     const SizedBox(height: 12),
                     Text(
                       'تسجيل الدخول',

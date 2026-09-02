@@ -7,6 +7,7 @@ abstract final class Routes {
   static const adminHome = '/admin';
   static const technicianHome = '/technician';
   static const customerHome = '/customer';
+  static const customerAccount = '/customer/account';
 
   // Products & Catalog (Module 2)
   static const adminProducts = '/admin/products';
@@ -57,4 +58,8 @@ abstract final class Routes {
   static const adminCashbox = '/admin/cashbox';
   static const adminExpenses = '/admin/expenses';
   static const adminExpenseNew = '/admin/expenses/new';
+
+  // Walk-in sales & reports
+  static const adminWalkInSale = '/admin/walk-in-sale';
+  static const adminReports = '/admin/reports';
 }

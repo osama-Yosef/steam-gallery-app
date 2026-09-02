@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -89,6 +90,19 @@ class _AdminProductListScreenState extends ConsumerState<AdminProductListScreen>
                   itemBuilder: (context, i) {
                     final p = products[i];
                     return ListTile(
+                      leading: ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: SizedBox(
+                          width: 44,
+                          height: 44,
+                          child: p.primaryImageUrl == null
+                              ? ColoredBox(
+                                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                                  child: const Icon(Icons.inventory_2_outlined, size: 20),
+                                )
+                              : CachedNetworkImage(imageUrl: p.primaryImageUrl!, fit: BoxFit.cover),
+                        ),
+                      ),
                       title: Text(p.name),
                       subtitle: Text('SKU: ${p.sku}${p.isActive ? '' : ' — معطَّل'}'),
                       trailing: Text(Formatters.currency(p.sellingPrice)),

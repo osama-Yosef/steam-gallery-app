@@ -8,7 +8,10 @@ plugins {
 android {
     namespace = "com.steamgallery.steam_gallery_app"
     compileSdk = flutter.compileSdkVersion
-    ndkVersion = flutter.ndkVersion
+    // Pinned to the NDK version actually installed on this machine — the
+    // Flutter-default version isn't present and none of our plugins need a
+    // specific NDK release.
+    ndkVersion = "30.0.14904198"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17

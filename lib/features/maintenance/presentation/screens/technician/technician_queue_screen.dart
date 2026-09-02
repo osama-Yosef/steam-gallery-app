@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../../core/router/route_names.dart';
-import '../../../../../core/widgets/confirm_dialog.dart';
 import '../../../../../core/widgets/state_views.dart';
 import '../../../../auth/presentation/providers/auth_providers.dart';
 import '../../../data/models/maintenance_request.dart';
@@ -25,30 +24,6 @@ class TechnicianQueueScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('طلبات الصيانة'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.work_outline),
-            tooltip: 'شنطتي',
-            onPressed: () => context.push(Routes.technicianBag),
-          ),
-          IconButton(
-            icon: const Icon(Icons.account_balance_wallet_outlined),
-            tooltip: 'حسابي',
-            onPressed: () => context.push(Routes.technicianAccount),
-          ),
-          IconButton(
-            icon: const Icon(Icons.logout),
-            tooltip: 'تسجيل الخروج',
-            onPressed: () async {
-              final confirmed = await showConfirmDialog(
-                context,
-                title: 'تسجيل الخروج',
-                message: 'هل تريد تسجيل الخروج من حسابك؟',
-              );
-              if (confirmed) await ref.read(authRepositoryProvider).signOut();
-            },
-          ),
-        ],
       ),
       body: allAsync.when(
         loading: () => const LoadingView(),

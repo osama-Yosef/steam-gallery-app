@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../../core/router/route_names.dart';
+import '../../../../../core/widgets/confirm_dialog.dart';
 import '../../../../../core/widgets/state_views.dart';
 import '../../../../auth/presentation/providers/auth_providers.dart';
 import '../../providers/technician_account_providers.dart';
@@ -25,7 +26,25 @@ class TechnicianAccountScreen extends ConsumerWidget {
     final summaryAsync = ref.watch(technicianAccountSummaryProvider(resolvedId));
 
     return Scaffold(
-      appBar: AppBar(title: Text(isSelf ? 'حسابي' : 'حساب الصنايعي')),
+      appBar: AppBar(
+        title: Text(isSelf ? 'حسابي' : 'حساب الصنايعي'),
+        actions: isSelf
+            ? [
+                IconButton(
+                  icon: const Icon(Icons.logout),
+                  tooltip: 'تسجيل الخروج',
+                  onPressed: () async {
+                    final confirmed = await showConfirmDialog(
+                      context,
+                      title: 'تسجيل الخروج',
+                      message: 'هل تريد تسجيل الخروج من حسابك؟',
+                    );
+                    if (confirmed) await ref.read(authRepositoryProvider).signOut();
+                  },
+                ),
+              ]
+            : null,
+      ),
       body: summaryAsync.when(
         loading: () => const LoadingView(),
         error: (e, _) => ErrorView(

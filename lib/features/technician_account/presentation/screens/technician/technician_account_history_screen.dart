@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/utils/formatters.dart';
 import '../../../../../core/widgets/money_text.dart';
 import '../../../../../core/widgets/state_views.dart';
@@ -41,7 +42,7 @@ class TechnicianAccountHistoryScreen extends ConsumerWidget {
               return ListTile(
                 leading: Icon(
                   increases ? Icons.add_circle_outline : Icons.remove_circle_outline,
-                  color: increases ? Theme.of(context).colorScheme.error : Colors.green.shade700,
+                  color: increases ? Theme.of(context).colorScheme.error : AppColors.success,
                 ),
                 title: Text(techAccountTxnTypeLabelAr(t.type)),
                 subtitle: Text(

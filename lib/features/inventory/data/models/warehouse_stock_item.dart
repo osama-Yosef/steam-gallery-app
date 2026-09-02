@@ -12,6 +12,7 @@ abstract class WarehouseStockItem with _$WarehouseStockItem {
     required String sku,
     required int quantity,
     required double costPrice,
+    required double sellingPrice,
     required int minStock,
   }) = _WarehouseStockItem;
 
@@ -28,6 +29,7 @@ abstract class WarehouseStockItem with _$WarehouseStockItem {
       sku: product['sku'] as String,
       quantity: row['quantity'] as int,
       costPrice: (product['cost_price'] as num).toDouble(),
+      sellingPrice: (product['selling_price'] as num).toDouble(),
       minStock: product['min_stock'] as int,
     );
   }

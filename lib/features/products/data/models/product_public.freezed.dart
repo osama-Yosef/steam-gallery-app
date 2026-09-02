@@ -14,7 +14,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$ProductPublic {
 
- String get id; String get sku; String? get barcode; String? get categoryId; String get name; String? get description; Map<String, String> get specs; double get sellingPrice; bool get isAvailable; DateTime get createdAt;
+ String get id; String get sku; String? get barcode; String? get categoryId; String get name; String? get description; Map<String, String> get specs; double get sellingPrice; bool get isAvailable; DateTime get createdAt; String? get primaryImageUrl;
 /// Create a copy of ProductPublic
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -25,16 +25,16 @@ $ProductPublicCopyWith<ProductPublic> get copyWith => _$ProductPublicCopyWithImp
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ProductPublic&&(identical(other.id, id) || other.id == id)&&(identical(other.sku, sku) || other.sku == sku)&&(identical(other.barcode, barcode) || other.barcode == barcode)&&(identical(other.categoryId, categoryId) || other.categoryId == categoryId)&&(identical(other.name, name) || other.name == name)&&(identical(other.description, description) || other.description == description)&&const DeepCollectionEquality().equals(other.specs, specs)&&(identical(other.sellingPrice, sellingPrice) || other.sellingPrice == sellingPrice)&&(identical(other.isAvailable, isAvailable) || other.isAvailable == isAvailable)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ProductPublic&&(identical(other.id, id) || other.id == id)&&(identical(other.sku, sku) || other.sku == sku)&&(identical(other.barcode, barcode) || other.barcode == barcode)&&(identical(other.categoryId, categoryId) || other.categoryId == categoryId)&&(identical(other.name, name) || other.name == name)&&(identical(other.description, description) || other.description == description)&&const DeepCollectionEquality().equals(other.specs, specs)&&(identical(other.sellingPrice, sellingPrice) || other.sellingPrice == sellingPrice)&&(identical(other.isAvailable, isAvailable) || other.isAvailable == isAvailable)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.primaryImageUrl, primaryImageUrl) || other.primaryImageUrl == primaryImageUrl));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,sku,barcode,categoryId,name,description,const DeepCollectionEquality().hash(specs),sellingPrice,isAvailable,createdAt);
+int get hashCode => Object.hash(runtimeType,id,sku,barcode,categoryId,name,description,const DeepCollectionEquality().hash(specs),sellingPrice,isAvailable,createdAt,primaryImageUrl);
 
 @override
 String toString() {
-  return 'ProductPublic(id: $id, sku: $sku, barcode: $barcode, categoryId: $categoryId, name: $name, description: $description, specs: $specs, sellingPrice: $sellingPrice, isAvailable: $isAvailable, createdAt: $createdAt)';
+  return 'ProductPublic(id: $id, sku: $sku, barcode: $barcode, categoryId: $categoryId, name: $name, description: $description, specs: $specs, sellingPrice: $sellingPrice, isAvailable: $isAvailable, createdAt: $createdAt, primaryImageUrl: $primaryImageUrl)';
 }
 
 
@@ -45,7 +45,7 @@ abstract mixin class $ProductPublicCopyWith<$Res>  {
   factory $ProductPublicCopyWith(ProductPublic value, $Res Function(ProductPublic) _then) = _$ProductPublicCopyWithImpl;
 @useResult
 $Res call({
- String id, String sku, String? barcode, String? categoryId, String name, String? description, Map<String, String> specs, double sellingPrice, bool isAvailable, DateTime createdAt
+ String id, String sku, String? barcode, String? categoryId, String name, String? description, Map<String, String> specs, double sellingPrice, bool isAvailable, DateTime createdAt, String? primaryImageUrl
 });
 
 
@@ -62,7 +62,7 @@ class _$ProductPublicCopyWithImpl<$Res>
 
 /// Create a copy of ProductPublic
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? sku = null,Object? barcode = freezed,Object? categoryId = freezed,Object? name = null,Object? description = freezed,Object? specs = null,Object? sellingPrice = null,Object? isAvailable = null,Object? createdAt = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? sku = null,Object? barcode = freezed,Object? categoryId = freezed,Object? name = null,Object? description = freezed,Object? specs = null,Object? sellingPrice = null,Object? isAvailable = null,Object? createdAt = null,Object? primaryImageUrl = freezed,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,sku: null == sku ? _self.sku : sku // ignore: cast_nullable_to_non_nullable
@@ -74,7 +74,8 @@ as String?,specs: null == specs ? _self.specs : specs // ignore: cast_nullable_t
 as Map<String, String>,sellingPrice: null == sellingPrice ? _self.sellingPrice : sellingPrice // ignore: cast_nullable_to_non_nullable
 as double,isAvailable: null == isAvailable ? _self.isAvailable : isAvailable // ignore: cast_nullable_to_non_nullable
 as bool,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
-as DateTime,
+as DateTime,primaryImageUrl: freezed == primaryImageUrl ? _self.primaryImageUrl : primaryImageUrl // ignore: cast_nullable_to_non_nullable
+as String?,
   ));
 }
 
@@ -159,10 +160,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String sku,  String? barcode,  String? categoryId,  String name,  String? description,  Map<String, String> specs,  double sellingPrice,  bool isAvailable,  DateTime createdAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String sku,  String? barcode,  String? categoryId,  String name,  String? description,  Map<String, String> specs,  double sellingPrice,  bool isAvailable,  DateTime createdAt,  String? primaryImageUrl)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _ProductPublic() when $default != null:
-return $default(_that.id,_that.sku,_that.barcode,_that.categoryId,_that.name,_that.description,_that.specs,_that.sellingPrice,_that.isAvailable,_that.createdAt);case _:
+return $default(_that.id,_that.sku,_that.barcode,_that.categoryId,_that.name,_that.description,_that.specs,_that.sellingPrice,_that.isAvailable,_that.createdAt,_that.primaryImageUrl);case _:
   return orElse();
 
 }
@@ -180,10 +181,10 @@ return $default(_that.id,_that.sku,_that.barcode,_that.categoryId,_that.name,_th
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String sku,  String? barcode,  String? categoryId,  String name,  String? description,  Map<String, String> specs,  double sellingPrice,  bool isAvailable,  DateTime createdAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String sku,  String? barcode,  String? categoryId,  String name,  String? description,  Map<String, String> specs,  double sellingPrice,  bool isAvailable,  DateTime createdAt,  String? primaryImageUrl)  $default,) {final _that = this;
 switch (_that) {
 case _ProductPublic():
-return $default(_that.id,_that.sku,_that.barcode,_that.categoryId,_that.name,_that.description,_that.specs,_that.sellingPrice,_that.isAvailable,_that.createdAt);case _:
+return $default(_that.id,_that.sku,_that.barcode,_that.categoryId,_that.name,_that.description,_that.specs,_that.sellingPrice,_that.isAvailable,_that.createdAt,_that.primaryImageUrl);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -200,10 +201,10 @@ return $default(_that.id,_that.sku,_that.barcode,_that.categoryId,_that.name,_th
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String sku,  String? barcode,  String? categoryId,  String name,  String? description,  Map<String, String> specs,  double sellingPrice,  bool isAvailable,  DateTime createdAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String sku,  String? barcode,  String? categoryId,  String name,  String? description,  Map<String, String> specs,  double sellingPrice,  bool isAvailable,  DateTime createdAt,  String? primaryImageUrl)?  $default,) {final _that = this;
 switch (_that) {
 case _ProductPublic() when $default != null:
-return $default(_that.id,_that.sku,_that.barcode,_that.categoryId,_that.name,_that.description,_that.specs,_that.sellingPrice,_that.isAvailable,_that.createdAt);case _:
+return $default(_that.id,_that.sku,_that.barcode,_that.categoryId,_that.name,_that.description,_that.specs,_that.sellingPrice,_that.isAvailable,_that.createdAt,_that.primaryImageUrl);case _:
   return null;
 
 }
@@ -215,7 +216,7 @@ return $default(_that.id,_that.sku,_that.barcode,_that.categoryId,_that.name,_th
 
 
 class _ProductPublic implements ProductPublic {
-  const _ProductPublic({required this.id, required this.sku, this.barcode, this.categoryId, required this.name, this.description, required final  Map<String, String> specs, required this.sellingPrice, required this.isAvailable, required this.createdAt}): _specs = specs;
+  const _ProductPublic({required this.id, required this.sku, this.barcode, this.categoryId, required this.name, this.description, required final  Map<String, String> specs, required this.sellingPrice, required this.isAvailable, required this.createdAt, this.primaryImageUrl}): _specs = specs;
   
 
 @override final  String id;
@@ -234,6 +235,7 @@ class _ProductPublic implements ProductPublic {
 @override final  double sellingPrice;
 @override final  bool isAvailable;
 @override final  DateTime createdAt;
+@override final  String? primaryImageUrl;
 
 /// Create a copy of ProductPublic
 /// with the given fields replaced by the non-null parameter values.
@@ -245,16 +247,16 @@ _$ProductPublicCopyWith<_ProductPublic> get copyWith => __$ProductPublicCopyWith
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ProductPublic&&(identical(other.id, id) || other.id == id)&&(identical(other.sku, sku) || other.sku == sku)&&(identical(other.barcode, barcode) || other.barcode == barcode)&&(identical(other.categoryId, categoryId) || other.categoryId == categoryId)&&(identical(other.name, name) || other.name == name)&&(identical(other.description, description) || other.description == description)&&const DeepCollectionEquality().equals(other._specs, _specs)&&(identical(other.sellingPrice, sellingPrice) || other.sellingPrice == sellingPrice)&&(identical(other.isAvailable, isAvailable) || other.isAvailable == isAvailable)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ProductPublic&&(identical(other.id, id) || other.id == id)&&(identical(other.sku, sku) || other.sku == sku)&&(identical(other.barcode, barcode) || other.barcode == barcode)&&(identical(other.categoryId, categoryId) || other.categoryId == categoryId)&&(identical(other.name, name) || other.name == name)&&(identical(other.description, description) || other.description == description)&&const DeepCollectionEquality().equals(other._specs, _specs)&&(identical(other.sellingPrice, sellingPrice) || other.sellingPrice == sellingPrice)&&(identical(other.isAvailable, isAvailable) || other.isAvailable == isAvailable)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.primaryImageUrl, primaryImageUrl) || other.primaryImageUrl == primaryImageUrl));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,sku,barcode,categoryId,name,description,const DeepCollectionEquality().hash(_specs),sellingPrice,isAvailable,createdAt);
+int get hashCode => Object.hash(runtimeType,id,sku,barcode,categoryId,name,description,const DeepCollectionEquality().hash(_specs),sellingPrice,isAvailable,createdAt,primaryImageUrl);
 
 @override
 String toString() {
-  return 'ProductPublic(id: $id, sku: $sku, barcode: $barcode, categoryId: $categoryId, name: $name, description: $description, specs: $specs, sellingPrice: $sellingPrice, isAvailable: $isAvailable, createdAt: $createdAt)';
+  return 'ProductPublic(id: $id, sku: $sku, barcode: $barcode, categoryId: $categoryId, name: $name, description: $description, specs: $specs, sellingPrice: $sellingPrice, isAvailable: $isAvailable, createdAt: $createdAt, primaryImageUrl: $primaryImageUrl)';
 }
 
 
@@ -265,7 +267,7 @@ abstract mixin class _$ProductPublicCopyWith<$Res> implements $ProductPublicCopy
   factory _$ProductPublicCopyWith(_ProductPublic value, $Res Function(_ProductPublic) _then) = __$ProductPublicCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String sku, String? barcode, String? categoryId, String name, String? description, Map<String, String> specs, double sellingPrice, bool isAvailable, DateTime createdAt
+ String id, String sku, String? barcode, String? categoryId, String name, String? description, Map<String, String> specs, double sellingPrice, bool isAvailable, DateTime createdAt, String? primaryImageUrl
 });
 
 
@@ -282,7 +284,7 @@ class __$ProductPublicCopyWithImpl<$Res>
 
 /// Create a copy of ProductPublic
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? sku = null,Object? barcode = freezed,Object? categoryId = freezed,Object? name = null,Object? description = freezed,Object? specs = null,Object? sellingPrice = null,Object? isAvailable = null,Object? createdAt = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? sku = null,Object? barcode = freezed,Object? categoryId = freezed,Object? name = null,Object? description = freezed,Object? specs = null,Object? sellingPrice = null,Object? isAvailable = null,Object? createdAt = null,Object? primaryImageUrl = freezed,}) {
   return _then(_ProductPublic(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,sku: null == sku ? _self.sku : sku // ignore: cast_nullable_to_non_nullable
@@ -294,7 +296,8 @@ as String?,specs: null == specs ? _self._specs : specs // ignore: cast_nullable_
 as Map<String, String>,sellingPrice: null == sellingPrice ? _self.sellingPrice : sellingPrice // ignore: cast_nullable_to_non_nullable
 as double,isAvailable: null == isAvailable ? _self.isAvailable : isAvailable // ignore: cast_nullable_to_non_nullable
 as bool,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
-as DateTime,
+as DateTime,primaryImageUrl: freezed == primaryImageUrl ? _self.primaryImageUrl : primaryImageUrl // ignore: cast_nullable_to_non_nullable
+as String?,
   ));
 }
 

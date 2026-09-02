@@ -20,6 +20,7 @@ abstract class Product with _$Product {
     required int minStock,
     required bool isActive,
     required DateTime createdAt,
+    String? primaryImageUrl,
   }) = _Product;
 
   factory Product.fromRow(Map<String, dynamic> row) => Product(
@@ -37,5 +38,14 @@ abstract class Product with _$Product {
         minStock: row['min_stock'] as int? ?? 0,
         isActive: row['is_active'] as bool? ?? true,
         createdAt: DateTime.parse(row['created_at'] as String),
+        primaryImageUrl: _primaryImageFrom(row['product_images']),
       );
+
+  static String? _primaryImageFrom(Object? embedded) {
+    if (embedded is! List || embedded.isEmpty) return null;
+    final images = embedded.cast<Map<String, dynamic>>();
+    final primary = images.where((i) => i['is_primary'] == true);
+    final chosen = primary.isNotEmpty ? primary.first : images.first;
+    return chosen['image_url'] as String?;
+  }
 }

@@ -10,6 +10,7 @@ import '../../features/cashbox/presentation/screens/admin/admin_cashbox_screen.d
 import '../../features/cashbox/presentation/screens/admin/admin_expenses_list_screen.dart';
 import '../../features/cashbox/presentation/screens/admin/admin_record_expense_screen.dart';
 import '../../features/home/presentation/screens/admin_home_screen.dart';
+import '../../features/home/presentation/screens/customer_account_screen.dart';
 import '../../features/inventory/presentation/screens/admin/admin_issue_stock_screen.dart';
 import '../../features/inventory/presentation/screens/admin/admin_receive_purchase_screen.dart';
 import '../../features/inventory/presentation/screens/admin/admin_stock_movements_screen.dart';
@@ -34,6 +35,8 @@ import '../../features/products/presentation/screens/admin/admin_product_form_sc
 import '../../features/products/presentation/screens/admin/admin_product_list_screen.dart';
 import '../../features/products/presentation/screens/customer/customer_catalog_screen.dart';
 import '../../features/products/presentation/screens/customer/product_detail_screen.dart';
+import '../../features/reports/presentation/screens/admin/admin_reports_screen.dart';
+import '../../features/sales/presentation/screens/admin/admin_walk_in_sale_screen.dart';
 import '../../features/technician_account/presentation/screens/technician/technician_account_history_screen.dart';
 import '../../features/technician_account/presentation/screens/technician/technician_account_screen.dart';
 import '../../features/technician_account/presentation/screens/technician/technician_sale_detail_screen.dart';
@@ -41,6 +44,9 @@ import '../../features/technician_account/presentation/screens/technician/techni
 import '../../features/technician_account/presentation/screens/technician/technician_sales_list_screen.dart';
 import '../../features/technician_account/presentation/screens/technician/technician_supply_screen.dart';
 import '../config/env.dart';
+import '../navigation/admin_shell.dart';
+import '../navigation/customer_shell.dart';
+import '../navigation/technician_shell.dart';
 import '../screens/config_missing_screen.dart';
 import '../supabase/supabase_client_provider.dart';
 import 'go_router_refresh_stream.dart';
@@ -108,97 +114,200 @@ GoRouter appRouter(Ref ref) {
       GoRoute(path: Routes.configMissing, builder: (_, _) => const ConfigMissingScreen()),
       GoRoute(path: Routes.login, builder: (_, _) => const LoginScreen()),
       GoRoute(path: Routes.register, builder: (_, _) => const RegisterScreen()),
-      GoRoute(path: Routes.adminHome, builder: (_, _) => const AdminHomeScreen()),
-      GoRoute(path: Routes.technicianHome, builder: (_, _) => const TechnicianQueueScreen()),
-      GoRoute(path: Routes.customerHome, builder: (_, _) => const CustomerCatalogScreen()),
 
-      // Products & Catalog (Module 2)
-      GoRoute(path: Routes.adminProducts, builder: (_, _) => const AdminProductListScreen()),
-      GoRoute(path: Routes.adminProductNew, builder: (_, _) => const AdminProductFormScreen()),
-      GoRoute(path: Routes.adminCategories, builder: (_, _) => const AdminCategoryListScreen()),
-      GoRoute(
-        path: '/admin/products/:id/edit',
-        builder: (_, state) => AdminProductFormScreen(productId: state.pathParameters['id']),
-      ),
-      GoRoute(
-        path: '/customer/product/:id',
-        builder: (_, state) => ProductDetailScreen(productId: state.pathParameters['id']!),
+      // Admin — persistent glass sidebar, branch order matches AdminShell._items.
+      StatefulShellRoute.indexedStack(
+        builder: (_, _, shell) => AdminShell(navigationShell: shell),
+        branches: [
+          StatefulShellBranch(routes: [
+            GoRoute(
+              path: Routes.adminHome,
+              builder: (_, _) => const AdminHomeScreen(),
+              routes: [
+                GoRoute(path: 'walk-in-sale', builder: (_, _) => const AdminWalkInSaleScreen()),
+                GoRoute(path: 'reports', builder: (_, _) => const AdminReportsScreen()),
+              ],
+            ),
+          ]),
+          StatefulShellBranch(routes: [
+            GoRoute(
+              path: Routes.adminProducts,
+              builder: (_, _) => const AdminProductListScreen(),
+              routes: [
+                GoRoute(path: 'new', builder: (_, _) => const AdminProductFormScreen()),
+                GoRoute(
+                  path: ':id/edit',
+                  builder: (_, state) => AdminProductFormScreen(productId: state.pathParameters['id']),
+                ),
+              ],
+            ),
+            GoRoute(path: Routes.adminCategories, builder: (_, _) => const AdminCategoryListScreen()),
+          ]),
+          StatefulShellBranch(routes: [
+            GoRoute(
+              path: Routes.adminOrders,
+              builder: (_, _) => const AdminOrdersListScreen(),
+              routes: [
+                GoRoute(
+                  path: ':id',
+                  builder: (_, state) => AdminOrderDetailScreen(orderId: state.pathParameters['id']!),
+                ),
+              ],
+            ),
+          ]),
+          StatefulShellBranch(routes: [
+            GoRoute(
+              path: Routes.adminMaintenance,
+              builder: (_, _) => const AdminMaintenanceListScreen(),
+              routes: [
+                GoRoute(
+                  path: ':id',
+                  builder: (_, state) => AdminMaintenanceDetailScreen(requestId: state.pathParameters['id']!),
+                ),
+              ],
+            ),
+          ]),
+          StatefulShellBranch(routes: [
+            GoRoute(path: Routes.adminWarehouse, builder: (_, _) => const AdminWarehouseScreen()),
+            GoRoute(path: Routes.adminReceivePurchase, builder: (_, _) => const AdminReceivePurchaseScreen()),
+            GoRoute(path: Routes.adminIssueStock, builder: (_, _) => const AdminIssueStockScreen()),
+            GoRoute(path: Routes.adminStockMovements, builder: (_, _) => const AdminStockMovementsScreen()),
+            GoRoute(
+              path: Routes.adminTechnicianBags,
+              builder: (_, _) => const AdminTechnicianBagListScreen(),
+              routes: [
+                GoRoute(
+                  path: ':id',
+                  builder: (_, state) =>
+                      AdminTechnicianBagDetailScreen(technicianId: state.pathParameters['id']!),
+                ),
+              ],
+            ),
+            GoRoute(
+              path: '/admin/technicians/:id/account',
+              builder: (_, state) => TechnicianAccountScreen(technicianId: state.pathParameters['id']!),
+              routes: [
+                GoRoute(
+                  path: 'supply',
+                  builder: (_, state) => TechnicianSupplyScreen(technicianId: state.pathParameters['id']!),
+                ),
+                GoRoute(
+                  path: 'history',
+                  builder: (_, state) =>
+                      TechnicianAccountHistoryScreen(technicianId: state.pathParameters['id']!),
+                ),
+              ],
+            ),
+          ]),
+          StatefulShellBranch(routes: [
+            GoRoute(path: Routes.adminCashbox, builder: (_, _) => const AdminCashboxScreen()),
+            GoRoute(path: Routes.adminExpenses, builder: (_, _) => const AdminExpensesListScreen()),
+            GoRoute(path: Routes.adminExpenseNew, builder: (_, _) => const AdminRecordExpenseScreen()),
+          ]),
+        ],
       ),
 
-      // Cart & Orders (Module 3)
-      GoRoute(path: Routes.customerCart, builder: (_, _) => const CartScreen()),
-      GoRoute(path: Routes.customerCheckout, builder: (_, _) => const CheckoutScreen()),
-      GoRoute(path: Routes.customerOrders, builder: (_, _) => const CustomerOrdersListScreen()),
-      GoRoute(
-        path: '/customer/orders/:id',
-        builder: (_, state) => CustomerOrderDetailScreen(orderId: state.pathParameters['id']!),
-      ),
-      GoRoute(path: Routes.adminOrders, builder: (_, _) => const AdminOrdersListScreen()),
-      GoRoute(
-        path: '/admin/orders/:id',
-        builder: (_, state) => AdminOrderDetailScreen(orderId: state.pathParameters['id']!),
-      ),
-
-      // Maintenance (Module 4)
-      GoRoute(path: Routes.customerMaintenance, builder: (_, _) => const CustomerMaintenanceHomeScreen()),
-      GoRoute(path: Routes.customerMaintenanceNew, builder: (_, _) => const NewMaintenanceRequestScreen()),
-      GoRoute(
-        path: '/customer/maintenance/:id',
-        builder: (_, state) => MaintenanceDetailScreen(requestId: state.pathParameters['id']!),
-      ),
-      GoRoute(
-        path: '/technician/maintenance/:id',
-        builder: (_, state) => TechnicianMaintenanceDetailScreen(requestId: state.pathParameters['id']!),
-      ),
-      GoRoute(path: Routes.adminMaintenance, builder: (_, _) => const AdminMaintenanceListScreen()),
-      GoRoute(
-        path: '/admin/maintenance/:id',
-        builder: (_, state) => AdminMaintenanceDetailScreen(requestId: state.pathParameters['id']!),
-      ),
-
-      // Warehouse & Technician Bag (Module 5)
-      GoRoute(path: Routes.adminWarehouse, builder: (_, _) => const AdminWarehouseScreen()),
-      GoRoute(path: Routes.adminReceivePurchase, builder: (_, _) => const AdminReceivePurchaseScreen()),
-      GoRoute(path: Routes.adminIssueStock, builder: (_, _) => const AdminIssueStockScreen()),
-      GoRoute(path: Routes.adminStockMovements, builder: (_, _) => const AdminStockMovementsScreen()),
-      GoRoute(path: Routes.adminTechnicianBags, builder: (_, _) => const AdminTechnicianBagListScreen()),
-      GoRoute(
-        path: '/admin/warehouse/bags/:id',
-        builder: (_, state) =>
-            AdminTechnicianBagDetailScreen(technicianId: state.pathParameters['id']!),
-      ),
-      GoRoute(path: Routes.technicianBag, builder: (_, _) => const TechnicianBagScreen()),
-
-      // Technician Sales & Account (Module 6)
-      GoRoute(path: Routes.technicianBagSell, builder: (_, _) => const TechnicianSaleScreen()),
-      GoRoute(path: Routes.technicianSales, builder: (_, _) => const TechnicianSalesListScreen()),
-      GoRoute(
-        path: '/technician/bag/sales/:id',
-        builder: (_, state) => TechnicianSaleDetailScreen(saleId: state.pathParameters['id']!),
-      ),
-      GoRoute(path: Routes.technicianAccount, builder: (_, _) => const TechnicianAccountScreen()),
-      GoRoute(path: Routes.technicianAccountSupply, builder: (_, _) => const TechnicianSupplyScreen()),
-      GoRoute(
-        path: Routes.technicianAccountHistory,
-        builder: (_, _) => const TechnicianAccountHistoryScreen(),
-      ),
-      GoRoute(
-        path: '/admin/technicians/:id/account',
-        builder: (_, state) => TechnicianAccountScreen(technicianId: state.pathParameters['id']!),
-      ),
-      GoRoute(
-        path: '/admin/technicians/:id/account/supply',
-        builder: (_, state) => TechnicianSupplyScreen(technicianId: state.pathParameters['id']!),
-      ),
-      GoRoute(
-        path: '/admin/technicians/:id/account/history',
-        builder: (_, state) => TechnicianAccountHistoryScreen(technicianId: state.pathParameters['id']!),
+      // Technician — floating glass bottom nav, branch order matches
+      // TechnicianShell._items.
+      StatefulShellRoute.indexedStack(
+        builder: (_, _, shell) => TechnicianShell(navigationShell: shell),
+        branches: [
+          StatefulShellBranch(routes: [
+            GoRoute(
+              path: Routes.technicianHome,
+              builder: (_, _) => const TechnicianQueueScreen(),
+              routes: [
+                GoRoute(
+                  path: 'maintenance/:id',
+                  builder: (_, state) =>
+                      TechnicianMaintenanceDetailScreen(requestId: state.pathParameters['id']!),
+                ),
+              ],
+            ),
+          ]),
+          StatefulShellBranch(routes: [
+            GoRoute(
+              path: Routes.technicianBag,
+              builder: (_, _) => const TechnicianBagScreen(),
+              routes: [
+                GoRoute(path: 'sell', builder: (_, _) => const TechnicianSaleScreen()),
+                GoRoute(
+                  path: 'sales',
+                  builder: (_, _) => const TechnicianSalesListScreen(),
+                  routes: [
+                    GoRoute(
+                      path: ':id',
+                      builder: (_, state) => TechnicianSaleDetailScreen(saleId: state.pathParameters['id']!),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ]),
+          StatefulShellBranch(routes: [
+            GoRoute(
+              path: Routes.technicianAccount,
+              builder: (_, _) => const TechnicianAccountScreen(),
+              routes: [
+                GoRoute(path: 'supply', builder: (_, _) => const TechnicianSupplyScreen()),
+                GoRoute(path: 'history', builder: (_, _) => const TechnicianAccountHistoryScreen()),
+              ],
+            ),
+          ]),
+        ],
       ),
 
-      // Cashbox & Expenses (Module 7)
-      GoRoute(path: Routes.adminCashbox, builder: (_, _) => const AdminCashboxScreen()),
-      GoRoute(path: Routes.adminExpenses, builder: (_, _) => const AdminExpensesListScreen()),
-      GoRoute(path: Routes.adminExpenseNew, builder: (_, _) => const AdminRecordExpenseScreen()),
+      // Customer — floating glass bottom nav, branch order matches
+      // CustomerShell._items.
+      StatefulShellRoute.indexedStack(
+        builder: (_, _, shell) => CustomerShell(navigationShell: shell),
+        branches: [
+          StatefulShellBranch(routes: [
+            GoRoute(
+              path: Routes.customerHome,
+              builder: (_, _) => const CustomerCatalogScreen(),
+              routes: [
+                GoRoute(
+                  path: 'product/:id',
+                  builder: (_, state) => ProductDetailScreen(productId: state.pathParameters['id']!),
+                ),
+              ],
+            ),
+          ]),
+          StatefulShellBranch(routes: [
+            GoRoute(
+              path: Routes.customerMaintenance,
+              builder: (_, _) => const CustomerMaintenanceHomeScreen(),
+              routes: [
+                GoRoute(path: 'new', builder: (_, _) => const NewMaintenanceRequestScreen()),
+                GoRoute(
+                  path: ':id',
+                  builder: (_, state) => MaintenanceDetailScreen(requestId: state.pathParameters['id']!),
+                ),
+              ],
+            ),
+          ]),
+          StatefulShellBranch(routes: [
+            GoRoute(path: Routes.customerCart, builder: (_, _) => const CartScreen()),
+            GoRoute(path: Routes.customerCheckout, builder: (_, _) => const CheckoutScreen()),
+          ]),
+          StatefulShellBranch(routes: [
+            GoRoute(
+              path: Routes.customerOrders,
+              builder: (_, _) => const CustomerOrdersListScreen(),
+              routes: [
+                GoRoute(
+                  path: ':id',
+                  builder: (_, state) => CustomerOrderDetailScreen(orderId: state.pathParameters['id']!),
+                ),
+              ],
+            ),
+          ]),
+          StatefulShellBranch(routes: [
+            GoRoute(path: Routes.customerAccount, builder: (_, _) => const CustomerAccountScreen()),
+          ]),
+        ],
+      ),
     ],
   );
 }

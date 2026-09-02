@@ -36,7 +36,7 @@ class SupabaseInventoryRepository implements InventoryRepository {
     try {
       var query = _client
           .from('warehouse_stock')
-          .select('quantity, products!inner(id, name, sku, cost_price, min_stock)');
+          .select('quantity, products!inner(id, name, sku, cost_price, selling_price, min_stock)');
       if (search != null && search.trim().isNotEmpty) {
         query = query.ilike('products.name', '%${search.trim()}%');
       }

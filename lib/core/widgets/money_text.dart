@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../theme/app_colors.dart';
 import '../utils/formatters.dart';
 
 /// Consistent EGP money rendering everywhere (cashbox, accounts, reports).
@@ -15,7 +16,7 @@ class MoneyText extends StatelessWidget {
     Color? color;
     if (colorBySign) {
       final scheme = Theme.of(context).colorScheme;
-      if (amount > 0) color = Colors.green.shade700;
+      if (amount > 0) color = AppColors.success;
       if (amount < 0) color = scheme.error;
     }
     return Text(Formatters.currency(amount), style: base?.copyWith(color: color));

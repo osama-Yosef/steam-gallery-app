@@ -132,7 +132,7 @@ class SupabaseProductRepository implements ProductRepository {
   @override
   Future<List<Product>> listProductsAdmin({String? search, String? categoryId}) async {
     try {
-      var query = _client.from('products').select();
+      var query = _client.from('products').select('*, product_images(image_url, is_primary, sort_order)');
       if (categoryId != null) query = query.eq('category_id', categoryId);
       if (search != null && search.trim().isNotEmpty) {
         query = query.ilike('name', '%${search.trim()}%');

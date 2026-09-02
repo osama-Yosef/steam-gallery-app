@@ -1,11 +1,11 @@
 {
-    "name": "steam_gallery_app",
-    "short_name": "steam_gallery_app",
+    "name": "معرض المدينة المنورة لمكاوي بخار",
+    "short_name": "معرض المدينة المنورة",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#0B1B3A",
+    "theme_color": "#0B1B3A",
+    "description": "معرض المدينة المنورة لمكاوي بخار — نظام إدارة كامل للمخزون والطلبات والصيانة والحسابات.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

@@ -1,5 +1,7 @@
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/utils/validators.dart';
 import '../providers/auth_providers.dart';
@@ -20,6 +22,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _phoneCtrl = TextEditingController();
   final _passwordCtrl = TextEditingController();
   bool _loading = false;
+  Uint8List? _avatarBytes;
+  String? _avatarExt;
 
   @override
   void dispose() {
@@ -27,6 +31,16 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     _phoneCtrl.dispose();
     _passwordCtrl.dispose();
     super.dispose();
+  }
+
+  Future<void> _pickAvatar() async {
+    final file = await ImagePicker().pickImage(source: ImageSource.gallery, imageQuality: 85);
+    if (file == null) return;
+    final bytes = await file.readAsBytes();
+    setState(() {
+      _avatarBytes = bytes;
+      _avatarExt = file.name.contains('.') ? file.name.split('.').last : 'jpg';
+    });
   }
 
   Future<void> _submit() async {
@@ -37,6 +51,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             localPhone: _phoneCtrl.text.trim(),
             password: _passwordCtrl.text,
             fullName: _nameCtrl.text.trim(),
+            avatarBytes: _avatarBytes,
+            avatarExt: _avatarExt,
           );
       ref.invalidate(currentUserProfileProvider);
     } catch (e) {
@@ -64,6 +80,37 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
+                    Center(
+                      child: GestureDetector(
+                        onTap: _pickAvatar,
+                        child: Stack(
+                          children: [
+                            CircleAvatar(
+                              radius: 40,
+                              backgroundImage: _avatarBytes != null ? MemoryImage(_avatarBytes!) : null,
+                              child: _avatarBytes == null
+                                  ? const Icon(Icons.person_outline, size: 36)
+                                  : null,
+                            ),
+                            Positioned(
+                              bottom: 0,
+                              left: 0,
+                              child: CircleAvatar(
+                                radius: 14,
+                                child: Icon(Icons.camera_alt_outlined, size: 14),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    Center(
+                      child: TextButton(
+                        onPressed: _pickAvatar,
+                        child: Text(_avatarBytes == null ? 'إضافة صورة (اختياري)' : 'تغيير الصورة'),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
                     TextFormField(
                       controller: _nameCtrl,
                       decoration: const InputDecoration(
