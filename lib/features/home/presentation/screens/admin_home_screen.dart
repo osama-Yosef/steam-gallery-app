@@ -5,6 +5,7 @@ import '../../../../core/router/route_names.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/glass_panel.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
+import '../../../notifications/presentation/widgets/notification_bell_icon.dart';
 
 /// Admin dashboard — the "الرئيسية" branch of AdminShell. The sidebar now
 /// owns primary navigation, so this is a welcome/quick-links surface rather
@@ -17,7 +18,10 @@ class AdminHomeScreen extends ConsumerWidget {
     final profile = ref.watch(currentUserProfileProvider).value;
 
     return Scaffold(
-      appBar: AppBar(title: Text('مرحبًا ${profile?.fullName ?? ''}')),
+      appBar: AppBar(
+        title: Text('مرحبًا ${profile?.fullName ?? ''}'),
+        actions: const [NotificationBellIcon()],
+      ),
       body: GridView.count(
         padding: const EdgeInsets.all(16),
         crossAxisCount: 2,
@@ -25,6 +29,12 @@ class AdminHomeScreen extends ConsumerWidget {
         crossAxisSpacing: 14,
         childAspectRatio: 0.9,
         children: [
+          _MenuTile(
+            icon: Icons.dashboard_rounded,
+            label: 'لوحة التحكم',
+            colors: const [Color(0xFF7CE0FF), Color(0xFF0EA5E9)],
+            onTap: () => context.push(Routes.adminDashboard),
+          ),
           _MenuTile(
             icon: Icons.inventory_2_rounded,
             label: 'المنتجات',
@@ -66,6 +76,24 @@ class AdminHomeScreen extends ConsumerWidget {
             label: 'التقارير',
             colors: const [Color(0xFFA78BFA), Color(0xFF7C3AED)],
             onTap: () => context.push(Routes.adminReports),
+          ),
+          _MenuTile(
+            icon: Icons.people_alt_rounded,
+            label: 'العملاء',
+            colors: const [Color(0xFFF48FB1), Color(0xFFEC407A)],
+            onTap: () => context.push(Routes.adminCustomers),
+          ),
+          _MenuTile(
+            icon: Icons.manage_accounts_rounded,
+            label: 'المستخدمون',
+            colors: const [Color(0xFF80CBC4), Color(0xFF00897B)],
+            onTap: () => context.push(Routes.adminUsers),
+          ),
+          _MenuTile(
+            icon: Icons.fact_check_rounded,
+            label: 'سجل العمليات',
+            colors: const [Color(0xFFBCAAA4), Color(0xFF6D4C41)],
+            onTap: () => context.push(Routes.adminAuditLog),
           ),
         ],
       ),

@@ -15,14 +15,14 @@ class AdminOrderDetailScreen extends ConsumerWidget {
   Future<void> _confirm(BuildContext context, WidgetRef ref) async {
     final ok = await showConfirmDialog(context,
         title: 'تأكيد الطلب', message: 'سيتم خصم الكمية من المخزن الرئيسي. متابعة؟');
-    if (!ok) return;
+    if (!ok || !context.mounted) return;
     await _run(context, ref, () => ref.read(orderRepositoryProvider).confirmOrder(orderId));
   }
 
   Future<void> _updateStatus(BuildContext context, WidgetRef ref, OrderStatus status) async {
     final ok = await showConfirmDialog(context,
         title: 'تحديث الحالة', message: 'تغيير حالة الطلب إلى "${orderStatusLabelAr(status)}"؟');
-    if (!ok) return;
+    if (!ok || !context.mounted) return;
     await _run(context, ref, () => ref.read(orderRepositoryProvider).updateOrderStatus(orderId, status));
   }
 
@@ -47,7 +47,7 @@ class AdminOrderDetailScreen extends ConsumerWidget {
         ],
       ),
     );
-    if (reason == null || reason.isEmpty) return;
+    if (reason == null || reason.isEmpty || !context.mounted) return;
     await _run(context, ref, () => ref.read(orderRepositoryProvider).cancelOrder(orderId, reason));
   }
 
@@ -72,7 +72,7 @@ class AdminOrderDetailScreen extends ConsumerWidget {
         ],
       ),
     );
-    if (amount == null || amount <= 0) return;
+    if (amount == null || amount <= 0 || !context.mounted) return;
     await _run(
       context,
       ref,

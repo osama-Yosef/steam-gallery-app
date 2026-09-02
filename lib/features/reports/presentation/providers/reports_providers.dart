@@ -11,31 +11,38 @@ ReportsRepository reportsRepository(Ref ref) {
 }
 
 @riverpod
-Future<List<SalesPeriodSummary>> dailySales(Ref ref) {
-  return ref.watch(reportsRepositoryProvider).getDailySales();
+Future<SalesReport> salesReport(Ref ref, DateTime from, DateTime to) {
+  return ref.watch(reportsRepositoryProvider).getSalesReport(from, to);
 }
 
 @riverpod
-Future<List<SalesPeriodSummary>> monthlySales(Ref ref) {
-  return ref.watch(reportsRepositoryProvider).getMonthlySales();
+Future<ProfitReport> profitReport(Ref ref, DateTime from, DateTime to) {
+  return ref.watch(reportsRepositoryProvider).getProfitReport(from, to);
 }
 
 @riverpod
-Future<double> warehouseStockValue(Ref ref) {
-  return ref.watch(reportsRepositoryProvider).getWarehouseStockValue();
+Future<ExpensesReport> expensesReport(Ref ref, DateTime from, DateTime to) {
+  return ref.watch(reportsRepositoryProvider).getExpensesReport(from, to);
 }
 
 @riverpod
-Future<List<LowStockProduct>> lowStockProducts(Ref ref) {
-  return ref.watch(reportsRepositoryProvider).getLowStockProducts();
+Future<InventoryReport> inventoryReport(Ref ref, DateTime from, DateTime to) {
+  return ref.watch(reportsRepositoryProvider).getInventoryReport(from, to);
 }
 
-@riverpod
-Future<List<TechnicianAccountReportRow>> technicianAccountsReport(Ref ref) {
-  return ref.watch(reportsRepositoryProvider).getTechnicianAccounts();
-}
+typedef ReportRange = ({DateTime from, DateTime to});
 
-@riverpod
-Future<List<CustomerAccountReportRow>> customerAccountsReport(Ref ref) {
-  return ref.watch(reportsRepositoryProvider).getCustomerAccounts();
+/// Shared "من/إلى" filter across every report screen — defaults to
+/// "this month so far". `to` is always exclusive (see repository's `.lt`).
+@Riverpod(keepAlive: true)
+class ReportDateRange extends _$ReportDateRange {
+  @override
+  ReportRange build() {
+    final now = DateTime.now();
+    final firstOfMonth = DateTime(now.year, now.month, 1);
+    final tomorrow = DateTime(now.year, now.month, now.day).add(const Duration(days: 1));
+    return (from: firstOfMonth, to: tomorrow);
+  }
+
+  void setRange(DateTime from, DateTime to) => state = (from: from, to: to);
 }

@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../../core/router/route_names.dart';
 import '../../../../../core/utils/formatters.dart';
 import '../../../../../core/widgets/state_views.dart';
+import '../../../../notifications/presentation/widgets/notification_bell_icon.dart';
 import '../../../data/models/product_public.dart';
 import '../../../presentation/providers/product_providers.dart';
 
@@ -34,7 +35,10 @@ class _CustomerCatalogScreenState extends ConsumerState<CustomerCatalogScreen> {
     );
 
     return Scaffold(
-      appBar: AppBar(title: const Text('معرض أجهزة البخار')),
+      appBar: AppBar(
+        title: const Text('معرض المدينة المنورة لمكاوي بخار'),
+        actions: const [NotificationBellIcon()],
+      ),
       body: Column(
         children: [
           Padding(

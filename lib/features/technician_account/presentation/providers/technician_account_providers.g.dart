@@ -138,6 +138,49 @@ final class TechnicianAccountSummaryFamily extends $Family
   String toString() => r'technicianAccountSummaryProvider';
 }
 
+@ProviderFor(allTechnicianAccountSummaries)
+const allTechnicianAccountSummariesProvider =
+    AllTechnicianAccountSummariesProvider._();
+
+final class AllTechnicianAccountSummariesProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<List<TechnicianAccountSummary>>,
+          List<TechnicianAccountSummary>,
+          FutureOr<List<TechnicianAccountSummary>>
+        >
+    with
+        $FutureModifier<List<TechnicianAccountSummary>>,
+        $FutureProvider<List<TechnicianAccountSummary>> {
+  const AllTechnicianAccountSummariesProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'allTechnicianAccountSummariesProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$allTechnicianAccountSummariesHash();
+
+  @$internal
+  @override
+  $FutureProviderElement<List<TechnicianAccountSummary>> $createElement(
+    $ProviderPointer pointer,
+  ) => $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<List<TechnicianAccountSummary>> create(Ref ref) {
+    return allTechnicianAccountSummaries(ref);
+  }
+}
+
+String _$allTechnicianAccountSummariesHash() =>
+    r'0ef7bbfe72747fc5c1989aeef53ae06e0e08211f';
+
 @ProviderFor(technicianAccountTransactions)
 const technicianAccountTransactionsProvider =
     TechnicianAccountTransactionsFamily._();

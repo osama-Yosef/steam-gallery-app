@@ -59,7 +59,33 @@ abstract final class Routes {
   static const adminExpenses = '/admin/expenses';
   static const adminExpenseNew = '/admin/expenses/new';
 
-  // Walk-in sales & reports
+  // Walk-in sales
   static const adminWalkInSale = '/admin/walk-in-sale';
+
+  // Customer Accounts (Module 8)
+  static const adminCustomers = '/admin/customers';
+  static String adminCustomerDetail(String customerId) => '/admin/customers/$customerId';
+  static String adminCustomerPayment(String customerId) => '/admin/customers/$customerId/payment';
+
+  // Inventory Count (Module 9)
+  static const adminInventoryCounts = '/admin/warehouse/counts';
+  static String adminInventoryCountDetail(String countId) => '/admin/warehouse/counts/$countId';
+
+  // Dashboard (Module 10)
+  static const adminDashboard = '/admin/dashboard';
+
+  // Reports (Module 11)
   static const adminReports = '/admin/reports';
+  static String adminReportDetail(String type) => '/admin/reports/$type';
+
+  // Notifications (Module 12) — shared shell for every role
+  static const notifications = '/notifications';
+
+  // Users & Roles (Module 13)
+  static const adminUsers = '/admin/users';
+  static const adminUserNewTechnician = '/admin/users/new-technician';
+  static String adminUserDetail(String userId) => '/admin/users/$userId';
+
+  // Audit Log (Module 14)
+  static const adminAuditLog = '/admin/audit-log';
 }

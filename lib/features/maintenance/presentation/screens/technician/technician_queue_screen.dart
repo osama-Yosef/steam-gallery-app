@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../../core/router/route_names.dart';
 import '../../../../../core/widgets/state_views.dart';
 import '../../../../auth/presentation/providers/auth_providers.dart';
+import '../../../../notifications/presentation/widgets/notification_bell_icon.dart';
 import '../../../data/models/maintenance_request.dart';
 import '../../providers/maintenance_providers.dart';
 
@@ -24,6 +25,7 @@ class TechnicianQueueScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('طلبات الصيانة'),
+        actions: const [NotificationBellIcon()],
       ),
       body: allAsync.when(
         loading: () => const LoadingView(),

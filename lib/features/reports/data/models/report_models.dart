@@ -1,99 +1,83 @@
-/// Plain read-only view rows for the reports screen — no freezed/equality
-/// needed, these are display-only and never round-tripped back to the DB.
-library;
+/// Plain (non-freezed) DTOs — these are computed client-side by aggregating
+/// several queries for a date range, not parsed 1:1 from a single row, so
+/// there's nothing freezed/copyWith buys here.
+class SalesReport {
+  final double totalSales;
+  final double cogs;
+  final double grossProfit;
+  final double discounts;
+  final double returns;
+  final double netSales;
 
-class SalesPeriodSummary {
-  final DateTime period;
+  const SalesReport({
+    required this.totalSales,
+    required this.cogs,
+    required this.grossProfit,
+    required this.discounts,
+    required this.returns,
+    required this.netSales,
+  });
+}
+
+class ProfitReport {
   final double revenue;
   final double cogs;
-  double get profit => revenue - cogs;
+  final double grossProfit;
+  final double expenses;
+  final double netProfit;
 
-  SalesPeriodSummary({required this.period, required this.revenue, required this.cogs});
-
-  factory SalesPeriodSummary.fromRow(Map<String, dynamic> row, String periodKey) => SalesPeriodSummary(
-        period: DateTime.parse(row[periodKey] as String),
-        revenue: (row['revenue'] as num).toDouble(),
-        cogs: (row['cogs'] as num).toDouble(),
-      );
-}
-
-class LowStockProduct {
-  final String productId;
-  final String name;
-  final String sku;
-  final int minStock;
-  final int currentQuantity;
-
-  LowStockProduct({
-    required this.productId,
-    required this.name,
-    required this.sku,
-    required this.minStock,
-    required this.currentQuantity,
+  const ProfitReport({
+    required this.revenue,
+    required this.cogs,
+    required this.grossProfit,
+    required this.expenses,
+    required this.netProfit,
   });
-
-  factory LowStockProduct.fromRow(Map<String, dynamic> row) => LowStockProduct(
-        productId: row['product_id'] as String,
-        name: row['name'] as String,
-        sku: row['sku'] as String,
-        minStock: row['min_stock'] as int,
-        currentQuantity: row['current_quantity'] as int,
-      );
-}
-
-class TechnicianAccountReportRow {
-  final String technicianId;
-  final String technicianName;
-  final double bagValue;
-  final double totalSales;
-  final double totalCollected;
-  final double amountDue;
-
-  TechnicianAccountReportRow({
-    required this.technicianId,
-    required this.technicianName,
-    required this.bagValue,
-    required this.totalSales,
-    required this.totalCollected,
-    required this.amountDue,
-  });
-
-  factory TechnicianAccountReportRow.fromRow(Map<String, dynamic> row) => TechnicianAccountReportRow(
-        technicianId: row['technician_id'] as String,
-        technicianName: row['technician_name'] as String,
-        bagValue: (row['bag_value'] as num).toDouble(),
-        totalSales: (row['total_sales'] as num).toDouble(),
-        totalCollected: (row['total_collected'] as num).toDouble(),
-        amountDue: (row['amount_due'] as num).toDouble(),
-      );
-}
-
-class CustomerAccountReportRow {
-  final String customerId;
-  final String customerName;
-  final double totalPurchases;
-  final double totalPaid;
-  final double remainingBalance;
-
-  CustomerAccountReportRow({
-    required this.customerId,
-    required this.customerName,
-    required this.totalPurchases,
-    required this.totalPaid,
-    required this.remainingBalance,
-  });
-
-  factory CustomerAccountReportRow.fromRow(Map<String, dynamic> row) => CustomerAccountReportRow(
-        customerId: row['customer_id'] as String,
-        customerName: row['customer_name'] as String,
-        totalPurchases: (row['total_purchases'] as num).toDouble(),
-        totalPaid: (row['total_paid'] as num).toDouble(),
-        remainingBalance: (row['remaining_balance'] as num).toDouble(),
-      );
 }
 
 class ExpenseCategoryTotal {
   final String categoryName;
   final double total;
-  ExpenseCategoryTotal({required this.categoryName, required this.total});
+  const ExpenseCategoryTotal({required this.categoryName, required this.total});
+}
+
+class ExpenseLine {
+  final String categoryName;
+  final double amount;
+  final DateTime date;
+  final String? notes;
+  const ExpenseLine({required this.categoryName, required this.amount, required this.date, this.notes});
+}
+
+class ExpensesReport {
+  final double total;
+  final List<ExpenseCategoryTotal> byCategory;
+  final List<ExpenseLine> topExpenses;
+  final List<ExpenseLine> all;
+
+  const ExpensesReport({
+    required this.total,
+    required this.byCategory,
+    required this.topExpenses,
+    required this.all,
+  });
+}
+
+class StockMovementTypeTotal {
+  final String movementType;
+  final int count;
+  final double totalCost;
+  const StockMovementTypeTotal({required this.movementType, required this.count, required this.totalCost});
+}
+
+class InventoryReport {
+  final double warehouseStockValue;
+  final int lowStockCount;
+  final List<StockMovementTypeTotal> movementsByType;
+
+  const InventoryReport({
+    required this.warehouseStockValue,
+    required this.lowStockCount,
+    required this.movementsByType,
+  });
 }

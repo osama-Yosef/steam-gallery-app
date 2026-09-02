@@ -56,243 +56,378 @@ final class ReportsRepositoryProvider
 
 String _$reportsRepositoryHash() => r'a197dd69425ba8c5e3eb02c5904164861d94e75e';
 
-@ProviderFor(dailySales)
-const dailySalesProvider = DailySalesProvider._();
+@ProviderFor(salesReport)
+const salesReportProvider = SalesReportFamily._();
 
-final class DailySalesProvider
+final class SalesReportProvider
     extends
         $FunctionalProvider<
-          AsyncValue<List<SalesPeriodSummary>>,
-          List<SalesPeriodSummary>,
-          FutureOr<List<SalesPeriodSummary>>
+          AsyncValue<SalesReport>,
+          SalesReport,
+          FutureOr<SalesReport>
         >
-    with
-        $FutureModifier<List<SalesPeriodSummary>>,
-        $FutureProvider<List<SalesPeriodSummary>> {
-  const DailySalesProvider._()
-    : super(
-        from: null,
-        argument: null,
-        retry: null,
-        name: r'dailySalesProvider',
-        isAutoDispose: true,
-        dependencies: null,
-        $allTransitiveDependencies: null,
-      );
+    with $FutureModifier<SalesReport>, $FutureProvider<SalesReport> {
+  const SalesReportProvider._({
+    required SalesReportFamily super.from,
+    required (DateTime, DateTime) super.argument,
+  }) : super(
+         retry: null,
+         name: r'salesReportProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
 
   @override
-  String debugGetCreateSourceHash() => _$dailySalesHash();
+  String debugGetCreateSourceHash() => _$salesReportHash();
+
+  @override
+  String toString() {
+    return r'salesReportProvider'
+        ''
+        '$argument';
+  }
 
   @$internal
   @override
-  $FutureProviderElement<List<SalesPeriodSummary>> $createElement(
+  $FutureProviderElement<SalesReport> $createElement(
     $ProviderPointer pointer,
   ) => $FutureProviderElement(pointer);
 
   @override
-  FutureOr<List<SalesPeriodSummary>> create(Ref ref) {
-    return dailySales(ref);
+  FutureOr<SalesReport> create(Ref ref) {
+    final argument = this.argument as (DateTime, DateTime);
+    return salesReport(ref, argument.$1, argument.$2);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is SalesReportProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
   }
 }
 
-String _$dailySalesHash() => r'09bd27f625ec2cfd702926c8b2e21ed4da74790c';
+String _$salesReportHash() => r'602fa7b5c161d4117adbf2cc45845b9639478a6b';
 
-@ProviderFor(monthlySales)
-const monthlySalesProvider = MonthlySalesProvider._();
-
-final class MonthlySalesProvider
-    extends
-        $FunctionalProvider<
-          AsyncValue<List<SalesPeriodSummary>>,
-          List<SalesPeriodSummary>,
-          FutureOr<List<SalesPeriodSummary>>
-        >
+final class SalesReportFamily extends $Family
     with
-        $FutureModifier<List<SalesPeriodSummary>>,
-        $FutureProvider<List<SalesPeriodSummary>> {
-  const MonthlySalesProvider._()
+        $FunctionalFamilyOverride<FutureOr<SalesReport>, (DateTime, DateTime)> {
+  const SalesReportFamily._()
     : super(
-        from: null,
-        argument: null,
         retry: null,
-        name: r'monthlySalesProvider',
-        isAutoDispose: true,
+        name: r'salesReportProvider',
         dependencies: null,
         $allTransitiveDependencies: null,
+        isAutoDispose: true,
       );
 
+  SalesReportProvider call(DateTime from, DateTime to) =>
+      SalesReportProvider._(argument: (from, to), from: this);
+
   @override
-  String debugGetCreateSourceHash() => _$monthlySalesHash();
+  String toString() => r'salesReportProvider';
+}
+
+@ProviderFor(profitReport)
+const profitReportProvider = ProfitReportFamily._();
+
+final class ProfitReportProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<ProfitReport>,
+          ProfitReport,
+          FutureOr<ProfitReport>
+        >
+    with $FutureModifier<ProfitReport>, $FutureProvider<ProfitReport> {
+  const ProfitReportProvider._({
+    required ProfitReportFamily super.from,
+    required (DateTime, DateTime) super.argument,
+  }) : super(
+         retry: null,
+         name: r'profitReportProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
+  @override
+  String debugGetCreateSourceHash() => _$profitReportHash();
+
+  @override
+  String toString() {
+    return r'profitReportProvider'
+        ''
+        '$argument';
+  }
 
   @$internal
   @override
-  $FutureProviderElement<List<SalesPeriodSummary>> $createElement(
+  $FutureProviderElement<ProfitReport> $createElement(
     $ProviderPointer pointer,
   ) => $FutureProviderElement(pointer);
 
   @override
-  FutureOr<List<SalesPeriodSummary>> create(Ref ref) {
-    return monthlySales(ref);
+  FutureOr<ProfitReport> create(Ref ref) {
+    final argument = this.argument as (DateTime, DateTime);
+    return profitReport(ref, argument.$1, argument.$2);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is ProfitReportProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
   }
 }
 
-String _$monthlySalesHash() => r'29eb7390c64bc952496c33a9130a4d914a1d8cd2';
+String _$profitReportHash() => r'ffaedfc7710080c1d54673782ff8273cb85d9834';
 
-@ProviderFor(warehouseStockValue)
-const warehouseStockValueProvider = WarehouseStockValueProvider._();
-
-final class WarehouseStockValueProvider
-    extends $FunctionalProvider<AsyncValue<double>, double, FutureOr<double>>
-    with $FutureModifier<double>, $FutureProvider<double> {
-  const WarehouseStockValueProvider._()
+final class ProfitReportFamily extends $Family
+    with
+        $FunctionalFamilyOverride<
+          FutureOr<ProfitReport>,
+          (DateTime, DateTime)
+        > {
+  const ProfitReportFamily._()
     : super(
-        from: null,
-        argument: null,
         retry: null,
-        name: r'warehouseStockValueProvider',
-        isAutoDispose: true,
+        name: r'profitReportProvider',
         dependencies: null,
         $allTransitiveDependencies: null,
+        isAutoDispose: true,
       );
 
-  @override
-  String debugGetCreateSourceHash() => _$warehouseStockValueHash();
-
-  @$internal
-  @override
-  $FutureProviderElement<double> $createElement($ProviderPointer pointer) =>
-      $FutureProviderElement(pointer);
+  ProfitReportProvider call(DateTime from, DateTime to) =>
+      ProfitReportProvider._(argument: (from, to), from: this);
 
   @override
-  FutureOr<double> create(Ref ref) {
-    return warehouseStockValue(ref);
-  }
+  String toString() => r'profitReportProvider';
 }
 
-String _$warehouseStockValueHash() =>
-    r'af08a5395b09429791667872dfea26d5b48c4035';
+@ProviderFor(expensesReport)
+const expensesReportProvider = ExpensesReportFamily._();
 
-@ProviderFor(lowStockProducts)
-const lowStockProductsProvider = LowStockProductsProvider._();
-
-final class LowStockProductsProvider
+final class ExpensesReportProvider
     extends
         $FunctionalProvider<
-          AsyncValue<List<LowStockProduct>>,
-          List<LowStockProduct>,
-          FutureOr<List<LowStockProduct>>
+          AsyncValue<ExpensesReport>,
+          ExpensesReport,
+          FutureOr<ExpensesReport>
         >
-    with
-        $FutureModifier<List<LowStockProduct>>,
-        $FutureProvider<List<LowStockProduct>> {
-  const LowStockProductsProvider._()
-    : super(
-        from: null,
-        argument: null,
-        retry: null,
-        name: r'lowStockProductsProvider',
-        isAutoDispose: true,
-        dependencies: null,
-        $allTransitiveDependencies: null,
-      );
+    with $FutureModifier<ExpensesReport>, $FutureProvider<ExpensesReport> {
+  const ExpensesReportProvider._({
+    required ExpensesReportFamily super.from,
+    required (DateTime, DateTime) super.argument,
+  }) : super(
+         retry: null,
+         name: r'expensesReportProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
 
   @override
-  String debugGetCreateSourceHash() => _$lowStockProductsHash();
+  String debugGetCreateSourceHash() => _$expensesReportHash();
+
+  @override
+  String toString() {
+    return r'expensesReportProvider'
+        ''
+        '$argument';
+  }
 
   @$internal
   @override
-  $FutureProviderElement<List<LowStockProduct>> $createElement(
+  $FutureProviderElement<ExpensesReport> $createElement(
     $ProviderPointer pointer,
   ) => $FutureProviderElement(pointer);
 
   @override
-  FutureOr<List<LowStockProduct>> create(Ref ref) {
-    return lowStockProducts(ref);
+  FutureOr<ExpensesReport> create(Ref ref) {
+    final argument = this.argument as (DateTime, DateTime);
+    return expensesReport(ref, argument.$1, argument.$2);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is ExpensesReportProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
   }
 }
 
-String _$lowStockProductsHash() => r'f74d182437b74c4948dbc66f0661556bd9b2cac2';
+String _$expensesReportHash() => r'1877c5e9433b8278848152eef762d02528360b42';
 
-@ProviderFor(technicianAccountsReport)
-const technicianAccountsReportProvider = TechnicianAccountsReportProvider._();
+final class ExpensesReportFamily extends $Family
+    with
+        $FunctionalFamilyOverride<
+          FutureOr<ExpensesReport>,
+          (DateTime, DateTime)
+        > {
+  const ExpensesReportFamily._()
+    : super(
+        retry: null,
+        name: r'expensesReportProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
 
-final class TechnicianAccountsReportProvider
+  ExpensesReportProvider call(DateTime from, DateTime to) =>
+      ExpensesReportProvider._(argument: (from, to), from: this);
+
+  @override
+  String toString() => r'expensesReportProvider';
+}
+
+@ProviderFor(inventoryReport)
+const inventoryReportProvider = InventoryReportFamily._();
+
+final class InventoryReportProvider
     extends
         $FunctionalProvider<
-          AsyncValue<List<TechnicianAccountReportRow>>,
-          List<TechnicianAccountReportRow>,
-          FutureOr<List<TechnicianAccountReportRow>>
+          AsyncValue<InventoryReport>,
+          InventoryReport,
+          FutureOr<InventoryReport>
         >
+    with $FutureModifier<InventoryReport>, $FutureProvider<InventoryReport> {
+  const InventoryReportProvider._({
+    required InventoryReportFamily super.from,
+    required (DateTime, DateTime) super.argument,
+  }) : super(
+         retry: null,
+         name: r'inventoryReportProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
+  @override
+  String debugGetCreateSourceHash() => _$inventoryReportHash();
+
+  @override
+  String toString() {
+    return r'inventoryReportProvider'
+        ''
+        '$argument';
+  }
+
+  @$internal
+  @override
+  $FutureProviderElement<InventoryReport> $createElement(
+    $ProviderPointer pointer,
+  ) => $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<InventoryReport> create(Ref ref) {
+    final argument = this.argument as (DateTime, DateTime);
+    return inventoryReport(ref, argument.$1, argument.$2);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is InventoryReportProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$inventoryReportHash() => r'10b0c07aef2c3b13ee411a241a34e0c9efd67366';
+
+final class InventoryReportFamily extends $Family
     with
-        $FutureModifier<List<TechnicianAccountReportRow>>,
-        $FutureProvider<List<TechnicianAccountReportRow>> {
-  const TechnicianAccountsReportProvider._()
+        $FunctionalFamilyOverride<
+          FutureOr<InventoryReport>,
+          (DateTime, DateTime)
+        > {
+  const InventoryReportFamily._()
+    : super(
+        retry: null,
+        name: r'inventoryReportProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  InventoryReportProvider call(DateTime from, DateTime to) =>
+      InventoryReportProvider._(argument: (from, to), from: this);
+
+  @override
+  String toString() => r'inventoryReportProvider';
+}
+
+/// Shared "من/إلى" filter across every report screen — defaults to
+/// "this month so far". `to` is always exclusive (see repository's `.lt`).
+
+@ProviderFor(ReportDateRange)
+const reportDateRangeProvider = ReportDateRangeProvider._();
+
+/// Shared "من/إلى" filter across every report screen — defaults to
+/// "this month so far". `to` is always exclusive (see repository's `.lt`).
+final class ReportDateRangeProvider
+    extends $NotifierProvider<ReportDateRange, ReportRange> {
+  /// Shared "من/إلى" filter across every report screen — defaults to
+  /// "this month so far". `to` is always exclusive (see repository's `.lt`).
+  const ReportDateRangeProvider._()
     : super(
         from: null,
         argument: null,
         retry: null,
-        name: r'technicianAccountsReportProvider',
-        isAutoDispose: true,
+        name: r'reportDateRangeProvider',
+        isAutoDispose: false,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
 
   @override
-  String debugGetCreateSourceHash() => _$technicianAccountsReportHash();
+  String debugGetCreateSourceHash() => _$reportDateRangeHash();
 
   @$internal
   @override
-  $FutureProviderElement<List<TechnicianAccountReportRow>> $createElement(
-    $ProviderPointer pointer,
-  ) => $FutureProviderElement(pointer);
+  ReportDateRange create() => ReportDateRange();
 
-  @override
-  FutureOr<List<TechnicianAccountReportRow>> create(Ref ref) {
-    return technicianAccountsReport(ref);
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(ReportRange value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<ReportRange>(value),
+    );
   }
 }
 
-String _$technicianAccountsReportHash() =>
-    r'2ab4f70a368479a24c03ae4f7ee623d8f6cb8fb6';
+String _$reportDateRangeHash() => r'f60043f2a7dbd48e899df256e7af84981370ca72';
 
-@ProviderFor(customerAccountsReport)
-const customerAccountsReportProvider = CustomerAccountsReportProvider._();
+/// Shared "من/إلى" filter across every report screen — defaults to
+/// "this month so far". `to` is always exclusive (see repository's `.lt`).
 
-final class CustomerAccountsReportProvider
-    extends
-        $FunctionalProvider<
-          AsyncValue<List<CustomerAccountReportRow>>,
-          List<CustomerAccountReportRow>,
-          FutureOr<List<CustomerAccountReportRow>>
-        >
-    with
-        $FutureModifier<List<CustomerAccountReportRow>>,
-        $FutureProvider<List<CustomerAccountReportRow>> {
-  const CustomerAccountsReportProvider._()
-    : super(
-        from: null,
-        argument: null,
-        retry: null,
-        name: r'customerAccountsReportProvider',
-        isAutoDispose: true,
-        dependencies: null,
-        $allTransitiveDependencies: null,
-      );
-
+abstract class _$ReportDateRange extends $Notifier<ReportRange> {
+  ReportRange build();
+  @$mustCallSuper
   @override
-  String debugGetCreateSourceHash() => _$customerAccountsReportHash();
-
-  @$internal
-  @override
-  $FutureProviderElement<List<CustomerAccountReportRow>> $createElement(
-    $ProviderPointer pointer,
-  ) => $FutureProviderElement(pointer);
-
-  @override
-  FutureOr<List<CustomerAccountReportRow>> create(Ref ref) {
-    return customerAccountsReport(ref);
+  void runBuild() {
+    final created = build();
+    final ref = this.ref as $Ref<ReportRange, ReportRange>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<ReportRange, ReportRange>,
+              ReportRange,
+              Object?,
+              Object?
+            >;
+    element.handleValue(ref, created);
   }
 }
-
-String _$customerAccountsReportHash() =>
-    r'0b0abde2cb025535f064c9aa9c9b4ba3401bf687';

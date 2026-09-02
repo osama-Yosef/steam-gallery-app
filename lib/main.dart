@@ -11,5 +11,6 @@ Future<void> main() async {
     await Supabase.initialize(url: Env.supabaseUrl, publishableKey: Env.supabasePublishableKey);
   }
 
+
   runApp(const ProviderScope(child: SteamGalleryApp()));
 }
