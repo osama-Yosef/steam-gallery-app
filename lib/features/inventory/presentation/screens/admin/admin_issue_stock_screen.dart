@@ -58,11 +58,12 @@ class _AdminIssueStockScreenState extends ConsumerState<AdminIssueStockScreen> {
             children: [
               DropdownButtonFormField<WarehouseStockItem>(
                 initialValue: selected,
+                isExpanded: true,
                 decoration: const InputDecoration(labelText: 'المنتج'),
                 items: available
                     .map((s) => DropdownMenuItem(
                           value: s,
-                          child: Text('${s.productName} (متاح: ${s.quantity})'),
+                          child: Text('${s.productName} (متاح: ${s.quantity})', overflow: TextOverflow.ellipsis),
                         ))
                     .toList(),
                 onChanged: (s) => setDialogState(() => selected = s!),
@@ -143,9 +144,13 @@ class _AdminIssueStockScreenState extends ConsumerState<AdminIssueStockScreen> {
           children: [
             DropdownButtonFormField<String>(
               initialValue: _technicianId,
+              isExpanded: true,
               decoration: const InputDecoration(labelText: 'الصنايعي'),
               items: technicians
-                  .map((t) => DropdownMenuItem(value: t.id, child: Text('${t.fullName} (${t.employeeCode})')))
+                  .map((t) => DropdownMenuItem(
+                        value: t.id,
+                        child: Text('${t.fullName} (${t.employeeCode})', overflow: TextOverflow.ellipsis),
+                      ))
                   .toList(),
               onChanged: (v) => setState(() => _technicianId = v),
             ),

@@ -46,6 +46,12 @@ class _AdminShellState extends ConsumerState<AdminShell> {
       },
       child: Scaffold(
       backgroundColor: Colors.transparent,
+      // The routed content (navigationShell) already has its own Scaffold
+      // handling its own keyboard insets — without this, the sidebar's
+      // fixed-height rail Column overflows whenever a nested screen's text
+      // field opens the keyboard and this outer Scaffold also tries to
+      // shrink for it.
+      resizeToAvoidBottomInset: false,
       body: SafeArea(
         child: Row(
           children: [

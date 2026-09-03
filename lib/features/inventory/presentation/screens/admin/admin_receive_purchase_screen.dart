@@ -72,9 +72,13 @@ class _AdminReceivePurchaseScreenState extends ConsumerState<AdminReceivePurchas
               children: [
                 DropdownButtonFormField<Product>(
                   initialValue: _selectedProduct,
+                  isExpanded: true,
                   decoration: const InputDecoration(labelText: 'المنتج'),
                   items: products
-                      .map((p) => DropdownMenuItem(value: p, child: Text('${p.name} (${p.sku})')))
+                      .map((p) => DropdownMenuItem(
+                            value: p,
+                            child: Text('${p.name} (${p.sku})', overflow: TextOverflow.ellipsis),
+                          ))
                       .toList(),
                   onChanged: (p) => setState(() {
                     _selectedProduct = p;

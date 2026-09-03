@@ -34,10 +34,14 @@ class _AdminAuditLogScreenState extends ConsumerState<AdminAuditLogScreen> {
                   child: tableNamesAsync.when(
                     data: (names) => DropdownButtonFormField<String?>(
                       initialValue: _tableName,
+                      isExpanded: true,
                       decoration: const InputDecoration(labelText: 'الجدول'),
                       items: [
                         const DropdownMenuItem(value: null, child: Text('كل الجداول')),
-                        ...names.map((n) => DropdownMenuItem(value: n, child: Text(n))),
+                        ...names.map((n) => DropdownMenuItem(
+                              value: n,
+                              child: Text(n, overflow: TextOverflow.ellipsis),
+                            )),
                       ],
                       onChanged: (v) => setState(() => _tableName = v),
                     ),

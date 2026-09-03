@@ -198,10 +198,14 @@ class _AdminProductFormScreenState extends ConsumerState<AdminProductFormScreen>
           categoriesAsync.when(
             data: (cats) => DropdownButtonFormField<String>(
               initialValue: _categoryId,
+              isExpanded: true,
               decoration: const InputDecoration(labelText: 'القسم'),
               items: [
                 const DropdownMenuItem(value: null, child: Text('بدون قسم')),
-                ...cats.map((c) => DropdownMenuItem(value: c.id, child: Text(c.name))),
+                ...cats.map((c) => DropdownMenuItem(
+                      value: c.id,
+                      child: Text(c.name, overflow: TextOverflow.ellipsis),
+                    )),
               ],
               onChanged: (v) => setState(() => _categoryId = v),
             ),

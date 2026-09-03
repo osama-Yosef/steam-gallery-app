@@ -27,8 +27,12 @@ class AdminMaintenanceDetailScreen extends ConsumerWidget {
           title: const Text('إسناد لصنايعي'),
           content: DropdownButtonFormField<String>(
             initialValue: selectedId,
+            isExpanded: true,
             items: technicians
-                .map((t) => DropdownMenuItem(value: t.id, child: Text('${t.fullName} (${t.employeeCode})')))
+                .map((t) => DropdownMenuItem(
+                      value: t.id,
+                      child: Text('${t.fullName} (${t.employeeCode})', overflow: TextOverflow.ellipsis),
+                    ))
                 .toList(),
             onChanged: (v) => setState(() => selectedId = v),
           ),

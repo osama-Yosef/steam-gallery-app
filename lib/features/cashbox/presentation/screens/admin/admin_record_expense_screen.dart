@@ -81,8 +81,11 @@ class _AdminRecordExpenseScreenState extends ConsumerState<AdminRecordExpenseScr
               children: [
                 DropdownButtonFormField<ExpenseCategory>(
                   initialValue: _selectedCategory,
+                  isExpanded: true,
                   decoration: const InputDecoration(labelText: 'التصنيف'),
-                  items: categories.map((c) => DropdownMenuItem(value: c, child: Text(c.name))).toList(),
+                  items: categories
+                      .map((c) => DropdownMenuItem(value: c, child: Text(c.name, overflow: TextOverflow.ellipsis)))
+                      .toList(),
                   onChanged: (c) => setState(() => _selectedCategory = c),
                 ),
                 const SizedBox(height: 16),

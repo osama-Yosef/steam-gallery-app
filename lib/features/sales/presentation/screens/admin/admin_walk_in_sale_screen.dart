@@ -77,11 +77,12 @@ class _AdminWalkInSaleScreenState extends ConsumerState<AdminWalkInSaleScreen> {
             children: [
               DropdownButtonFormField<WarehouseStockItem>(
                 initialValue: selected,
+                isExpanded: true,
                 decoration: const InputDecoration(labelText: 'المنتج'),
                 items: available
                     .map((s) => DropdownMenuItem(
                           value: s,
-                          child: Text('${s.productName} (متاح: ${s.quantity})'),
+                          child: Text('${s.productName} (متاح: ${s.quantity})', overflow: TextOverflow.ellipsis),
                         ))
                     .toList(),
                 onChanged: (s) => setDialogState(() => selected = s!),
@@ -207,6 +208,7 @@ class _AdminWalkInSaleScreenState extends ConsumerState<AdminWalkInSaleScreen> {
           const Divider(height: 32),
           DropdownButtonFormField<PaymentMethod>(
             initialValue: _paymentMethod,
+            isExpanded: true,
             decoration: const InputDecoration(labelText: 'طريقة الدفع'),
             items: const [PaymentMethod.cash, PaymentMethod.card, PaymentMethod.transfer]
                 .map((m) => DropdownMenuItem(value: m, child: Text(paymentMethodLabelAr(m))))
