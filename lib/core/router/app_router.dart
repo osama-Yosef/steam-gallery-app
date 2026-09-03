@@ -105,6 +105,20 @@ GoRouter appRouter(Ref ref) {
 
       // Signed in: figure out the role to pick the right shell.
       final profileAsync = ref.read(currentUserProfileProvider);
+
+      // A cached profile (even while a background refetch is in flight —
+      // e.g. after ref.invalidate(currentUserProfileProvider) on profile
+      // edit) means routing is already settled: bouncing through splash
+      // here would remount the current StatefulShellRoute while the old
+      // instance hasn't finished disposing, crashing with "Duplicate
+      // GlobalKey<StatefulNavigationShellState>". Only the very first,
+      // truly-unloaded fetch should route through splash.
+      final cachedUser = profileAsync.value;
+      if (cachedUser != null) {
+        if (onAuthScreen || loc == Routes.splash) return _homeFor(cachedUser.role);
+        return null;
+      }
+
       return profileAsync.when(
         data: (user) {
           if (user == null) {
