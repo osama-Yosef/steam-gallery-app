@@ -13,10 +13,10 @@ abstract class ProductImage with _$ProductImage {
   }) = _ProductImage;
 
   factory ProductImage.fromRow(Map<String, dynamic> row) => ProductImage(
-        id: row['id'] as String,
-        productId: row['product_id'] as String,
-        imageUrl: row['image_url'] as String,
-        sortOrder: row['sort_order'] as int? ?? 0,
-        isPrimary: row['is_primary'] as bool? ?? false,
-      );
+    id: row['id'] as String,
+    productId: row['product_id'] as String,
+    imageUrl: row['image_url'] as String,
+    sortOrder: row['sort_order'] as int? ?? 0,
+    isPrimary: row['is_primary'] as bool? ?? false,
+  );
 }

@@ -23,7 +23,10 @@ class AdminStockMovementsScreen extends ConsumerWidget {
         ),
         data: (movements) {
           if (movements.isEmpty) {
-            return const EmptyView(message: 'لا توجد حركات مخزون بعد', icon: Icons.swap_horiz_outlined);
+            return const EmptyView(
+              message: 'لا توجد حركات مخزون بعد',
+              icon: Icons.swap_horiz_outlined,
+            );
           }
           return ListView.separated(
             itemCount: movements.length,
@@ -32,7 +35,9 @@ class AdminStockMovementsScreen extends ConsumerWidget {
               final m = movements[i];
               return ListTile(
                 leading: CircleAvatar(child: Text('#${m.movementNumber}')),
-                title: Text('${m.productName} · ${stockMovementTypeLabelAr(m.movementType)}'),
+                title: Text(
+                  '${m.productName} · ${stockMovementTypeLabelAr(m.movementType)}',
+                ),
                 subtitle: Text(
                   '${locationTypeLabelAr(m.fromLocationType)} ← ${locationTypeLabelAr(m.toLocationType)}\n'
                   '${Formatters.dateTime(m.createdAt)}${m.notes != null ? ' · ${m.notes}' : ''}',

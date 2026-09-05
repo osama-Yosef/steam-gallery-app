@@ -43,11 +43,15 @@ class AppException implements Exception {
     }
 
     final m = error.message.toLowerCase();
-    if (m.contains('invalid login credentials')) return 'رقم الهاتف أو كلمة المرور غير صحيحة';
+    if (m.contains('invalid login credentials')) {
+      return 'رقم الهاتف أو كلمة المرور غير صحيحة';
+    }
     if (m.contains('user already registered') || m.contains('already exists')) {
       return 'هذا الرقم مسجَّل بالفعل';
     }
-    if (m.contains('network') || m.contains('socket') || m.contains('timeout')) {
+    if (m.contains('network') ||
+        m.contains('socket') ||
+        m.contains('timeout')) {
       return 'تعذَّر الاتصال بالخادم، تحقق من الإنترنت';
     }
     return 'تعذَّر تسجيل الدخول. حاول مرة أخرى.';
@@ -68,18 +72,42 @@ class AppException implements Exception {
     if (msg.contains('FORBIDDEN')) return 'ليست لديك صلاحية لتنفيذ هذه العملية';
     if (msg.contains('INVALID_QUANTITY')) return 'الكمية المدخلة غير صحيحة';
     if (msg.contains('INVALID_AMOUNT')) return 'المبلغ المدخل غير صحيح';
-    if (msg.contains('PRODUCT_NOT_FOUND')) return 'المنتج غير موجود أو غير متاح';
-    if (msg.contains('TECHNICIAN_BAG_NOT_FOUND')) return 'لا توجد شنطة بضاعة لهذا الصنايعي';
-    if (msg.contains('ORDER_NOT_PENDING')) return 'لا يمكن تنفيذ هذا الإجراء على حالة الطلب الحالية';
-    if (msg.contains('ORDER_NOT_CANCELLABLE')) return 'لا يمكن إلغاء هذا الطلب في حالته الحالية';
-    if (msg.contains('REQUEST_NOT_WAITING')) return 'طلب الصيانة لم يعد في حالة الانتظار';
-    if (msg.contains('FORBIDDEN_OR_NOT_ASSIGNED')) return 'هذا الطلب غير مسنَد لك';
-    if (msg.contains('FORBIDDEN_OR_NOT_IN_PROGRESS')) return 'لا يمكن إنهاء طلب لم يبدأ تنفيذه بعد';
-    if (msg.contains('FORBIDDEN_OR_NOT_CANCELLABLE')) return 'لا يمكن إلغاء هذا الطلب الآن';
-    if (msg.contains('COUNT_NOT_DRAFT')) return 'الجرد مُعتمَد بالفعل ولا يمكن تعديله';
-    if (msg.contains('ITEM_NOT_FOUND_OR_COUNT_CLOSED')) return 'لا يمكن تعديل هذا الصنف بعد اعتماد الجرد';
-    if (msg.contains('chk_reason_required_if_diff')) return 'لازم تكتب سبب الفرق في الكمية';
-    if (msg.contains('row-level security')) return 'ليست لديك صلاحية للوصول لهذه البيانات';
+    if (msg.contains('PRODUCT_NOT_FOUND')) {
+      return 'المنتج غير موجود أو غير متاح';
+    }
+    if (msg.contains('TECHNICIAN_BAG_NOT_FOUND')) {
+      return 'لا توجد شنطة بضاعة لهذا الصنايعي';
+    }
+    if (msg.contains('ORDER_NOT_PENDING')) {
+      return 'لا يمكن تنفيذ هذا الإجراء على حالة الطلب الحالية';
+    }
+    if (msg.contains('ORDER_NOT_CANCELLABLE')) {
+      return 'لا يمكن إلغاء هذا الطلب في حالته الحالية';
+    }
+    if (msg.contains('REQUEST_NOT_WAITING')) {
+      return 'طلب الصيانة لم يعد في حالة الانتظار';
+    }
+    if (msg.contains('FORBIDDEN_OR_NOT_ASSIGNED')) {
+      return 'هذا الطلب غير مسنَد لك';
+    }
+    if (msg.contains('FORBIDDEN_OR_NOT_IN_PROGRESS')) {
+      return 'لا يمكن إنهاء طلب لم يبدأ تنفيذه بعد';
+    }
+    if (msg.contains('FORBIDDEN_OR_NOT_CANCELLABLE')) {
+      return 'لا يمكن إلغاء هذا الطلب الآن';
+    }
+    if (msg.contains('COUNT_NOT_DRAFT')) {
+      return 'الجرد مُعتمَد بالفعل ولا يمكن تعديله';
+    }
+    if (msg.contains('ITEM_NOT_FOUND_OR_COUNT_CLOSED')) {
+      return 'لا يمكن تعديل هذا الصنف بعد اعتماد الجرد';
+    }
+    if (msg.contains('chk_reason_required_if_diff')) {
+      return 'لازم تكتب سبب الفرق في الكمية';
+    }
+    if (msg.contains('row-level security')) {
+      return 'ليست لديك صلاحية للوصول لهذه البيانات';
+    }
     return 'تعذَّر تنفيذ العملية. حاول مرة أخرى.';
   }
 }

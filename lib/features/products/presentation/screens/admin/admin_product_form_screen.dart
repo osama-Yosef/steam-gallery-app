@@ -31,10 +31,12 @@ class AdminProductFormScreen extends ConsumerStatefulWidget {
   const AdminProductFormScreen({super.key, this.productId});
 
   @override
-  ConsumerState<AdminProductFormScreen> createState() => _AdminProductFormScreenState();
+  ConsumerState<AdminProductFormScreen> createState() =>
+      _AdminProductFormScreenState();
 }
 
-class _AdminProductFormScreenState extends ConsumerState<AdminProductFormScreen> {
+class _AdminProductFormScreenState
+    extends ConsumerState<AdminProductFormScreen> {
   final _formKey = GlobalKey<FormState>();
   final _skuCtrl = TextEditingController();
   final _barcodeCtrl = TextEditingController();
@@ -83,16 +85,23 @@ class _AdminProductFormScreenState extends ConsumerState<AdminProductFormScreen>
     if (!_formKey.currentState!.validate()) return;
     setState(() => _saving = true);
     final repo = ref.read(productRepositoryProvider);
-    final specsMap = {for (final e in _specs) if (e.key.trim().isNotEmpty) e.key.trim(): e.value.trim()};
+    final specsMap = {
+      for (final e in _specs)
+        if (e.key.trim().isNotEmpty) e.key.trim(): e.value.trim(),
+    };
     try {
       if (_isEdit) {
         await repo.updateProduct(
           _currentProductId!,
           sku: _skuCtrl.text.trim(),
-          barcode: _barcodeCtrl.text.trim().isEmpty ? null : _barcodeCtrl.text.trim(),
+          barcode: _barcodeCtrl.text.trim().isEmpty
+              ? null
+              : _barcodeCtrl.text.trim(),
           categoryId: _categoryId,
           name: _nameCtrl.text.trim(),
-          description: _descCtrl.text.trim().isEmpty ? null : _descCtrl.text.trim(),
+          description: _descCtrl.text.trim().isEmpty
+              ? null
+              : _descCtrl.text.trim(),
           specs: specsMap,
           costPrice: double.parse(_costCtrl.text),
           sellingPrice: double.parse(_priceCtrl.text),
@@ -101,15 +110,21 @@ class _AdminProductFormScreenState extends ConsumerState<AdminProductFormScreen>
         await repo.setProductActive(_currentProductId!, _isActive);
         ref.invalidate(adminProductDetailProvider(_currentProductId!));
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تم حفظ التعديلات')));
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text('تم حفظ التعديلات')));
         }
       } else {
         final id = await repo.createProduct(
           sku: _skuCtrl.text.trim(),
-          barcode: _barcodeCtrl.text.trim().isEmpty ? null : _barcodeCtrl.text.trim(),
+          barcode: _barcodeCtrl.text.trim().isEmpty
+              ? null
+              : _barcodeCtrl.text.trim(),
           categoryId: _categoryId,
           name: _nameCtrl.text.trim(),
-          description: _descCtrl.text.trim().isEmpty ? null : _descCtrl.text.trim(),
+          description: _descCtrl.text.trim().isEmpty
+              ? null
+              : _descCtrl.text.trim(),
           specs: specsMap,
           costPrice: double.parse(_costCtrl.text),
           sellingPrice: double.parse(_priceCtrl.text),
@@ -117,14 +132,18 @@ class _AdminProductFormScreenState extends ConsumerState<AdminProductFormScreen>
         );
         if (mounted) {
           setState(() => _currentProductId = id);
-          ScaffoldMessenger.of(context)
-              .showSnackBar(const SnackBar(content: Text('تم إنشاء المنتج — يمكنك الآن إضافة صور')));
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('تم إنشاء المنتج — يمكنك الآن إضافة صور'),
+            ),
+          );
         }
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(AppException.from(e).messageAr)));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(AppException.from(e).messageAr)));
       }
     } finally {
       if (mounted) setState(() => _saving = false);
@@ -134,7 +153,9 @@ class _AdminProductFormScreenState extends ConsumerState<AdminProductFormScreen>
   @override
   Widget build(BuildContext context) {
     final categoriesAsync = ref.watch(categoriesProvider());
-    final productAsync = _isEdit ? ref.watch(adminProductDetailProvider(_currentProductId!)) : null;
+    final productAsync = _isEdit
+        ? ref.watch(adminProductDetailProvider(_currentProductId!))
+        : null;
 
     if (_isEdit && productAsync != null) {
       final p = productAsync.value;
@@ -189,7 +210,9 @@ class _AdminProductFormScreenState extends ConsumerState<AdminProductFormScreen>
               Expanded(
                 child: TextFormField(
                   controller: _barcodeCtrl,
-                  decoration: const InputDecoration(labelText: 'الباركود (اختياري)'),
+                  decoration: const InputDecoration(
+                    labelText: 'الباركود (اختياري)',
+                  ),
                 ),
               ),
             ],
@@ -202,10 +225,12 @@ class _AdminProductFormScreenState extends ConsumerState<AdminProductFormScreen>
               decoration: const InputDecoration(labelText: 'القسم'),
               items: [
                 const DropdownMenuItem(value: null, child: Text('بدون قسم')),
-                ...cats.map((c) => DropdownMenuItem(
-                      value: c.id,
-                      child: Text(c.name, overflow: TextOverflow.ellipsis),
-                    )),
+                ...cats.map(
+                  (c) => DropdownMenuItem(
+                    value: c.id,
+                    child: Text(c.name, overflow: TextOverflow.ellipsis),
+                  ),
+                ),
               ],
               onChanged: (v) => setState(() => _categoryId = v),
             ),
@@ -225,7 +250,9 @@ class _AdminProductFormScreenState extends ConsumerState<AdminProductFormScreen>
                 child: TextFormField(
                   controller: _costCtrl,
                   decoration: const InputDecoration(labelText: 'سعر التكلفة'),
-                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
                   validator: (v) => Validators.positiveNumber(v, 'سعر التكلفة'),
                 ),
               ),
@@ -234,7 +261,9 @@ class _AdminProductFormScreenState extends ConsumerState<AdminProductFormScreen>
                 child: TextFormField(
                   controller: _priceCtrl,
                   decoration: const InputDecoration(labelText: 'سعر البيع'),
-                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
                   validator: (v) => Validators.positiveNumber(v, 'سعر البيع'),
                 ),
               ),
@@ -267,7 +296,8 @@ class _AdminProductFormScreenState extends ConsumerState<AdminProductFormScreen>
                     child: TextFormField(
                       initialValue: entry.value.key,
                       decoration: const InputDecoration(labelText: 'الخاصية'),
-                      onChanged: (v) => _specs[i] = MapEntry(v, _specs[i].value),
+                      onChanged: (v) =>
+                          _specs[i] = MapEntry(v, _specs[i].value),
                     ),
                   ),
                   const SizedBox(width: 8),
@@ -295,7 +325,11 @@ class _AdminProductFormScreenState extends ConsumerState<AdminProductFormScreen>
           FilledButton(
             onPressed: _saving ? null : _submit,
             child: _saving
-                ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                ? const SizedBox(
+                    height: 20,
+                    width: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
                 : Text(_isEdit ? 'حفظ التعديلات' : 'إنشاء المنتج'),
           ),
         ],
@@ -310,22 +344,32 @@ class _ProductImagesSection extends ConsumerWidget {
 
   Future<void> _addImage(BuildContext context, WidgetRef ref) async {
     final picker = ImagePicker();
-    final file = await picker.pickImage(source: ImageSource.gallery, imageQuality: 85);
+    final file = await picker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 85,
+    );
     if (file == null) return;
     final Uint8List bytes = await file.readAsBytes();
     final ext = file.name.contains('.') ? file.name.split('.').last : 'jpg';
     try {
-      await ref.read(productRepositoryProvider).uploadProductImage(productId, bytes, ext);
+      await ref
+          .read(productRepositoryProvider)
+          .uploadProductImage(productId, bytes, ext);
       ref.invalidate(productImagesProvider(productId));
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(AppException.from(e).messageAr)));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(AppException.from(e).messageAr)));
       }
     }
   }
 
-  Future<void> _deleteImage(BuildContext context, WidgetRef ref, ProductImage image) async {
+  Future<void> _deleteImage(
+    BuildContext context,
+    WidgetRef ref,
+    ProductImage image,
+  ) async {
     final confirmed = await showConfirmDialog(
       context,
       title: 'حذف الصورة',
@@ -338,8 +382,9 @@ class _ProductImagesSection extends ConsumerWidget {
       ref.invalidate(productImagesProvider(productId));
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(AppException.from(e).messageAr)));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(AppException.from(e).messageAr)));
       }
     }
   }
@@ -382,7 +427,11 @@ class _ProductImagesSection extends ConsumerWidget {
                             child: const CircleAvatar(
                               radius: 12,
                               backgroundColor: Colors.black54,
-                              child: Icon(Icons.close, size: 14, color: Colors.white),
+                              child: Icon(
+                                Icons.close,
+                                size: 14,
+                                color: Colors.white,
+                              ),
                             ),
                           ),
                         ),
@@ -395,7 +444,9 @@ class _ProductImagesSection extends ConsumerWidget {
                     width: 100,
                     height: 100,
                     decoration: BoxDecoration(
-                      border: Border.all(color: Theme.of(context).colorScheme.outline),
+                      border: Border.all(
+                        color: Theme.of(context).colorScheme.outline,
+                      ),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: const Icon(Icons.add_photo_alternate_outlined),

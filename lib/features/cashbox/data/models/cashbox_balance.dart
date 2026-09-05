@@ -11,8 +11,8 @@ abstract class CashboxBalance with _$CashboxBalance {
   }) = _CashboxBalance;
 
   factory CashboxBalance.fromRow(Map<String, dynamic> row) => CashboxBalance(
-        cashboxId: row['cashbox_id'] as String,
-        name: row['name'] as String,
-        balance: (row['balance'] as num).toDouble(),
-      );
+    cashboxId: row['cashbox_id'] as String,
+    name: row['name'] as String,
+    balance: (row['balance'] as num).toDouble(),
+  );
 }

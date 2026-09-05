@@ -12,7 +12,8 @@ abstract class CustomerAccountSummary with _$CustomerAccountSummary {
     required double remainingBalance,
   }) = _CustomerAccountSummary;
 
-  factory CustomerAccountSummary.fromRow(Map<String, dynamic> row) => CustomerAccountSummary(
+  factory CustomerAccountSummary.fromRow(Map<String, dynamic> row) =>
+      CustomerAccountSummary(
         customerId: row['customer_id'] as String,
         customerName: row['customer_name'] as String,
         totalPurchases: (row['total_purchases'] as num).toDouble(),

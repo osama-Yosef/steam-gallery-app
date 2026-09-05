@@ -18,17 +18,29 @@ class SupabaseReportsRepository implements ReportsRepository {
   /// Shared building block for both the Sales and Profit reports: revenue,
   /// COGS and item-level discounts from confirmed orders + completed
   /// technician sales in [from, to). See docs/03-business-logic.md §11.
-  Future<({double revenue, double cogs, double discounts})> _revenueAndCogs(DateTime from, DateTime to) async {
+  Future<({double revenue, double cogs, double discounts})> _revenueAndCogs(
+    DateTime from,
+    DateTime to,
+  ) async {
     final orderRows = await _client
         .from('orders')
-        .select('discount, order_items(quantity, unit_price_snapshot, unit_cost_snapshot, discount)')
-        .inFilter('status', ['confirmed', 'preparing', 'delivered', 'completed'])
+        .select(
+          'discount, order_items(quantity, unit_price_snapshot, unit_cost_snapshot, discount)',
+        )
+        .inFilter('status', [
+          'confirmed',
+          'preparing',
+          'delivered',
+          'completed',
+        ])
         .gte('created_at', _iso(from))
         .lt('created_at', _iso(to));
 
     final saleRows = await _client
         .from('sales')
-        .select('discount, sale_items(quantity, unit_price_snapshot, unit_cost_snapshot, discount)')
+        .select(
+          'discount, sale_items(quantity, unit_price_snapshot, unit_cost_snapshot, discount)',
+        )
         .eq('status', 'completed')
         .gte('created_at', _iso(from))
         .lt('created_at', _iso(to));
@@ -136,7 +148,9 @@ class SupabaseReportsRepository implements ReportsRepository {
           .order('expense_date', ascending: false);
 
       final lines = rows.map((row) {
-        final categoryName = (row['expense_categories'] as Map?)?['name'] as String? ?? 'غير مصنَّف';
+        final categoryName =
+            (row['expense_categories'] as Map?)?['name'] as String? ??
+            'غير مصنَّف';
         return ExpenseLine(
           categoryName: categoryName,
           amount: (row['amount'] as num).toDouble(),
@@ -148,14 +162,19 @@ class SupabaseReportsRepository implements ReportsRepository {
       final byCategory = <String, double>{};
       double total = 0;
       for (final l in lines) {
-        byCategory[l.categoryName] = (byCategory[l.categoryName] ?? 0) + l.amount;
+        byCategory[l.categoryName] =
+            (byCategory[l.categoryName] ?? 0) + l.amount;
         total += l.amount;
       }
 
-      final categoryTotals = byCategory.entries
-          .map((e) => ExpenseCategoryTotal(categoryName: e.key, total: e.value))
-          .toList()
-        ..sort((a, b) => b.total.compareTo(a.total));
+      final categoryTotals =
+          byCategory.entries
+              .map(
+                (e) =>
+                    ExpenseCategoryTotal(categoryName: e.key, total: e.value),
+              )
+              .toList()
+            ..sort((a, b) => b.total.compareTo(a.total));
 
       final top = [...lines]..sort((a, b) => b.amount.compareTo(a.amount));
 
@@ -192,14 +211,24 @@ class SupabaseReportsRepository implements ReportsRepository {
         final type = row['movement_type'] as String;
         final cost = (row['total_cost'] as num).toDouble();
         final existing = byType[type];
-        byType[type] = (count: (existing?.count ?? 0) + 1, totalCost: (existing?.totalCost ?? 0) + cost);
+        byType[type] = (
+          count: (existing?.count ?? 0) + 1,
+          totalCost: (existing?.totalCost ?? 0) + cost,
+        );
       }
 
       return InventoryReport(
-        warehouseStockValue: (valueRow?['stock_value'] as num?)?.toDouble() ?? 0,
+        warehouseStockValue:
+            (valueRow?['stock_value'] as num?)?.toDouble() ?? 0,
         lowStockCount: lowStock.length,
         movementsByType: byType.entries
-            .map((e) => StockMovementTypeTotal(movementType: e.key, count: e.value.count, totalCost: e.value.totalCost))
+            .map(
+              (e) => StockMovementTypeTotal(
+                movementType: e.key,
+                count: e.value.count,
+                totalCost: e.value.totalCost,
+              ),
+            )
             .toList(),
       );
     } catch (e) {

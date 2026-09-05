@@ -13,7 +13,8 @@ class AdminUsersListScreen extends ConsumerStatefulWidget {
   const AdminUsersListScreen({super.key});
 
   @override
-  ConsumerState<AdminUsersListScreen> createState() => _AdminUsersListScreenState();
+  ConsumerState<AdminUsersListScreen> createState() =>
+      _AdminUsersListScreenState();
 }
 
 class _AdminUsersListScreenState extends ConsumerState<AdminUsersListScreen> {
@@ -30,7 +31,10 @@ class _AdminUsersListScreenState extends ConsumerState<AdminUsersListScreen> {
   @override
   Widget build(BuildContext context) {
     final usersAsync = ref.watch(
-      adminUsersListProvider(search: _search.isEmpty ? null : _search, roleFilter: _roleFilter),
+      adminUsersListProvider(
+        search: _search.isEmpty ? null : _search,
+        roleFilter: _roleFilter,
+      ),
     );
     final myId = ref.watch(currentUserProfileProvider).value?.id;
 
@@ -59,7 +63,11 @@ class _AdminUsersListScreenState extends ConsumerState<AdminUsersListScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Row(
               children: [
-                _RoleChip(label: 'الكل', selected: _roleFilter == null, onTap: () => setState(() => _roleFilter = null)),
+                _RoleChip(
+                  label: 'الكل',
+                  selected: _roleFilter == null,
+                  onTap: () => setState(() => _roleFilter = null),
+                ),
                 const SizedBox(width: 8),
                 _RoleChip(
                   label: 'أدمن',
@@ -91,7 +99,10 @@ class _AdminUsersListScreenState extends ConsumerState<AdminUsersListScreen> {
               ),
               data: (users) {
                 if (users.isEmpty) {
-                  return const EmptyView(message: 'لا يوجد مستخدمون', icon: Icons.people_outline);
+                  return const EmptyView(
+                    message: 'لا يوجد مستخدمون',
+                    icon: Icons.people_outline,
+                  );
                 }
                 return ListView.separated(
                   padding: const EdgeInsets.only(bottom: 88),
@@ -102,11 +113,17 @@ class _AdminUsersListScreenState extends ConsumerState<AdminUsersListScreen> {
                     return ListTile(
                       leading: CircleAvatar(child: Icon(_roleIcon(u.role))),
                       title: Text(u.fullName),
-                      subtitle: Text('${_roleLabel(u.role)} · ${u.phone ?? '—'}'),
+                      subtitle: Text(
+                        '${_roleLabel(u.role)} · ${u.phone ?? '—'}',
+                      ),
                       trailing: !u.isActive
-                          ? const Chip(label: Text('موقوف'), visualDensity: VisualDensity.compact)
+                          ? const Chip(
+                              label: Text('موقوف'),
+                              visualDensity: VisualDensity.compact,
+                            )
                           : null,
-                      onTap: () => _openUserSheet(context, u, isSelf: u.id == myId),
+                      onTap: () =>
+                          _openUserSheet(context, u, isSelf: u.id == myId),
                     );
                   },
                 );
@@ -128,7 +145,11 @@ class _AdminUsersListScreenState extends ConsumerState<AdminUsersListScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text(u.fullName, style: Theme.of(sheetContext).textTheme.titleLarge, textAlign: TextAlign.center),
+              Text(
+                u.fullName,
+                style: Theme.of(sheetContext).textTheme.titleLarge,
+                textAlign: TextAlign.center,
+              ),
               Text(u.phone ?? '', textAlign: TextAlign.center),
               const SizedBox(height: 16),
               if (!isSelf) ...[
@@ -141,7 +162,11 @@ class _AdminUsersListScreenState extends ConsumerState<AdminUsersListScreen> {
                   },
                 ),
                 ListTile(
-                  leading: Icon(u.isActive ? Icons.block_outlined : Icons.check_circle_outline),
+                  leading: Icon(
+                    u.isActive
+                        ? Icons.block_outlined
+                        : Icons.check_circle_outline,
+                  ),
                   title: Text(u.isActive ? 'إيقاف الحساب' : 'تفعيل الحساب'),
                   onTap: () async {
                     Navigator.pop(sheetContext);
@@ -151,7 +176,10 @@ class _AdminUsersListScreenState extends ConsumerState<AdminUsersListScreen> {
               ] else
                 const Padding(
                   padding: EdgeInsets.symmetric(vertical: 12),
-                  child: Text('لا يمكنك تعديل صلاحياتك أو إيقاف حسابك الخاص', textAlign: TextAlign.center),
+                  child: Text(
+                    'لا يمكنك تعديل صلاحياتك أو إيقاف حسابك الخاص',
+                    textAlign: TextAlign.center,
+                  ),
                 ),
             ],
           ),
@@ -166,7 +194,12 @@ class _AdminUsersListScreenState extends ConsumerState<AdminUsersListScreen> {
       builder: (ctx) => SimpleDialog(
         title: const Text('اختر الصلاحية الجديدة'),
         children: AppRole.values
-            .map((r) => SimpleDialogOption(onPressed: () => Navigator.pop(ctx, r), child: Text(_roleLabel(r))))
+            .map(
+              (r) => SimpleDialogOption(
+                onPressed: () => Navigator.pop(ctx, r),
+                child: Text(_roleLabel(r)),
+              ),
+            )
             .toList(),
       ),
     );
@@ -175,7 +208,8 @@ class _AdminUsersListScreenState extends ConsumerState<AdminUsersListScreen> {
     final confirmed = await showConfirmDialog(
       context,
       title: 'تأكيد تغيير الصلاحية',
-      message: 'سيتم تحويل ${u.fullName} إلى "${_roleLabel(newRole)}". هل أنت متأكد؟',
+      message:
+          'سيتم تحويل ${u.fullName} إلى "${_roleLabel(newRole)}". هل أنت متأكد؟',
       isDangerous: true,
     );
     if (!confirmed) return;
@@ -185,7 +219,9 @@ class _AdminUsersListScreenState extends ConsumerState<AdminUsersListScreen> {
       ref.invalidate(adminUsersListProvider);
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppException.from(e).messageAr)));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(AppException.from(e).messageAr)));
       }
     }
   }
@@ -206,32 +242,42 @@ class _AdminUsersListScreenState extends ConsumerState<AdminUsersListScreen> {
       ref.invalidate(adminUsersListProvider);
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppException.from(e).messageAr)));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(AppException.from(e).messageAr)));
       }
     }
   }
 
   IconData _roleIcon(AppRole r) => switch (r) {
-        AppRole.admin => Icons.admin_panel_settings_outlined,
-        AppRole.technician => Icons.build_outlined,
-        AppRole.customer => Icons.person_outline,
-      };
+    AppRole.admin => Icons.admin_panel_settings_outlined,
+    AppRole.technician => Icons.build_outlined,
+    AppRole.customer => Icons.person_outline,
+  };
 
   String _roleLabel(AppRole r) => switch (r) {
-        AppRole.admin => 'أدمن',
-        AppRole.technician => 'صنايعي',
-        AppRole.customer => 'عميل',
-      };
+    AppRole.admin => 'أدمن',
+    AppRole.technician => 'صنايعي',
+    AppRole.customer => 'عميل',
+  };
 }
 
 class _RoleChip extends StatelessWidget {
   final String label;
   final bool selected;
   final VoidCallback onTap;
-  const _RoleChip({required this.label, required this.selected, required this.onTap});
+  const _RoleChip({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return ChoiceChip(label: Text(label), selected: selected, onSelected: (_) => onTap());
+    return ChoiceChip(
+      label: Text(label),
+      selected: selected,
+      onSelected: (_) => onTap(),
+    );
   }
 }

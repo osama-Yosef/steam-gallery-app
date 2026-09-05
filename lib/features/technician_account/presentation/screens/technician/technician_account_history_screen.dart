@@ -14,12 +14,15 @@ class TechnicianAccountHistoryScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final resolvedId = technicianId ?? ref.watch(currentUserProfileProvider).value?.id;
+    final resolvedId =
+        technicianId ?? ref.watch(currentUserProfileProvider).value?.id;
     if (resolvedId == null) {
       return const Scaffold(body: LoadingView());
     }
 
-    final txnsAsync = ref.watch(technicianAccountTransactionsProvider(resolvedId));
+    final txnsAsync = ref.watch(
+      technicianAccountTransactionsProvider(resolvedId),
+    );
 
     return Scaffold(
       appBar: AppBar(title: const Text('سجل حركات الحساب')),
@@ -27,11 +30,15 @@ class TechnicianAccountHistoryScreen extends ConsumerWidget {
         loading: () => const LoadingView(),
         error: (e, _) => ErrorView(
           message: 'تعذَّر تحميل السجل',
-          onRetry: () => ref.invalidate(technicianAccountTransactionsProvider(resolvedId)),
+          onRetry: () =>
+              ref.invalidate(technicianAccountTransactionsProvider(resolvedId)),
         ),
         data: (txns) {
           if (txns.isEmpty) {
-            return const EmptyView(message: 'لا توجد حركات بعد', icon: Icons.receipt_long_outlined);
+            return const EmptyView(
+              message: 'لا توجد حركات بعد',
+              icon: Icons.receipt_long_outlined,
+            );
           }
           return ListView.separated(
             itemCount: txns.length,
@@ -41,12 +48,17 @@ class TechnicianAccountHistoryScreen extends ConsumerWidget {
               final increases = techAccountTxnIncreasesDue(t.type);
               return ListTile(
                 leading: Icon(
-                  increases ? Icons.add_circle_outline : Icons.remove_circle_outline,
-                  color: increases ? Theme.of(context).colorScheme.error : AppColors.success,
+                  increases
+                      ? Icons.add_circle_outline
+                      : Icons.remove_circle_outline,
+                  color: increases
+                      ? Theme.of(context).colorScheme.error
+                      : AppColors.success,
                 ),
                 title: Text(techAccountTxnTypeLabelAr(t.type)),
                 subtitle: Text(
-                  Formatters.dateTime(t.createdAt) + (t.notes != null ? ' · ${t.notes}' : ''),
+                  Formatters.dateTime(t.createdAt) +
+                      (t.notes != null ? ' · ${t.notes}' : ''),
                 ),
                 trailing: MoneyText(t.amount),
               );

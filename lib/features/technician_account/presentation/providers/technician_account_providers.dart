@@ -14,18 +14,30 @@ TechnicianAccountRepository technicianAccountRepository(Ref ref) {
 }
 
 @riverpod
-Future<TechnicianAccountSummary?> technicianAccountSummary(Ref ref, String technicianId) {
-  return ref.watch(technicianAccountRepositoryProvider).getAccountSummary(technicianId);
+Future<TechnicianAccountSummary?> technicianAccountSummary(
+  Ref ref,
+  String technicianId,
+) {
+  return ref
+      .watch(technicianAccountRepositoryProvider)
+      .getAccountSummary(technicianId);
 }
 
 @riverpod
 Future<List<TechnicianAccountSummary>> allTechnicianAccountSummaries(Ref ref) {
-  return ref.watch(technicianAccountRepositoryProvider).getAllAccountSummaries();
+  return ref
+      .watch(technicianAccountRepositoryProvider)
+      .getAllAccountSummaries();
 }
 
 @riverpod
-Future<List<TechnicianAccountTransaction>> technicianAccountTransactions(Ref ref, String technicianId) {
-  return ref.watch(technicianAccountRepositoryProvider).getAccountTransactions(technicianId);
+Future<List<TechnicianAccountTransaction>> technicianAccountTransactions(
+  Ref ref,
+  String technicianId,
+) {
+  return ref
+      .watch(technicianAccountRepositoryProvider)
+      .getAccountTransactions(technicianId);
 }
 
 @riverpod

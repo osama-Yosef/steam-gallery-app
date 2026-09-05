@@ -1,7 +1,11 @@
 import 'package:intl/intl.dart';
 
 abstract final class Formatters {
-  static final _currency = NumberFormat.currency(locale: 'ar_EG', symbol: 'ج.م', decimalDigits: 2);
+  static final _currency = NumberFormat.currency(
+    locale: 'ar_EG',
+    symbol: 'ج.م',
+    decimalDigits: 2,
+  );
   static final _date = DateFormat('yyyy/MM/dd', 'ar');
   static final _dateTime = DateFormat('yyyy/MM/dd  hh:mm a', 'ar');
   static final _month = DateFormat('MMMM yyyy', 'ar');

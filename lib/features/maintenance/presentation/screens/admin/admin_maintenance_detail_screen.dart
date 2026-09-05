@@ -16,7 +16,9 @@ class AdminMaintenanceDetailScreen extends ConsumerWidget {
     final technicians = await ref.read(assignableTechniciansProvider.future);
     if (!context.mounted) return;
     if (technicians.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('لا يوجد صنايعية نشطون')));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('لا يوجد صنايعية نشطون')));
       return;
     }
     String? selectedId = technicians.first.id;
@@ -29,30 +31,46 @@ class AdminMaintenanceDetailScreen extends ConsumerWidget {
             initialValue: selectedId,
             isExpanded: true,
             items: technicians
-                .map((t) => DropdownMenuItem(
-                      value: t.id,
-                      child: Text('${t.fullName} (${t.employeeCode})', overflow: TextOverflow.ellipsis),
-                    ))
+                .map(
+                  (t) => DropdownMenuItem(
+                    value: t.id,
+                    child: Text(
+                      '${t.fullName} (${t.employeeCode})',
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                )
                 .toList(),
             onChanged: (v) => setState(() => selectedId = v),
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('إلغاء')),
-            FilledButton(onPressed: () => Navigator.of(ctx).pop(true), child: const Text('إسناد')),
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(false),
+              child: const Text('إلغاء'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(ctx).pop(true),
+              child: const Text('إسناد'),
+            ),
           ],
         ),
       ),
     );
     if (confirmed != true || selectedId == null) return;
     try {
-      await ref.read(maintenanceRepositoryProvider).assign(requestId, selectedId!);
+      await ref
+          .read(maintenanceRepositoryProvider)
+          .assign(requestId, selectedId!);
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تم الإسناد بنجاح')));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('تم الإسناد بنجاح')));
       }
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(AppException.from(e).messageAr)));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(AppException.from(e).messageAr)));
       }
     }
   }
@@ -63,11 +81,19 @@ class AdminMaintenanceDetailScreen extends ConsumerWidget {
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('إلغاء طلب الصيانة'),
-        content: TextField(controller: reasonCtrl, decoration: const InputDecoration(labelText: 'السبب')),
+        content: TextField(
+          controller: reasonCtrl,
+          decoration: const InputDecoration(labelText: 'السبب'),
+        ),
         actions: [
-          TextButton(onPressed: () => Navigator.of(ctx).pop(), child: const Text('تراجع')),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('تراجع'),
+          ),
           FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: Theme.of(ctx).colorScheme.error),
+            style: FilledButton.styleFrom(
+              backgroundColor: Theme.of(ctx).colorScheme.error,
+            ),
             onPressed: () => Navigator.of(ctx).pop(reasonCtrl.text.trim()),
             child: const Text('تأكيد الإلغاء'),
           ),
@@ -79,8 +105,9 @@ class AdminMaintenanceDetailScreen extends ConsumerWidget {
       await ref.read(maintenanceRepositoryProvider).cancel(requestId, reason);
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(AppException.from(e).messageAr)));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(AppException.from(e).messageAr)));
       }
     }
   }
@@ -105,7 +132,10 @@ class AdminMaintenanceDetailScreen extends ConsumerWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('طلب #${req.ticketNumber}', style: Theme.of(context).textTheme.titleLarge),
+                  Text(
+                    'طلب #${req.ticketNumber}',
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
                   Chip(label: Text(maintenanceStatusLabelAr(req.status))),
                 ],
               ),
@@ -138,7 +168,10 @@ class AdminMaintenanceDetailScreen extends ConsumerWidget {
                 Text('نوع الجهاز: ${req.deviceType}'),
                 const SizedBox(height: 8),
               ],
-              Text('وصف المشكلة', style: Theme.of(context).textTheme.titleMedium),
+              Text(
+                'وصف المشكلة',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
               const SizedBox(height: 4),
               Text(req.problemDescription),
               if (req.notes != null) ...[
@@ -147,8 +180,10 @@ class AdminMaintenanceDetailScreen extends ConsumerWidget {
               ],
               if (req.cancelledReason != null) ...[
                 const SizedBox(height: 8),
-                Text('سبب الإلغاء: ${req.cancelledReason}',
-                    style: TextStyle(color: Theme.of(context).colorScheme.error)),
+                Text(
+                  'سبب الإلغاء: ${req.cancelledReason}',
+                  style: TextStyle(color: Theme.of(context).colorScheme.error),
+                ),
               ],
               const SizedBox(height: 16),
               Text('الصور', style: Theme.of(context).textTheme.titleMedium),
@@ -156,7 +191,8 @@ class AdminMaintenanceDetailScreen extends ConsumerWidget {
               SizedBox(
                 height: 100,
                 child: imagesAsync.when(
-                  loading: () => const Center(child: CircularProgressIndicator()),
+                  loading: () =>
+                      const Center(child: CircularProgressIndicator()),
                   error: (_, _) => const SizedBox.shrink(),
                   data: (images) {
                     if (images.isEmpty) return const Text('لا توجد صور');
@@ -166,7 +202,9 @@ class AdminMaintenanceDetailScreen extends ConsumerWidget {
                         for (final img in images)
                           Padding(
                             padding: const EdgeInsets.only(left: 8),
-                            child: MaintenanceImageThumb(storedPathOrUrl: img.imageUrl),
+                            child: MaintenanceImageThumb(
+                              storedPathOrUrl: img.imageUrl,
+                            ),
                           ),
                       ],
                     );
@@ -186,7 +224,9 @@ class AdminMaintenanceDetailScreen extends ConsumerWidget {
                     ),
                   if (canCancel)
                     OutlinedButton.icon(
-                      style: OutlinedButton.styleFrom(foregroundColor: Theme.of(context).colorScheme.error),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Theme.of(context).colorScheme.error,
+                      ),
                       onPressed: () => _cancel(context, ref),
                       icon: const Icon(Icons.cancel_outlined),
                       label: const Text('إلغاء الطلب'),

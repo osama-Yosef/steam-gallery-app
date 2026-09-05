@@ -37,9 +37,17 @@ class ErrorView extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.error_outline, size: 48, color: Theme.of(context).colorScheme.error),
+            Icon(
+              Icons.error_outline,
+              size: 48,
+              color: Theme.of(context).colorScheme.error,
+            ),
             const SizedBox(height: 12),
-            Text(message, textAlign: TextAlign.center, style: Theme.of(context).textTheme.bodyLarge),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.bodyLarge,
+            ),
             if (onRetry != null) ...[
               const SizedBox(height: 16),
               OutlinedButton.icon(
@@ -59,7 +67,12 @@ class EmptyView extends StatelessWidget {
   final String message;
   final IconData icon;
   final Widget? action;
-  const EmptyView({super.key, required this.message, this.icon = Icons.inbox_outlined, this.action});
+  const EmptyView({
+    super.key,
+    required this.message,
+    this.icon = Icons.inbox_outlined,
+    this.action,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -71,7 +84,11 @@ class EmptyView extends StatelessWidget {
           children: [
             Icon(icon, size: 56, color: Theme.of(context).colorScheme.outline),
             const SizedBox(height: 12),
-            Text(message, textAlign: TextAlign.center, style: Theme.of(context).textTheme.bodyLarge),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.bodyLarge,
+            ),
             if (action != null) ...[const SizedBox(height: 16), action!],
           ],
         ),

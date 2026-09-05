@@ -14,12 +14,18 @@ MaintenanceRepository maintenanceRepository(Ref ref) {
 }
 
 @riverpod
-Stream<List<MaintenanceRequest>> myMaintenanceRequests(Ref ref, String customerId) {
+Stream<List<MaintenanceRequest>> myMaintenanceRequests(
+  Ref ref,
+  String customerId,
+) {
   return ref.watch(maintenanceRepositoryProvider).watchMyRequests(customerId);
 }
 
 @riverpod
-Stream<MaintenanceRequest?> maintenanceRequestDetail(Ref ref, String requestId) {
+Stream<MaintenanceRequest?> maintenanceRequestDetail(
+  Ref ref,
+  String requestId,
+) {
   return ref.watch(maintenanceRepositoryProvider).watchRequest(requestId);
 }
 
@@ -44,7 +50,9 @@ Future<List<MaintenanceImage>> maintenanceImages(Ref ref, String requestId) {
 /// private, so this is the only way the image can actually render.
 @riverpod
 Future<String> maintenanceImageUrl(Ref ref, String storedPathOrUrl) {
-  return ref.watch(maintenanceRepositoryProvider).signedImageUrl(storedPathOrUrl);
+  return ref
+      .watch(maintenanceRepositoryProvider)
+      .signedImageUrl(storedPathOrUrl);
 }
 
 @riverpod

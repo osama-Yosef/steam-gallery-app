@@ -27,8 +27,10 @@ abstract final class Routes {
   // Maintenance (Module 4)
   static const customerMaintenance = '/customer/maintenance';
   static const customerMaintenanceNew = '/customer/maintenance/new';
-  static String customerMaintenanceDetail(String id) => '/customer/maintenance/$id';
-  static String technicianMaintenanceDetail(String id) => '/technician/maintenance/$id';
+  static String customerMaintenanceDetail(String id) =>
+      '/customer/maintenance/$id';
+  static String technicianMaintenanceDetail(String id) =>
+      '/technician/maintenance/$id';
   static const adminMaintenance = '/admin/maintenance';
   static String adminMaintenanceDetail(String id) => '/admin/maintenance/$id';
 
@@ -38,7 +40,8 @@ abstract final class Routes {
   static const adminIssueStock = '/admin/warehouse/issue';
   static const adminStockMovements = '/admin/warehouse/movements';
   static const adminTechnicianBags = '/admin/warehouse/bags';
-  static String adminTechnicianBagDetail(String technicianId) => '/admin/warehouse/bags/$technicianId';
+  static String adminTechnicianBagDetail(String technicianId) =>
+      '/admin/warehouse/bags/$technicianId';
   static const technicianBag = '/technician/bag';
 
   // Technician Sales & Account (Module 6)
@@ -48,7 +51,8 @@ abstract final class Routes {
   static const technicianAccount = '/technician/account';
   static const technicianAccountSupply = '/technician/account/supply';
   static const technicianAccountHistory = '/technician/account/history';
-  static String adminTechnicianAccount(String technicianId) => '/admin/technicians/$technicianId/account';
+  static String adminTechnicianAccount(String technicianId) =>
+      '/admin/technicians/$technicianId/account';
   static String adminTechnicianAccountSupply(String technicianId) =>
       '/admin/technicians/$technicianId/account/supply';
   static String adminTechnicianAccountHistory(String technicianId) =>
@@ -64,12 +68,15 @@ abstract final class Routes {
 
   // Customer Accounts (Module 8)
   static const adminCustomers = '/admin/customers';
-  static String adminCustomerDetail(String customerId) => '/admin/customers/$customerId';
-  static String adminCustomerPayment(String customerId) => '/admin/customers/$customerId/payment';
+  static String adminCustomerDetail(String customerId) =>
+      '/admin/customers/$customerId';
+  static String adminCustomerPayment(String customerId) =>
+      '/admin/customers/$customerId/payment';
 
   // Inventory Count (Module 9)
   static const adminInventoryCounts = '/admin/warehouse/counts';
-  static String adminInventoryCountDetail(String countId) => '/admin/warehouse/counts/$countId';
+  static String adminInventoryCountDetail(String countId) =>
+      '/admin/warehouse/counts/$countId';
 
   // Dashboard (Module 10)
   static const adminDashboard = '/admin/dashboard';

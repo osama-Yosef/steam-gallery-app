@@ -31,7 +31,10 @@ class TechnicianSalesListScreen extends ConsumerWidget {
         ),
         data: (sales) {
           if (sales.isEmpty) {
-            return const EmptyView(message: 'لا توجد مبيعات بعد', icon: Icons.point_of_sale_outlined);
+            return const EmptyView(
+              message: 'لا توجد مبيعات بعد',
+              icon: Icons.point_of_sale_outlined,
+            );
           }
           return ListView.separated(
             itemCount: sales.length,
@@ -41,7 +44,9 @@ class TechnicianSalesListScreen extends ConsumerWidget {
               return ListTile(
                 leading: CircleAvatar(child: Text('#${s.saleNumber}')),
                 title: Text(s.customerName ?? 'عميل نقدي'),
-                subtitle: Text('${paymentMethodLabelAr(s.paymentMethod)} · ${Formatters.dateTime(s.createdAt)}'),
+                subtitle: Text(
+                  '${paymentMethodLabelAr(s.paymentMethod)} · ${Formatters.dateTime(s.createdAt)}',
+                ),
                 trailing: MoneyText(s.total),
                 onTap: () => context.push(Routes.technicianSaleDetail(s.id)),
               );

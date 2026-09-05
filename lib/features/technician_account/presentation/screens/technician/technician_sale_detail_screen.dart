@@ -28,7 +28,10 @@ class TechnicianSaleDetailScreen extends ConsumerWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('بيع #${sale.saleNumber}', style: Theme.of(context).textTheme.titleLarge),
+                  Text(
+                    'بيع #${sale.saleNumber}',
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
                   Chip(label: Text(saleStatusLabelAr(sale.status))),
                 ],
               ),
@@ -39,7 +42,9 @@ class TechnicianSaleDetailScreen extends ConsumerWidget {
                 child: ListTile(
                   leading: const Icon(Icons.person_outline),
                   title: Text(sale.customerName ?? 'عميل نقدي'),
-                  subtitle: sale.customerPhone != null ? Text(sale.customerPhone!) : null,
+                  subtitle: sale.customerPhone != null
+                      ? Text(sale.customerPhone!)
+                      : null,
                 ),
               ),
               const SizedBox(height: 16),
@@ -55,7 +60,9 @@ class TechnicianSaleDetailScreen extends ConsumerWidget {
                     for (final item in items)
                       ListTile(
                         title: Text(item.productNameSnapshot),
-                        subtitle: Text('${item.quantity} × ${Formatters.currency(item.unitPriceSnapshot)}'),
+                        subtitle: Text(
+                          '${item.quantity} × ${Formatters.currency(item.unitPriceSnapshot)}',
+                        ),
                         trailing: MoneyText(item.lineTotal),
                       ),
                   ],
@@ -75,7 +82,12 @@ class TechnicianSaleDetailScreen extends ConsumerWidget {
     );
   }
 
-  Widget _summaryRow(BuildContext context, String label, double amount, {bool emphasize = false}) {
+  Widget _summaryRow(
+    BuildContext context,
+    String label,
+    double amount, {
+    bool emphasize = false,
+  }) {
     final style = emphasize ? Theme.of(context).textTheme.titleMedium : null;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),

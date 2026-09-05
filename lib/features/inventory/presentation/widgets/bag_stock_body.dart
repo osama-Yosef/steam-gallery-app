@@ -22,7 +22,10 @@ class BagStockBody extends ConsumerWidget {
       ),
       data: (items) {
         if (items.isEmpty) {
-          return const EmptyView(message: 'الشنطة فارغة حاليًا', icon: Icons.work_outline);
+          return const EmptyView(
+            message: 'الشنطة فارغة حاليًا',
+            icon: Icons.work_outline,
+          );
         }
         return ListView.separated(
           padding: const EdgeInsets.only(bottom: 88),
@@ -45,7 +48,8 @@ class BagStockBody extends ConsumerWidget {
 /// Running bag-value total shown as the AppBar's `bottom:` widget — a fixed
 /// footer at the bottom of the body would sit under a FAB (which floats
 /// independently of body layout, see AdminWarehouseScreen's Module 5 fix).
-class BagValueAppBarBottom extends ConsumerWidget implements PreferredSizeWidget {
+class BagValueAppBarBottom extends ConsumerWidget
+    implements PreferredSizeWidget {
   final String technicianId;
   const BagValueAppBarBottom({super.key, required this.technicianId});
 

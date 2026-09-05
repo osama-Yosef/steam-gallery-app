@@ -8,9 +8,11 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   if (Env.isConfigured) {
-    await Supabase.initialize(url: Env.supabaseUrl, publishableKey: Env.supabasePublishableKey);
+    await Supabase.initialize(
+      url: Env.supabaseUrl,
+      publishableKey: Env.supabasePublishableKey,
+    );
   }
-
 
   runApp(const ProviderScope(child: SteamGalleryApp()));
 }

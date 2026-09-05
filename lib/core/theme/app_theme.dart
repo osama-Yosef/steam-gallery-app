@@ -18,23 +18,24 @@ import 'app_colors.dart';
 /// an architectural one.
 abstract final class AppTheme {
   static ThemeData dark() {
-    final scheme = ColorScheme.fromSeed(
-      seedColor: AppColors.primary,
-      brightness: Brightness.dark,
-      surface: AppColors.surface,
-      onSurface: AppColors.textPrimary,
-      error: AppColors.danger,
-    ).copyWith(
-      primary: AppColors.primary,
-      secondary: AppColors.accent,
-      outline: AppColors.border,
-      surfaceContainerHighest: AppColors.surfaceHigh,
-    );
+    final scheme =
+        ColorScheme.fromSeed(
+          seedColor: AppColors.primary,
+          brightness: Brightness.dark,
+          surface: AppColors.surface,
+          onSurface: AppColors.textPrimary,
+          error: AppColors.danger,
+        ).copyWith(
+          primary: AppColors.primary,
+          secondary: AppColors.accent,
+          outline: AppColors.border,
+          surfaceContainerHighest: AppColors.surfaceHigh,
+        );
 
     final textTheme = ThemeData(brightness: Brightness.dark).textTheme.apply(
-          bodyColor: AppColors.textPrimary,
-          displayColor: AppColors.textPrimary,
-        );
+      bodyColor: AppColors.textPrimary,
+      displayColor: AppColors.textPrimary,
+    );
 
     return ThemeData(
       useMaterial3: true,
@@ -49,10 +50,18 @@ abstract final class AppTheme {
       // scaffoldBackgroundColor above, which doesn't have this problem.
       canvasColor: AppColors.surfaceHigh,
       textTheme: textTheme.copyWith(
-        bodySmall: textTheme.bodySmall?.copyWith(color: AppColors.textSecondary),
-        bodyMedium: textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
+        bodySmall: textTheme.bodySmall?.copyWith(
+          color: AppColors.textSecondary,
+        ),
+        bodyMedium: textTheme.bodyMedium?.copyWith(
+          color: AppColors.textSecondary,
+        ),
       ),
-      dividerTheme: const DividerThemeData(color: AppColors.border, space: 1, thickness: 1),
+      dividerTheme: const DividerThemeData(
+        color: AppColors.border,
+        space: 1,
+        thickness: 1,
+      ),
       appBarTheme: const AppBarTheme(
         backgroundColor: Colors.transparent,
         foregroundColor: AppColors.textPrimary,
@@ -84,7 +93,9 @@ abstract final class AppTheme {
           padding: const EdgeInsets.symmetric(vertical: 14),
           elevation: 8,
           shadowColor: AppColors.primary.withValues(alpha: 0.5),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
         ),
       ),
       filledButtonTheme: FilledButtonThemeData(
@@ -94,7 +105,9 @@ abstract final class AppTheme {
           padding: const EdgeInsets.symmetric(vertical: 14),
           elevation: 8,
           shadowColor: AppColors.primary.withValues(alpha: 0.5),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
         ),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
@@ -102,7 +115,9 @@ abstract final class AppTheme {
           foregroundColor: AppColors.textPrimary,
           side: const BorderSide(color: AppColors.glassBorder),
           padding: const EdgeInsets.symmetric(vertical: 14),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
         ),
       ),
       textButtonTheme: TextButtonThemeData(
@@ -144,12 +159,16 @@ abstract final class AppTheme {
         labelTextStyle: WidgetStateProperty.resolveWith(
           (states) => TextStyle(
             fontSize: 12,
-            color: states.contains(WidgetState.selected) ? AppColors.primary : AppColors.textSecondary,
+            color: states.contains(WidgetState.selected)
+                ? AppColors.primary
+                : AppColors.textSecondary,
           ),
         ),
         iconTheme: WidgetStateProperty.resolveWith(
           (states) => IconThemeData(
-            color: states.contains(WidgetState.selected) ? AppColors.primary : AppColors.textSecondary,
+            color: states.contains(WidgetState.selected)
+                ? AppColors.primary
+                : AppColors.textSecondary,
           ),
         ),
       ),

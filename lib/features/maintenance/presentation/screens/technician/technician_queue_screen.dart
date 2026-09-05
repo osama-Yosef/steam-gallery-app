@@ -31,10 +31,16 @@ class TechnicianQueueScreen extends ConsumerWidget {
         loading: () => const LoadingView(),
         error: (e, _) => const ErrorView(message: 'تعذَّر تحميل الصيانات'),
         data: (all) {
-          final queue = all.where((r) => kActiveMaintenanceStatuses.contains(r.status)).toList()
-            ..sort((a, b) => a.createdAt.compareTo(b.createdAt));
+          final queue =
+              all
+                  .where((r) => kActiveMaintenanceStatuses.contains(r.status))
+                  .toList()
+                ..sort((a, b) => a.createdAt.compareTo(b.createdAt));
           if (queue.isEmpty) {
-            return const EmptyView(message: 'لا توجد طلبات صيانة حاليًا', icon: Icons.build_outlined);
+            return const EmptyView(
+              message: 'لا توجد طلبات صيانة حاليًا',
+              icon: Icons.build_outlined,
+            );
           }
           return ListView.separated(
             itemCount: queue.length,
@@ -45,9 +51,14 @@ class TechnicianQueueScreen extends ConsumerWidget {
               return ListTile(
                 leading: CircleAvatar(child: Text('${i + 1}')),
                 title: Text(r.customerName),
-                subtitle: Text('${r.phone} · ${maintenanceStatusLabelAr(r.status)}'),
-                trailing: isMine ? const Icon(Icons.person_pin_circle_outlined) : null,
-                onTap: () => context.push(Routes.technicianMaintenanceDetail(r.id)),
+                subtitle: Text(
+                  '${r.phone} · ${maintenanceStatusLabelAr(r.status)}',
+                ),
+                trailing: isMine
+                    ? const Icon(Icons.person_pin_circle_outlined)
+                    : null,
+                onTap: () =>
+                    context.push(Routes.technicianMaintenanceDetail(r.id)),
               );
             },
           );

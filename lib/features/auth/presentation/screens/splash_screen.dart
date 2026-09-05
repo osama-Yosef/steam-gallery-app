@@ -35,7 +35,9 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
   Future<void> _giveUpIfStillStuck() async {
     if (!mounted) return;
     final profileAsync = ref.read(currentUserProfileProvider);
-    if (profileAsync.isLoading) return; // still legitimately in flight — not stuck
+    if (profileAsync.isLoading) {
+      return; // still legitimately in flight — not stuck
+    }
     if (profileAsync.value != null) return; // resolved fine — not stuck
     await ref.read(authRepositoryProvider).signOut();
   }

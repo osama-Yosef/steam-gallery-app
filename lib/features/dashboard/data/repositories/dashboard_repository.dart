@@ -20,10 +20,18 @@ class SupabaseDashboardRepository implements DashboardRepository {
         _client.from('cashbox_balances').select().limit(1).maybeSingle(),
         // 31 days is enough to derive both "today" and "this month" client-side
         // without fighting DB-vs-device timezone truncation on the view itself.
-        _client.from('daily_sales_summary').select().order('day', ascending: false).limit(31),
+        _client
+            .from('daily_sales_summary')
+            .select()
+            .order('day', ascending: false)
+            .limit(31),
         _client.from('expenses').select('amount, expense_date'),
         _client.from('orders').select('id').eq('status', 'pending'),
-        _client.from('maintenance_requests').select('id').inFilter('status', ['waiting', 'assigned', 'in_progress']),
+        _client.from('maintenance_requests').select('id').inFilter('status', [
+          'waiting',
+          'assigned',
+          'in_progress',
+        ]),
         _client.from('technicians').select('id').eq('is_active', true),
         _client.from('low_stock_products').select('product_id'),
         _client.from('customer_account_summary').select('remaining_balance'),
@@ -38,14 +46,18 @@ class SupabaseDashboardRepository implements DashboardRepository {
       final activeMaintenance = results[4] as List;
       final activeTechnicians = results[5] as List;
       final lowStock = results[6] as List;
-      final customerAccounts = (results[7] as List).cast<Map<String, dynamic>>();
-      final technicianAccounts = (results[8] as List).cast<Map<String, dynamic>>();
+      final customerAccounts = (results[7] as List)
+          .cast<Map<String, dynamic>>();
+      final technicianAccounts = (results[8] as List)
+          .cast<Map<String, dynamic>>();
       final warehouseValueRow = results[9] as Map<String, dynamic>?;
 
       final now = DateTime.now();
       bool isToday(DateTime d) {
         final local = d.toLocal();
-        return local.year == now.year && local.month == now.month && local.day == now.day;
+        return local.year == now.year &&
+            local.month == now.month &&
+            local.day == now.day;
       }
 
       bool isThisMonth(DateTime d) {
@@ -71,7 +83,9 @@ class SupabaseDashboardRepository implements DashboardRepository {
       double monthExpenses = 0;
       for (final row in expenseRows) {
         final date = DateTime.parse(row['expense_date'] as String);
-        if (isThisMonth(date)) monthExpenses += (row['amount'] as num).toDouble();
+        if (isThisMonth(date)) {
+          monthExpenses += (row['amount'] as num).toDouble();
+        }
       }
 
       double customerDebts = 0;
@@ -99,7 +113,8 @@ class SupabaseDashboardRepository implements DashboardRepository {
         lowStockCount: lowStock.length,
         customerDebtsTotal: customerDebts,
         technicianDuesTotal: technicianDues,
-        warehouseStockValue: (warehouseValueRow?['stock_value'] as num?)?.toDouble() ?? 0,
+        warehouseStockValue:
+            (warehouseValueRow?['stock_value'] as num?)?.toDouble() ?? 0,
       );
     } catch (e) {
       throw AppException.from(e);
@@ -109,8 +124,11 @@ class SupabaseDashboardRepository implements DashboardRepository {
   @override
   Future<List<DailyRevenuePoint>> getRevenueTrend({int days = 7}) async {
     try {
-      final rows =
-          await _client.from('daily_sales_summary').select().order('day', ascending: false).limit(days);
+      final rows = await _client
+          .from('daily_sales_summary')
+          .select()
+          .order('day', ascending: false)
+          .limit(days);
       final points = rows.map((r) => DailyRevenuePoint.fromRow(r)).toList();
       return points.reversed.toList();
     } catch (e) {

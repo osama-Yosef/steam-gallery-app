@@ -18,13 +18,13 @@ abstract class OrderItem with _$OrderItem {
   }) = _OrderItem;
 
   factory OrderItem.fromRow(Map<String, dynamic> row) => OrderItem(
-        id: row['id'] as String,
-        orderId: row['order_id'] as String,
-        productId: row['product_id'] as String,
-        productNameSnapshot: row['product_name_snapshot'] as String,
-        quantity: row['quantity'] as int,
-        unitPriceSnapshot: (row['unit_price_snapshot'] as num).toDouble(),
-        discount: (row['discount'] as num).toDouble(),
-        lineTotal: (row['line_total'] as num).toDouble(),
-      );
+    id: row['id'] as String,
+    orderId: row['order_id'] as String,
+    productId: row['product_id'] as String,
+    productNameSnapshot: row['product_name_snapshot'] as String,
+    quantity: row['quantity'] as int,
+    unitPriceSnapshot: (row['unit_price_snapshot'] as num).toDouble(),
+    discount: (row['discount'] as num).toDouble(),
+    lineTotal: (row['line_total'] as num).toDouble(),
+  );
 }

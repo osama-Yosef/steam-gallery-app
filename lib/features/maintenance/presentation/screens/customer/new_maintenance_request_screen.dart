@@ -16,10 +16,12 @@ class NewMaintenanceRequestScreen extends ConsumerStatefulWidget {
   const NewMaintenanceRequestScreen({super.key});
 
   @override
-  ConsumerState<NewMaintenanceRequestScreen> createState() => _NewMaintenanceRequestScreenState();
+  ConsumerState<NewMaintenanceRequestScreen> createState() =>
+      _NewMaintenanceRequestScreenState();
 }
 
-class _NewMaintenanceRequestScreenState extends ConsumerState<NewMaintenanceRequestScreen> {
+class _NewMaintenanceRequestScreenState
+    extends ConsumerState<NewMaintenanceRequestScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameCtrl = TextEditingController();
   final _phoneCtrl = TextEditingController();
@@ -45,20 +47,31 @@ class _NewMaintenanceRequestScreenState extends ConsumerState<NewMaintenanceRequ
     if (!_formKey.currentState!.validate()) return;
     setState(() => _submitting = true);
     try {
-      final id = await ref.read(maintenanceRepositoryProvider).createRequest(
+      final id = await ref
+          .read(maintenanceRepositoryProvider)
+          .createRequest(
             customerId: customerId,
             customerName: _nameCtrl.text.trim(),
             phone: _phoneCtrl.text.trim(),
-            address: _addressCtrl.text.trim().isEmpty ? null : _addressCtrl.text.trim(),
-            deviceType: _deviceCtrl.text.trim().isEmpty ? null : _deviceCtrl.text.trim(),
+            address: _addressCtrl.text.trim().isEmpty
+                ? null
+                : _addressCtrl.text.trim(),
+            deviceType: _deviceCtrl.text.trim().isEmpty
+                ? null
+                : _deviceCtrl.text.trim(),
             problemDescription: _problemCtrl.text.trim(),
-            notes: _notesCtrl.text.trim().isEmpty ? null : _notesCtrl.text.trim(),
+            notes: _notesCtrl.text.trim().isEmpty
+                ? null
+                : _notesCtrl.text.trim(),
           );
-      if (mounted) context.pushReplacement(Routes.customerMaintenanceDetail(id));
+      if (mounted) {
+        context.pushReplacement(Routes.customerMaintenanceDetail(id));
+      }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(AppException.from(e).messageAr)));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(AppException.from(e).messageAr)));
       }
     } finally {
       if (mounted) setState(() => _submitting = false);
@@ -115,14 +128,22 @@ class _NewMaintenanceRequestScreenState extends ConsumerState<NewMaintenanceRequ
             const SizedBox(height: 12),
             TextFormField(
               controller: _notesCtrl,
-              decoration: const InputDecoration(labelText: 'ملاحظات إضافية (اختياري)'),
+              decoration: const InputDecoration(
+                labelText: 'ملاحظات إضافية (اختياري)',
+              ),
               maxLines: 2,
             ),
             const SizedBox(height: 20),
             FilledButton(
-              onPressed: _submitting || profile == null ? null : () => _submit(profile.id),
+              onPressed: _submitting || profile == null
+                  ? null
+                  : () => _submit(profile.id),
               child: _submitting
-                  ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                  ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
                   : const Text('إرسال الطلب'),
             ),
           ],

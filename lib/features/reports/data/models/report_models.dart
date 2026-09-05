@@ -46,7 +46,12 @@ class ExpenseLine {
   final double amount;
   final DateTime date;
   final String? notes;
-  const ExpenseLine({required this.categoryName, required this.amount, required this.date, this.notes});
+  const ExpenseLine({
+    required this.categoryName,
+    required this.amount,
+    required this.date,
+    this.notes,
+  });
 }
 
 class ExpensesReport {
@@ -67,7 +72,11 @@ class StockMovementTypeTotal {
   final String movementType;
   final int count;
   final double totalCost;
-  const StockMovementTypeTotal({required this.movementType, required this.count, required this.totalCost});
+  const StockMovementTypeTotal({
+    required this.movementType,
+    required this.count,
+    required this.totalCost,
+  });
 }
 
 class InventoryReport {

@@ -25,7 +25,12 @@ class GlassBackground extends StatelessWidget {
       child: Stack(
         fit: StackFit.expand,
         children: [
-          _Blob(color: AppColors.blobBlue, size: size.width * 0.9, top: -size.width * 0.35, left: -size.width * 0.3),
+          _Blob(
+            color: AppColors.blobBlue,
+            size: size.width * 0.9,
+            top: -size.width * 0.35,
+            left: -size.width * 0.3,
+          ),
           _Blob(
             color: AppColors.blobViolet,
             size: size.width * 0.95,
@@ -78,7 +83,10 @@ class _Blob extends StatelessWidget {
           child: Container(
             width: size,
             height: size,
-            decoration: BoxDecoration(shape: BoxShape.circle, color: color.withValues(alpha: opacity)),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: color.withValues(alpha: opacity),
+            ),
           ),
         ),
       ),

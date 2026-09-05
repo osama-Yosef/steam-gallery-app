@@ -37,7 +37,12 @@ abstract class MaintenanceRepository {
   Future<QueuePosition> myQueuePosition(String requestId);
 
   Future<List<MaintenanceImage>> getImages(String requestId);
-  Future<MaintenanceImage> uploadImage(String requestId, String ownerCustomerId, Uint8List bytes, String ext);
+  Future<MaintenanceImage> uploadImage(
+    String requestId,
+    String ownerCustomerId,
+    Uint8List bytes,
+    String ext,
+  );
 
   /// The `maintenance` bucket is private (a customer's photos must not be
   /// readable by anyone holding the URL — see 0012_storage_buckets_policies),
@@ -46,6 +51,7 @@ abstract class MaintenanceRepository {
   Future<String> signedImageUrl(String storedPathOrUrl);
 
   Future<void> assign(String requestId, String technicianId);
+
   /// Lets a technician take a waiting job themselves instead of waiting for
   /// an admin to assign it. Throws REQUEST_NOT_WAITING if someone else got
   /// there first.
@@ -75,17 +81,20 @@ class SupabaseMaintenanceRepository implements MaintenanceRepository {
     String? notes,
   }) async {
     try {
-      final id = await _client.rpc('rpc_create_maintenance_request', params: {
-        'p_customer_id': customerId,
-        'p_customer_name': customerName,
-        'p_phone': phone,
-        'p_address': address,
-        'p_latitude': latitude,
-        'p_longitude': longitude,
-        'p_device_type': deviceType,
-        'p_problem_description': problemDescription,
-        'p_notes': notes,
-      });
+      final id = await _client.rpc(
+        'rpc_create_maintenance_request',
+        params: {
+          'p_customer_id': customerId,
+          'p_customer_name': customerName,
+          'p_phone': phone,
+          'p_address': address,
+          'p_latitude': latitude,
+          'p_longitude': longitude,
+          'p_device_type': deviceType,
+          'p_problem_description': problemDescription,
+          'p_notes': notes,
+        },
+      );
       return id as String;
     } catch (e) {
       throw AppException.from(e);
@@ -108,7 +117,10 @@ class SupabaseMaintenanceRepository implements MaintenanceRepository {
         .from('maintenance_requests')
         .stream(primaryKey: ['id'])
         .eq('id', requestId)
-        .map((rows) => rows.isEmpty ? null : MaintenanceRequest.fromRow(rows.first));
+        .map(
+          (rows) =>
+              rows.isEmpty ? null : MaintenanceRequest.fromRow(rows.first),
+        );
   }
 
   @override
@@ -123,7 +135,10 @@ class SupabaseMaintenanceRepository implements MaintenanceRepository {
   @override
   Future<QueuePosition> myQueuePosition(String requestId) async {
     try {
-      final rows = await _client.rpc('rpc_my_maintenance_position', params: {'p_request_id': requestId});
+      final rows = await _client.rpc(
+        'rpc_my_maintenance_position',
+        params: {'p_request_id': requestId},
+      );
       final row = (rows as List).first as Map<String, dynamic>;
       return QueuePosition.fromRow(row);
     } catch (e) {
@@ -155,7 +170,9 @@ class SupabaseMaintenanceRepository implements MaintenanceRepository {
     try {
       // Path convention enforced by storage RLS: {customer_id}/{request_id}/{file}
       final path = '$ownerCustomerId/$requestId/${const Uuid().v4()}.$ext';
-      await _client.storage.from(_bucket).uploadBinary(
+      await _client.storage
+          .from(_bucket)
+          .uploadBinary(
             path,
             bytes,
             fileOptions: const FileOptions(upsert: true),
@@ -179,7 +196,10 @@ class SupabaseMaintenanceRepository implements MaintenanceRepository {
   /// Rows written before the fix hold a full public URL; newer ones hold a
   /// bare object path. Normalise both to the path the storage API wants.
   static String _objectPath(String stored) {
-    for (final marker in const ['/object/public/$_bucket/', '/object/sign/$_bucket/']) {
+    for (final marker in const [
+      '/object/public/$_bucket/',
+      '/object/sign/$_bucket/',
+    ]) {
       final i = stored.indexOf(marker);
       if (i != -1) return stored.substring(i + marker.length).split('?').first;
     }
@@ -189,7 +209,9 @@ class SupabaseMaintenanceRepository implements MaintenanceRepository {
   @override
   Future<String> signedImageUrl(String storedPathOrUrl) async {
     try {
-      return await _client.storage.from(_bucket).createSignedUrl(
+      return await _client.storage
+          .from(_bucket)
+          .createSignedUrl(
             _objectPath(storedPathOrUrl),
             const Duration(hours: 1).inSeconds,
           );
@@ -201,10 +223,10 @@ class SupabaseMaintenanceRepository implements MaintenanceRepository {
   @override
   Future<void> assign(String requestId, String technicianId) async {
     try {
-      await _client.rpc('rpc_assign_maintenance', params: {
-        'p_request_id': requestId,
-        'p_technician_id': technicianId,
-      });
+      await _client.rpc(
+        'rpc_assign_maintenance',
+        params: {'p_request_id': requestId, 'p_technician_id': technicianId},
+      );
     } catch (e) {
       throw AppException.from(e);
     }
@@ -213,7 +235,10 @@ class SupabaseMaintenanceRepository implements MaintenanceRepository {
   @override
   Future<void> claim(String requestId) async {
     try {
-      await _client.rpc('rpc_claim_maintenance', params: {'p_request_id': requestId});
+      await _client.rpc(
+        'rpc_claim_maintenance',
+        params: {'p_request_id': requestId},
+      );
     } catch (e) {
       throw AppException.from(e);
     }
@@ -222,7 +247,10 @@ class SupabaseMaintenanceRepository implements MaintenanceRepository {
   @override
   Future<void> start(String requestId) async {
     try {
-      await _client.rpc('rpc_start_maintenance', params: {'p_request_id': requestId});
+      await _client.rpc(
+        'rpc_start_maintenance',
+        params: {'p_request_id': requestId},
+      );
     } catch (e) {
       throw AppException.from(e);
     }
@@ -231,7 +259,10 @@ class SupabaseMaintenanceRepository implements MaintenanceRepository {
   @override
   Future<void> complete(String requestId, String? notes) async {
     try {
-      await _client.rpc('rpc_complete_maintenance', params: {'p_request_id': requestId, 'p_notes': notes});
+      await _client.rpc(
+        'rpc_complete_maintenance',
+        params: {'p_request_id': requestId, 'p_notes': notes},
+      );
     } catch (e) {
       throw AppException.from(e);
     }
@@ -240,7 +271,10 @@ class SupabaseMaintenanceRepository implements MaintenanceRepository {
   @override
   Future<void> cancel(String requestId, String reason) async {
     try {
-      await _client.rpc('rpc_cancel_maintenance', params: {'p_request_id': requestId, 'p_reason': reason});
+      await _client.rpc(
+        'rpc_cancel_maintenance',
+        params: {'p_request_id': requestId, 'p_reason': reason},
+      );
     } catch (e) {
       throw AppException.from(e);
     }

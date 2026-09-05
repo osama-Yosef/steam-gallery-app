@@ -31,7 +31,9 @@ class AdminReportsHomeScreen extends ConsumerWidget {
             child: ListTile(
               leading: const Icon(Icons.date_range_outlined),
               title: const Text('الفترة الزمنية'),
-              subtitle: Text('${Formatters.date(range.from)}  إلى  ${Formatters.date(range.to.subtract(const Duration(days: 1)))}'),
+              subtitle: Text(
+                '${Formatters.date(range.from)}  إلى  ${Formatters.date(range.to.subtract(const Duration(days: 1)))}',
+              ),
               trailing: const Icon(Icons.edit_outlined),
               onTap: () => _pickRange(context, ref),
             ),
@@ -62,10 +64,15 @@ class AdminReportsHomeScreen extends ConsumerWidget {
       context: context,
       firstDate: DateTime(2024),
       lastDate: DateTime.now().add(const Duration(days: 1)),
-      initialDateRange: DateTimeRange(start: current.from, end: current.to.subtract(const Duration(days: 1))),
+      initialDateRange: DateTimeRange(
+        start: current.from,
+        end: current.to.subtract(const Duration(days: 1)),
+      ),
     );
     if (picked != null) {
-      ref.read(reportDateRangeProvider.notifier).setRange(picked.start, picked.end.add(const Duration(days: 1)));
+      ref
+          .read(reportDateRangeProvider.notifier)
+          .setRange(picked.start, picked.end.add(const Duration(days: 1)));
     }
   }
 }

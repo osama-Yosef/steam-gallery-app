@@ -11,7 +11,8 @@ class AdminCreateUserScreen extends ConsumerStatefulWidget {
   const AdminCreateUserScreen({super.key});
 
   @override
-  ConsumerState<AdminCreateUserScreen> createState() => _AdminCreateUserScreenState();
+  ConsumerState<AdminCreateUserScreen> createState() =>
+      _AdminCreateUserScreenState();
 }
 
 class _AdminCreateUserScreenState extends ConsumerState<AdminCreateUserScreen> {
@@ -36,21 +37,29 @@ class _AdminCreateUserScreenState extends ConsumerState<AdminCreateUserScreen> {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _loading = true);
     try {
-      await ref.read(usersAdminRepositoryProvider).createTechnicianOrAdmin(
+      await ref
+          .read(usersAdminRepositoryProvider)
+          .createTechnicianOrAdmin(
             localPhone: _phoneCtrl.text.trim(),
             password: _passwordCtrl.text,
             fullName: _nameCtrl.text.trim(),
             role: _role,
-            employeeCode: _employeeCodeCtrl.text.trim().isEmpty ? null : _employeeCodeCtrl.text.trim(),
+            employeeCode: _employeeCodeCtrl.text.trim().isEmpty
+                ? null
+                : _employeeCodeCtrl.text.trim(),
           );
       ref.invalidate(adminUsersListProvider);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تم إنشاء الحساب بنجاح')));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('تم إنشاء الحساب بنجاح')));
         Navigator.of(context).pop();
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppException.from(e).messageAr)));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(AppException.from(e).messageAr)));
       }
     } finally {
       if (mounted) setState(() => _loading = false);
@@ -70,7 +79,11 @@ class _AdminCreateUserScreenState extends ConsumerState<AdminCreateUserScreen> {
             children: [
               SegmentedButton<AppRole>(
                 segments: const [
-                  ButtonSegment(value: AppRole.technician, label: Text('صنايعي'), icon: Icon(Icons.build_outlined)),
+                  ButtonSegment(
+                    value: AppRole.technician,
+                    label: Text('صنايعي'),
+                    icon: Icon(Icons.build_outlined),
+                  ),
                   ButtonSegment(
                     value: AppRole.admin,
                     label: Text('أدمن'),
@@ -91,14 +104,19 @@ class _AdminCreateUserScreenState extends ConsumerState<AdminCreateUserScreen> {
                 controller: _phoneCtrl,
                 keyboardType: TextInputType.phone,
                 textDirection: TextDirection.ltr,
-                decoration: const InputDecoration(labelText: 'رقم الهاتف', hintText: '01012345678'),
+                decoration: const InputDecoration(
+                  labelText: 'رقم الهاتف',
+                  hintText: '01012345678',
+                ),
                 validator: Validators.phone,
               ),
               const SizedBox(height: 12),
               TextFormField(
                 controller: _passwordCtrl,
                 obscureText: true,
-                decoration: const InputDecoration(labelText: 'كلمة المرور المبدئية'),
+                decoration: const InputDecoration(
+                  labelText: 'كلمة المرور المبدئية',
+                ),
                 validator: Validators.password,
               ),
               if (_role == AppRole.technician) ...[
@@ -115,7 +133,11 @@ class _AdminCreateUserScreenState extends ConsumerState<AdminCreateUserScreen> {
               FilledButton(
                 onPressed: _loading ? null : _submit,
                 child: _loading
-                    ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
                     : const Text('إنشاء الحساب'),
               ),
             ],

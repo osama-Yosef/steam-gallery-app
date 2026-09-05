@@ -68,7 +68,13 @@ class AdminReportDetailScreen extends ConsumerWidget {
               _row(context, 'الخصومات', r.discounts),
               _row(context, 'المرتجعات', r.returns),
               const Divider(height: 32),
-              _row(context, 'صافي المبيعات', r.netSales, bold: true, highlight: true),
+              _row(
+                context,
+                'صافي المبيعات',
+                r.netSales,
+                bold: true,
+                highlight: true,
+              ),
             ],
           ),
         );
@@ -86,7 +92,13 @@ class AdminReportDetailScreen extends ConsumerWidget {
               _row(context, 'مجمل الربح', r.grossProfit, bold: true),
               _row(context, 'المصروفات', -r.expenses),
               const Divider(height: 32),
-              _row(context, 'صافي الربح (Net Profit)', r.netProfit, bold: true, highlight: true),
+              _row(
+                context,
+                'صافي الربح (Net Profit)',
+                r.netProfit,
+                bold: true,
+                highlight: true,
+              ),
             ],
           ),
         );
@@ -97,21 +109,40 @@ class AdminReportDetailScreen extends ConsumerWidget {
           loading: () => const LoadingView(),
           error: (e, _) => const ErrorView(message: 'تعذَّر تحميل التقرير'),
           data: (r) {
-            if (r.all.isEmpty) return const EmptyView(message: 'لا توجد مصروفات في هذه الفترة');
+            if (r.all.isEmpty) {
+              return const EmptyView(message: 'لا توجد مصروفات في هذه الفترة');
+            }
             return ListView(
               padding: const EdgeInsets.all(16),
               children: [
-                _row(context, 'إجمالي المصروفات', r.total, bold: true, highlight: true),
+                _row(
+                  context,
+                  'إجمالي المصروفات',
+                  r.total,
+                  bold: true,
+                  highlight: true,
+                ),
                 const SizedBox(height: 16),
-                Text('حسب التصنيف', style: Theme.of(context).textTheme.titleMedium),
-                ...r.byCategory.map((c) => _row(context, c.categoryName, c.total)),
+                Text(
+                  'حسب التصنيف',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                ...r.byCategory.map(
+                  (c) => _row(context, c.categoryName, c.total),
+                ),
                 const SizedBox(height: 16),
-                Text('أكبر المصروفات', style: Theme.of(context).textTheme.titleMedium),
+                Text(
+                  'أكبر المصروفات',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
                 ...r.topExpenses.map(
                   (e) => ListTile(
                     contentPadding: EdgeInsets.zero,
                     title: Text(e.categoryName),
-                    subtitle: Text(Formatters.date(e.date) + (e.notes != null ? ' · ${e.notes}' : '')),
+                    subtitle: Text(
+                      Formatters.date(e.date) +
+                          (e.notes != null ? ' · ${e.notes}' : ''),
+                    ),
                     trailing: MoneyText(e.amount),
                   ),
                 ),
@@ -128,11 +159,28 @@ class AdminReportDetailScreen extends ConsumerWidget {
           data: (r) => ListView(
             padding: const EdgeInsets.all(16),
             children: [
-              _row(context, 'قيمة المخزون الحالية', r.warehouseStockValue, bold: true),
-              _row(context, 'عدد المنتجات منخفضة المخزون', r.lowStockCount.toDouble(), isCount: true),
+              _row(
+                context,
+                'قيمة المخزون الحالية',
+                r.warehouseStockValue,
+                bold: true,
+              ),
+              _row(
+                context,
+                'عدد المنتجات منخفضة المخزون',
+                r.lowStockCount.toDouble(),
+                isCount: true,
+              ),
               const SizedBox(height: 16),
-              Text('حركة المخزن خلال الفترة', style: Theme.of(context).textTheme.titleMedium),
-              if (r.movementsByType.isEmpty) const Padding(padding: EdgeInsets.all(8), child: Text('لا توجد حركات')),
+              Text(
+                'حركة المخزن خلال الفترة',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              if (r.movementsByType.isEmpty)
+                const Padding(
+                  padding: EdgeInsets.all(8),
+                  child: Text('لا توجد حركات'),
+                ),
               ...r.movementsByType.map(
                 (m) => ListTile(
                   contentPadding: EdgeInsets.zero,
@@ -151,7 +199,9 @@ class AdminReportDetailScreen extends ConsumerWidget {
           loading: () => const LoadingView(),
           error: (e, _) => const ErrorView(message: 'تعذَّر تحميل التقرير'),
           data: (list) {
-            if (list.isEmpty) return const EmptyView(message: 'لا يوجد صنايعية');
+            if (list.isEmpty) {
+              return const EmptyView(message: 'لا يوجد صنايعية');
+            }
             return ListView.separated(
               padding: const EdgeInsets.all(16),
               itemCount: list.length,
@@ -161,11 +211,19 @@ class AdminReportDetailScreen extends ConsumerWidget {
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Text(t.technicianName, style: Theme.of(context).textTheme.titleMedium),
+                    Text(
+                      t.technicianName,
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
                     _row(context, 'قيمة البضاعة معه', t.bagValue),
                     _row(context, 'إجمالي المبيعات', t.totalSales),
                     _row(context, 'التحصيل', t.totalCollected),
-                    _row(context, 'المطلوب توريده', t.amountDue, highlight: t.amountDue > 0),
+                    _row(
+                      context,
+                      'المطلوب توريده',
+                      t.amountDue,
+                      highlight: t.amountDue > 0,
+                    ),
                   ],
                 );
               },
@@ -189,10 +247,18 @@ class AdminReportDetailScreen extends ConsumerWidget {
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Text(c.customerName, style: Theme.of(context).textTheme.titleMedium),
+                    Text(
+                      c.customerName,
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
                     _row(context, 'إجمالي المشتريات', c.totalPurchases),
                     _row(context, 'المدفوع', c.totalPaid),
-                    _row(context, 'المتبقي', c.remainingBalance, highlight: c.remainingBalance > 0),
+                    _row(
+                      context,
+                      'المتبقي',
+                      c.remainingBalance,
+                      highlight: c.remainingBalance > 0,
+                    ),
                   ],
                 );
               },
@@ -205,45 +271,62 @@ class AdminReportDetailScreen extends ConsumerWidget {
     }
   }
 
-  Widget _row(BuildContext context, String label, double value, {bool bold = false, bool highlight = false, bool isCount = false}) {
+  Widget _row(
+    BuildContext context,
+    String label,
+    double value, {
+    bool bold = false,
+    bool highlight = false,
+    bool isCount = false,
+  }) {
     final style = Theme.of(context).textTheme.bodyLarge?.copyWith(
-          fontWeight: bold ? FontWeight.bold : FontWeight.normal,
-          color: highlight ? Theme.of(context).colorScheme.primary : null,
-        );
+      fontWeight: bold ? FontWeight.bold : FontWeight.normal,
+      color: highlight ? Theme.of(context).colorScheme.primary : null,
+    );
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(label, style: style),
-          isCount ? Text(value.toInt().toString(), style: style) : MoneyText(value, style: style),
+          isCount
+              ? Text(value.toInt().toString(), style: style)
+              : MoneyText(value, style: style),
         ],
       ),
     );
   }
 
   String _movementTypeLabel(String type) => switch (type) {
-        'purchase' => 'شراء',
-        'sale' => 'بيع',
-        'issue_to_technician' => 'صرف لصنايعي',
-        'technician_sale' => 'بيع صنايعي',
-        'return_from_customer' => 'مرتجع عميل',
-        'return_to_supplier' => 'مرتجع مورد',
-        'damage' => 'تالف',
-        'inventory_adjustment' => 'تسوية جرد',
-        'transfer' => 'نقل',
-        _ => type,
-      };
+    'purchase' => 'شراء',
+    'sale' => 'بيع',
+    'issue_to_technician' => 'صرف لصنايعي',
+    'technician_sale' => 'بيع صنايعي',
+    'return_from_customer' => 'مرتجع عميل',
+    'return_to_supplier' => 'مرتجع مورد',
+    'damage' => 'تالف',
+    'inventory_adjustment' => 'تسوية جرد',
+    'transfer' => 'نقل',
+    _ => type,
+  };
 
-  Future<void> _copyReport(BuildContext context, WidgetRef ref, ReportRange range) async {
+  Future<void> _copyReport(
+    BuildContext context,
+    WidgetRef ref,
+    ReportRange range,
+  ) async {
     final buffer = StringBuffer()
       ..writeln(reportTypes.firstWhere((t) => t.$1 == reportType).$2)
-      ..writeln('${Formatters.date(range.from)} — ${Formatters.date(range.to.subtract(const Duration(days: 1)))}')
+      ..writeln(
+        '${Formatters.date(range.from)} — ${Formatters.date(range.to.subtract(const Duration(days: 1)))}',
+      )
       ..writeln();
 
     switch (reportType) {
       case 'sales':
-        final r = await ref.read(salesReportProvider(range.from, range.to).future);
+        final r = await ref.read(
+          salesReportProvider(range.from, range.to).future,
+        );
         buffer
           ..writeln('إجمالي المبيعات: ${Formatters.currency(r.totalSales)}')
           ..writeln('تكلفة البضاعة: ${Formatters.currency(r.cogs)}')
@@ -252,7 +335,9 @@ class AdminReportDetailScreen extends ConsumerWidget {
           ..writeln('المرتجعات: ${Formatters.currency(r.returns)}')
           ..writeln('صافي المبيعات: ${Formatters.currency(r.netSales)}');
       case 'profit':
-        final r = await ref.read(profitReportProvider(range.from, range.to).future);
+        final r = await ref.read(
+          profitReportProvider(range.from, range.to).future,
+        );
         buffer
           ..writeln('الإيرادات: ${Formatters.currency(r.revenue)}')
           ..writeln('تكلفة البضاعة: ${Formatters.currency(r.cogs)}')
@@ -260,31 +345,45 @@ class AdminReportDetailScreen extends ConsumerWidget {
           ..writeln('المصروفات: ${Formatters.currency(r.expenses)}')
           ..writeln('صافي الربح: ${Formatters.currency(r.netProfit)}');
       case 'expenses':
-        final r = await ref.read(expensesReportProvider(range.from, range.to).future);
+        final r = await ref.read(
+          expensesReportProvider(range.from, range.to).future,
+        );
         buffer.writeln('إجمالي المصروفات: ${Formatters.currency(r.total)}');
         for (final c in r.byCategory) {
           buffer.writeln('${c.categoryName}: ${Formatters.currency(c.total)}');
         }
       case 'inventory':
-        final r = await ref.read(inventoryReportProvider(range.from, range.to).future);
+        final r = await ref.read(
+          inventoryReportProvider(range.from, range.to).future,
+        );
         buffer
-          ..writeln('قيمة المخزون: ${Formatters.currency(r.warehouseStockValue)}')
+          ..writeln(
+            'قيمة المخزون: ${Formatters.currency(r.warehouseStockValue)}',
+          )
           ..writeln('منتجات منخفضة: ${r.lowStockCount}');
       case 'technicians':
-        final list = await ref.read(allTechnicianAccountSummariesProvider.future);
+        final list = await ref.read(
+          allTechnicianAccountSummariesProvider.future,
+        );
         for (final t in list) {
-          buffer.writeln('${t.technicianName} — مطلوب توريد: ${Formatters.currency(t.amountDue)}');
+          buffer.writeln(
+            '${t.technicianName} — مطلوب توريد: ${Formatters.currency(t.amountDue)}',
+          );
         }
       case 'customers':
         final list = await ref.read(customerAccountsProvider().future);
         for (final c in list) {
-          buffer.writeln('${c.customerName} — متبقي: ${Formatters.currency(c.remainingBalance)}');
+          buffer.writeln(
+            '${c.customerName} — متبقي: ${Formatters.currency(c.remainingBalance)}',
+          );
         }
     }
 
     await Clipboard.setData(ClipboardData(text: buffer.toString()));
     if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تم نسخ التقرير')));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('تم نسخ التقرير')));
     }
   }
 }

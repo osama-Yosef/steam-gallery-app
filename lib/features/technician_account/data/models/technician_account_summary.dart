@@ -13,7 +13,8 @@ abstract class TechnicianAccountSummary with _$TechnicianAccountSummary {
     required double amountDue,
   }) = _TechnicianAccountSummary;
 
-  factory TechnicianAccountSummary.fromRow(Map<String, dynamic> row) => TechnicianAccountSummary(
+  factory TechnicianAccountSummary.fromRow(Map<String, dynamic> row) =>
+      TechnicianAccountSummary(
         technicianId: row['technician_id'] as String,
         technicianName: row['technician_name'] as String,
         bagValue: (row['bag_value'] as num).toDouble(),

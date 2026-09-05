@@ -12,16 +12,31 @@ CustomerAccountRepository customerAccountRepository(Ref ref) {
 }
 
 @riverpod
-Future<List<CustomerAccountSummary>> customerAccounts(Ref ref, {String? search}) {
-  return ref.watch(customerAccountRepositoryProvider).getAllAccounts(search: search);
+Future<List<CustomerAccountSummary>> customerAccounts(
+  Ref ref, {
+  String? search,
+}) {
+  return ref
+      .watch(customerAccountRepositoryProvider)
+      .getAllAccounts(search: search);
 }
 
 @riverpod
-Future<CustomerAccountSummary?> customerAccountSummary(Ref ref, String customerId) {
-  return ref.watch(customerAccountRepositoryProvider).getAccountSummary(customerId);
+Future<CustomerAccountSummary?> customerAccountSummary(
+  Ref ref,
+  String customerId,
+) {
+  return ref
+      .watch(customerAccountRepositoryProvider)
+      .getAccountSummary(customerId);
 }
 
 @riverpod
-Future<List<CustomerAccountTransaction>> customerAccountTransactions(Ref ref, String customerId) {
-  return ref.watch(customerAccountRepositoryProvider).getTransactions(customerId);
+Future<List<CustomerAccountTransaction>> customerAccountTransactions(
+  Ref ref,
+  String customerId,
+) {
+  return ref
+      .watch(customerAccountRepositoryProvider)
+      .getTransactions(customerId);
 }

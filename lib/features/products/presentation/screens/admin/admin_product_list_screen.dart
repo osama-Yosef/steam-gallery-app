@@ -11,10 +11,12 @@ class AdminProductListScreen extends ConsumerStatefulWidget {
   const AdminProductListScreen({super.key});
 
   @override
-  ConsumerState<AdminProductListScreen> createState() => _AdminProductListScreenState();
+  ConsumerState<AdminProductListScreen> createState() =>
+      _AdminProductListScreenState();
 }
 
-class _AdminProductListScreenState extends ConsumerState<AdminProductListScreen> {
+class _AdminProductListScreenState
+    extends ConsumerState<AdminProductListScreen> {
   final _searchCtrl = TextEditingController();
   String _search = '';
 
@@ -26,7 +28,9 @@ class _AdminProductListScreenState extends ConsumerState<AdminProductListScreen>
 
   @override
   Widget build(BuildContext context) {
-    final productsAsync = ref.watch(adminProductsProvider(search: _search.isEmpty ? null : _search));
+    final productsAsync = ref.watch(
+      adminProductsProvider(search: _search.isEmpty ? null : _search),
+    );
 
     return Scaffold(
       appBar: AppBar(
@@ -81,7 +85,10 @@ class _AdminProductListScreenState extends ConsumerState<AdminProductListScreen>
               ),
               data: (products) {
                 if (products.isEmpty) {
-                  return const EmptyView(message: 'لا توجد منتجات بعد', icon: Icons.inventory_2_outlined);
+                  return const EmptyView(
+                    message: 'لا توجد منتجات بعد',
+                    icon: Icons.inventory_2_outlined,
+                  );
                 }
                 return ListView.separated(
                   padding: const EdgeInsets.only(bottom: 88),
@@ -97,14 +104,24 @@ class _AdminProductListScreenState extends ConsumerState<AdminProductListScreen>
                           height: 44,
                           child: p.primaryImageUrl == null
                               ? ColoredBox(
-                                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                                  child: const Icon(Icons.inventory_2_outlined, size: 20),
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.surfaceContainerHighest,
+                                  child: const Icon(
+                                    Icons.inventory_2_outlined,
+                                    size: 20,
+                                  ),
                                 )
-                              : CachedNetworkImage(imageUrl: p.primaryImageUrl!, fit: BoxFit.cover),
+                              : CachedNetworkImage(
+                                  imageUrl: p.primaryImageUrl!,
+                                  fit: BoxFit.cover,
+                                ),
                         ),
                       ),
                       title: Text(p.name),
-                      subtitle: Text('SKU: ${p.sku}${p.isActive ? '' : ' — معطَّل'}'),
+                      subtitle: Text(
+                        'SKU: ${p.sku}${p.isActive ? '' : ' — معطَّل'}',
+                      ),
                       trailing: Text(Formatters.currency(p.sellingPrice)),
                       onTap: () async {
                         await context.push(Routes.adminProductEdit(p.id));

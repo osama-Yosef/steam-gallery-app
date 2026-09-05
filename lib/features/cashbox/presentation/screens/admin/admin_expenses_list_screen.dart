@@ -32,7 +32,10 @@ class AdminExpensesListScreen extends ConsumerWidget {
         ),
         data: (expenses) {
           if (expenses.isEmpty) {
-            return const EmptyView(message: 'لا توجد مصروفات بعد', icon: Icons.receipt_long_outlined);
+            return const EmptyView(
+              message: 'لا توجد مصروفات بعد',
+              icon: Icons.receipt_long_outlined,
+            );
           }
           return ListView.separated(
             padding: const EdgeInsets.only(bottom: 88),
@@ -44,7 +47,8 @@ class AdminExpensesListScreen extends ConsumerWidget {
                 leading: CircleAvatar(child: Text('#${e.expenseNumber}')),
                 title: Text(e.categoryName),
                 subtitle: Text(
-                  Formatters.date(e.expenseDate) + (e.notes != null ? ' · ${e.notes}' : ''),
+                  Formatters.date(e.expenseDate) +
+                      (e.notes != null ? ' · ${e.notes}' : ''),
                 ),
                 trailing: MoneyText(-e.amount, colorBySign: true),
               );

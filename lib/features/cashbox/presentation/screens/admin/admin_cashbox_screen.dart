@@ -56,9 +56,15 @@ class AdminCashboxScreen extends ConsumerWidget {
                   padding: const EdgeInsets.all(20),
                   child: Column(
                     children: [
-                      Text(balance.name, style: Theme.of(context).textTheme.titleMedium),
+                      Text(
+                        balance.name,
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
                       const SizedBox(height: 8),
-                      MoneyText(balance.balance, style: Theme.of(context).textTheme.headlineMedium),
+                      MoneyText(
+                        balance.balance,
+                        style: Theme.of(context).textTheme.headlineMedium,
+                      ),
                     ],
                   ),
                 ),
@@ -69,7 +75,10 @@ class AdminCashboxScreen extends ConsumerWidget {
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Align(
               alignment: Alignment.centerRight,
-              child: Text('كل الحركات المالية', style: Theme.of(context).textTheme.titleMedium),
+              child: Text(
+                'كل الحركات المالية',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
             ),
           ),
           Expanded(
@@ -81,7 +90,10 @@ class AdminCashboxScreen extends ConsumerWidget {
               ),
               data: (txns) {
                 if (txns.isEmpty) {
-                  return const EmptyView(message: 'لا توجد حركات مالية بعد', icon: Icons.receipt_long_outlined);
+                  return const EmptyView(
+                    message: 'لا توجد حركات مالية بعد',
+                    icon: Icons.receipt_long_outlined,
+                  );
                 }
                 return ListView.separated(
                   padding: const EdgeInsets.only(bottom: 88),
@@ -93,7 +105,8 @@ class AdminCashboxScreen extends ConsumerWidget {
                       leading: _typeIcon(context, t.type),
                       title: Text(cashTxnTypeLabelAr(t.type)),
                       subtitle: Text(
-                        Formatters.dateTime(t.createdAt) + (t.notes != null ? ' · ${t.notes}' : ''),
+                        Formatters.dateTime(t.createdAt) +
+                            (t.notes != null ? ' · ${t.notes}' : ''),
                       ),
                       trailing: MoneyText(t.amount, colorBySign: true),
                     );
@@ -109,9 +122,13 @@ class AdminCashboxScreen extends ConsumerWidget {
 
   Widget _typeIcon(BuildContext context, CashTxnType type) {
     final isIncome = switch (type) {
-      CashTxnType.sale || CashTxnType.technicianDeposit || CashTxnType.otherIncome => true,
+      CashTxnType.sale ||
+      CashTxnType.technicianDeposit ||
+      CashTxnType.otherIncome => true,
       CashTxnType.expense || CashTxnType.otherExpense => false,
-      CashTxnType.refund || CashTxnType.adjustment || CashTxnType.purchase => null,
+      CashTxnType.refund ||
+      CashTxnType.adjustment ||
+      CashTxnType.purchase => null,
     };
     if (isIncome == null) return const Icon(Icons.swap_horiz);
     return Icon(

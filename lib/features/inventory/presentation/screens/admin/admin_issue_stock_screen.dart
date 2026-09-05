@@ -25,7 +25,8 @@ class AdminIssueStockScreen extends ConsumerStatefulWidget {
   const AdminIssueStockScreen({super.key});
 
   @override
-  ConsumerState<AdminIssueStockScreen> createState() => _AdminIssueStockScreenState();
+  ConsumerState<AdminIssueStockScreen> createState() =>
+      _AdminIssueStockScreenState();
 }
 
 class _AdminIssueStockScreenState extends ConsumerState<AdminIssueStockScreen> {
@@ -41,9 +42,13 @@ class _AdminIssueStockScreenState extends ConsumerState<AdminIssueStockScreen> {
   }
 
   Future<void> _addLine(List<WarehouseStockItem> stock) async {
-    final available = stock.where((s) => s.quantity > 0 && !_lines.any((l) => l.productId == s.productId));
+    final available = stock.where(
+      (s) => s.quantity > 0 && !_lines.any((l) => l.productId == s.productId),
+    );
     if (available.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('لا يوجد منتجات متاحة بالمخزن')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('لا يوجد منتجات متاحة بالمخزن')),
+      );
       return;
     }
     WarehouseStockItem selected = available.first;
@@ -61,10 +66,15 @@ class _AdminIssueStockScreenState extends ConsumerState<AdminIssueStockScreen> {
                 isExpanded: true,
                 decoration: const InputDecoration(labelText: 'المنتج'),
                 items: available
-                    .map((s) => DropdownMenuItem(
-                          value: s,
-                          child: Text('${s.productName} (متاح: ${s.quantity})', overflow: TextOverflow.ellipsis),
-                        ))
+                    .map(
+                      (s) => DropdownMenuItem(
+                        value: s,
+                        child: Text(
+                          '${s.productName} (متاح: ${s.quantity})',
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    )
                     .toList(),
                 onChanged: (s) => setDialogState(() => selected = s!),
               ),
@@ -77,8 +87,14 @@ class _AdminIssueStockScreenState extends ConsumerState<AdminIssueStockScreen> {
             ],
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('إلغاء')),
-            FilledButton(onPressed: () => Navigator.of(ctx).pop(true), child: const Text('إضافة')),
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(false),
+              child: const Text('إلغاء'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(ctx).pop(true),
+              child: const Text('إضافة'),
+            ),
           ],
         ),
       ),
@@ -87,42 +103,57 @@ class _AdminIssueStockScreenState extends ConsumerState<AdminIssueStockScreen> {
     final qty = int.tryParse(qtyCtrl.text) ?? 0;
     if (qty <= 0 || qty > selected.quantity) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('كمية غير صحيحة')));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('كمية غير صحيحة')));
       }
       return;
     }
     setState(() {
-      _lines.add(_IssueLine(
-        productId: selected.productId,
-        productName: selected.productName,
-        sku: selected.sku,
-        available: selected.quantity,
-        quantity: qty,
-      ));
+      _lines.add(
+        _IssueLine(
+          productId: selected.productId,
+          productName: selected.productName,
+          sku: selected.sku,
+          available: selected.quantity,
+          quantity: qty,
+        ),
+      );
     });
   }
 
   Future<void> _submit() async {
     if (_technicianId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('اختر الصنايعي أولًا')));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('اختر الصنايعي أولًا')));
       return;
     }
     if (_lines.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('أضف منتجًا واحدًا على الأقل')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('أضف منتجًا واحدًا على الأقل')),
+      );
       return;
     }
     setState(() => _submitting = true);
     try {
-      await ref.read(inventoryRepositoryProvider).issueStock(
+      await ref
+          .read(inventoryRepositoryProvider)
+          .issueStock(
             technicianId: _technicianId!,
-            items: _lines.map((l) => (productId: l.productId, quantity: l.quantity)).toList(),
-            notes: _notesCtrl.text.trim().isEmpty ? null : _notesCtrl.text.trim(),
+            items: _lines
+                .map((l) => (productId: l.productId, quantity: l.quantity))
+                .toList(),
+            notes: _notesCtrl.text.trim().isEmpty
+                ? null
+                : _notesCtrl.text.trim(),
           );
       if (mounted) Navigator.of(context).pop(true);
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(AppException.from(e).messageAr)));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(AppException.from(e).messageAr)));
       }
     } finally {
       if (mounted) setState(() => _submitting = false);
@@ -147,10 +178,15 @@ class _AdminIssueStockScreenState extends ConsumerState<AdminIssueStockScreen> {
               isExpanded: true,
               decoration: const InputDecoration(labelText: 'الصنايعي'),
               items: technicians
-                  .map((t) => DropdownMenuItem(
-                        value: t.id,
-                        child: Text('${t.fullName} (${t.employeeCode})', overflow: TextOverflow.ellipsis),
-                      ))
+                  .map(
+                    (t) => DropdownMenuItem(
+                      value: t.id,
+                      child: Text(
+                        '${t.fullName} (${t.employeeCode})',
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  )
                   .toList(),
               onChanged: (v) => setState(() => _technicianId = v),
             ),
@@ -158,7 +194,10 @@ class _AdminIssueStockScreenState extends ConsumerState<AdminIssueStockScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('المنتجات', style: Theme.of(context).textTheme.titleMedium),
+                Text(
+                  'المنتجات',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
                 stockAsync.when(
                   loading: () => const SizedBox.shrink(),
                   error: (e, _) => const SizedBox.shrink(),
@@ -170,7 +209,11 @@ class _AdminIssueStockScreenState extends ConsumerState<AdminIssueStockScreen> {
                 ),
               ],
             ),
-            if (_lines.isEmpty) const Padding(padding: EdgeInsets.all(16), child: Text('لم تُضف منتجات بعد')),
+            if (_lines.isEmpty)
+              const Padding(
+                padding: EdgeInsets.all(16),
+                child: Text('لم تُضف منتجات بعد'),
+              ),
             for (final line in _lines)
               ListTile(
                 title: Text(line.productName),
@@ -190,7 +233,11 @@ class _AdminIssueStockScreenState extends ConsumerState<AdminIssueStockScreen> {
             FilledButton.icon(
               onPressed: _submitting ? null : _submit,
               icon: _submitting
-                  ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
+                  ? const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
                   : const Icon(Icons.check),
               label: const Text('تأكيد الصرف'),
             ),

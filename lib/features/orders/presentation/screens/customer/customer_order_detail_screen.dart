@@ -35,17 +35,26 @@ class CustomerOrderDetailScreen extends ConsumerWidget {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text('طلب #${order.orderNumber}', style: Theme.of(context).textTheme.titleLarge),
+                          Text(
+                            'طلب #${order.orderNumber}',
+                            style: Theme.of(context).textTheme.titleLarge,
+                          ),
                           _StatusChip(status: order.status),
                         ],
                       ),
                       const SizedBox(height: 4),
-                      Text(Formatters.dateTime(order.createdAt),
-                          style: Theme.of(context).textTheme.bodySmall),
+                      Text(
+                        Formatters.dateTime(order.createdAt),
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
                       if (order.cancelledReason != null) ...[
                         const SizedBox(height: 8),
-                        Text('سبب الإلغاء: ${order.cancelledReason}',
-                            style: TextStyle(color: Theme.of(context).colorScheme.error)),
+                        Text(
+                          'سبب الإلغاء: ${order.cancelledReason}',
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.error,
+                          ),
+                        ),
                       ],
                     ],
                   ),
@@ -60,11 +69,13 @@ class CustomerOrderDetailScreen extends ConsumerWidget {
                 data: (items) => Card(
                   child: Column(
                     children: items
-                        .map((it) => ListTile(
-                              title: Text(it.productNameSnapshot),
-                              subtitle: Text('الكمية: ${it.quantity}'),
-                              trailing: Text(Formatters.currency(it.lineTotal)),
-                            ))
+                        .map(
+                          (it) => ListTile(
+                            title: Text(it.productNameSnapshot),
+                            subtitle: Text('الكمية: ${it.quantity}'),
+                            trailing: Text(Formatters.currency(it.lineTotal)),
+                          ),
+                        )
                         .toList(),
                   ),
                 ),
@@ -75,16 +86,32 @@ class CustomerOrderDetailScreen extends ConsumerWidget {
                   padding: const EdgeInsets.all(16),
                   child: Column(
                     children: [
-                      _row(context, 'الإجمالي', Formatters.currency(order.total)),
-                      _row(context, 'المدفوع', Formatters.currency(order.paidAmount)),
-                      _row(context, 'المتبقي', Formatters.currency(order.remaining), bold: true),
+                      _row(
+                        context,
+                        'الإجمالي',
+                        Formatters.currency(order.total),
+                      ),
+                      _row(
+                        context,
+                        'المدفوع',
+                        Formatters.currency(order.paidAmount),
+                      ),
+                      _row(
+                        context,
+                        'المتبقي',
+                        Formatters.currency(order.remaining),
+                        bold: true,
+                      ),
                     ],
                   ),
                 ),
               ),
               if (order.deliveryAddress != null) ...[
                 const SizedBox(height: 16),
-                Text('عنوان التوصيل', style: Theme.of(context).textTheme.titleMedium),
+                Text(
+                  'عنوان التوصيل',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
                 const SizedBox(height: 4),
                 Text(order.deliveryAddress!),
               ],
@@ -95,15 +122,25 @@ class CustomerOrderDetailScreen extends ConsumerWidget {
     );
   }
 
-  Widget _row(BuildContext context, String label, String value, {bool bold = false}) {
+  Widget _row(
+    BuildContext context,
+    String label,
+    String value, {
+    bool bold = false,
+  }) {
     final style = bold
-        ? Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)
+        ? Theme.of(
+            context,
+          ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)
         : Theme.of(context).textTheme.bodyMedium;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [Text(label, style: style), Text(value, style: style)],
+        children: [
+          Text(label, style: style),
+          Text(value, style: style),
+        ],
       ),
     );
   }
@@ -119,7 +156,8 @@ class _StatusChip extends StatelessWidget {
       OrderStatus.pending => Colors.orange,
       OrderStatus.confirmed || OrderStatus.preparing => Colors.blue,
       OrderStatus.delivered || OrderStatus.completed => Colors.green,
-      OrderStatus.cancelled || OrderStatus.returned => Theme.of(context).colorScheme.error,
+      OrderStatus.cancelled ||
+      OrderStatus.returned => Theme.of(context).colorScheme.error,
     };
     return Chip(
       label: Text(orderStatusLabelAr(status)),

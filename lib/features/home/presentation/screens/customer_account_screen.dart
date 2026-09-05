@@ -37,18 +37,27 @@ class CustomerAccountScreen extends ConsumerWidget {
                     height: 52,
                     decoration: const BoxDecoration(
                       shape: BoxShape.circle,
-                      gradient: LinearGradient(colors: [AppColors.primary, AppColors.accent]),
+                      gradient: LinearGradient(
+                        colors: [AppColors.primary, AppColors.accent],
+                      ),
                     ),
                     child: ClipOval(
                       child: profile?.avatarUrl == null
-                          ? const Icon(Icons.person_rounded, color: Colors.white, size: 28)
+                          ? const Icon(
+                              Icons.person_rounded,
+                              color: Colors.white,
+                              size: 28,
+                            )
                           : CachedNetworkImage(
                               imageUrl: profile!.avatarUrl!,
                               fit: BoxFit.cover,
                               width: 52,
                               height: 52,
-                              errorWidget: (_, _, _) =>
-                                  const Icon(Icons.person_rounded, color: Colors.white, size: 28),
+                              errorWidget: (_, _, _) => const Icon(
+                                Icons.person_rounded,
+                                color: Colors.white,
+                                size: 28,
+                              ),
                             ),
                     ),
                   ),
@@ -57,9 +66,15 @@ class CustomerAccountScreen extends ConsumerWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(profile?.fullName ?? '', style: Theme.of(context).textTheme.titleMedium),
+                        Text(
+                          profile?.fullName ?? '',
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
                         if (profile?.phone != null)
-                          Text(profile!.phone!, style: Theme.of(context).textTheme.bodySmall),
+                          Text(
+                            profile!.phone!,
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
                       ],
                     ),
                   ),
@@ -83,8 +98,13 @@ class CustomerAccountScreen extends ConsumerWidget {
                 if (confirmed) await ref.read(authRepositoryProvider).signOut();
               },
               icon: const Icon(Icons.logout_rounded, color: AppColors.danger),
-              label: const Text('تسجيل الخروج', style: TextStyle(color: AppColors.danger)),
-              style: OutlinedButton.styleFrom(side: const BorderSide(color: AppColors.danger)),
+              label: const Text(
+                'تسجيل الخروج',
+                style: TextStyle(color: AppColors.danger),
+              ),
+              style: OutlinedButton.styleFrom(
+                side: const BorderSide(color: AppColors.danger),
+              ),
             ),
           ],
         ),
@@ -122,7 +142,10 @@ class _EditProfileSheetState extends ConsumerState<_EditProfileSheet> {
   }
 
   Future<void> _pickAvatar() async {
-    final file = await ImagePicker().pickImage(source: ImageSource.gallery, imageQuality: 85);
+    final file = await ImagePicker().pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 85,
+    );
     if (file == null) return;
     final bytes = await file.readAsBytes();
     setState(() {
@@ -134,7 +157,9 @@ class _EditProfileSheetState extends ConsumerState<_EditProfileSheet> {
   Future<void> _save() async {
     setState(() => _saving = true);
     try {
-      await ref.read(authRepositoryProvider).updateMyProfile(
+      await ref
+          .read(authRepositoryProvider)
+          .updateMyProfile(
             fullName: _nameCtrl.text.trim(),
             avatarBytes: _avatarBytes,
             avatarExt: _avatarExt,
@@ -143,8 +168,9 @@ class _EditProfileSheetState extends ConsumerState<_EditProfileSheet> {
       if (mounted) Navigator.of(context).pop();
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(AppException.from(e).messageAr)));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(AppException.from(e).messageAr)));
       }
     } finally {
       if (mounted) setState(() => _saving = false);
@@ -154,7 +180,12 @@ class _EditProfileSheetState extends ConsumerState<_EditProfileSheet> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.fromLTRB(20, 20, 20, MediaQuery.of(context).viewInsets.bottom + 20),
+      padding: EdgeInsets.fromLTRB(
+        20,
+        20,
+        20,
+        MediaQuery.of(context).viewInsets.bottom + 20,
+      ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -169,8 +200,10 @@ class _EditProfileSheetState extends ConsumerState<_EditProfileSheet> {
                 backgroundImage: _avatarBytes != null
                     ? MemoryImage(_avatarBytes!)
                     : (widget.profile.avatarUrl != null
-                        ? CachedNetworkImageProvider(widget.profile.avatarUrl!)
-                        : null),
+                          ? CachedNetworkImageProvider(
+                              widget.profile.avatarUrl!,
+                            )
+                          : null),
                 child: _avatarBytes == null && widget.profile.avatarUrl == null
                     ? const Icon(Icons.person_outline, size: 36)
                     : null,
@@ -178,7 +211,10 @@ class _EditProfileSheetState extends ConsumerState<_EditProfileSheet> {
             ),
           ),
           Center(
-            child: TextButton(onPressed: _pickAvatar, child: const Text('تغيير الصورة')),
+            child: TextButton(
+              onPressed: _pickAvatar,
+              child: const Text('تغيير الصورة'),
+            ),
           ),
           const SizedBox(height: 8),
           TextField(
@@ -189,7 +225,11 @@ class _EditProfileSheetState extends ConsumerState<_EditProfileSheet> {
           FilledButton(
             onPressed: _saving ? null : _save,
             child: _saving
-                ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                ? const SizedBox(
+                    height: 20,
+                    width: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
                 : const Text('حفظ'),
           ),
         ],

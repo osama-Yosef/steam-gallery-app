@@ -12,10 +12,12 @@ class TechnicianSupplyScreen extends ConsumerStatefulWidget {
   const TechnicianSupplyScreen({super.key, this.technicianId});
 
   @override
-  ConsumerState<TechnicianSupplyScreen> createState() => _TechnicianSupplyScreenState();
+  ConsumerState<TechnicianSupplyScreen> createState() =>
+      _TechnicianSupplyScreenState();
 }
 
-class _TechnicianSupplyScreenState extends ConsumerState<TechnicianSupplyScreen> {
+class _TechnicianSupplyScreenState
+    extends ConsumerState<TechnicianSupplyScreen> {
   final _formKey = GlobalKey<FormState>();
   final _amountCtrl = TextEditingController();
   final _notesCtrl = TextEditingController();
@@ -32,16 +34,21 @@ class _TechnicianSupplyScreenState extends ConsumerState<TechnicianSupplyScreen>
     if (!_formKey.currentState!.validate()) return;
     setState(() => _submitting = true);
     try {
-      await ref.read(technicianAccountRepositoryProvider).recordSupply(
+      await ref
+          .read(technicianAccountRepositoryProvider)
+          .recordSupply(
             technicianId: technicianId,
             amount: double.parse(_amountCtrl.text),
-            notes: _notesCtrl.text.trim().isEmpty ? null : _notesCtrl.text.trim(),
+            notes: _notesCtrl.text.trim().isEmpty
+                ? null
+                : _notesCtrl.text.trim(),
           );
       if (mounted) Navigator.of(context).pop(true);
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(AppException.from(e).messageAr)));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(AppException.from(e).messageAr)));
       }
     } finally {
       if (mounted) setState(() => _submitting = false);
@@ -50,7 +57,8 @@ class _TechnicianSupplyScreenState extends ConsumerState<TechnicianSupplyScreen>
 
   @override
   Widget build(BuildContext context) {
-    final technicianId = widget.technicianId ?? ref.watch(currentUserProfileProvider).value?.id;
+    final technicianId =
+        widget.technicianId ?? ref.watch(currentUserProfileProvider).value?.id;
 
     return Scaffold(
       appBar: AppBar(title: const Text('تسجيل توريد')),
@@ -63,7 +71,9 @@ class _TechnicianSupplyScreenState extends ConsumerState<TechnicianSupplyScreen>
                 children: [
                   TextFormField(
                     controller: _amountCtrl,
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
                     decoration: const InputDecoration(labelText: 'المبلغ'),
                     validator: (v) {
                       final n = double.tryParse(v ?? '');
@@ -74,14 +84,20 @@ class _TechnicianSupplyScreenState extends ConsumerState<TechnicianSupplyScreen>
                   const SizedBox(height: 16),
                   TextFormField(
                     controller: _notesCtrl,
-                    decoration: const InputDecoration(labelText: 'ملاحظات (اختياري)'),
+                    decoration: const InputDecoration(
+                      labelText: 'ملاحظات (اختياري)',
+                    ),
                     maxLines: 2,
                   ),
                   const SizedBox(height: 24),
                   FilledButton.icon(
                     onPressed: _submitting ? null : () => _submit(technicianId),
                     icon: _submitting
-                        ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
+                        ? const SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
                         : const Icon(Icons.check),
                     label: const Text('تأكيد التوريد'),
                   ),

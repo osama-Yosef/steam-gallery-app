@@ -5,9 +5,9 @@ part 'app_user.freezed.dart';
 enum AppRole { admin, technician, customer }
 
 AppRole appRoleFromString(String value) => AppRole.values.firstWhere(
-      (r) => r.name == value,
-      orElse: () => AppRole.customer,
-    );
+  (r) => r.name == value,
+  orElse: () => AppRole.customer,
+);
 
 /// Mirrors public.users — the profile row every authenticated person has.
 /// This is what the router uses to decide which app shell to show.
@@ -30,12 +30,12 @@ abstract class AppUser with _$AppUser {
   }) = _AppUser;
 
   factory AppUser.fromRow(Map<String, dynamic> json) => AppUser(
-        id: json['id'] as String,
-        role: appRoleFromString(json['role'] as String),
-        fullName: json['full_name'] as String,
-        phone: json['phone'] as String?,
-        email: json['email'] as String?,
-        avatarUrl: json['avatar_url'] as String?,
-        isActive: json['is_active'] as bool? ?? true,
-      );
+    id: json['id'] as String,
+    role: appRoleFromString(json['role'] as String),
+    fullName: json['full_name'] as String,
+    phone: json['phone'] as String?,
+    email: json['email'] as String?,
+    avatarUrl: json['avatar_url'] as String?,
+    isActive: json['is_active'] as bool? ?? true,
+  );
 }

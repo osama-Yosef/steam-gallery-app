@@ -13,14 +13,18 @@ class AdminInventoryCountDetailScreen extends ConsumerStatefulWidget {
   const AdminInventoryCountDetailScreen({super.key, required this.countId});
 
   @override
-  ConsumerState<AdminInventoryCountDetailScreen> createState() => _AdminInventoryCountDetailScreenState();
+  ConsumerState<AdminInventoryCountDetailScreen> createState() =>
+      _AdminInventoryCountDetailScreenState();
 }
 
-class _AdminInventoryCountDetailScreenState extends ConsumerState<AdminInventoryCountDetailScreen> {
+class _AdminInventoryCountDetailScreenState
+    extends ConsumerState<AdminInventoryCountDetailScreen> {
   bool _completing = false;
 
   Future<void> _editItem(InventoryCountItem item) async {
-    final qtyCtrl = TextEditingController(text: (item.actualQuantity ?? item.systemQuantity).toString());
+    final qtyCtrl = TextEditingController(
+      text: (item.actualQuantity ?? item.systemQuantity).toString(),
+    );
     final reasonCtrl = TextEditingController(text: item.reason ?? '');
     final saved = await showDialog<bool>(
       context: context,
@@ -38,20 +42,27 @@ class _AdminInventoryCountDetailScreenState extends ConsumerState<AdminInventory
                 TextField(
                   controller: qtyCtrl,
                   keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(labelText: 'الكمية الفعلية'),
+                  decoration: const InputDecoration(
+                    labelText: 'الكمية الفعلية',
+                  ),
                   onChanged: (_) => setDialogState(() {}),
                 ),
                 if (differs) ...[
                   const SizedBox(height: 12),
                   TextField(
                     controller: reasonCtrl,
-                    decoration: const InputDecoration(labelText: 'سبب الفرق (مطلوب)'),
+                    decoration: const InputDecoration(
+                      labelText: 'سبب الفرق (مطلوب)',
+                    ),
                   ),
                 ],
               ],
             ),
             actions: [
-              TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('إلغاء')),
+              TextButton(
+                onPressed: () => Navigator.of(ctx).pop(false),
+                child: const Text('إلغاء'),
+              ),
               FilledButton(
                 onPressed: () {
                   if (differs && reasonCtrl.text.trim().isEmpty) return;
@@ -68,16 +79,21 @@ class _AdminInventoryCountDetailScreenState extends ConsumerState<AdminInventory
     final qty = int.tryParse(qtyCtrl.text);
     if (qty == null || qty < 0) return;
     try {
-      await ref.read(inventoryCountRepositoryProvider).saveItem(
+      await ref
+          .read(inventoryCountRepositoryProvider)
+          .saveItem(
             itemId: item.id,
             actualQuantity: qty,
-            reason: reasonCtrl.text.trim().isEmpty ? null : reasonCtrl.text.trim(),
+            reason: reasonCtrl.text.trim().isEmpty
+                ? null
+                : reasonCtrl.text.trim(),
           );
       ref.invalidate(inventoryCountItemsProvider(widget.countId));
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(AppException.from(e).messageAr)));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(AppException.from(e).messageAr)));
       }
     }
   }
@@ -94,7 +110,9 @@ class _AdminInventoryCountDetailScreenState extends ConsumerState<AdminInventory
     if (!confirmed) return;
     setState(() => _completing = true);
     try {
-      await ref.read(inventoryCountRepositoryProvider).completeCount(widget.countId);
+      await ref
+          .read(inventoryCountRepositoryProvider)
+          .completeCount(widget.countId);
       ref.invalidate(inventoryCountDetailProvider(widget.countId));
       ref.invalidate(inventoryCountItemsProvider(widget.countId));
       // Approving a count can adjust real warehouse quantities — make sure
@@ -103,8 +121,9 @@ class _AdminInventoryCountDetailScreenState extends ConsumerState<AdminInventory
       ref.invalidate(warehouseStockProvider);
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(AppException.from(e).messageAr)));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(AppException.from(e).messageAr)));
       }
     } finally {
       if (mounted) setState(() => _completing = false);
@@ -128,7 +147,8 @@ class _AdminInventoryCountDetailScreenState extends ConsumerState<AdminInventory
             loading: () => const LoadingView(),
             error: (e, _) => ErrorView(
               message: 'تعذَّر تحميل الأصناف',
-              onRetry: () => ref.invalidate(inventoryCountItemsProvider(widget.countId)),
+              onRetry: () =>
+                  ref.invalidate(inventoryCountItemsProvider(widget.countId)),
             ),
             data: (items) {
               if (items.isEmpty) {
@@ -141,8 +161,14 @@ class _AdminInventoryCountDetailScreenState extends ConsumerState<AdminInventory
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Chip(label: Text(inventoryCountStatusLabelAr(count.status))),
-                        Text('${items.where((i) => i.isCounted).length} / ${items.length} مُدخَل'),
+                        Chip(
+                          label: Text(
+                            inventoryCountStatusLabelAr(count.status),
+                          ),
+                        ),
+                        Text(
+                          '${items.where((i) => i.isCounted).length} / ${items.length} مُدخَل',
+                        ),
                       ],
                     ),
                   ),
@@ -155,8 +181,10 @@ class _AdminInventoryCountDetailScreenState extends ConsumerState<AdminInventory
                         final item = items[i];
                         return ListTile(
                           title: Text(item.productName),
-                          subtitle: Text('SKU: ${item.sku} · بالنظام: ${item.systemQuantity}'
-                              '${item.reason != null ? ' · السبب: ${item.reason}' : ''}'),
+                          subtitle: Text(
+                            'SKU: ${item.sku} · بالنظام: ${item.systemQuantity}'
+                            '${item.reason != null ? ' · السبب: ${item.reason}' : ''}',
+                          ),
                           trailing: item.isCounted
                               ? Text(
                                   item.hasDifference
@@ -182,7 +210,12 @@ class _AdminInventoryCountDetailScreenState extends ConsumerState<AdminInventory
                         onPressed: _completing ? null : () => _complete(items),
                         icon: _completing
                             ? const SizedBox(
-                                width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
+                                width: 16,
+                                height: 16,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              )
                             : const Icon(Icons.check_circle_outline),
                         label: const Text('اعتماد الجرد'),
                       ),

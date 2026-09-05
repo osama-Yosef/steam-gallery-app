@@ -24,7 +24,9 @@ class TechnicianBagScreen extends ConsumerWidget {
             onPressed: () => context.push(Routes.technicianSales),
           ),
         ],
-        bottom: profile == null ? null : BagValueAppBarBottom(technicianId: profile.id),
+        bottom: profile == null
+            ? null
+            : BagValueAppBarBottom(technicianId: profile.id),
       ),
       floatingActionButton: profile == null
           ? null
@@ -37,7 +39,9 @@ class TechnicianBagScreen extends ConsumerWidget {
               icon: const Icon(Icons.point_of_sale_outlined),
               label: const Text('بيع'),
             ),
-      body: profile == null ? const SizedBox.shrink() : BagStockBody(technicianId: profile.id),
+      body: profile == null
+          ? const SizedBox.shrink()
+          : BagStockBody(technicianId: profile.id),
     );
   }
 }

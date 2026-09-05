@@ -36,7 +36,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _loading = true);
     try {
-      await ref.read(authRepositoryProvider).signInWithPhone(
+      await ref
+          .read(authRepositoryProvider)
+          .signInWithPhone(
             localPhone: _phoneCtrl.text.trim(),
             password: _passwordCtrl.text,
           );
@@ -46,7 +48,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     } catch (e) {
       if (!mounted) return;
       final message = AppException.from(e).messageAr;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(message)));
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -69,7 +73,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   children: [
                     ClipRRect(
                       borderRadius: BorderRadius.circular(18),
-                      child: Image.asset('assets/icon/icon.png', width: 72, height: 72),
+                      child: Image.asset(
+                        'assets/icon/icon.png',
+                        width: 72,
+                        height: 72,
+                      ),
                     ),
                     const SizedBox(height: 12),
                     Text(
@@ -97,7 +105,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         labelText: 'كلمة المرور',
                         prefixIcon: const Icon(Icons.lock_outline),
                         suffixIcon: IconButton(
-                          icon: Icon(_obscure ? Icons.visibility_off : Icons.visibility),
+                          icon: Icon(
+                            _obscure ? Icons.visibility_off : Icons.visibility,
+                          ),
                           onPressed: () => setState(() => _obscure = !_obscure),
                         ),
                       ),
@@ -108,7 +118,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       onPressed: _loading ? null : _submit,
                       child: _loading
                           ? const SizedBox(
-                              height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
                           : const Text('دخول'),
                     ),
                     const SizedBox(height: 12),

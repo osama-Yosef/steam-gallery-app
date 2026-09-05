@@ -10,7 +10,8 @@ class AdminWarehouseScreen extends ConsumerStatefulWidget {
   const AdminWarehouseScreen({super.key});
 
   @override
-  ConsumerState<AdminWarehouseScreen> createState() => _AdminWarehouseScreenState();
+  ConsumerState<AdminWarehouseScreen> createState() =>
+      _AdminWarehouseScreenState();
 }
 
 class _AdminWarehouseScreenState extends ConsumerState<AdminWarehouseScreen> {
@@ -44,15 +45,22 @@ class _AdminWarehouseScreenState extends ConsumerState<AdminWarehouseScreen> {
       ),
     );
     if (!mounted || action == null) return;
-    final route = action == 'receive' ? Routes.adminReceivePurchase : Routes.adminIssueStock;
+    final route = action == 'receive'
+        ? Routes.adminReceivePurchase
+        : Routes.adminIssueStock;
     await context.push(route);
     ref.invalidate(warehouseStockProvider);
   }
 
   @override
   Widget build(BuildContext context) {
-    final stockAsync = ref.watch(warehouseStockProvider(search: _search.isEmpty ? null : _search));
-    final totalValue = stockAsync.value?.fold<double>(0, (sum, i) => sum + i.value);
+    final stockAsync = ref.watch(
+      warehouseStockProvider(search: _search.isEmpty ? null : _search),
+    );
+    final totalValue = stockAsync.value?.fold<double>(
+      0,
+      (sum, i) => sum + i.value,
+    );
 
     return Scaffold(
       appBar: AppBar(
@@ -86,7 +94,10 @@ class _AdminWarehouseScreenState extends ConsumerState<AdminWarehouseScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       const Text('إجمالي قيمة المخزن (تكلفة): '),
-                      MoneyText(totalValue, style: Theme.of(context).textTheme.titleSmall),
+                      MoneyText(
+                        totalValue,
+                        style: Theme.of(context).textTheme.titleSmall,
+                      ),
                     ],
                   ),
                 ),
@@ -128,7 +139,10 @@ class _AdminWarehouseScreenState extends ConsumerState<AdminWarehouseScreen> {
               ),
               data: (items) {
                 if (items.isEmpty) {
-                  return const EmptyView(message: 'لا توجد أصناف بالمخزن', icon: Icons.warehouse_outlined);
+                  return const EmptyView(
+                    message: 'لا توجد أصناف بالمخزن',
+                    icon: Icons.warehouse_outlined,
+                  );
                 }
                 return ListView.separated(
                   padding: const EdgeInsets.only(bottom: 88),
@@ -138,10 +152,15 @@ class _AdminWarehouseScreenState extends ConsumerState<AdminWarehouseScreen> {
                     final item = items[i];
                     return ListTile(
                       leading: item.isLow
-                          ? Icon(Icons.warning_amber_rounded, color: Theme.of(context).colorScheme.error)
+                          ? Icon(
+                              Icons.warning_amber_rounded,
+                              color: Theme.of(context).colorScheme.error,
+                            )
                           : const Icon(Icons.inventory_2_outlined),
                       title: Text(item.productName),
-                      subtitle: Text('SKU: ${item.sku} · الكمية: ${item.quantity}'),
+                      subtitle: Text(
+                        'SKU: ${item.sku} · الكمية: ${item.quantity}',
+                      ),
                       trailing: MoneyText(item.value),
                     );
                   },

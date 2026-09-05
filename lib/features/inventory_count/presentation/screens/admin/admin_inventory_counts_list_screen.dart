@@ -13,30 +13,36 @@ class AdminInventoryCountsListScreen extends ConsumerStatefulWidget {
   const AdminInventoryCountsListScreen({super.key});
 
   @override
-  ConsumerState<AdminInventoryCountsListScreen> createState() => _AdminInventoryCountsListScreenState();
+  ConsumerState<AdminInventoryCountsListScreen> createState() =>
+      _AdminInventoryCountsListScreenState();
 }
 
-class _AdminInventoryCountsListScreenState extends ConsumerState<AdminInventoryCountsListScreen> {
+class _AdminInventoryCountsListScreenState
+    extends ConsumerState<AdminInventoryCountsListScreen> {
   bool _starting = false;
 
   Future<void> _startNewCount() async {
     final confirmed = await showConfirmDialog(
       context,
       title: 'بدء جرد جديد',
-      message: 'سيتم تسجيل الكميات الحالية للمخزن الرئيسي كأساس للجرد. هل تريد المتابعة؟',
+      message:
+          'سيتم تسجيل الكميات الحالية للمخزن الرئيسي كأساس للجرد. هل تريد المتابعة؟',
     );
     if (!confirmed) return;
     setState(() => _starting = true);
     try {
-      final countId = await ref.read(inventoryCountRepositoryProvider).startWarehouseCount();
+      final countId = await ref
+          .read(inventoryCountRepositoryProvider)
+          .startWarehouseCount();
       if (mounted) {
         await context.push(Routes.adminInventoryCountDetail(countId));
         ref.invalidate(inventoryCountsProvider);
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(AppException.from(e).messageAr)));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(AppException.from(e).messageAr)));
       }
     } finally {
       if (mounted) setState(() => _starting = false);
@@ -52,7 +58,11 @@ class _AdminInventoryCountsListScreenState extends ConsumerState<AdminInventoryC
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _starting ? null : _startNewCount,
         icon: _starting
-            ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
+            ? const SizedBox(
+                width: 16,
+                height: 16,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              )
             : const Icon(Icons.checklist_outlined),
         label: const Text('بدء جرد جديد'),
       ),
@@ -64,7 +74,10 @@ class _AdminInventoryCountsListScreenState extends ConsumerState<AdminInventoryC
         ),
         data: (counts) {
           if (counts.isEmpty) {
-            return const EmptyView(message: 'لا توجد عمليات جرد بعد', icon: Icons.checklist_outlined);
+            return const EmptyView(
+              message: 'لا توجد عمليات جرد بعد',
+              icon: Icons.checklist_outlined,
+            );
           }
           return ListView.separated(
             padding: const EdgeInsets.only(bottom: 88),
@@ -80,7 +93,10 @@ class _AdminInventoryCountsListScreenState extends ConsumerState<AdminInventoryC
                 ),
                 trailing: c.status == InventoryCountStatus.draft
                     ? const Icon(Icons.edit_note_outlined)
-                    : const Icon(Icons.check_circle_outline, color: Colors.green),
+                    : const Icon(
+                        Icons.check_circle_outline,
+                        color: Colors.green,
+                      ),
                 onTap: () async {
                   await context.push(Routes.adminInventoryCountDetail(c.id));
                   ref.invalidate(inventoryCountsProvider);

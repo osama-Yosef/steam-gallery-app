@@ -8,7 +8,11 @@ import '../../../presentation/providers/product_providers.dart';
 class AdminCategoryListScreen extends ConsumerWidget {
   const AdminCategoryListScreen({super.key});
 
-  Future<void> _showCategoryDialog(BuildContext context, WidgetRef ref, {ProductCategory? existing}) async {
+  Future<void> _showCategoryDialog(
+    BuildContext context,
+    WidgetRef ref, {
+    ProductCategory? existing,
+  }) async {
     final ctrl = TextEditingController(text: existing?.name ?? '');
     bool isActive = existing?.isActive ?? true;
 
@@ -20,7 +24,10 @@ class AdminCategoryListScreen extends ConsumerWidget {
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              TextField(controller: ctrl, decoration: const InputDecoration(labelText: 'اسم القسم')),
+              TextField(
+                controller: ctrl,
+                decoration: const InputDecoration(labelText: 'اسم القسم'),
+              ),
               if (existing != null)
                 SwitchListTile(
                   contentPadding: EdgeInsets.zero,
@@ -31,7 +38,10 @@ class AdminCategoryListScreen extends ConsumerWidget {
             ],
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.of(ctx).pop(), child: const Text('إلغاء')),
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: const Text('إلغاء'),
+            ),
             FilledButton(
               onPressed: () async {
                 final name = ctrl.text.trim();
@@ -41,14 +51,19 @@ class AdminCategoryListScreen extends ConsumerWidget {
                   if (existing == null) {
                     await repo.createCategory(name: name);
                   } else {
-                    await repo.updateCategory(existing.id, name: name, isActive: isActive);
+                    await repo.updateCategory(
+                      existing.id,
+                      name: name,
+                      isActive: isActive,
+                    );
                   }
                   ref.invalidate(categoriesProvider);
                   if (ctx.mounted) Navigator.of(ctx).pop();
                 } catch (e) {
                   if (ctx.mounted) {
-                    ScaffoldMessenger.of(ctx)
-                        .showSnackBar(SnackBar(content: Text(AppException.from(e).messageAr)));
+                    ScaffoldMessenger.of(ctx).showSnackBar(
+                      SnackBar(content: Text(AppException.from(e).messageAr)),
+                    );
                   }
                 }
               },
@@ -72,10 +87,16 @@ class AdminCategoryListScreen extends ConsumerWidget {
       ),
       body: categoriesAsync.when(
         loading: () => const LoadingView(),
-        error: (e, _) => ErrorView(message: 'تعذَّر تحميل الأقسام', onRetry: () => ref.invalidate(categoriesProvider)),
+        error: (e, _) => ErrorView(
+          message: 'تعذَّر تحميل الأقسام',
+          onRetry: () => ref.invalidate(categoriesProvider),
+        ),
         data: (categories) {
           if (categories.isEmpty) {
-            return const EmptyView(message: 'لا توجد أقسام بعد', icon: Icons.category_outlined);
+            return const EmptyView(
+              message: 'لا توجد أقسام بعد',
+              icon: Icons.category_outlined,
+            );
           }
           return ListView.separated(
             itemCount: categories.length,

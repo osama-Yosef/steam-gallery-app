@@ -11,8 +11,8 @@ abstract class ExpenseCategory with _$ExpenseCategory {
   }) = _ExpenseCategory;
 
   factory ExpenseCategory.fromRow(Map<String, dynamic> row) => ExpenseCategory(
-        id: row['id'] as String,
-        name: row['name'] as String,
-        isActive: row['is_active'] as bool,
-      );
+    id: row['id'] as String,
+    name: row['name'] as String,
+    isActive: row['is_active'] as bool,
+  );
 }

@@ -16,7 +16,8 @@ class AdminTechnicianBagDetailScreen extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.account_balance_wallet_outlined),
             tooltip: 'الحساب',
-            onPressed: () => context.push(Routes.adminTechnicianAccount(technicianId)),
+            onPressed: () =>
+                context.push(Routes.adminTechnicianAccount(technicianId)),
           ),
         ],
         bottom: BagValueAppBarBottom(technicianId: technicianId),

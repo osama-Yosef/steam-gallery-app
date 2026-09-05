@@ -15,36 +15,36 @@ enum StockMovementType {
 }
 
 StockMovementType stockMovementTypeFromString(String v) => switch (v) {
-      'purchase' => StockMovementType.purchase,
-      'sale' => StockMovementType.sale,
-      'issue_to_technician' => StockMovementType.issueToTechnician,
-      'technician_sale' => StockMovementType.technicianSale,
-      'return_from_customer' => StockMovementType.returnFromCustomer,
-      'return_to_supplier' => StockMovementType.returnToSupplier,
-      'damage' => StockMovementType.damage,
-      'inventory_adjustment' => StockMovementType.inventoryAdjustment,
-      'transfer' => StockMovementType.transfer,
-      _ => StockMovementType.purchase,
-    };
+  'purchase' => StockMovementType.purchase,
+  'sale' => StockMovementType.sale,
+  'issue_to_technician' => StockMovementType.issueToTechnician,
+  'technician_sale' => StockMovementType.technicianSale,
+  'return_from_customer' => StockMovementType.returnFromCustomer,
+  'return_to_supplier' => StockMovementType.returnToSupplier,
+  'damage' => StockMovementType.damage,
+  'inventory_adjustment' => StockMovementType.inventoryAdjustment,
+  'transfer' => StockMovementType.transfer,
+  _ => StockMovementType.purchase,
+};
 
 String stockMovementTypeLabelAr(StockMovementType t) => switch (t) {
-      StockMovementType.purchase => 'شراء',
-      StockMovementType.sale => 'بيع',
-      StockMovementType.issueToTechnician => 'صرف لصنايعي',
-      StockMovementType.technicianSale => 'بيع صنايعي',
-      StockMovementType.returnFromCustomer => 'مرتجع عميل',
-      StockMovementType.returnToSupplier => 'مرتجع لمورد',
-      StockMovementType.damage => 'تالف',
-      StockMovementType.inventoryAdjustment => 'تسوية جرد',
-      StockMovementType.transfer => 'نقل',
-    };
+  StockMovementType.purchase => 'شراء',
+  StockMovementType.sale => 'بيع',
+  StockMovementType.issueToTechnician => 'صرف لصنايعي',
+  StockMovementType.technicianSale => 'بيع صنايعي',
+  StockMovementType.returnFromCustomer => 'مرتجع عميل',
+  StockMovementType.returnToSupplier => 'مرتجع لمورد',
+  StockMovementType.damage => 'تالف',
+  StockMovementType.inventoryAdjustment => 'تسوية جرد',
+  StockMovementType.transfer => 'نقل',
+};
 
 String locationTypeLabelAr(String? t) => switch (t) {
-      'warehouse' => 'المخزن الرئيسي',
-      'technician_bag' => 'شنطة صنايعي',
-      'external' => 'خارجي',
-      _ => '—',
-    };
+  'warehouse' => 'المخزن الرئيسي',
+  'technician_bag' => 'شنطة صنايعي',
+  'external' => 'خارجي',
+  _ => '—',
+};
 
 @freezed
 abstract class StockMovement with _$StockMovement {

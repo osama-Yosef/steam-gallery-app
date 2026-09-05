@@ -10,10 +10,12 @@ class AdminRecordExpenseScreen extends ConsumerStatefulWidget {
   const AdminRecordExpenseScreen({super.key});
 
   @override
-  ConsumerState<AdminRecordExpenseScreen> createState() => _AdminRecordExpenseScreenState();
+  ConsumerState<AdminRecordExpenseScreen> createState() =>
+      _AdminRecordExpenseScreenState();
 }
 
-class _AdminRecordExpenseScreenState extends ConsumerState<AdminRecordExpenseScreen> {
+class _AdminRecordExpenseScreenState
+    extends ConsumerState<AdminRecordExpenseScreen> {
   final _formKey = GlobalKey<FormState>();
   final _amountCtrl = TextEditingController();
   final _notesCtrl = TextEditingController();
@@ -41,23 +43,30 @@ class _AdminRecordExpenseScreenState extends ConsumerState<AdminRecordExpenseScr
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate() || _selectedCategory == null) {
       if (_selectedCategory == null) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('اختر التصنيف أولًا')));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('اختر التصنيف أولًا')));
       }
       return;
     }
     setState(() => _submitting = true);
     try {
-      await ref.read(cashboxRepositoryProvider).recordExpense(
+      await ref
+          .read(cashboxRepositoryProvider)
+          .recordExpense(
             categoryId: _selectedCategory!.id,
             amount: double.parse(_amountCtrl.text),
             expenseDate: _expenseDate,
-            notes: _notesCtrl.text.trim().isEmpty ? null : _notesCtrl.text.trim(),
+            notes: _notesCtrl.text.trim().isEmpty
+                ? null
+                : _notesCtrl.text.trim(),
           );
       if (mounted) Navigator.of(context).pop(true);
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(AppException.from(e).messageAr)));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(AppException.from(e).messageAr)));
       }
     } finally {
       if (mounted) setState(() => _submitting = false);
@@ -92,14 +101,21 @@ class _AdminRecordExpenseScreenState extends ConsumerState<AdminRecordExpenseScr
                   isExpanded: true,
                   decoration: const InputDecoration(labelText: 'التصنيف'),
                   items: categories
-                      .map((c) => DropdownMenuItem(value: c, child: Text(c.name, overflow: TextOverflow.ellipsis)))
+                      .map(
+                        (c) => DropdownMenuItem(
+                          value: c,
+                          child: Text(c.name, overflow: TextOverflow.ellipsis),
+                        ),
+                      )
                       .toList(),
                   onChanged: (c) => setState(() => _selectedCategory = c),
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: _amountCtrl,
-                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
                   decoration: const InputDecoration(labelText: 'المبلغ'),
                   validator: (v) {
                     final n = double.tryParse(v ?? '');
@@ -118,14 +134,20 @@ class _AdminRecordExpenseScreenState extends ConsumerState<AdminRecordExpenseScr
                 const SizedBox(height: 8),
                 TextFormField(
                   controller: _notesCtrl,
-                  decoration: const InputDecoration(labelText: 'ملاحظات (اختياري)'),
+                  decoration: const InputDecoration(
+                    labelText: 'ملاحظات (اختياري)',
+                  ),
                   maxLines: 2,
                 ),
                 const SizedBox(height: 24),
                 FilledButton.icon(
                   onPressed: _submitting ? null : _submit,
                   icon: _submitting
-                      ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
                       : const Icon(Icons.check),
                   label: const Text('تسجيل المصروف'),
                 ),

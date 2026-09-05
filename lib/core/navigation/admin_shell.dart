@@ -87,7 +87,10 @@ class _AdminShellState extends ConsumerState<AdminShell> {
                           child: GlassPanel(
                             borderRadius: BorderRadius.circular(28),
                             blurSigma: 30,
-                            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
+                            padding: const EdgeInsets.symmetric(
+                              vertical: 16,
+                              horizontal: 8,
+                            ),
                             // A desktop window can be short (or the list can
                             // grow), so the rail scrolls rather than overflows.
                             child: SingleChildScrollView(
@@ -99,14 +102,25 @@ class _AdminShellState extends ConsumerState<AdminShell> {
                                       icon: _items[i].icon,
                                       label: _items[i].label,
                                       expanded: isWide,
-                                      selected: widget.navigationShell.currentIndex == i,
-                                      onTap: () => widget.navigationShell.goBranch(
-                                        i,
-                                        initialLocation: i == widget.navigationShell.currentIndex,
-                                      ),
+                                      selected:
+                                          widget.navigationShell.currentIndex ==
+                                          i,
+                                      onTap: () =>
+                                          widget.navigationShell.goBranch(
+                                            i,
+                                            initialLocation:
+                                                i ==
+                                                widget
+                                                    .navigationShell
+                                                    .currentIndex,
+                                          ),
                                     ),
                                   const SizedBox(height: 12),
-                                  Container(height: 1, width: 32, color: AppColors.glassBorder),
+                                  Container(
+                                    height: 1,
+                                    width: 32,
+                                    color: AppColors.glassBorder,
+                                  ),
                                   const SizedBox(height: 12),
                                   _RailItem(
                                     icon: Icons.logout_rounded,
@@ -118,9 +132,14 @@ class _AdminShellState extends ConsumerState<AdminShell> {
                                       final confirmed = await showConfirmDialog(
                                         context,
                                         title: 'تسجيل الخروج',
-                                        message: 'هل تريد تسجيل الخروج من حسابك؟',
+                                        message:
+                                            'هل تريد تسجيل الخروج من حسابك؟',
                                       );
-                                      if (confirmed) await ref.read(authRepositoryProvider).signOut();
+                                      if (confirmed) {
+                                        await ref
+                                            .read(authRepositoryProvider)
+                                            .signOut();
+                                      }
                                     },
                                   ),
                                 ],
@@ -133,12 +152,17 @@ class _AdminShellState extends ConsumerState<AdminShell> {
                   ),
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 16),
-                    child: _ToggleHandle(open: _open, onTap: () => setState(() => _open = !_open)),
+                    child: _ToggleHandle(
+                      open: _open,
+                      onTap: () => setState(() => _open = !_open),
+                    ),
                   ),
                   Expanded(
                     child: Center(
                       child: ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: _maxContentWidth),
+                        constraints: const BoxConstraints(
+                          maxWidth: _maxContentWidth,
+                        ),
                         child: widget.navigationShell,
                       ),
                     ),
@@ -205,14 +229,17 @@ class _RailItem extends StatelessWidget {
     final color = danger
         ? AppColors.danger
         : selected
-            ? AppColors.primary
-            : AppColors.textSecondary;
+        ? AppColors.primary
+        : AppColors.textSecondary;
 
     final decoration = BoxDecoration(
       borderRadius: BorderRadius.circular(16),
       gradient: selected
           ? LinearGradient(
-              colors: [AppColors.primary.withValues(alpha: 0.35), AppColors.accent.withValues(alpha: 0.25)],
+              colors: [
+                AppColors.primary.withValues(alpha: 0.35),
+                AppColors.accent.withValues(alpha: 0.25),
+              ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             )
@@ -241,7 +268,11 @@ class _RailItem extends StatelessWidget {
                       Expanded(
                         child: Text(
                           label,
-                          style: TextStyle(color: color, fontSize: 14, fontWeight: FontWeight.w600),
+                          style: TextStyle(
+                            color: color,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -257,7 +288,11 @@ class _RailItem extends StatelessWidget {
                     children: [
                       Icon(icon, color: color, size: 22),
                       const SizedBox(height: 4),
-                      Text(label, style: TextStyle(color: color, fontSize: 10), textAlign: TextAlign.center),
+                      Text(
+                        label,
+                        style: TextStyle(color: color, fontSize: 10),
+                        textAlign: TextAlign.center,
+                      ),
                     ],
                   ),
                 ),

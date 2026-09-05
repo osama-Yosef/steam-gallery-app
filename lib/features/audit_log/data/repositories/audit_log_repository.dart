@@ -32,7 +32,9 @@ class SupabaseAuditLogRepository implements AuditLogRepository {
       if (tableName != null) query = query.eq('table_name', tableName);
       if (from != null) query = query.gte('created_at', from.toIso8601String());
       if (to != null) query = query.lte('created_at', to.toIso8601String());
-      final rows = await query.order('created_at', ascending: false).limit(limit);
+      final rows = await query
+          .order('created_at', ascending: false)
+          .limit(limit);
       return rows.map(AuditLogEntry.fromRow).toList();
     } catch (e) {
       throw AppException.from(e);
@@ -42,8 +44,12 @@ class SupabaseAuditLogRepository implements AuditLogRepository {
   @override
   Future<List<String>> listTableNames() async {
     try {
-      final rows = await _client.from('audit_logs').select('table_name').limit(2000);
-      return rows.map((r) => r['table_name'] as String).toSet().toList()..sort();
+      final rows = await _client
+          .from('audit_logs')
+          .select('table_name')
+          .limit(2000);
+      return rows.map((r) => r['table_name'] as String).toSet().toList()
+        ..sort();
     } catch (e) {
       throw AppException.from(e);
     }

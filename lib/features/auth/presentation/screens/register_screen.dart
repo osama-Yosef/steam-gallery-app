@@ -34,7 +34,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   }
 
   Future<void> _pickAvatar() async {
-    final file = await ImagePicker().pickImage(source: ImageSource.gallery, imageQuality: 85);
+    final file = await ImagePicker().pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 85,
+    );
     if (file == null) return;
     final bytes = await file.readAsBytes();
     setState(() {
@@ -47,7 +50,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _loading = true);
     try {
-      await ref.read(authRepositoryProvider).signUpCustomer(
+      await ref
+          .read(authRepositoryProvider)
+          .signUpCustomer(
             localPhone: _phoneCtrl.text.trim(),
             password: _passwordCtrl.text,
             fullName: _nameCtrl.text.trim(),
@@ -58,7 +63,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     } catch (e) {
       if (!mounted) return;
       final message = AppException.from(e).messageAr;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(message)));
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -87,7 +94,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                           children: [
                             CircleAvatar(
                               radius: 40,
-                              backgroundImage: _avatarBytes != null ? MemoryImage(_avatarBytes!) : null,
+                              backgroundImage: _avatarBytes != null
+                                  ? MemoryImage(_avatarBytes!)
+                                  : null,
                               child: _avatarBytes == null
                                   ? const Icon(Icons.person_outline, size: 36)
                                   : null,
@@ -97,7 +106,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                               left: 0,
                               child: CircleAvatar(
                                 radius: 14,
-                                child: Icon(Icons.camera_alt_outlined, size: 14),
+                                child: Icon(
+                                  Icons.camera_alt_outlined,
+                                  size: 14,
+                                ),
                               ),
                             ),
                           ],
@@ -107,7 +119,11 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     Center(
                       child: TextButton(
                         onPressed: _pickAvatar,
-                        child: Text(_avatarBytes == null ? 'إضافة صورة (اختياري)' : 'تغيير الصورة'),
+                        child: Text(
+                          _avatarBytes == null
+                              ? 'إضافة صورة (اختياري)'
+                              : 'تغيير الصورة',
+                        ),
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -146,7 +162,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       onPressed: _loading ? null : _submit,
                       child: _loading
                           ? const SizedBox(
-                              height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
                           : const Text('إنشاء الحساب'),
                     ),
                   ],

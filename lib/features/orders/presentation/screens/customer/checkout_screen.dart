@@ -38,11 +38,17 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
 
     setState(() => _submitting = true);
     try {
-      final orderId = await ref.read(orderRepositoryProvider).createOrder(
+      final orderId = await ref
+          .read(orderRepositoryProvider)
+          .createOrder(
             customerId: profile.id,
             items: items,
-            deliveryAddress: _addressCtrl.text.trim().isEmpty ? null : _addressCtrl.text.trim(),
-            notes: _notesCtrl.text.trim().isEmpty ? null : _notesCtrl.text.trim(),
+            deliveryAddress: _addressCtrl.text.trim().isEmpty
+                ? null
+                : _addressCtrl.text.trim(),
+            notes: _notesCtrl.text.trim().isEmpty
+                ? null
+                : _notesCtrl.text.trim(),
             clientRequestId: _clientRequestId,
           );
       ref.read(cartProvider.notifier).clear();
@@ -51,8 +57,9 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(AppException.from(e).messageAr)));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(AppException.from(e).messageAr)));
       }
     } finally {
       if (mounted) setState(() => _submitting = false);
@@ -75,7 +82,10 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('ملخص الطلب', style: Theme.of(context).textTheme.titleMedium),
+                  Text(
+                    'ملخص الطلب',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
                   const Divider(),
                   for (final item in items)
                     Padding(
@@ -92,9 +102,14 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text('الإجمالي', style: TextStyle(fontWeight: FontWeight.bold)),
-                      Text(Formatters.currency(total),
-                          style: const TextStyle(fontWeight: FontWeight.bold)),
+                      const Text(
+                        'الإجمالي',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      Text(
+                        Formatters.currency(total),
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
                     ],
                   ),
                 ],
@@ -117,7 +132,11 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
           FilledButton(
             onPressed: _submitting || items.isEmpty ? null : _placeOrder,
             child: _submitting
-                ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                ? const SizedBox(
+                    height: 20,
+                    width: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
                 : const Text('إرسال الطلب'),
           ),
         ],

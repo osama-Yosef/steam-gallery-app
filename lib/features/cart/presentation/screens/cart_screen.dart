@@ -17,7 +17,10 @@ class CartScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('السلة')),
       body: items.isEmpty
-          ? const EmptyView(message: 'السلة فارغة', icon: Icons.shopping_cart_outlined)
+          ? const EmptyView(
+              message: 'السلة فارغة',
+              icon: Icons.shopping_cart_outlined,
+            )
           : Column(
               children: [
                 Expanded(
@@ -33,7 +36,10 @@ class CartScreen extends ConsumerWidget {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(item.name, style: Theme.of(context).textTheme.titleSmall),
+                                Text(
+                                  item.name,
+                                  style: Theme.of(context).textTheme.titleSmall,
+                                ),
                                 const SizedBox(height: 4),
                                 Text(Formatters.currency(item.unitPrice)),
                               ],
@@ -45,7 +51,10 @@ class CartScreen extends ConsumerWidget {
                                 .read(cartProvider.notifier)
                                 .setQuantity(item.productId, item.quantity - 1),
                           ),
-                          Text('${item.quantity}', style: Theme.of(context).textTheme.titleMedium),
+                          Text(
+                            '${item.quantity}',
+                            style: Theme.of(context).textTheme.titleMedium,
+                          ),
                           IconButton(
                             icon: const Icon(Icons.add_circle_outline),
                             onPressed: () => ref
@@ -73,13 +82,20 @@ class CartScreen extends ConsumerWidget {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text('الإجمالي', style: Theme.of(context).textTheme.titleMedium),
-                            Text(Formatters.currency(total), style: Theme.of(context).textTheme.titleLarge),
+                            Text(
+                              'الإجمالي',
+                              style: Theme.of(context).textTheme.titleMedium,
+                            ),
+                            Text(
+                              Formatters.currency(total),
+                              style: Theme.of(context).textTheme.titleLarge,
+                            ),
                           ],
                         ),
                         const SizedBox(height: 12),
                         FilledButton(
-                          onPressed: () => context.push(Routes.customerCheckout),
+                          onPressed: () =>
+                              context.push(Routes.customerCheckout),
                           child: const Text('تأكيد الطلب'),
                         ),
                       ],

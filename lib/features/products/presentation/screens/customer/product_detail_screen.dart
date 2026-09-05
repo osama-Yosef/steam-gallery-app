@@ -21,11 +21,15 @@ class ProductDetailScreen extends ConsumerWidget {
         loading: () => const LoadingView(),
         error: (e, _) => ErrorView(
           message: 'تعذَّر تحميل بيانات المنتج',
-          onRetry: () => ref.invalidate(customerProductDetailProvider(productId)),
+          onRetry: () =>
+              ref.invalidate(customerProductDetailProvider(productId)),
         ),
         data: (product) {
           if (product == null) {
-            return const EmptyView(message: 'هذا المنتج غير متاح', icon: Icons.inventory_2_outlined);
+            return const EmptyView(
+              message: 'هذا المنتج غير متاح',
+              icon: Icons.inventory_2_outlined,
+            );
           }
           return ListView(
             padding: const EdgeInsets.all(16),
@@ -48,22 +52,30 @@ class ProductDetailScreen extends ConsumerWidget {
                 ),
               ),
               const SizedBox(height: 16),
-              Text(product.name, style: Theme.of(context).textTheme.headlineSmall),
+              Text(
+                product.name,
+                style: Theme.of(context).textTheme.headlineSmall,
+              ),
               const SizedBox(height: 8),
               Row(
                 children: [
-                  Text(Formatters.currency(product.sellingPrice),
-                      style: Theme.of(context).textTheme.titleLarge),
+                  Text(
+                    Formatters.currency(product.sellingPrice),
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
                   const SizedBox(width: 12),
                   Chip(
                     label: Text(product.isAvailable ? 'متاح' : 'غير متاح'),
                     backgroundColor: product.isAvailable
                         ? Colors.green.withValues(alpha: 0.15)
-                        : Theme.of(context).colorScheme.error.withValues(alpha: 0.15),
+                        : Theme.of(
+                            context,
+                          ).colorScheme.error.withValues(alpha: 0.15),
                   ),
                 ],
               ),
-              if (product.description != null && product.description!.trim().isNotEmpty) ...[
+              if (product.description != null &&
+                  product.description!.trim().isNotEmpty) ...[
                 const SizedBox(height: 16),
                 Text('الوصف', style: Theme.of(context).textTheme.titleMedium),
                 const SizedBox(height: 4),
@@ -71,23 +83,34 @@ class ProductDetailScreen extends ConsumerWidget {
               ],
               if (product.specs.isNotEmpty) ...[
                 const SizedBox(height: 16),
-                Text('المواصفات', style: Theme.of(context).textTheme.titleMedium),
+                Text(
+                  'المواصفات',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
                 const SizedBox(height: 4),
                 Card(
                   child: Padding(
                     padding: const EdgeInsets.all(12),
                     child: Column(
                       children: product.specs.entries
-                          .map((e) => Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 4),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(e.key, style: const TextStyle(fontWeight: FontWeight.bold)),
-                                    Text(e.value),
-                                  ],
-                                ),
-                              ))
+                          .map(
+                            (e) => Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 4),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    e.key,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  Text(e.value),
+                                ],
+                              ),
+                            ),
+                          )
                           .toList(),
                     ),
                   ),
@@ -98,17 +121,25 @@ class ProductDetailScreen extends ConsumerWidget {
                 onPressed: !product.isAvailable
                     ? null
                     : () {
-                        ref.read(cartProvider.notifier).add(
+                        ref
+                            .read(cartProvider.notifier)
+                            .add(
                               productId: product.id,
                               name: product.name,
                               unitPrice: product.sellingPrice,
                             );
                         ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('تمت إضافة ${product.name} إلى السلة')),
+                          SnackBar(
+                            content: Text(
+                              'تمت إضافة ${product.name} إلى السلة',
+                            ),
+                          ),
                         );
                       },
                 icon: const Icon(Icons.add_shopping_cart_outlined),
-                label: Text(product.isAvailable ? 'أضف للسلة' : 'غير متاح حاليًا'),
+                label: Text(
+                  product.isAvailable ? 'أضف للسلة' : 'غير متاح حاليًا',
+                ),
               ),
             ],
           );
@@ -118,10 +149,10 @@ class ProductDetailScreen extends ConsumerWidget {
   }
 
   Widget _placeholder(BuildContext context) => Container(
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surfaceContainerHighest,
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: const Icon(Icons.local_fire_department_outlined, size: 64),
-      );
+    decoration: BoxDecoration(
+      color: Theme.of(context).colorScheme.surfaceContainerHighest,
+      borderRadius: BorderRadius.circular(16),
+    ),
+    child: const Icon(Icons.local_fire_department_outlined, size: 64),
+  );
 }

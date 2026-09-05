@@ -14,15 +14,22 @@ InventoryRepository inventoryRepository(Ref ref) {
 
 @riverpod
 Future<List<WarehouseStockItem>> warehouseStock(Ref ref, {String? search}) {
-  return ref.watch(inventoryRepositoryProvider).getWarehouseStock(search: search);
+  return ref
+      .watch(inventoryRepositoryProvider)
+      .getWarehouseStock(search: search);
 }
 
 @riverpod
-Future<List<TechnicianBagStockItem>> technicianBagStock(Ref ref, String technicianId) {
+Future<List<TechnicianBagStockItem>> technicianBagStock(
+  Ref ref,
+  String technicianId,
+) {
   return ref.watch(inventoryRepositoryProvider).getBagStock(technicianId);
 }
 
 @riverpod
 Future<List<StockMovement>> stockMovements(Ref ref, {String? productId}) {
-  return ref.watch(inventoryRepositoryProvider).getStockMovements(productId: productId);
+  return ref
+      .watch(inventoryRepositoryProvider)
+      .getStockMovements(productId: productId);
 }

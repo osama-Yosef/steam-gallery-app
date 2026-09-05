@@ -19,28 +19,37 @@ class CustomerOrdersListScreen extends ConsumerWidget {
       appBar: AppBar(title: const Text('طلباتي')),
       body: profile == null
           ? const LoadingView()
-          : ref.watch(customerOrdersProvider(profile.id)).when(
-                loading: () => const LoadingView(),
-                error: (e, _) => const ErrorView(message: 'تعذَّر تحميل الطلبات'),
-                data: (orders) {
-                  if (orders.isEmpty) {
-                    return const EmptyView(message: 'لا توجد طلبات بعد', icon: Icons.receipt_long_outlined);
-                  }
-                  return ListView.separated(
-                    itemCount: orders.length,
-                    separatorBuilder: (_, _) => const Divider(height: 1),
-                    itemBuilder: (context, i) {
-                      final o = orders[i];
-                      return ListTile(
-                        title: Text('طلب #${o.orderNumber}'),
-                        subtitle: Text('${orderStatusLabelAr(o.status)} · ${Formatters.date(o.createdAt)}'),
-                        trailing: Text(Formatters.currency(o.total)),
-                        onTap: () => context.push(Routes.customerOrderDetail(o.id)),
+          : ref
+                .watch(customerOrdersProvider(profile.id))
+                .when(
+                  loading: () => const LoadingView(),
+                  error: (e, _) =>
+                      const ErrorView(message: 'تعذَّر تحميل الطلبات'),
+                  data: (orders) {
+                    if (orders.isEmpty) {
+                      return const EmptyView(
+                        message: 'لا توجد طلبات بعد',
+                        icon: Icons.receipt_long_outlined,
                       );
-                    },
-                  );
-                },
-              ),
+                    }
+                    return ListView.separated(
+                      itemCount: orders.length,
+                      separatorBuilder: (_, _) => const Divider(height: 1),
+                      itemBuilder: (context, i) {
+                        final o = orders[i];
+                        return ListTile(
+                          title: Text('طلب #${o.orderNumber}'),
+                          subtitle: Text(
+                            '${orderStatusLabelAr(o.status)} · ${Formatters.date(o.createdAt)}',
+                          ),
+                          trailing: Text(Formatters.currency(o.total)),
+                          onTap: () =>
+                              context.push(Routes.customerOrderDetail(o.id)),
+                        );
+                      },
+                    );
+                  },
+                ),
     );
   }
 }

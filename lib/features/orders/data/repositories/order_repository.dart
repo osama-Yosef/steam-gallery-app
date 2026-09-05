@@ -46,17 +46,20 @@ class SupabaseOrderRepository implements OrderRepository {
     required String clientRequestId,
   }) async {
     try {
-      final id = await _client.rpc('rpc_create_order', params: {
-        'p_customer_id': customerId,
-        'p_items': items
-            .map((e) => {'product_id': e.productId, 'quantity': e.quantity})
-            .toList(),
-        'p_delivery_address': deliveryAddress,
-        'p_latitude': null,
-        'p_longitude': null,
-        'p_notes': notes,
-        'p_client_request_id': clientRequestId,
-      });
+      final id = await _client.rpc(
+        'rpc_create_order',
+        params: {
+          'p_customer_id': customerId,
+          'p_items': items
+              .map((e) => {'product_id': e.productId, 'quantity': e.quantity})
+              .toList(),
+          'p_delivery_address': deliveryAddress,
+          'p_latitude': null,
+          'p_longitude': null,
+          'p_notes': notes,
+          'p_client_request_id': clientRequestId,
+        },
+      );
       return id as String;
     } catch (e) {
       throw AppException.from(e);
@@ -85,8 +88,10 @@ class SupabaseOrderRepository implements OrderRepository {
   @override
   Future<List<OrderItem>> getOrderItems(String orderId) async {
     try {
-      final rows =
-          await _client.from('order_items_display').select().eq('order_id', orderId);
+      final rows = await _client
+          .from('order_items_display')
+          .select()
+          .eq('order_id', orderId);
       return rows.map(OrderItem.fromRow).toList();
     } catch (e) {
       throw AppException.from(e);
@@ -114,10 +119,10 @@ class SupabaseOrderRepository implements OrderRepository {
   @override
   Future<void> updateOrderStatus(String orderId, OrderStatus status) async {
     try {
-      await _client.rpc('rpc_update_order_status', params: {
-        'p_order_id': orderId,
-        'p_new_status': status.name,
-      });
+      await _client.rpc(
+        'rpc_update_order_status',
+        params: {'p_order_id': orderId, 'p_new_status': status.name},
+      );
     } catch (e) {
       throw AppException.from(e);
     }
@@ -126,7 +131,10 @@ class SupabaseOrderRepository implements OrderRepository {
   @override
   Future<void> cancelOrder(String orderId, String reason) async {
     try {
-      await _client.rpc('rpc_cancel_order', params: {'p_order_id': orderId, 'p_reason': reason});
+      await _client.rpc(
+        'rpc_cancel_order',
+        params: {'p_order_id': orderId, 'p_reason': reason},
+      );
     } catch (e) {
       throw AppException.from(e);
     }
@@ -140,12 +148,15 @@ class SupabaseOrderRepository implements OrderRepository {
     String? notes,
   }) async {
     try {
-      await _client.rpc('rpc_record_customer_payment', params: {
-        'p_customer_id': customerId,
-        'p_amount': amount,
-        'p_order_id': orderId,
-        'p_notes': notes,
-      });
+      await _client.rpc(
+        'rpc_record_customer_payment',
+        params: {
+          'p_customer_id': customerId,
+          'p_amount': amount,
+          'p_order_id': orderId,
+          'p_notes': notes,
+        },
+      );
     } catch (e) {
       throw AppException.from(e);
     }

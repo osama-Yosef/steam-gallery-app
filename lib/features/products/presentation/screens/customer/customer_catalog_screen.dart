@@ -13,7 +13,8 @@ class CustomerCatalogScreen extends ConsumerStatefulWidget {
   const CustomerCatalogScreen({super.key});
 
   @override
-  ConsumerState<CustomerCatalogScreen> createState() => _CustomerCatalogScreenState();
+  ConsumerState<CustomerCatalogScreen> createState() =>
+      _CustomerCatalogScreenState();
 }
 
 class _CustomerCatalogScreenState extends ConsumerState<CustomerCatalogScreen> {
@@ -31,7 +32,10 @@ class _CustomerCatalogScreenState extends ConsumerState<CustomerCatalogScreen> {
   Widget build(BuildContext context) {
     final categoriesAsync = ref.watch(categoriesProvider(activeOnly: true));
     final productsAsync = ref.watch(
-      customerProductsProvider(search: _search.isEmpty ? null : _search, categoryId: _categoryId),
+      customerProductsProvider(
+        search: _search.isEmpty ? null : _search,
+        categoryId: _categoryId,
+      ),
     );
 
     return Scaffold(
@@ -99,7 +103,10 @@ class _CustomerCatalogScreenState extends ConsumerState<CustomerCatalogScreen> {
               ),
               data: (products) {
                 if (products.isEmpty) {
-                  return const EmptyView(message: 'لا توجد منتجات مطابقة', icon: Icons.inventory_2_outlined);
+                  return const EmptyView(
+                    message: 'لا توجد منتجات مطابقة',
+                    icon: Icons.inventory_2_outlined,
+                  );
                 }
                 return GridView.builder(
                   padding: const EdgeInsets.all(16),
@@ -110,7 +117,8 @@ class _CustomerCatalogScreenState extends ConsumerState<CustomerCatalogScreen> {
                     childAspectRatio: 0.72,
                   ),
                   itemCount: products.length,
-                  itemBuilder: (context, i) => _ProductCard(product: products[i]),
+                  itemBuilder: (context, i) =>
+                      _ProductCard(product: products[i]),
                 );
               },
             ),
@@ -125,11 +133,19 @@ class _CategoryChip extends StatelessWidget {
   final String label;
   final bool selected;
   final VoidCallback onTap;
-  const _CategoryChip({required this.label, required this.selected, required this.onTap});
+  const _CategoryChip({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return ChoiceChip(label: Text(label), selected: selected, onSelected: (_) => onTap());
+    return ChoiceChip(
+      label: Text(label),
+      selected: selected,
+      onSelected: (_) => onTap(),
+    );
   }
 }
 
@@ -155,8 +171,13 @@ class _ProductCard extends StatelessWidget {
                         imageUrl: product.primaryImageUrl!,
                         fit: BoxFit.cover,
                         width: double.infinity,
-                        placeholder: (_, _) => const Center(child: CircularProgressIndicator(strokeWidth: 2)),
-                        errorWidget: (_, _, _) => const Icon(Icons.local_fire_department_outlined, size: 40),
+                        placeholder: (_, _) => const Center(
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                        errorWidget: (_, _, _) => const Icon(
+                          Icons.local_fire_department_outlined,
+                          size: 40,
+                        ),
                       ),
               ),
             ),
@@ -165,17 +186,28 @@ class _ProductCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(product.name, maxLines: 1, overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.bodyMedium),
+                  Text(
+                    product.name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
                   const SizedBox(height: 4),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(Formatters.currency(product.sellingPrice),
-                          style: Theme.of(context).textTheme.titleSmall),
+                      Text(
+                        Formatters.currency(product.sellingPrice),
+                        style: Theme.of(context).textTheme.titleSmall,
+                      ),
                       if (!product.isAvailable)
-                        Text('غير متاح',
-                            style: TextStyle(color: Theme.of(context).colorScheme.error, fontSize: 11)),
+                        Text(
+                          'غير متاح',
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.error,
+                            fontSize: 11,
+                          ),
+                        ),
                     ],
                   ),
                 ],

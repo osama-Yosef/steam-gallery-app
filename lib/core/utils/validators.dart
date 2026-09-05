@@ -6,7 +6,9 @@ abstract final class Validators {
 
   static String? phone(String? value) {
     if (value == null || value.trim().isEmpty) return 'رقم الهاتف مطلوب';
-    if (!_egyptPhone.hasMatch(value.trim())) return 'رقم هاتف غير صحيح (مثال: 01012345678)';
+    if (!_egyptPhone.hasMatch(value.trim())) {
+      return 'رقم هاتف غير صحيح (مثال: 01012345678)';
+    }
     return null;
   }
 

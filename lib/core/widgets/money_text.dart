@@ -8,7 +8,12 @@ class MoneyText extends StatelessWidget {
   final TextStyle? style;
   final bool colorBySign;
 
-  const MoneyText(this.amount, {super.key, this.style, this.colorBySign = false});
+  const MoneyText(
+    this.amount, {
+    super.key,
+    this.style,
+    this.colorBySign = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -19,6 +24,9 @@ class MoneyText extends StatelessWidget {
       if (amount > 0) color = AppColors.success;
       if (amount < 0) color = scheme.error;
     }
-    return Text(Formatters.currency(amount), style: base?.copyWith(color: color));
+    return Text(
+      Formatters.currency(amount),
+      style: base?.copyWith(color: color),
+    );
   }
 }

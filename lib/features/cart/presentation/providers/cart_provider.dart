@@ -8,14 +8,29 @@ class Cart extends _$Cart {
   @override
   List<CartItem> build() => [];
 
-  void add({required String productId, required String name, required double unitPrice}) {
+  void add({
+    required String productId,
+    required String name,
+    required double unitPrice,
+  }) {
     final i = state.indexWhere((e) => e.productId == productId);
     if (i == -1) {
-      state = [...state, CartItem(productId: productId, name: name, unitPrice: unitPrice, quantity: 1)];
+      state = [
+        ...state,
+        CartItem(
+          productId: productId,
+          name: name,
+          unitPrice: unitPrice,
+          quantity: 1,
+        ),
+      ];
     } else {
       state = [
         for (final item in state)
-          if (item.productId == productId) item.copyWith(quantity: item.quantity + 1) else item,
+          if (item.productId == productId)
+            item.copyWith(quantity: item.quantity + 1)
+          else
+            item,
       ];
     }
   }
@@ -27,7 +42,10 @@ class Cart extends _$Cart {
     }
     state = [
       for (final item in state)
-        if (item.productId == productId) item.copyWith(quantity: quantity) else item,
+        if (item.productId == productId)
+          item.copyWith(quantity: quantity)
+        else
+          item,
     ];
   }
 

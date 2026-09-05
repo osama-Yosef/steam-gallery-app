@@ -11,8 +11,15 @@ AuditLogRepository auditLogRepository(Ref ref) {
 }
 
 @riverpod
-Future<List<AuditLogEntry>> auditLogEntries(Ref ref, {String? tableName, DateTime? from, DateTime? to}) {
-  return ref.watch(auditLogRepositoryProvider).listEntries(tableName: tableName, from: from, to: to);
+Future<List<AuditLogEntry>> auditLogEntries(
+  Ref ref, {
+  String? tableName,
+  DateTime? from,
+  DateTime? to,
+}) {
+  return ref
+      .watch(auditLogRepositoryProvider)
+      .listEntries(tableName: tableName, from: from, to: to);
 }
 
 @riverpod

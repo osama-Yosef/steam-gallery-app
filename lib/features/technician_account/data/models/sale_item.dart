@@ -14,11 +14,11 @@ abstract class SaleItem with _$SaleItem {
   }) = _SaleItem;
 
   factory SaleItem.fromRow(Map<String, dynamic> row) => SaleItem(
-        id: row['id'] as String,
-        productNameSnapshot: row['product_name_snapshot'] as String,
-        quantity: row['quantity'] as int,
-        unitPriceSnapshot: (row['unit_price_snapshot'] as num).toDouble(),
-        discount: (row['discount'] as num).toDouble(),
-        lineTotal: (row['line_total'] as num).toDouble(),
-      );
+    id: row['id'] as String,
+    productNameSnapshot: row['product_name_snapshot'] as String,
+    quantity: row['quantity'] as int,
+    unitPriceSnapshot: (row['unit_price_snapshot'] as num).toDouble(),
+    discount: (row['discount'] as num).toDouble(),
+    lineTotal: (row['line_total'] as num).toDouble(),
+  );
 }

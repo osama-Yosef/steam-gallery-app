@@ -22,7 +22,10 @@ class AdminTechnicianBagListScreen extends ConsumerWidget {
         ),
         data: (technicians) {
           if (technicians.isEmpty) {
-            return const EmptyView(message: 'لا يوجد صنايعية', icon: Icons.badge_outlined);
+            return const EmptyView(
+              message: 'لا يوجد صنايعية',
+              icon: Icons.badge_outlined,
+            );
           }
           return ListView.separated(
             itemCount: technicians.length,
@@ -34,7 +37,8 @@ class AdminTechnicianBagListScreen extends ConsumerWidget {
                 title: Text(t.fullName),
                 subtitle: Text('كود: ${t.employeeCode}'),
                 trailing: const Icon(Icons.chevron_left),
-                onTap: () => context.push(Routes.adminTechnicianBagDetail(t.id)),
+                onTap: () =>
+                    context.push(Routes.adminTechnicianBagDetail(t.id)),
               );
             },
           );

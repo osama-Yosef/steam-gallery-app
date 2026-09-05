@@ -11,7 +11,10 @@ abstract class InventoryRepository {
 
   Future<List<TechnicianBagStockItem>> getBagStock(String technicianId);
 
-  Future<List<StockMovement>> getStockMovements({String? productId, int limit = 200});
+  Future<List<StockMovement>> getStockMovements({
+    String? productId,
+    int limit = 200,
+  });
 
   Future<void> receivePurchase({
     required String productId,
@@ -36,7 +39,9 @@ class SupabaseInventoryRepository implements InventoryRepository {
     try {
       var query = _client
           .from('warehouse_stock')
-          .select('quantity, products!inner(id, name, sku, cost_price, selling_price, min_stock)');
+          .select(
+            'quantity, products!inner(id, name, sku, cost_price, selling_price, min_stock)',
+          );
       if (search != null && search.trim().isNotEmpty) {
         query = query.ilike('products.name', '%${search.trim()}%');
       }
@@ -55,16 +60,19 @@ class SupabaseInventoryRepository implements InventoryRepository {
       final row = await _client
           .from('technician_bags')
           .select(
-              'technician_bag_stock(quantity, products(id, name, sku, cost_price, selling_price))')
+            'technician_bag_stock(quantity, products(id, name, sku, cost_price, selling_price))',
+          )
           .eq('technician_id', technicianId)
           .maybeSingle();
       if (row == null) return [];
-      final stockRows = (row['technician_bag_stock'] as List).cast<Map<String, dynamic>>();
-      final items = stockRows
-          .where((r) => (r['quantity'] as int) > 0)
-          .map(TechnicianBagStockItem.fromRow)
-          .toList()
-        ..sort((a, b) => a.productName.compareTo(b.productName));
+      final stockRows = (row['technician_bag_stock'] as List)
+          .cast<Map<String, dynamic>>();
+      final items =
+          stockRows
+              .where((r) => (r['quantity'] as int) > 0)
+              .map(TechnicianBagStockItem.fromRow)
+              .toList()
+            ..sort((a, b) => a.productName.compareTo(b.productName));
       return items;
     } catch (e) {
       throw AppException.from(e);
@@ -72,7 +80,10 @@ class SupabaseInventoryRepository implements InventoryRepository {
   }
 
   @override
-  Future<List<StockMovement>> getStockMovements({String? productId, int limit = 200}) async {
+  Future<List<StockMovement>> getStockMovements({
+    String? productId,
+    int limit = 200,
+  }) async {
     try {
       var query = _client.from('stock_movements').select('''
             id, movement_number, movement_type, quantity, from_location_type,
@@ -80,7 +91,9 @@ class SupabaseInventoryRepository implements InventoryRepository {
             products!inner(id, name)
           ''');
       if (productId != null) query = query.eq('product_id', productId);
-      final rows = await query.order('created_at', ascending: false).limit(limit);
+      final rows = await query
+          .order('created_at', ascending: false)
+          .limit(limit);
       return rows.map(StockMovement.fromRow).toList();
     } catch (e) {
       throw AppException.from(e);
@@ -95,12 +108,15 @@ class SupabaseInventoryRepository implements InventoryRepository {
     String? notes,
   }) async {
     try {
-      await _client.rpc('rpc_receive_purchase', params: {
-        'p_product_id': productId,
-        'p_quantity': quantity,
-        'p_unit_cost': unitCost,
-        'p_notes': notes,
-      });
+      await _client.rpc(
+        'rpc_receive_purchase',
+        params: {
+          'p_product_id': productId,
+          'p_quantity': quantity,
+          'p_unit_cost': unitCost,
+          'p_notes': notes,
+        },
+      );
     } catch (e) {
       throw AppException.from(e);
     }
@@ -113,11 +129,16 @@ class SupabaseInventoryRepository implements InventoryRepository {
     String? notes,
   }) async {
     try {
-      await _client.rpc('rpc_issue_stock_to_technician', params: {
-        'p_technician_id': technicianId,
-        'p_items': items.map((e) => {'product_id': e.productId, 'quantity': e.quantity}).toList(),
-        'p_notes': notes,
-      });
+      await _client.rpc(
+        'rpc_issue_stock_to_technician',
+        params: {
+          'p_technician_id': technicianId,
+          'p_items': items
+              .map((e) => {'product_id': e.productId, 'quantity': e.quantity})
+              .toList(),
+          'p_notes': notes,
+        },
+      );
     } catch (e) {
       throw AppException.from(e);
     }

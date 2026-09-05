@@ -106,7 +106,12 @@ class _MenuTile extends StatelessWidget {
   final String label;
   final List<Color> colors;
   final VoidCallback? onTap;
-  const _MenuTile({required this.icon, required this.label, required this.colors, this.onTap});
+  const _MenuTile({
+    required this.icon,
+    required this.label,
+    required this.colors,
+    this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -128,8 +133,17 @@ class _MenuTile extends StatelessWidget {
                   height: 46,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    gradient: LinearGradient(colors: colors, begin: Alignment.topLeft, end: Alignment.bottomRight),
-                    boxShadow: [BoxShadow(color: colors.last.withValues(alpha: 0.4), blurRadius: 16)],
+                    gradient: LinearGradient(
+                      colors: colors,
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: colors.last.withValues(alpha: 0.4),
+                        blurRadius: 16,
+                      ),
+                    ],
                   ),
                   child: Icon(icon, color: Colors.white, size: 22),
                 ),
@@ -137,9 +151,9 @@ class _MenuTile extends StatelessWidget {
                 Text(
                   label,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: AppColors.textPrimary,
-                        fontWeight: FontWeight.w600,
-                      ),
+                    color: AppColors.textPrimary,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ],
             ),

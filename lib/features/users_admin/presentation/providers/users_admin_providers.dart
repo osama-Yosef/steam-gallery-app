@@ -11,6 +11,12 @@ UsersAdminRepository usersAdminRepository(Ref ref) {
 }
 
 @riverpod
-Future<List<AppUser>> adminUsersList(Ref ref, {String? search, AppRole? roleFilter}) {
-  return ref.watch(usersAdminRepositoryProvider).listUsers(search: search, roleFilter: roleFilter);
+Future<List<AppUser>> adminUsersList(
+  Ref ref, {
+  String? search,
+  AppRole? roleFilter,
+}) {
+  return ref
+      .watch(usersAdminRepositoryProvider)
+      .listUsers(search: search, roleFilter: roleFilter);
 }

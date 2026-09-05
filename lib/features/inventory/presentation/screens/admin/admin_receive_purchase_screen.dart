@@ -10,10 +10,12 @@ class AdminReceivePurchaseScreen extends ConsumerStatefulWidget {
   const AdminReceivePurchaseScreen({super.key});
 
   @override
-  ConsumerState<AdminReceivePurchaseScreen> createState() => _AdminReceivePurchaseScreenState();
+  ConsumerState<AdminReceivePurchaseScreen> createState() =>
+      _AdminReceivePurchaseScreenState();
 }
 
-class _AdminReceivePurchaseScreenState extends ConsumerState<AdminReceivePurchaseScreen> {
+class _AdminReceivePurchaseScreenState
+    extends ConsumerState<AdminReceivePurchaseScreen> {
   final _formKey = GlobalKey<FormState>();
   final _quantityCtrl = TextEditingController();
   final _unitCostCtrl = TextEditingController();
@@ -32,23 +34,30 @@ class _AdminReceivePurchaseScreenState extends ConsumerState<AdminReceivePurchas
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate() || _selectedProduct == null) {
       if (_selectedProduct == null) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('اختر المنتج أولًا')));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('اختر المنتج أولًا')));
       }
       return;
     }
     setState(() => _submitting = true);
     try {
-      await ref.read(inventoryRepositoryProvider).receivePurchase(
+      await ref
+          .read(inventoryRepositoryProvider)
+          .receivePurchase(
             productId: _selectedProduct!.id,
             quantity: int.parse(_quantityCtrl.text),
             unitCost: double.parse(_unitCostCtrl.text),
-            notes: _notesCtrl.text.trim().isEmpty ? null : _notesCtrl.text.trim(),
+            notes: _notesCtrl.text.trim().isEmpty
+                ? null
+                : _notesCtrl.text.trim(),
           );
       if (mounted) Navigator.of(context).pop(true);
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(AppException.from(e).messageAr)));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(AppException.from(e).messageAr)));
       }
     } finally {
       if (mounted) setState(() => _submitting = false);
@@ -75,10 +84,15 @@ class _AdminReceivePurchaseScreenState extends ConsumerState<AdminReceivePurchas
                   isExpanded: true,
                   decoration: const InputDecoration(labelText: 'المنتج'),
                   items: products
-                      .map((p) => DropdownMenuItem(
-                            value: p,
-                            child: Text('${p.name} (${p.sku})', overflow: TextOverflow.ellipsis),
-                          ))
+                      .map(
+                        (p) => DropdownMenuItem(
+                          value: p,
+                          child: Text(
+                            '${p.name} (${p.sku})',
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      )
                       .toList(),
                   onChanged: (p) => setState(() {
                     _selectedProduct = p;
@@ -99,7 +113,9 @@ class _AdminReceivePurchaseScreenState extends ConsumerState<AdminReceivePurchas
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: _unitCostCtrl,
-                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
                   decoration: const InputDecoration(labelText: 'تكلفة الوحدة'),
                   validator: (v) {
                     final n = double.tryParse(v ?? '');
@@ -110,7 +126,9 @@ class _AdminReceivePurchaseScreenState extends ConsumerState<AdminReceivePurchas
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: _notesCtrl,
-                  decoration: const InputDecoration(labelText: 'ملاحظات (اختياري)'),
+                  decoration: const InputDecoration(
+                    labelText: 'ملاحظات (اختياري)',
+                  ),
                   maxLines: 2,
                 ),
                 const SizedBox(height: 24),

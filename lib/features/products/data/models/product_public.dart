@@ -21,18 +21,21 @@ abstract class ProductPublic with _$ProductPublic {
   }) = _ProductPublic;
 
   factory ProductPublic.fromRow(Map<String, dynamic> row) => ProductPublic(
-        id: row['id'] as String,
-        sku: row['sku'] as String,
-        barcode: row['barcode'] as String?,
-        categoryId: row['category_id'] as String?,
-        name: row['name'] as String,
-        description: row['description'] as String?,
-        specs: Map<String, String>.from(
-          (row['specs'] as Map?)?.map((k, v) => MapEntry(k.toString(), v.toString())) ?? {},
-        ),
-        sellingPrice: (row['selling_price'] as num).toDouble(),
-        isAvailable: row['is_available'] as bool? ?? false,
-        createdAt: DateTime.parse(row['created_at'] as String),
-        primaryImageUrl: row['primary_image_url'] as String?,
-      );
+    id: row['id'] as String,
+    sku: row['sku'] as String,
+    barcode: row['barcode'] as String?,
+    categoryId: row['category_id'] as String?,
+    name: row['name'] as String,
+    description: row['description'] as String?,
+    specs: Map<String, String>.from(
+      (row['specs'] as Map?)?.map(
+            (k, v) => MapEntry(k.toString(), v.toString()),
+          ) ??
+          {},
+    ),
+    sellingPrice: (row['selling_price'] as num).toDouble(),
+    isAvailable: row['is_available'] as bool? ?? false,
+    createdAt: DateTime.parse(row['created_at'] as String),
+    primaryImageUrl: row['primary_image_url'] as String?,
+  );
 }

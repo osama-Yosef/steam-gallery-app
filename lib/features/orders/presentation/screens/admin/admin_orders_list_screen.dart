@@ -11,7 +11,8 @@ class AdminOrdersListScreen extends ConsumerStatefulWidget {
   const AdminOrdersListScreen({super.key});
 
   @override
-  ConsumerState<AdminOrdersListScreen> createState() => _AdminOrdersListScreenState();
+  ConsumerState<AdminOrdersListScreen> createState() =>
+      _AdminOrdersListScreenState();
 }
 
 class _AdminOrdersListScreenState extends ConsumerState<AdminOrdersListScreen> {
@@ -31,8 +32,11 @@ class _AdminOrdersListScreenState extends ConsumerState<AdminOrdersListScreen> {
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               children: [
-                _FilterChip(label: 'الكل', selected: _statusFilter == null,
-                    onTap: () => setState(() => _statusFilter = null)),
+                _FilterChip(
+                  label: 'الكل',
+                  selected: _statusFilter == null,
+                  onTap: () => setState(() => _statusFilter = null),
+                ),
                 for (final s in OrderStatus.values) ...[
                   const SizedBox(width: 8),
                   _FilterChip(
@@ -49,10 +53,14 @@ class _AdminOrdersListScreenState extends ConsumerState<AdminOrdersListScreen> {
               loading: () => const LoadingView(),
               error: (e, _) => const ErrorView(message: 'تعذَّر تحميل الطلبات'),
               data: (orders) {
-                final filtered =
-                    _statusFilter == null ? orders : orders.where((o) => o.status == _statusFilter).toList();
+                final filtered = _statusFilter == null
+                    ? orders
+                    : orders.where((o) => o.status == _statusFilter).toList();
                 if (filtered.isEmpty) {
-                  return const EmptyView(message: 'لا توجد طلبات', icon: Icons.receipt_long_outlined);
+                  return const EmptyView(
+                    message: 'لا توجد طلبات',
+                    icon: Icons.receipt_long_outlined,
+                  );
                 }
                 return ListView.separated(
                   itemCount: filtered.length,
@@ -61,7 +69,9 @@ class _AdminOrdersListScreenState extends ConsumerState<AdminOrdersListScreen> {
                     final o = filtered[i];
                     return ListTile(
                       title: Text('طلب #${o.orderNumber}'),
-                      subtitle: Text('${orderStatusLabelAr(o.status)} · ${Formatters.date(o.createdAt)}'),
+                      subtitle: Text(
+                        '${orderStatusLabelAr(o.status)} · ${Formatters.date(o.createdAt)}',
+                      ),
                       trailing: Text(Formatters.currency(o.total)),
                       onTap: () => context.push(Routes.adminOrderDetail(o.id)),
                     );
@@ -80,10 +90,18 @@ class _FilterChip extends StatelessWidget {
   final String label;
   final bool selected;
   final VoidCallback onTap;
-  const _FilterChip({required this.label, required this.selected, required this.onTap});
+  const _FilterChip({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return ChoiceChip(label: Text(label), selected: selected, onSelected: (_) => onTap());
+    return ChoiceChip(
+      label: Text(label),
+      selected: selected,
+      onSelected: (_) => onTap(),
+    );
   }
 }

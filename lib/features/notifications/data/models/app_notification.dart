@@ -15,14 +15,14 @@ abstract class AppNotification with _$AppNotification {
   }) = _AppNotification;
 
   factory AppNotification.fromRow(Map<String, dynamic> row) => AppNotification(
-        id: row['id'] as String,
-        type: row['type'] as String,
-        title: row['title'] as String,
-        body: row['body'] as String?,
-        data: Map<String, dynamic>.from(row['data'] as Map? ?? {}),
-        isRead: row['is_read'] as bool? ?? false,
-        createdAt: DateTime.parse(row['created_at'] as String),
-      );
+    id: row['id'] as String,
+    type: row['type'] as String,
+    title: row['title'] as String,
+    body: row['body'] as String?,
+    data: Map<String, dynamic>.from(row['data'] as Map? ?? {}),
+    isRead: row['is_read'] as bool? ?? false,
+    createdAt: DateTime.parse(row['created_at'] as String),
+  );
 }
 
 /// Maps a notification `type` (see notify_user()/notify_all_admins() calls

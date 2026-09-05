@@ -11,7 +11,11 @@ class MaintenanceImageThumb extends ConsumerWidget {
   final String storedPathOrUrl;
   final double size;
 
-  const MaintenanceImageThumb({required this.storedPathOrUrl, this.size = 100, super.key});
+  const MaintenanceImageThumb({
+    required this.storedPathOrUrl,
+    this.size = 100,
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

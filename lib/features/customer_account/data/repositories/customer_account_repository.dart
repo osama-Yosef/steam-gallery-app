@@ -10,7 +10,11 @@ abstract class CustomerAccountRepository {
 
   Future<List<CustomerAccountTransaction>> getTransactions(String customerId);
 
-  Future<void> recordPayment({required String customerId, required double amount, String? notes});
+  Future<void> recordPayment({
+    required String customerId,
+    required double amount,
+    String? notes,
+  });
 }
 
 class SupabaseCustomerAccountRepository implements CustomerAccountRepository {
@@ -48,7 +52,9 @@ class SupabaseCustomerAccountRepository implements CustomerAccountRepository {
   }
 
   @override
-  Future<List<CustomerAccountTransaction>> getTransactions(String customerId) async {
+  Future<List<CustomerAccountTransaction>> getTransactions(
+    String customerId,
+  ) async {
     try {
       final rows = await _client
           .from('customer_account_transactions')
@@ -62,14 +68,21 @@ class SupabaseCustomerAccountRepository implements CustomerAccountRepository {
   }
 
   @override
-  Future<void> recordPayment({required String customerId, required double amount, String? notes}) async {
+  Future<void> recordPayment({
+    required String customerId,
+    required double amount,
+    String? notes,
+  }) async {
     try {
-      await _client.rpc('rpc_record_customer_payment', params: {
-        'p_customer_id': customerId,
-        'p_amount': amount,
-        'p_order_id': null,
-        'p_notes': notes,
-      });
+      await _client.rpc(
+        'rpc_record_customer_payment',
+        params: {
+          'p_customer_id': customerId,
+          'p_amount': amount,
+          'p_order_id': null,
+          'p_notes': notes,
+        },
+      );
     } catch (e) {
       throw AppException.from(e);
     }

@@ -29,7 +29,10 @@ class SupabaseNotificationRepository implements NotificationRepository {
   @override
   Future<void> markAsRead(String id) async {
     try {
-      await _client.from('notifications').update({'is_read': true}).eq('id', id);
+      await _client
+          .from('notifications')
+          .update({'is_read': true})
+          .eq('id', id);
     } catch (e) {
       throw AppException.from(e);
     }

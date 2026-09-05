@@ -27,8 +27,15 @@ class AccountSummaryCard extends StatelessWidget {
     );
   }
 
-  Widget _row(BuildContext context, String label, double amount, {bool emphasize = false}) {
-    final style = emphasize ? Theme.of(context).textTheme.titleLarge : Theme.of(context).textTheme.bodyLarge;
+  Widget _row(
+    BuildContext context,
+    String label,
+    double amount, {
+    bool emphasize = false,
+  }) {
+    final style = emphasize
+        ? Theme.of(context).textTheme.titleLarge
+        : Theme.of(context).textTheme.bodyLarge;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(

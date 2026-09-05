@@ -34,7 +34,9 @@ class SupabaseUsersAdminRepository implements UsersAdminRepository {
       var query = _client.from('users').select();
       if (roleFilter != null) query = query.eq('role', roleFilter.name);
       if (search != null && search.trim().isNotEmpty) {
-        query = query.or('full_name.ilike.%${search.trim()}%,phone.ilike.%${search.trim()}%');
+        query = query.or(
+          'full_name.ilike.%${search.trim()}%,phone.ilike.%${search.trim()}%',
+        );
       }
       final rows = await query.order('created_at', ascending: false);
       return rows.map(AppUser.fromRow).toList();
@@ -46,7 +48,10 @@ class SupabaseUsersAdminRepository implements UsersAdminRepository {
   @override
   Future<void> setRole(String userId, AppRole role) async {
     try {
-      await _client.rpc('rpc_admin_set_role', params: {'p_user_id': userId, 'p_new_role': role.name});
+      await _client.rpc(
+        'rpc_admin_set_role',
+        params: {'p_user_id': userId, 'p_new_role': role.name},
+      );
     } catch (e) {
       throw AppException.from(e);
     }
@@ -55,7 +60,10 @@ class SupabaseUsersAdminRepository implements UsersAdminRepository {
   @override
   Future<void> setActive(String userId, bool isActive) async {
     try {
-      await _client.rpc('rpc_admin_set_active', params: {'p_user_id': userId, 'p_is_active': isActive});
+      await _client.rpc(
+        'rpc_admin_set_active',
+        params: {'p_user_id': userId, 'p_is_active': isActive},
+      );
     } catch (e) {
       throw AppException.from(e);
     }
@@ -70,13 +78,17 @@ class SupabaseUsersAdminRepository implements UsersAdminRepository {
     String? employeeCode,
   }) async {
     try {
-      final res = await _client.functions.invoke('create-user', body: {
-        'phone': localPhone,
-        'password': password,
-        'full_name': fullName,
-        'role': role.name,
-        if (employeeCode != null && employeeCode.isNotEmpty) 'employee_code': employeeCode,
-      });
+      final res = await _client.functions.invoke(
+        'create-user',
+        body: {
+          'phone': localPhone,
+          'password': password,
+          'full_name': fullName,
+          'role': role.name,
+          if (employeeCode != null && employeeCode.isNotEmpty)
+            'employee_code': employeeCode,
+        },
+      );
       final data = res.data;
       if (data is Map && data['error'] != null) {
         throw AppException(data['error'].toString());

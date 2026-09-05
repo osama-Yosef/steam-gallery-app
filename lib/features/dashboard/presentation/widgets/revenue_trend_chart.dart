@@ -12,9 +12,14 @@ class RevenueTrendChart extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (points.isEmpty) {
-      return const SizedBox(height: 140, child: Center(child: Text('لا توجد بيانات مبيعات بعد')));
+      return const SizedBox(
+        height: 140,
+        child: Center(child: Text('لا توجد بيانات مبيعات بعد')),
+      );
     }
-    final maxValue = points.map((p) => p.revenue).fold<double>(0, (a, b) => a > b ? a : b);
+    final maxValue = points
+        .map((p) => p.revenue)
+        .fold<double>(0, (a, b) => a > b ? a : b);
     final scheme = Theme.of(context).colorScheme;
 
     return SizedBox(
@@ -22,7 +27,9 @@ class RevenueTrendChart extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.end,
         children: points.map((p) {
-          final heightFactor = maxValue == 0 ? 0.02 : (p.revenue / maxValue).clamp(0.02, 1.0);
+          final heightFactor = maxValue == 0
+              ? 0.02
+              : (p.revenue / maxValue).clamp(0.02, 1.0);
           return Expanded(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 4),
@@ -30,7 +37,9 @@ class RevenueTrendChart extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   Text(
-                    p.revenue > 0 ? Formatters.currency(p.revenue).replaceAll(' ج.م', '') : '',
+                    p.revenue > 0
+                        ? Formatters.currency(p.revenue).replaceAll(' ج.م', '')
+                        : '',
                     style: Theme.of(context).textTheme.labelSmall,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -40,11 +49,16 @@ class RevenueTrendChart extends StatelessWidget {
                     height: 100 * heightFactor,
                     decoration: BoxDecoration(
                       color: scheme.primary,
-                      borderRadius: const BorderRadius.vertical(top: Radius.circular(4)),
+                      borderRadius: const BorderRadius.vertical(
+                        top: Radius.circular(4),
+                      ),
                     ),
                   ),
                   const SizedBox(height: 6),
-                  Text(_weekdayAr(p.day.weekday), style: Theme.of(context).textTheme.labelSmall),
+                  Text(
+                    _weekdayAr(p.day.weekday),
+                    style: Theme.of(context).textTheme.labelSmall,
+                  ),
                 ],
               ),
             ),
@@ -54,5 +68,6 @@ class RevenueTrendChart extends StatelessWidget {
     );
   }
 
-  String _weekdayAr(int weekday) => const ['اث', 'ثل', 'أر', 'خم', 'جم', 'سب', 'أح'][weekday - 1];
+  String _weekdayAr(int weekday) =>
+      const ['اث', 'ثل', 'أر', 'خم', 'جم', 'سب', 'أح'][weekday - 1];
 }

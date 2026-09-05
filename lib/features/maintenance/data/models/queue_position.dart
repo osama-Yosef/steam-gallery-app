@@ -12,8 +12,8 @@ abstract class QueuePosition with _$QueuePosition {
   }) = _QueuePosition;
 
   factory QueuePosition.fromRow(Map<String, dynamic> row) => QueuePosition(
-        position: row['queue_position'] as int,
-        peopleAhead: row['people_ahead'] as int,
-        totalActive: row['total_active'] as int,
-      );
+    position: row['queue_position'] as int,
+    peopleAhead: row['people_ahead'] as int,
+    totalActive: row['total_active'] as int,
+  );
 }

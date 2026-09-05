@@ -24,21 +24,27 @@ class TechnicianMaintenanceDetailScreen extends ConsumerWidget {
       await ref.read(maintenanceRepositoryProvider).claim(requestId);
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(AppException.from(e).messageAr)));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(AppException.from(e).messageAr)));
       }
     }
   }
 
   Future<void> _start(BuildContext context, WidgetRef ref) async {
-    final confirmed = await showConfirmDialog(context, title: 'بدء التنفيذ', message: 'هل تريد بدء تنفيذ الصيانة؟');
+    final confirmed = await showConfirmDialog(
+      context,
+      title: 'بدء التنفيذ',
+      message: 'هل تريد بدء تنفيذ الصيانة؟',
+    );
     if (!confirmed) return;
     try {
       await ref.read(maintenanceRepositoryProvider).start(requestId);
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(AppException.from(e).messageAr)));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(AppException.from(e).messageAr)));
       }
     }
   }
@@ -54,21 +60,30 @@ class TechnicianMaintenanceDetailScreen extends ConsumerWidget {
           decoration: const InputDecoration(labelText: 'ملاحظات (اختياري)'),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('تراجع')),
-          FilledButton(onPressed: () => Navigator.of(ctx).pop(true), child: const Text('تأكيد')),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('تراجع'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('تأكيد'),
+          ),
         ],
       ),
     );
     if (proceed != true) return;
     try {
-      await ref.read(maintenanceRepositoryProvider).complete(
+      await ref
+          .read(maintenanceRepositoryProvider)
+          .complete(
             requestId,
             notesCtrl.text.trim().isEmpty ? null : notesCtrl.text.trim(),
           );
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(AppException.from(e).messageAr)));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(AppException.from(e).messageAr)));
       }
     }
   }
@@ -92,7 +107,10 @@ class TechnicianMaintenanceDetailScreen extends ConsumerWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('طلب #${req.ticketNumber}', style: Theme.of(context).textTheme.titleLarge),
+                  Text(
+                    'طلب #${req.ticketNumber}',
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
                   Chip(label: Text(maintenanceStatusLabelAr(req.status))),
                 ],
               ),
@@ -125,7 +143,10 @@ class TechnicianMaintenanceDetailScreen extends ConsumerWidget {
                 Text('نوع الجهاز: ${req.deviceType}'),
                 const SizedBox(height: 8),
               ],
-              Text('وصف المشكلة', style: Theme.of(context).textTheme.titleMedium),
+              Text(
+                'وصف المشكلة',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
               const SizedBox(height: 4),
               Text(req.problemDescription),
               if (req.notes != null) ...[
@@ -138,7 +159,8 @@ class TechnicianMaintenanceDetailScreen extends ConsumerWidget {
               SizedBox(
                 height: 100,
                 child: imagesAsync.when(
-                  loading: () => const Center(child: CircularProgressIndicator()),
+                  loading: () =>
+                      const Center(child: CircularProgressIndicator()),
                   error: (_, _) => const SizedBox.shrink(),
                   data: (images) {
                     if (images.isEmpty) return const Text('لا توجد صور');
@@ -148,7 +170,9 @@ class TechnicianMaintenanceDetailScreen extends ConsumerWidget {
                         for (final img in images)
                           Padding(
                             padding: const EdgeInsets.only(left: 8),
-                            child: MaintenanceImageThumb(storedPathOrUrl: img.imageUrl),
+                            child: MaintenanceImageThumb(
+                              storedPathOrUrl: img.imageUrl,
+                            ),
                           ),
                       ],
                     );

@@ -33,32 +33,35 @@ class CustomerShell extends ConsumerWidget {
         if (!didPop) navigationShell.goBranch(0);
       },
       child: Scaffold(
-      backgroundColor: Colors.transparent,
-      // NOT extendBody: each branch's own Scaffold owns its FloatingActionButton
-      // (e.g. "طلب صيانة جديد") — extending the body behind this nav bar would
-      // render those FABs underneath it, unreachable.
-      body: navigationShell,
-      bottomNavigationBar: SafeArea(
-        minimum: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-        child: GlassPanel(
-          borderRadius: BorderRadius.circular(28),
-          blurSigma: 30,
-          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 6),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              for (var i = 0; i < _items.length; i++)
-                _TabItem(
-                  icon: _items[i].icon,
-                  label: _items[i].label,
-                  selected: navigationShell.currentIndex == i,
-                  badge: i == 2 && cartCount > 0 ? cartCount : null,
-                  onTap: () => navigationShell.goBranch(i, initialLocation: i == navigationShell.currentIndex),
-                ),
-            ],
+        backgroundColor: Colors.transparent,
+        // NOT extendBody: each branch's own Scaffold owns its FloatingActionButton
+        // (e.g. "طلب صيانة جديد") — extending the body behind this nav bar would
+        // render those FABs underneath it, unreachable.
+        body: navigationShell,
+        bottomNavigationBar: SafeArea(
+          minimum: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+          child: GlassPanel(
+            borderRadius: BorderRadius.circular(28),
+            blurSigma: 30,
+            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 6),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                for (var i = 0; i < _items.length; i++)
+                  _TabItem(
+                    icon: _items[i].icon,
+                    label: _items[i].label,
+                    selected: navigationShell.currentIndex == i,
+                    badge: i == 2 && cartCount > 0 ? cartCount : null,
+                    onTap: () => navigationShell.goBranch(
+                      i,
+                      initialLocation: i == navigationShell.currentIndex,
+                    ),
+                  ),
+              ],
+            ),
           ),
         ),
-      ),
       ),
     );
   }
@@ -94,7 +97,10 @@ class _TabItem extends StatelessWidget {
             borderRadius: BorderRadius.circular(18),
             gradient: selected
                 ? LinearGradient(
-                    colors: [AppColors.primary.withValues(alpha: 0.35), AppColors.accent.withValues(alpha: 0.25)],
+                    colors: [
+                      AppColors.primary.withValues(alpha: 0.35),
+                      AppColors.accent.withValues(alpha: 0.25),
+                    ],
                   )
                 : null,
           ),

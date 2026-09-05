@@ -24,9 +24,13 @@ abstract class DashboardSummary with _$DashboardSummary {
 /// One point in the "آخر 7 أيام" revenue trend chart.
 @freezed
 abstract class DailyRevenuePoint with _$DailyRevenuePoint {
-  const factory DailyRevenuePoint({required DateTime day, required double revenue}) = _DailyRevenuePoint;
+  const factory DailyRevenuePoint({
+    required DateTime day,
+    required double revenue,
+  }) = _DailyRevenuePoint;
 
-  factory DailyRevenuePoint.fromRow(Map<String, dynamic> row) => DailyRevenuePoint(
+  factory DailyRevenuePoint.fromRow(Map<String, dynamic> row) =>
+      DailyRevenuePoint(
         day: DateTime.parse(row['day'] as String),
         revenue: (row['revenue'] as num).toDouble(),
       );

@@ -30,7 +30,10 @@ class SupabaseInventoryCountRepository implements InventoryCountRepository {
   @override
   Future<List<InventoryCount>> getCounts() async {
     try {
-      final rows = await _client.from('inventory_counts').select().order('started_at', ascending: false);
+      final rows = await _client
+          .from('inventory_counts')
+          .select()
+          .order('started_at', ascending: false);
       return rows.map(InventoryCount.fromRow).toList();
     } catch (e) {
       throw AppException.from(e);
@@ -40,7 +43,11 @@ class SupabaseInventoryCountRepository implements InventoryCountRepository {
   @override
   Future<InventoryCount?> getCount(String countId) async {
     try {
-      final row = await _client.from('inventory_counts').select().eq('id', countId).maybeSingle();
+      final row = await _client
+          .from('inventory_counts')
+          .select()
+          .eq('id', countId)
+          .maybeSingle();
       return row == null ? null : InventoryCount.fromRow(row);
     } catch (e) {
       throw AppException.from(e);
@@ -52,7 +59,9 @@ class SupabaseInventoryCountRepository implements InventoryCountRepository {
     try {
       final rows = await _client
           .from('inventory_count_items')
-          .select('id, system_quantity, actual_quantity, difference, reason, notes, products(id, name, sku)')
+          .select(
+            'id, system_quantity, actual_quantity, difference, reason, notes, products(id, name, sku)',
+          )
           .eq('inventory_count_id', countId);
       final items = rows.map(InventoryCountItem.fromRow).toList()
         ..sort((a, b) => a.productName.compareTo(b.productName));
@@ -65,13 +74,20 @@ class SupabaseInventoryCountRepository implements InventoryCountRepository {
   @override
   Future<String> startWarehouseCount() async {
     try {
-      final warehouse =
-          await _client.from('warehouses').select('id').eq('type', 'main').eq('is_active', true).single();
-      final countId = await _client.rpc('rpc_start_inventory_count', params: {
-        'p_location_type': 'warehouse',
-        'p_location_id': warehouse['id'],
-        'p_product_ids': null,
-      });
+      final warehouse = await _client
+          .from('warehouses')
+          .select('id')
+          .eq('type', 'main')
+          .eq('is_active', true)
+          .single();
+      final countId = await _client.rpc(
+        'rpc_start_inventory_count',
+        params: {
+          'p_location_type': 'warehouse',
+          'p_location_id': warehouse['id'],
+          'p_product_ids': null,
+        },
+      );
       return countId as String;
     } catch (e) {
       throw AppException.from(e);
@@ -86,12 +102,15 @@ class SupabaseInventoryCountRepository implements InventoryCountRepository {
     String? notes,
   }) async {
     try {
-      await _client.rpc('rpc_save_inventory_count_item', params: {
-        'p_item_id': itemId,
-        'p_actual_quantity': actualQuantity,
-        'p_reason': reason,
-        'p_notes': notes,
-      });
+      await _client.rpc(
+        'rpc_save_inventory_count_item',
+        params: {
+          'p_item_id': itemId,
+          'p_actual_quantity': actualQuantity,
+          'p_reason': reason,
+          'p_notes': notes,
+        },
+      );
     } catch (e) {
       throw AppException.from(e);
     }
@@ -100,7 +119,10 @@ class SupabaseInventoryCountRepository implements InventoryCountRepository {
   @override
   Future<void> completeCount(String countId) async {
     try {
-      await _client.rpc('rpc_complete_inventory_count', params: {'p_count_id': countId});
+      await _client.rpc(
+        'rpc_complete_inventory_count',
+        params: {'p_count_id': countId},
+      );
     } catch (e) {
       throw AppException.from(e);
     }

@@ -40,7 +40,11 @@ class ReportDateRange extends _$ReportDateRange {
   ReportRange build() {
     final now = DateTime.now();
     final firstOfMonth = DateTime(now.year, now.month, 1);
-    final tomorrow = DateTime(now.year, now.month, now.day).add(const Duration(days: 1));
+    final tomorrow = DateTime(
+      now.year,
+      now.month,
+      now.day,
+    ).add(const Duration(days: 1));
     return (from: firstOfMonth, to: tomorrow);
   }
 

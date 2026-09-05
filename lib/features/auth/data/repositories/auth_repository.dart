@@ -7,7 +7,10 @@ import '../models/app_user.dart';
 abstract class AuthRepository {
   Session? get currentSession;
 
-  Future<void> signInWithPhone({required String localPhone, required String password});
+  Future<void> signInWithPhone({
+    required String localPhone,
+    required String password,
+  });
 
   /// role is always 'customer' here — technician/admin accounts are only
   /// ever created by an existing admin via the create-user Edge Function
@@ -35,7 +38,11 @@ abstract class AuthRepository {
   /// Self profile edit — name and/or photo, either may be omitted. RLS
   /// (0011_rls_policies.sql) already restricts the update to exactly these
   /// two columns on the caller's own row.
-  Future<void> updateMyProfile({String? fullName, Uint8List? avatarBytes, String? avatarExt});
+  Future<void> updateMyProfile({
+    String? fullName,
+    Uint8List? avatarBytes,
+    String? avatarExt,
+  });
 }
 
 class SupabaseAuthRepository implements AuthRepository {
@@ -46,7 +53,10 @@ class SupabaseAuthRepository implements AuthRepository {
   Session? get currentSession => _client.auth.currentSession;
 
   @override
-  Future<void> signInWithPhone({required String localPhone, required String password}) async {
+  Future<void> signInWithPhone({
+    required String localPhone,
+    required String password,
+  }) async {
     try {
       await _client.auth.signInWithPassword(
         phone: Validators.toE164Egypt(localPhone),
@@ -75,7 +85,10 @@ class SupabaseAuthRepository implements AuthRepository {
       // actually created the session above — can't upload beforehand.
       if (avatarBytes != null && avatarExt != null) {
         final url = await _uploadAvatar(avatarBytes, avatarExt);
-        await _client.from('users').update({'avatar_url': url}).eq('id', _client.auth.currentUser!.id);
+        await _client
+            .from('users')
+            .update({'avatar_url': url})
+            .eq('id', _client.auth.currentUser!.id);
       }
     } catch (e) {
       throw AppException.from(e);
@@ -85,20 +98,35 @@ class SupabaseAuthRepository implements AuthRepository {
   Future<String> _uploadAvatar(Uint8List bytes, String ext) async {
     final uid = _client.auth.currentUser!.id;
     final path = '$uid/avatar.$ext';
-    await _client.storage.from('avatars').uploadBinary(path, bytes, fileOptions: const FileOptions(upsert: true));
+    await _client.storage
+        .from('avatars')
+        .uploadBinary(
+          path,
+          bytes,
+          fileOptions: const FileOptions(upsert: true),
+        );
     return _client.storage.from('avatars').getPublicUrl(path);
   }
 
   @override
-  Future<void> updateMyProfile({String? fullName, Uint8List? avatarBytes, String? avatarExt}) async {
+  Future<void> updateMyProfile({
+    String? fullName,
+    Uint8List? avatarBytes,
+    String? avatarExt,
+  }) async {
     try {
       final updates = <String, dynamic>{};
-      if (fullName != null && fullName.trim().isNotEmpty) updates['full_name'] = fullName.trim();
+      if (fullName != null && fullName.trim().isNotEmpty) {
+        updates['full_name'] = fullName.trim();
+      }
       if (avatarBytes != null && avatarExt != null) {
         updates['avatar_url'] = await _uploadAvatar(avatarBytes, avatarExt);
       }
       if (updates.isEmpty) return;
-      await _client.from('users').update(updates).eq('id', _client.auth.currentUser!.id);
+      await _client
+          .from('users')
+          .update(updates)
+          .eq('id', _client.auth.currentUser!.id);
     } catch (e) {
       throw AppException.from(e);
     }
@@ -118,7 +146,11 @@ class SupabaseAuthRepository implements AuthRepository {
     final uid = _client.auth.currentUser?.id;
     if (uid == null) return null;
     try {
-      final row = await _client.from('users').select().eq('id', uid).maybeSingle();
+      final row = await _client
+          .from('users')
+          .select()
+          .eq('id', uid)
+          .maybeSingle();
       if (row == null) return null;
       return AppUser.fromRow(row);
     } catch (e) {
@@ -129,7 +161,11 @@ class SupabaseAuthRepository implements AuthRepository {
   @override
   Future<AppUser?> getProfileById(String userId) async {
     try {
-      final row = await _client.from('users').select().eq('id', userId).maybeSingle();
+      final row = await _client
+          .from('users')
+          .select()
+          .eq('id', userId)
+          .maybeSingle();
       return row == null ? null : AppUser.fromRow(row);
     } catch (e) {
       throw AppException.from(e);
