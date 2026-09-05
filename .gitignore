@@ -55,3 +55,8 @@ analyze_out.txt
 # Local tooling artifacts — not project source
 .claude/scheduled_tasks.lock
 supabase/.temp/
+
+# Built app binaries — rebuild with `flutter build apk`, don't version 60MB+
+# artifacts (they're distributed outside git).
+*.apk
+*.aab

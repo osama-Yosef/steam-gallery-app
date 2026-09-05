@@ -18,6 +18,9 @@ class Env {
     'SUPABASE_PUBLISHABLE_KEY',
   );
 
+  /// Module 0 must be able to `flutter run` cleanly even before a real
+  /// Supabase project exists — the app degrades to a "not configured"
+  /// screen instead of crashing on startup.
   static bool get isConfigured =>
       supabaseUrl.isNotEmpty && supabasePublishableKey.isNotEmpty;
 }

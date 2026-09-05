@@ -46,82 +46,117 @@ class AdminDashboardScreen extends ConsumerWidget {
               _KpiCard(
                 icon: Icons.account_balance_wallet_outlined,
                 label: 'رصيد الخزنة',
-                value: MoneyText(s.cashboxBalance, style: Theme.of(context).textTheme.headlineSmall),
+                value: MoneyText(
+                  s.cashboxBalance,
+                  style: Theme.of(context).textTheme.headlineSmall,
+                ),
                 onTap: () => context.push(Routes.adminCashbox),
                 highlight: true,
               ),
               const SizedBox(height: 12),
-              GridView.extent(
-                // Width-driven rather than a fixed column count: 2 columns on
-                // a phone, more as the window widens on desktop/web, instead
-                // of two absurdly stretched cards across a monitor.
-                maxCrossAxisExtent: 260,
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                mainAxisSpacing: 12,
-                crossAxisSpacing: 12,
-                childAspectRatio: 1.6,
-                children: [
-                  _KpiCard(icon: Icons.today_outlined, label: 'مبيعات اليوم', value: MoneyText(s.todayRevenue)),
-                  _KpiCard(
-                    icon: Icons.trending_up,
-                    label: 'صافي ربح اليوم',
-                    value: MoneyText(s.todayNetProfit, colorBySign: true),
-                  ),
-                  _KpiCard(icon: Icons.calendar_month_outlined, label: 'مبيعات الشهر', value: MoneyText(s.monthRevenue)),
-                  _KpiCard(
-                    icon: Icons.savings_outlined,
-                    label: 'صافي ربح الشهر',
-                    value: MoneyText(s.monthNetProfit, colorBySign: true),
-                  ),
-                  _KpiCard(
-                    icon: Icons.receipt_long_outlined,
-                    label: 'طلبات جديدة',
-                    value: Text('${s.pendingOrdersCount}', style: Theme.of(context).textTheme.headlineSmall),
-                    onTap: () => context.push(Routes.adminOrders),
-                  ),
-                  _KpiCard(
-                    icon: Icons.build_outlined,
-                    label: 'صيانات نشطة',
-                    value: Text('${s.activeMaintenanceCount}', style: Theme.of(context).textTheme.headlineSmall),
-                    onTap: () => context.push(Routes.adminMaintenance),
-                  ),
-                  _KpiCard(
-                    icon: Icons.warning_amber_outlined,
-                    label: 'منتجات منخفضة',
-                    value: Text('${s.lowStockCount}', style: Theme.of(context).textTheme.headlineSmall),
-                    onTap: () => context.push(Routes.adminWarehouse),
-                  ),
-                  _KpiCard(
-                    icon: Icons.engineering_outlined,
-                    label: 'الصنايعية النشطون',
-                    value: Text('${s.activeTechniciansCount}', style: Theme.of(context).textTheme.headlineSmall),
-                  ),
-                  _KpiCard(
-                    icon: Icons.people_outline,
-                    label: 'ديون العملاء',
-                    value: MoneyText(s.customerDebtsTotal),
-                    onTap: () => context.push(Routes.adminCustomers),
-                  ),
-                  _KpiCard(
-                    icon: Icons.handshake_outlined,
-                    label: 'مستحقات الصنايعية',
-                    value: MoneyText(s.technicianDuesTotal),
-                    onTap: () => context.push(Routes.adminTechnicianBags),
-                  ),
-                  _KpiCard(
-                    icon: Icons.inventory_2_outlined,
-                    label: 'قيمة المخزون',
-                    value: MoneyText(s.warehouseStockValue),
-                    onTap: () => context.push(Routes.adminWarehouse),
-                  ),
-                  _KpiCard(
-                    icon: Icons.remove_circle_outline,
-                    label: 'مصروفات الشهر',
-                    value: MoneyText(s.monthExpenses),
-                    onTap: () => context.push(Routes.adminExpenses),
-                  ),
-                ],
+              LayoutBuilder(
+                builder: (context, c) {
+                  // Width-driven rather than a fixed column count, so the grid
+                  // stays 2-up on a phone (where the admin rail already eats a
+                  // big slice of the width) and spreads out on a desktop window
+                  // instead of stretching two cards across a whole monitor.
+                  // Computed explicitly rather than via GridView.extent, whose
+                  // ceil() can drop a narrow phone to a single column.
+                  final columns = (c.maxWidth / 210).floor().clamp(2, 6);
+                  // Narrow columns stack the icon above the label (see
+                  // _KpiCard) and so need proportionally more height; wide
+                  // ones keep the compact icon-beside-label row.
+                  final aspect = columns >= 4 ? 1.7 : 0.8;
+                  return GridView.count(
+                    crossAxisCount: columns,
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    mainAxisSpacing: 12,
+                    crossAxisSpacing: 12,
+                    childAspectRatio: aspect,
+                    children: [
+                      _KpiCard(
+                        icon: Icons.today_outlined,
+                        label: 'مبيعات اليوم',
+                        value: MoneyText(s.todayRevenue),
+                      ),
+                      _KpiCard(
+                        icon: Icons.trending_up,
+                        label: 'صافي ربح اليوم',
+                        value: MoneyText(s.todayNetProfit, colorBySign: true),
+                      ),
+                      _KpiCard(
+                        icon: Icons.calendar_month_outlined,
+                        label: 'مبيعات الشهر',
+                        value: MoneyText(s.monthRevenue),
+                      ),
+                      _KpiCard(
+                        icon: Icons.savings_outlined,
+                        label: 'صافي ربح الشهر',
+                        value: MoneyText(s.monthNetProfit, colorBySign: true),
+                      ),
+                      _KpiCard(
+                        icon: Icons.receipt_long_outlined,
+                        label: 'طلبات جديدة',
+                        value: Text(
+                          '${s.pendingOrdersCount}',
+                          style: Theme.of(context).textTheme.headlineSmall,
+                        ),
+                        onTap: () => context.push(Routes.adminOrders),
+                      ),
+                      _KpiCard(
+                        icon: Icons.build_outlined,
+                        label: 'صيانات نشطة',
+                        value: Text(
+                          '${s.activeMaintenanceCount}',
+                          style: Theme.of(context).textTheme.headlineSmall,
+                        ),
+                        onTap: () => context.push(Routes.adminMaintenance),
+                      ),
+                      _KpiCard(
+                        icon: Icons.warning_amber_outlined,
+                        label: 'منتجات منخفضة',
+                        value: Text(
+                          '${s.lowStockCount}',
+                          style: Theme.of(context).textTheme.headlineSmall,
+                        ),
+                        onTap: () => context.push(Routes.adminWarehouse),
+                      ),
+                      _KpiCard(
+                        icon: Icons.engineering_outlined,
+                        label: 'الصنايعية النشطون',
+                        value: Text(
+                          '${s.activeTechniciansCount}',
+                          style: Theme.of(context).textTheme.headlineSmall,
+                        ),
+                      ),
+                      _KpiCard(
+                        icon: Icons.people_outline,
+                        label: 'ديون العملاء',
+                        value: MoneyText(s.customerDebtsTotal),
+                        onTap: () => context.push(Routes.adminCustomers),
+                      ),
+                      _KpiCard(
+                        icon: Icons.handshake_outlined,
+                        label: 'مستحقات الصنايعية',
+                        value: MoneyText(s.technicianDuesTotal),
+                        onTap: () => context.push(Routes.adminTechnicianBags),
+                      ),
+                      _KpiCard(
+                        icon: Icons.inventory_2_outlined,
+                        label: 'قيمة المخزون',
+                        value: MoneyText(s.warehouseStockValue),
+                        onTap: () => context.push(Routes.adminWarehouse),
+                      ),
+                      _KpiCard(
+                        icon: Icons.remove_circle_outline,
+                        label: 'مصروفات الشهر',
+                        value: MoneyText(s.monthExpenses),
+                        onTap: () => context.push(Routes.adminExpenses),
+                      ),
+                    ],
+                  );
+                },
               ),
               const SizedBox(height: 16),
               Card(
@@ -130,11 +165,18 @@ class AdminDashboardScreen extends ConsumerWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      Text('مبيعات آخر 7 أيام', style: Theme.of(context).textTheme.titleMedium),
+                      Text(
+                        'مبيعات آخر 7 أيام',
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
                       const SizedBox(height: 12),
                       trendAsync.when(
-                        loading: () => const SizedBox(height: 140, child: LoadingView()),
-                        error: (e, _) => const SizedBox(height: 140, child: Center(child: Text('تعذَّر تحميل الرسم'))),
+                        loading: () =>
+                            const SizedBox(height: 140, child: LoadingView()),
+                        error: (e, _) => const SizedBox(
+                          height: 140,
+                          child: Center(child: Text('تعذَّر تحميل الرسم')),
+                        ),
                         data: (points) => RevenueTrendChart(points: points),
                       ),
                     ],
@@ -162,7 +204,13 @@ class _KpiCard extends StatelessWidget {
   final VoidCallback? onTap;
   final bool highlight;
 
-  const _KpiCard({required this.icon, required this.label, required this.value, this.onTap, this.highlight = false});
+  const _KpiCard({
+    required this.icon,
+    required this.label,
+    required this.value,
+    this.onTap,
+    this.highlight = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -180,36 +228,50 @@ class _KpiCard extends StatelessWidget {
           // جديدة", "صيانات نشطة", …) overflowed on a phone with enlarged
           // system text.
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.center,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Flexible(
-                child: Row(
-                  children: [
-                    Icon(icon, size: 20),
-                    const SizedBox(width: 6),
-                    Expanded(
-                      child: Text(
-                        label,
-                        style: Theme.of(context).textTheme.bodySmall,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
+          child: LayoutBuilder(
+            builder: (context, c) {
+              // Beside the icon a long label like "الصنايعية النشطون" only
+              // gets ~75px on a phone (the admin rail takes a big bite out of
+              // the width) and ellipsises mid-word. Below a threshold, put the
+              // icon on its own line so the label gets the card's full width.
+              final stacked = c.maxWidth < 150;
+              final labelText = Text(
+                label,
+                style: Theme.of(context).textTheme.bodySmall,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              );
+
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (stacked) ...[
+                    Icon(icon, size: 18),
+                    const SizedBox(height: 2),
+                    Flexible(child: labelText),
+                  ] else
+                    Flexible(
+                      child: Row(
+                        children: [
+                          Icon(icon, size: 20),
+                          const SizedBox(width: 6),
+                          Expanded(child: labelText),
+                        ],
                       ),
                     ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 6),
-              Flexible(
-                child: FittedBox(
-                  fit: BoxFit.scaleDown,
-                  alignment: AlignmentDirectional.centerStart,
-                  child: value,
-                ),
-              ),
-            ],
+                  const SizedBox(height: 6),
+                  Flexible(
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: AlignmentDirectional.centerStart,
+                      child: value,
+                    ),
+                  ),
+                ],
+              );
+            },
           ),
         ),
       ),
