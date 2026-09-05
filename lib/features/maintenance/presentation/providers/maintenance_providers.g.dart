@@ -417,6 +417,90 @@ final class MaintenanceImagesFamily extends $Family
   String toString() => r'maintenanceImagesProvider';
 }
 
+/// Signed, time-limited URL for one stored maintenance image. The bucket is
+/// private, so this is the only way the image can actually render.
+
+@ProviderFor(maintenanceImageUrl)
+const maintenanceImageUrlProvider = MaintenanceImageUrlFamily._();
+
+/// Signed, time-limited URL for one stored maintenance image. The bucket is
+/// private, so this is the only way the image can actually render.
+
+final class MaintenanceImageUrlProvider
+    extends $FunctionalProvider<AsyncValue<String>, String, FutureOr<String>>
+    with $FutureModifier<String>, $FutureProvider<String> {
+  /// Signed, time-limited URL for one stored maintenance image. The bucket is
+  /// private, so this is the only way the image can actually render.
+  const MaintenanceImageUrlProvider._({
+    required MaintenanceImageUrlFamily super.from,
+    required String super.argument,
+  }) : super(
+         retry: null,
+         name: r'maintenanceImageUrlProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
+  @override
+  String debugGetCreateSourceHash() => _$maintenanceImageUrlHash();
+
+  @override
+  String toString() {
+    return r'maintenanceImageUrlProvider'
+        ''
+        '($argument)';
+  }
+
+  @$internal
+  @override
+  $FutureProviderElement<String> $createElement($ProviderPointer pointer) =>
+      $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<String> create(Ref ref) {
+    final argument = this.argument as String;
+    return maintenanceImageUrl(ref, argument);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is MaintenanceImageUrlProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$maintenanceImageUrlHash() =>
+    r'e82975ca622639d2654236f12d028eb8997b5ce2';
+
+/// Signed, time-limited URL for one stored maintenance image. The bucket is
+/// private, so this is the only way the image can actually render.
+
+final class MaintenanceImageUrlFamily extends $Family
+    with $FunctionalFamilyOverride<FutureOr<String>, String> {
+  const MaintenanceImageUrlFamily._()
+    : super(
+        retry: null,
+        name: r'maintenanceImageUrlProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  /// Signed, time-limited URL for one stored maintenance image. The bucket is
+  /// private, so this is the only way the image can actually render.
+
+  MaintenanceImageUrlProvider call(String storedPathOrUrl) =>
+      MaintenanceImageUrlProvider._(argument: storedPathOrUrl, from: this);
+
+  @override
+  String toString() => r'maintenanceImageUrlProvider';
+}
+
 @ProviderFor(assignableTechnicians)
 const assignableTechniciansProvider = AssignableTechniciansProvider._();
 

@@ -40,6 +40,13 @@ Future<List<MaintenanceImage>> maintenanceImages(Ref ref, String requestId) {
   return ref.watch(maintenanceRepositoryProvider).getImages(requestId);
 }
 
+/// Signed, time-limited URL for one stored maintenance image. The bucket is
+/// private, so this is the only way the image can actually render.
+@riverpod
+Future<String> maintenanceImageUrl(Ref ref, String storedPathOrUrl) {
+  return ref.watch(maintenanceRepositoryProvider).signedImageUrl(storedPathOrUrl);
+}
+
 @riverpod
 Future<List<TechnicianOption>> assignableTechnicians(Ref ref) {
   return ref.watch(maintenanceRepositoryProvider).listTechnicians();

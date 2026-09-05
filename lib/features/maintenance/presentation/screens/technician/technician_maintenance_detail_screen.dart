@@ -1,4 +1,3 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../../core/errors/app_exception.dart';
@@ -8,10 +7,28 @@ import '../../../../../core/widgets/confirm_dialog.dart';
 import '../../../../../core/widgets/state_views.dart';
 import '../../../data/models/maintenance_request.dart';
 import '../../providers/maintenance_providers.dart';
+import '../../widgets/maintenance_image_thumb.dart';
 
 class TechnicianMaintenanceDetailScreen extends ConsumerWidget {
   final String requestId;
   const TechnicianMaintenanceDetailScreen({super.key, required this.requestId});
+
+  Future<void> _claim(BuildContext context, WidgetRef ref) async {
+    final confirmed = await showConfirmDialog(
+      context,
+      title: 'استلام الطلب',
+      message: 'هل تريد استلام طلب الصيانة ده؟',
+    );
+    if (!confirmed) return;
+    try {
+      await ref.read(maintenanceRepositoryProvider).claim(requestId);
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(AppException.from(e).messageAr)));
+      }
+    }
+  }
 
   Future<void> _start(BuildContext context, WidgetRef ref) async {
     final confirmed = await showConfirmDialog(context, title: 'بدء التنفيذ', message: 'هل تريد بدء تنفيذ الصيانة؟');
@@ -131,15 +148,7 @@ class TechnicianMaintenanceDetailScreen extends ConsumerWidget {
                         for (final img in images)
                           Padding(
                             padding: const EdgeInsets.only(left: 8),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(8),
-                              child: CachedNetworkImage(
-                                imageUrl: img.imageUrl,
-                                width: 100,
-                                height: 100,
-                                fit: BoxFit.cover,
-                              ),
-                            ),
+                            child: MaintenanceImageThumb(storedPathOrUrl: img.imageUrl),
                           ),
                       ],
                     );
@@ -147,6 +156,14 @@ class TechnicianMaintenanceDetailScreen extends ConsumerWidget {
                 ),
               ),
               const SizedBox(height: 24),
+              // A waiting job can be taken by the technician directly — no
+              // admin assignment step in between.
+              if (req.status == MaintenanceStatus.waiting)
+                FilledButton.icon(
+                  onPressed: () => _claim(context, ref),
+                  icon: const Icon(Icons.pan_tool_alt_outlined),
+                  label: const Text('استلام الطلب'),
+                ),
               if (req.status == MaintenanceStatus.assigned)
                 FilledButton.icon(
                   onPressed: () => _start(context, ref),

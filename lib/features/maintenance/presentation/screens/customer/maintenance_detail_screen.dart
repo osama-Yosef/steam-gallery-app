@@ -1,5 +1,4 @@
 import 'dart:typed_data';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
@@ -9,6 +8,7 @@ import '../../../../../core/widgets/confirm_dialog.dart';
 import '../../../../../core/widgets/state_views.dart';
 import '../../../data/models/maintenance_request.dart';
 import '../../providers/maintenance_providers.dart';
+import '../../widgets/maintenance_image_thumb.dart';
 
 class MaintenanceDetailScreen extends ConsumerWidget {
   final String requestId;
@@ -143,15 +143,7 @@ class MaintenanceDetailScreen extends ConsumerWidget {
                           for (final img in images)
                             Padding(
                               padding: const EdgeInsets.only(left: 8),
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(8),
-                                child: CachedNetworkImage(
-                                  imageUrl: img.imageUrl,
-                                  width: 100,
-                                  height: 100,
-                                  fit: BoxFit.cover,
-                                ),
-                              ),
+                              child: MaintenanceImageThumb(storedPathOrUrl: img.imageUrl),
                             ),
                           if (isActive)
                             InkWell(

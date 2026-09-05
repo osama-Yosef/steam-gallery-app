@@ -39,7 +39,18 @@ abstract class MaintenanceRepository {
   Future<List<MaintenanceImage>> getImages(String requestId);
   Future<MaintenanceImage> uploadImage(String requestId, String ownerCustomerId, Uint8List bytes, String ext);
 
+  /// The `maintenance` bucket is private (a customer's photos must not be
+  /// readable by anyone holding the URL — see 0012_storage_buckets_policies),
+  /// so images can only be displayed through a short-lived signed URL.
+  /// Accepts either a stored object path or a legacy public/signed URL.
+  Future<String> signedImageUrl(String storedPathOrUrl);
+
   Future<void> assign(String requestId, String technicianId);
+  /// Lets a technician take a waiting job themselves instead of waiting for
+  /// an admin to assign it. Throws REQUEST_NOT_WAITING if someone else got
+  /// there first.
+  Future<void> claim(String requestId);
+
   Future<void> start(String requestId);
   Future<void> complete(String requestId, String? notes);
   Future<void> cancel(String requestId, String reason);
@@ -144,18 +155,44 @@ class SupabaseMaintenanceRepository implements MaintenanceRepository {
     try {
       // Path convention enforced by storage RLS: {customer_id}/{request_id}/{file}
       final path = '$ownerCustomerId/$requestId/${const Uuid().v4()}.$ext';
-      await _client.storage.from('maintenance').uploadBinary(
+      await _client.storage.from(_bucket).uploadBinary(
             path,
             bytes,
             fileOptions: const FileOptions(upsert: true),
           );
-      final url = _client.storage.from('maintenance').getPublicUrl(path);
+      // Store the object PATH, not getPublicUrl(): this bucket is private, so
+      // a public URL is permanently unloadable (it renders as a broken image).
+      // Display goes through signedImageUrl() instead.
       final row = await _client
           .from('maintenance_images')
-          .insert({'maintenance_request_id': requestId, 'image_url': url})
+          .insert({'maintenance_request_id': requestId, 'image_url': path})
           .select()
           .single();
       return MaintenanceImage.fromRow(row);
+    } catch (e) {
+      throw AppException.from(e);
+    }
+  }
+
+  static const _bucket = 'maintenance';
+
+  /// Rows written before the fix hold a full public URL; newer ones hold a
+  /// bare object path. Normalise both to the path the storage API wants.
+  static String _objectPath(String stored) {
+    for (final marker in const ['/object/public/$_bucket/', '/object/sign/$_bucket/']) {
+      final i = stored.indexOf(marker);
+      if (i != -1) return stored.substring(i + marker.length).split('?').first;
+    }
+    return stored;
+  }
+
+  @override
+  Future<String> signedImageUrl(String storedPathOrUrl) async {
+    try {
+      return await _client.storage.from(_bucket).createSignedUrl(
+            _objectPath(storedPathOrUrl),
+            const Duration(hours: 1).inSeconds,
+          );
     } catch (e) {
       throw AppException.from(e);
     }
@@ -168,6 +205,15 @@ class SupabaseMaintenanceRepository implements MaintenanceRepository {
         'p_request_id': requestId,
         'p_technician_id': technicianId,
       });
+    } catch (e) {
+      throw AppException.from(e);
+    }
+  }
+
+  @override
+  Future<void> claim(String requestId) async {
+    try {
+      await _client.rpc('rpc_claim_maintenance', params: {'p_request_id': requestId});
     } catch (e) {
       throw AppException.from(e);
     }
