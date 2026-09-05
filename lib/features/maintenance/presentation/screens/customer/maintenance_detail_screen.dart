@@ -9,6 +9,7 @@ import '../../../../../core/widgets/state_views.dart';
 import '../../../data/models/maintenance_request.dart';
 import '../../providers/maintenance_providers.dart';
 import '../../widgets/maintenance_image_thumb.dart';
+import '../../widgets/maintenance_invoice_card.dart';
 
 class MaintenanceDetailScreen extends ConsumerWidget {
   final String requestId;
@@ -159,6 +160,10 @@ class MaintenanceDetailScreen extends ConsumerWidget {
                   style: TextStyle(color: Theme.of(context).colorScheme.error),
                 ),
               ],
+              const SizedBox(height: 16),
+              // Renders itself away until the technician raises the invoice.
+              const SizedBox(height: 16),
+              MaintenanceInvoiceCard(maintenanceRequestId: requestId),
               const SizedBox(height: 16),
               Text('الصور', style: Theme.of(context).textTheme.titleMedium),
               const SizedBox(height: 8),

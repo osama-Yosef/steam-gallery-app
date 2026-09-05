@@ -5,14 +5,21 @@ import '../../../../../core/errors/app_exception.dart';
 import '../../../../../core/utils/formatters.dart';
 import '../../../../inventory/data/models/warehouse_stock_item.dart';
 import '../../../../inventory/presentation/providers/inventory_providers.dart';
+import '../../../../products/data/models/product.dart';
+import '../../../../products/presentation/providers/product_providers.dart';
+import '../../../data/models/sale_line_input.dart';
 import '../../../../technician_account/data/models/sale.dart';
 import '../../providers/sales_providers.dart';
 
 class _SaleLine {
   final String productId;
   final String productName;
+
+  /// For a service this is the price agreed with the customer for THIS sale,
+  /// not a catalogue price.
   final double sellingPrice;
   final int available;
+  final bool isService;
   int quantity;
   _SaleLine({
     required this.productId,
@@ -20,9 +27,14 @@ class _SaleLine {
     required this.sellingPrice,
     required this.available,
     required this.quantity,
+    this.isService = false,
   });
 
   double get lineTotal => quantity * sellingPrice;
+
+  /// Only a service carries an explicit price to the server; for a stock
+  /// product the catalogue price is authoritative (see SaleLineInput).
+  double? get unitPrice => isService ? sellingPrice : null;
 }
 
 /// Counter sale for a walk-in customer who came to the gallery in person and
@@ -33,7 +45,8 @@ class AdminWalkInSaleScreen extends ConsumerStatefulWidget {
   const AdminWalkInSaleScreen({super.key});
 
   @override
-  ConsumerState<AdminWalkInSaleScreen> createState() => _AdminWalkInSaleScreenState();
+  ConsumerState<AdminWalkInSaleScreen> createState() =>
+      _AdminWalkInSaleScreenState();
 }
 
 class _AdminWalkInSaleScreenState extends ConsumerState<AdminWalkInSaleScreen> {
@@ -60,9 +73,13 @@ class _AdminWalkInSaleScreenState extends ConsumerState<AdminWalkInSaleScreen> {
   double get _total => _subtotal - _discount;
 
   Future<void> _addLine(List<WarehouseStockItem> stock) async {
-    final available = stock.where((s) => s.quantity > 0 && !_lines.any((l) => l.productId == s.productId));
+    final available = stock.where(
+      (s) => s.quantity > 0 && !_lines.any((l) => l.productId == s.productId),
+    );
     if (available.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('لا توجد منتجات متاحة بالمخزن')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('لا توجد منتجات متاحة بالمخزن')),
+      );
       return;
     }
     WarehouseStockItem selected = available.first;
@@ -80,10 +97,15 @@ class _AdminWalkInSaleScreenState extends ConsumerState<AdminWalkInSaleScreen> {
                 isExpanded: true,
                 decoration: const InputDecoration(labelText: 'المنتج'),
                 items: available
-                    .map((s) => DropdownMenuItem(
-                          value: s,
-                          child: Text('${s.productName} (متاح: ${s.quantity})', overflow: TextOverflow.ellipsis),
-                        ))
+                    .map(
+                      (s) => DropdownMenuItem(
+                        value: s,
+                        child: Text(
+                          '${s.productName} (متاح: ${s.quantity})',
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    )
                     .toList(),
                 onChanged: (s) => setDialogState(() => selected = s!),
               ),
@@ -96,8 +118,14 @@ class _AdminWalkInSaleScreenState extends ConsumerState<AdminWalkInSaleScreen> {
             ],
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('إلغاء')),
-            FilledButton(onPressed: () => Navigator.of(ctx).pop(true), child: const Text('إضافة')),
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(false),
+              child: const Text('إلغاء'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(ctx).pop(true),
+              child: const Text('إضافة'),
+            ),
           ],
         ),
       ),
@@ -106,46 +134,153 @@ class _AdminWalkInSaleScreenState extends ConsumerState<AdminWalkInSaleScreen> {
     final qty = int.tryParse(qtyCtrl.text) ?? 0;
     if (qty <= 0 || qty > selected.quantity) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('كمية غير صحيحة')));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('كمية غير صحيحة')));
       }
       return;
     }
     setState(() {
-      _lines.add(_SaleLine(
-        productId: selected.productId,
-        productName: selected.productName,
-        sellingPrice: selected.sellingPrice,
-        available: selected.quantity,
-        quantity: qty,
-      ));
+      _lines.add(
+        _SaleLine(
+          productId: selected.productId,
+          productName: selected.productName,
+          sellingPrice: selected.sellingPrice,
+          available: selected.quantity,
+          quantity: qty,
+        ),
+      );
+    });
+  }
+
+  /// Adds a labour line. Unlike a stock product the price isn't in the
+  /// catalogue — it's agreed per job — so it's typed here and sent explicitly.
+  Future<void> _addServiceLine() async {
+    final services = await ref.read(serviceProductsProvider.future);
+    if (!mounted) return;
+    if (services.isEmpty) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('لا توجد خدمات معرَّفة')));
+      return;
+    }
+    Product selected = services.first;
+    final priceCtrl = TextEditingController();
+    final added = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) => AlertDialog(
+          title: const Text('إضافة خدمة'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              DropdownButtonFormField<Product>(
+                initialValue: selected,
+                isExpanded: true,
+                decoration: const InputDecoration(labelText: 'الخدمة'),
+                items: services
+                    .map(
+                      (s) => DropdownMenuItem(
+                        value: s,
+                        child: Text(s.name, overflow: TextOverflow.ellipsis),
+                      ),
+                    )
+                    .toList(),
+                onChanged: (s) => setDialogState(() => selected = s!),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: priceCtrl,
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
+                decoration: const InputDecoration(labelText: 'سعر الخدمة'),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(false),
+              child: const Text('إلغاء'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(ctx).pop(true),
+              child: const Text('إضافة'),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (added != true) return;
+    final price = double.tryParse(priceCtrl.text) ?? 0;
+    if (price <= 0) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('أدخل سعرًا صحيحًا')));
+      }
+      return;
+    }
+    setState(() {
+      _lines.add(
+        _SaleLine(
+          productId: selected.id,
+          productName: selected.name,
+          sellingPrice: price,
+          available: 1,
+          quantity: 1,
+          isService: true,
+        ),
+      );
     });
   }
 
   Future<void> _submit() async {
     if (_lines.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('أضف منتجًا واحدًا على الأقل')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('أضف منتجًا واحدًا على الأقل')),
+      );
       return;
     }
     setState(() => _submitting = true);
     try {
-      await ref.read(salesRepositoryProvider).recordWalkInSale(
-            customerName: _customerNameCtrl.text.trim().isEmpty ? null : _customerNameCtrl.text.trim(),
-            customerPhone: _customerPhoneCtrl.text.trim().isEmpty ? null : _customerPhoneCtrl.text.trim(),
-            items: _lines.map((l) => (productId: l.productId, quantity: l.quantity)).toList(),
+      await ref
+          .read(salesRepositoryProvider)
+          .recordWalkInSale(
+            customerName: _customerNameCtrl.text.trim().isEmpty
+                ? null
+                : _customerNameCtrl.text.trim(),
+            customerPhone: _customerPhoneCtrl.text.trim().isEmpty
+                ? null
+                : _customerPhoneCtrl.text.trim(),
+            items: _lines
+                .map(
+                  (l) => SaleLineInput(
+                    productId: l.productId,
+                    quantity: l.quantity,
+                    unitPrice: l.unitPrice,
+                  ),
+                )
+                .toList(),
             paymentMethod: _paymentMethod,
             discount: _discount,
             clientRequestId: _clientRequestId,
-            notes: _notesCtrl.text.trim().isEmpty ? null : _notesCtrl.text.trim(),
+            notes: _notesCtrl.text.trim().isEmpty
+                ? null
+                : _notesCtrl.text.trim(),
           );
       ref.invalidate(warehouseStockProvider);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تم تسجيل البيع بنجاح')));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('تم تسجيل البيع بنجاح')));
         Navigator.of(context).pop(true);
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(AppException.from(e).messageAr)));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(AppException.from(e).messageAr)));
       }
     } finally {
       if (mounted) setState(() => _submitting = false);
@@ -165,22 +300,38 @@ class _AdminWalkInSaleScreenState extends ConsumerState<AdminWalkInSaleScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text('الأصناف', style: Theme.of(context).textTheme.titleMedium),
-              stockAsync.when(
-                loading: () => const SizedBox.shrink(),
-                error: (e, _) => const SizedBox.shrink(),
-                data: (stock) => TextButton.icon(
-                  onPressed: () => _addLine(stock),
-                  icon: const Icon(Icons.add),
-                  label: const Text('إضافة'),
-                ),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextButton.icon(
+                    onPressed: _addServiceLine,
+                    icon: const Icon(Icons.handyman_outlined),
+                    label: const Text('خدمة'),
+                  ),
+                  stockAsync.when(
+                    loading: () => const SizedBox.shrink(),
+                    error: (e, _) => const SizedBox.shrink(),
+                    data: (stock) => TextButton.icon(
+                      onPressed: () => _addLine(stock),
+                      icon: const Icon(Icons.add),
+                      label: const Text('إضافة'),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
-          if (_lines.isEmpty) const Padding(padding: EdgeInsets.all(16), child: Text('لم تُضف منتجات بعد')),
+          if (_lines.isEmpty)
+            const Padding(
+              padding: EdgeInsets.all(16),
+              child: Text('لم تُضف منتجات بعد'),
+            ),
           for (final line in _lines)
             ListTile(
               title: Text(line.productName),
-              subtitle: Text('${line.quantity} × ${Formatters.currency(line.sellingPrice)}'),
+              subtitle: Text(
+                '${line.quantity} × ${Formatters.currency(line.sellingPrice)}',
+              ),
               trailing: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -193,7 +344,10 @@ class _AdminWalkInSaleScreenState extends ConsumerState<AdminWalkInSaleScreen> {
               ),
             ),
           const Divider(height: 32),
-          Text('بيانات العميل (اختياري)', style: Theme.of(context).textTheme.titleMedium),
+          Text(
+            'بيانات العميل (اختياري)',
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
           const SizedBox(height: 8),
           TextFormField(
             controller: _customerNameCtrl,
@@ -210,9 +364,19 @@ class _AdminWalkInSaleScreenState extends ConsumerState<AdminWalkInSaleScreen> {
             initialValue: _paymentMethod,
             isExpanded: true,
             decoration: const InputDecoration(labelText: 'طريقة الدفع'),
-            items: const [PaymentMethod.cash, PaymentMethod.card, PaymentMethod.transfer]
-                .map((m) => DropdownMenuItem(value: m, child: Text(paymentMethodLabelAr(m))))
-                .toList(),
+            items:
+                const [
+                      PaymentMethod.cash,
+                      PaymentMethod.card,
+                      PaymentMethod.transfer,
+                    ]
+                    .map(
+                      (m) => DropdownMenuItem(
+                        value: m,
+                        child: Text(paymentMethodLabelAr(m)),
+                      ),
+                    )
+                    .toList(),
             onChanged: (m) => setState(() => _paymentMethod = m!),
           ),
           const SizedBox(height: 12),
@@ -226,8 +390,14 @@ class _AdminWalkInSaleScreenState extends ConsumerState<AdminWalkInSaleScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('الإجمالي المطلوب', style: Theme.of(context).textTheme.titleMedium),
-              Text(Formatters.currency(_total), style: Theme.of(context).textTheme.titleMedium),
+              Text(
+                'الإجمالي المطلوب',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              Text(
+                Formatters.currency(_total),
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
             ],
           ),
           const SizedBox(height: 16),
@@ -240,7 +410,11 @@ class _AdminWalkInSaleScreenState extends ConsumerState<AdminWalkInSaleScreen> {
           FilledButton.icon(
             onPressed: _submitting ? null : _submit,
             icon: _submitting
-                ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
+                ? const SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
                 : const Icon(Icons.check),
             label: const Text('تأكيد البيع'),
           ),

@@ -46,6 +46,23 @@ abstract final class Routes {
 
   // Technician Sales & Account (Module 6)
   static const technicianBagSell = '/technician/bag/sell';
+
+  /// The bag-sale form pre-loaded as the invoice for a finished maintenance
+  /// job (service fee + any parts fitted).
+  static String technicianMaintenanceInvoice(
+    String requestId, {
+    String? customerName,
+    String? customerPhone,
+  }) {
+    final q = {
+      'maintenance': requestId,
+      if (customerName != null && customerName.isNotEmpty) 'name': customerName,
+      if (customerPhone != null && customerPhone.isNotEmpty)
+        'phone': customerPhone,
+    };
+    return Uri.parse(technicianBagSell).replace(queryParameters: q).toString();
+  }
+
   static const technicianSales = '/technician/bag/sales';
   static String technicianSaleDetail(String id) => '/technician/bag/sales/$id';
   static const technicianAccount = '/technician/account';

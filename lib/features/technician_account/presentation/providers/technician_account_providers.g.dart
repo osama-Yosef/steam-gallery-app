@@ -486,3 +486,87 @@ final class SaleItemsFamily extends $Family
   @override
   String toString() => r'saleItemsProvider';
 }
+
+/// The invoice for a finished maintenance job — null until the technician
+/// raises one.
+
+@ProviderFor(maintenanceInvoice)
+const maintenanceInvoiceProvider = MaintenanceInvoiceFamily._();
+
+/// The invoice for a finished maintenance job — null until the technician
+/// raises one.
+
+final class MaintenanceInvoiceProvider
+    extends $FunctionalProvider<AsyncValue<Sale?>, Sale?, FutureOr<Sale?>>
+    with $FutureModifier<Sale?>, $FutureProvider<Sale?> {
+  /// The invoice for a finished maintenance job — null until the technician
+  /// raises one.
+  const MaintenanceInvoiceProvider._({
+    required MaintenanceInvoiceFamily super.from,
+    required String super.argument,
+  }) : super(
+         retry: null,
+         name: r'maintenanceInvoiceProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
+  @override
+  String debugGetCreateSourceHash() => _$maintenanceInvoiceHash();
+
+  @override
+  String toString() {
+    return r'maintenanceInvoiceProvider'
+        ''
+        '($argument)';
+  }
+
+  @$internal
+  @override
+  $FutureProviderElement<Sale?> $createElement($ProviderPointer pointer) =>
+      $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<Sale?> create(Ref ref) {
+    final argument = this.argument as String;
+    return maintenanceInvoice(ref, argument);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is MaintenanceInvoiceProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$maintenanceInvoiceHash() =>
+    r'cfeadab15466b6b85d60d847e52e02b77157030d';
+
+/// The invoice for a finished maintenance job — null until the technician
+/// raises one.
+
+final class MaintenanceInvoiceFamily extends $Family
+    with $FunctionalFamilyOverride<FutureOr<Sale?>, String> {
+  const MaintenanceInvoiceFamily._()
+    : super(
+        retry: null,
+        name: r'maintenanceInvoiceProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  /// The invoice for a finished maintenance job — null until the technician
+  /// raises one.
+
+  MaintenanceInvoiceProvider call(String maintenanceRequestId) =>
+      MaintenanceInvoiceProvider._(argument: maintenanceRequestId, from: this);
+
+  @override
+  String toString() => r'maintenanceInvoiceProvider';
+}

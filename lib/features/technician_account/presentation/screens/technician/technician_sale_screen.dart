@@ -7,14 +7,21 @@ import '../../../../../core/widgets/state_views.dart';
 import '../../../../auth/presentation/providers/auth_providers.dart';
 import '../../../../inventory/data/models/technician_bag_stock_item.dart';
 import '../../../../inventory/presentation/providers/inventory_providers.dart';
+import '../../../../products/data/models/product.dart';
+import '../../../../products/presentation/providers/product_providers.dart';
+import '../../../../sales/data/models/sale_line_input.dart';
 import '../../../data/models/sale.dart';
 import '../../providers/technician_account_providers.dart';
 
 class _SaleLine {
   final String productId;
   final String productName;
+
+  /// For a service this is the price agreed with the customer for THIS sale,
+  /// not a catalogue price.
   final double sellingPrice;
   final int available;
+  final bool isService;
   int quantity;
   _SaleLine({
     required this.productId,
@@ -22,16 +29,36 @@ class _SaleLine {
     required this.sellingPrice,
     required this.available,
     required this.quantity,
+    this.isService = false,
   });
 
   double get lineTotal => quantity * sellingPrice;
+
+  /// Only a service carries an explicit price to the server; for a stock
+  /// product the catalogue price is authoritative (see SaleLineInput).
+  double? get unitPrice => isService ? sellingPrice : null;
 }
 
 class TechnicianSaleScreen extends ConsumerStatefulWidget {
-  const TechnicianSaleScreen({super.key});
+  /// When set, this sale is the invoice for a finished maintenance job: it is
+  /// linked to that request so the customer can see what was done and what it
+  /// cost. Otherwise it's an ordinary sale out of the bag.
+  final String? maintenanceRequestId;
+  final String? customerName;
+  final String? customerPhone;
+
+  const TechnicianSaleScreen({
+    super.key,
+    this.maintenanceRequestId,
+    this.customerName,
+    this.customerPhone,
+  });
+
+  bool get isMaintenanceInvoice => maintenanceRequestId != null;
 
   @override
-  ConsumerState<TechnicianSaleScreen> createState() => _TechnicianSaleScreenState();
+  ConsumerState<TechnicianSaleScreen> createState() =>
+      _TechnicianSaleScreenState();
 }
 
 class _TechnicianSaleScreenState extends ConsumerState<TechnicianSaleScreen> {
@@ -44,6 +71,14 @@ class _TechnicianSaleScreenState extends ConsumerState<TechnicianSaleScreen> {
   final List<_SaleLine> _lines = [];
   PaymentMethod _paymentMethod = PaymentMethod.cash;
   bool _submitting = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Invoicing a job: the customer is already known from the request.
+    _customerNameCtrl.text = widget.customerName ?? '';
+    _customerPhoneCtrl.text = widget.customerPhone ?? '';
+  }
 
   @override
   void dispose() {
@@ -60,9 +95,13 @@ class _TechnicianSaleScreenState extends ConsumerState<TechnicianSaleScreen> {
   double get _total => _subtotal - _discount;
 
   Future<void> _addLine(List<TechnicianBagStockItem> bag) async {
-    final available = bag.where((s) => s.quantity > 0 && !_lines.any((l) => l.productId == s.productId));
+    final available = bag.where(
+      (s) => s.quantity > 0 && !_lines.any((l) => l.productId == s.productId),
+    );
     if (available.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('لا توجد منتجات متاحة بالشنطة')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('لا توجد منتجات متاحة بالشنطة')),
+      );
       return;
     }
     TechnicianBagStockItem selected = available.first;
@@ -80,10 +119,15 @@ class _TechnicianSaleScreenState extends ConsumerState<TechnicianSaleScreen> {
                 isExpanded: true,
                 decoration: const InputDecoration(labelText: 'المنتج'),
                 items: available
-                    .map((s) => DropdownMenuItem(
-                          value: s,
-                          child: Text('${s.productName} (متاح: ${s.quantity})', overflow: TextOverflow.ellipsis),
-                        ))
+                    .map(
+                      (s) => DropdownMenuItem(
+                        value: s,
+                        child: Text(
+                          '${s.productName} (متاح: ${s.quantity})',
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    )
                     .toList(),
                 onChanged: (s) => setDialogState(() => selected = s!),
               ),
@@ -96,8 +140,14 @@ class _TechnicianSaleScreenState extends ConsumerState<TechnicianSaleScreen> {
             ],
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('إلغاء')),
-            FilledButton(onPressed: () => Navigator.of(ctx).pop(true), child: const Text('إضافة')),
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(false),
+              child: const Text('إلغاء'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(ctx).pop(true),
+              child: const Text('إضافة'),
+            ),
           ],
         ),
       ),
@@ -106,45 +156,151 @@ class _TechnicianSaleScreenState extends ConsumerState<TechnicianSaleScreen> {
     final qty = int.tryParse(qtyCtrl.text) ?? 0;
     if (qty <= 0 || qty > selected.quantity) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('كمية غير صحيحة')));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('كمية غير صحيحة')));
       }
       return;
     }
     setState(() {
-      _lines.add(_SaleLine(
-        productId: selected.productId,
-        productName: selected.productName,
-        sellingPrice: selected.sellingPrice,
-        available: selected.quantity,
-        quantity: qty,
-      ));
+      _lines.add(
+        _SaleLine(
+          productId: selected.productId,
+          productName: selected.productName,
+          sellingPrice: selected.sellingPrice,
+          available: selected.quantity,
+          quantity: qty,
+        ),
+      );
+    });
+  }
+
+  /// Adds a labour line. Unlike a stock product the price isn't in the
+  /// catalogue — it's agreed per job — so it's typed here and sent explicitly.
+  Future<void> _addServiceLine() async {
+    final services = await ref.read(serviceProductsProvider.future);
+    if (!mounted) return;
+    if (services.isEmpty) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('لا توجد خدمات معرَّفة')));
+      return;
+    }
+    Product selected = services.first;
+    final priceCtrl = TextEditingController();
+    final added = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) => AlertDialog(
+          title: const Text('إضافة خدمة'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              DropdownButtonFormField<Product>(
+                initialValue: selected,
+                isExpanded: true,
+                decoration: const InputDecoration(labelText: 'الخدمة'),
+                items: services
+                    .map(
+                      (s) => DropdownMenuItem(
+                        value: s,
+                        child: Text(s.name, overflow: TextOverflow.ellipsis),
+                      ),
+                    )
+                    .toList(),
+                onChanged: (s) => setDialogState(() => selected = s!),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: priceCtrl,
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
+                decoration: const InputDecoration(labelText: 'سعر الخدمة'),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(false),
+              child: const Text('إلغاء'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(ctx).pop(true),
+              child: const Text('إضافة'),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (added != true) return;
+    final price = double.tryParse(priceCtrl.text) ?? 0;
+    if (price <= 0) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('أدخل سعرًا صحيحًا')));
+      }
+      return;
+    }
+    setState(() {
+      _lines.add(
+        _SaleLine(
+          productId: selected.id,
+          productName: selected.name,
+          sellingPrice: price,
+          available: 1,
+          quantity: 1,
+          isService: true,
+        ),
+      );
     });
   }
 
   Future<void> _submit(String technicianId) async {
     if (_lines.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('أضف منتجًا واحدًا على الأقل')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('أضف منتجًا واحدًا على الأقل')),
+      );
       return;
     }
     final paidAmount = double.tryParse(_paidAmountCtrl.text) ?? 0;
     setState(() => _submitting = true);
     try {
-      await ref.read(technicianAccountRepositoryProvider).recordSale(
+      await ref
+          .read(technicianAccountRepositoryProvider)
+          .recordSale(
             technicianId: technicianId,
-            customerName: _customerNameCtrl.text.trim().isEmpty ? null : _customerNameCtrl.text.trim(),
-            customerPhone: _customerPhoneCtrl.text.trim().isEmpty ? null : _customerPhoneCtrl.text.trim(),
-            items: _lines.map((l) => (productId: l.productId, quantity: l.quantity)).toList(),
+            customerName: _customerNameCtrl.text.trim().isEmpty
+                ? null
+                : _customerNameCtrl.text.trim(),
+            customerPhone: _customerPhoneCtrl.text.trim().isEmpty
+                ? null
+                : _customerPhoneCtrl.text.trim(),
+            items: _lines
+                .map(
+                  (l) => SaleLineInput(
+                    productId: l.productId,
+                    quantity: l.quantity,
+                    unitPrice: l.unitPrice,
+                  ),
+                )
+                .toList(),
             paymentMethod: _paymentMethod,
             discount: _discount,
             paidAmount: paidAmount,
             clientRequestId: _clientRequestId,
-            notes: _notesCtrl.text.trim().isEmpty ? null : _notesCtrl.text.trim(),
+            notes: _notesCtrl.text.trim().isEmpty
+                ? null
+                : _notesCtrl.text.trim(),
+            maintenanceRequestId: widget.maintenanceRequestId,
           );
       if (mounted) Navigator.of(context).pop(true);
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(AppException.from(e).messageAr)));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(AppException.from(e).messageAr)));
       }
     } finally {
       if (mounted) setState(() => _submitting = false);
@@ -160,7 +316,11 @@ class _TechnicianSaleScreenState extends ConsumerState<TechnicianSaleScreen> {
     final bagAsync = ref.watch(technicianBagStockProvider(technicianId));
 
     return Scaffold(
-      appBar: AppBar(title: const Text('بيع من الشنطة')),
+      appBar: AppBar(
+        title: Text(
+          widget.isMaintenanceInvoice ? 'فاتورة الصيانة' : 'بيع من الشنطة',
+        ),
+      ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
@@ -168,22 +328,38 @@ class _TechnicianSaleScreenState extends ConsumerState<TechnicianSaleScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text('الأصناف', style: Theme.of(context).textTheme.titleMedium),
-              bagAsync.when(
-                loading: () => const SizedBox.shrink(),
-                error: (e, _) => const SizedBox.shrink(),
-                data: (bag) => TextButton.icon(
-                  onPressed: () => _addLine(bag),
-                  icon: const Icon(Icons.add),
-                  label: const Text('إضافة'),
-                ),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextButton.icon(
+                    onPressed: _addServiceLine,
+                    icon: const Icon(Icons.handyman_outlined),
+                    label: const Text('خدمة'),
+                  ),
+                  bagAsync.when(
+                    loading: () => const SizedBox.shrink(),
+                    error: (e, _) => const SizedBox.shrink(),
+                    data: (bag) => TextButton.icon(
+                      onPressed: () => _addLine(bag),
+                      icon: const Icon(Icons.add),
+                      label: const Text('إضافة'),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
-          if (_lines.isEmpty) const Padding(padding: EdgeInsets.all(16), child: Text('لم تُضف منتجات بعد')),
+          if (_lines.isEmpty)
+            const Padding(
+              padding: EdgeInsets.all(16),
+              child: Text('لم تُضف منتجات بعد'),
+            ),
           for (final line in _lines)
             ListTile(
               title: Text(line.productName),
-              subtitle: Text('${line.quantity} × ${Formatters.currency(line.sellingPrice)}'),
+              subtitle: Text(
+                '${line.quantity} × ${Formatters.currency(line.sellingPrice)}',
+              ),
               trailing: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -196,7 +372,10 @@ class _TechnicianSaleScreenState extends ConsumerState<TechnicianSaleScreen> {
               ),
             ),
           const Divider(height: 32),
-          Text('بيانات العميل (اختياري)', style: Theme.of(context).textTheme.titleMedium),
+          Text(
+            'بيانات العميل (اختياري)',
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
           const SizedBox(height: 8),
           TextFormField(
             controller: _customerNameCtrl,
@@ -213,9 +392,19 @@ class _TechnicianSaleScreenState extends ConsumerState<TechnicianSaleScreen> {
             initialValue: _paymentMethod,
             isExpanded: true,
             decoration: const InputDecoration(labelText: 'طريقة الدفع'),
-            items: const [PaymentMethod.cash, PaymentMethod.card, PaymentMethod.transfer]
-                .map((m) => DropdownMenuItem(value: m, child: Text(paymentMethodLabelAr(m))))
-                .toList(),
+            items:
+                const [
+                      PaymentMethod.cash,
+                      PaymentMethod.card,
+                      PaymentMethod.transfer,
+                    ]
+                    .map(
+                      (m) => DropdownMenuItem(
+                        value: m,
+                        child: Text(paymentMethodLabelAr(m)),
+                      ),
+                    )
+                    .toList(),
             onChanged: (m) => setState(() => _paymentMethod = m!),
           ),
           const SizedBox(height: 12),
@@ -230,7 +419,10 @@ class _TechnicianSaleScreenState extends ConsumerState<TechnicianSaleScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text('الإجمالي', style: Theme.of(context).textTheme.titleMedium),
-              Text(Formatters.currency(_total), style: Theme.of(context).textTheme.titleMedium),
+              Text(
+                Formatters.currency(_total),
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
             ],
           ),
           const SizedBox(height: 12),
@@ -240,7 +432,9 @@ class _TechnicianSaleScreenState extends ConsumerState<TechnicianSaleScreen> {
             decoration: InputDecoration(
               labelText: 'المبلغ المحصَّل',
               suffixIcon: TextButton(
-                onPressed: () => setState(() => _paidAmountCtrl.text = _total.toStringAsFixed(2)),
+                onPressed: () => setState(
+                  () => _paidAmountCtrl.text = _total.toStringAsFixed(2),
+                ),
                 child: const Text('دفع الكل'),
               ),
             ),
@@ -255,7 +449,11 @@ class _TechnicianSaleScreenState extends ConsumerState<TechnicianSaleScreen> {
           FilledButton.icon(
             onPressed: _submitting ? null : () => _submit(technicianId),
             icon: _submitting
-                ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
+                ? const SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
                 : const Icon(Icons.check),
             label: const Text('تأكيد البيع'),
           ),

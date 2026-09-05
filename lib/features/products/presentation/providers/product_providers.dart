@@ -15,12 +15,20 @@ ProductRepository productRepository(Ref ref) {
 
 @riverpod
 Future<List<ProductCategory>> categories(Ref ref, {bool activeOnly = false}) {
-  return ref.watch(productRepositoryProvider).getCategories(activeOnly: activeOnly);
+  return ref
+      .watch(productRepositoryProvider)
+      .getCategories(activeOnly: activeOnly);
 }
 
 @riverpod
-Future<List<ProductPublic>> customerProducts(Ref ref, {String? search, String? categoryId}) {
-  return ref.watch(productRepositoryProvider).browseProducts(search: search, categoryId: categoryId);
+Future<List<ProductPublic>> customerProducts(
+  Ref ref, {
+  String? search,
+  String? categoryId,
+}) {
+  return ref
+      .watch(productRepositoryProvider)
+      .browseProducts(search: search, categoryId: categoryId);
 }
 
 @riverpod
@@ -34,8 +42,20 @@ Future<List<ProductImage>> productImages(Ref ref, String productId) {
 }
 
 @riverpod
-Future<List<Product>> adminProducts(Ref ref, {String? search, String? categoryId}) {
-  return ref.watch(productRepositoryProvider).listProductsAdmin(search: search, categoryId: categoryId);
+Future<List<Product>> adminProducts(
+  Ref ref, {
+  String? search,
+  String? categoryId,
+}) {
+  return ref
+      .watch(productRepositoryProvider)
+      .listProductsAdmin(search: search, categoryId: categoryId);
+}
+
+/// Service lines available to add to a sale (labour, no stock).
+@riverpod
+Future<List<Product>> serviceProducts(Ref ref) {
+  return ref.watch(productRepositoryProvider).listServices();
 }
 
 @riverpod

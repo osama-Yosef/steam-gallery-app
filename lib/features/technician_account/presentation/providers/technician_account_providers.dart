@@ -54,3 +54,12 @@ Future<Sale?> technicianSaleDetail(Ref ref, String saleId) {
 Future<List<SaleItem>> saleItems(Ref ref, String saleId) {
   return ref.watch(technicianAccountRepositoryProvider).getSaleItems(saleId);
 }
+
+/// The invoice for a finished maintenance job — null until the technician
+/// raises one.
+@riverpod
+Future<Sale?> maintenanceInvoice(Ref ref, String maintenanceRequestId) {
+  return ref
+      .watch(technicianAccountRepositoryProvider)
+      .getSaleForMaintenance(maintenanceRequestId);
+}

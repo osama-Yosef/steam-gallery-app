@@ -14,7 +14,10 @@ abstract class ProductRepository {
   Future<void> updateCategory(String id, {String? name, bool? isActive});
 
   // Customer-facing catalog — reads products_public (no cost_price ever).
-  Future<List<ProductPublic>> browseProducts({String? search, String? categoryId});
+  Future<List<ProductPublic>> browseProducts({
+    String? search,
+    String? categoryId,
+  });
   Future<ProductPublic?> getProductPublicById(String id);
 
   // Shared
@@ -22,6 +25,11 @@ abstract class ProductRepository {
 
   // Admin catalog management — full Product model incl. cost_price.
   Future<List<Product>> listProductsAdmin({String? search, String? categoryId});
+
+  /// Active service (labour) lines — sellable at a price agreed per sale,
+  /// with no stock behind them. See 0027.
+  Future<List<Product>> listServices();
+
   Future<Product?> getProductByIdAdmin(String id);
   Future<String> createProduct({
     required String sku,
@@ -47,7 +55,11 @@ abstract class ProductRepository {
     required int minStock,
   });
   Future<void> setProductActive(String id, bool isActive);
-  Future<ProductImage> uploadProductImage(String productId, Uint8List bytes, String fileExt);
+  Future<ProductImage> uploadProductImage(
+    String productId,
+    Uint8List bytes,
+    String fileExt,
+  );
   Future<void> deleteProductImage(ProductImage image);
   Future<void> setPrimaryImage(String productId, String imageId);
 }
@@ -71,7 +83,10 @@ class SupabaseProductRepository implements ProductRepository {
   @override
   Future<void> createCategory({required String name, String? parentId}) async {
     try {
-      await _client.from('product_categories').insert({'name': name, 'parent_id': parentId});
+      await _client.from('product_categories').insert({
+        'name': name,
+        'parent_id': parentId,
+      });
     } catch (e) {
       throw AppException.from(e);
     }
@@ -91,7 +106,10 @@ class SupabaseProductRepository implements ProductRepository {
   }
 
   @override
-  Future<List<ProductPublic>> browseProducts({String? search, String? categoryId}) async {
+  Future<List<ProductPublic>> browseProducts({
+    String? search,
+    String? categoryId,
+  }) async {
     try {
       var query = _client.from('products_public').select();
       if (categoryId != null) query = query.eq('category_id', categoryId);
@@ -108,7 +126,11 @@ class SupabaseProductRepository implements ProductRepository {
   @override
   Future<ProductPublic?> getProductPublicById(String id) async {
     try {
-      final row = await _client.from('products_public').select().eq('id', id).maybeSingle();
+      final row = await _client
+          .from('products_public')
+          .select()
+          .eq('id', id)
+          .maybeSingle();
       return row == null ? null : ProductPublic.fromRow(row);
     } catch (e) {
       throw AppException.from(e);
@@ -130,9 +152,14 @@ class SupabaseProductRepository implements ProductRepository {
   }
 
   @override
-  Future<List<Product>> listProductsAdmin({String? search, String? categoryId}) async {
+  Future<List<Product>> listProductsAdmin({
+    String? search,
+    String? categoryId,
+  }) async {
     try {
-      var query = _client.from('products').select('*, product_images(image_url, is_primary, sort_order)');
+      var query = _client
+          .from('products')
+          .select('*, product_images(image_url, is_primary, sort_order)');
       if (categoryId != null) query = query.eq('category_id', categoryId);
       if (search != null && search.trim().isNotEmpty) {
         query = query.ilike('name', '%${search.trim()}%');
@@ -145,9 +172,28 @@ class SupabaseProductRepository implements ProductRepository {
   }
 
   @override
+  Future<List<Product>> listServices() async {
+    try {
+      final rows = await _client
+          .from('products')
+          .select()
+          .eq('is_service', true)
+          .eq('is_active', true)
+          .order('name');
+      return rows.map(Product.fromRow).toList();
+    } catch (e) {
+      throw AppException.from(e);
+    }
+  }
+
+  @override
   Future<Product?> getProductByIdAdmin(String id) async {
     try {
-      final row = await _client.from('products').select().eq('id', id).maybeSingle();
+      final row = await _client
+          .from('products')
+          .select()
+          .eq('id', id)
+          .maybeSingle();
       return row == null ? null : Product.fromRow(row);
     } catch (e) {
       throw AppException.from(e);
@@ -203,17 +249,20 @@ class SupabaseProductRepository implements ProductRepository {
     required int minStock,
   }) async {
     try {
-      await _client.from('products').update({
-        'sku': sku,
-        'barcode': barcode,
-        'category_id': categoryId,
-        'name': name,
-        'description': description,
-        'specs': specs,
-        'cost_price': costPrice,
-        'selling_price': sellingPrice,
-        'min_stock': minStock,
-      }).eq('id', id);
+      await _client
+          .from('products')
+          .update({
+            'sku': sku,
+            'barcode': barcode,
+            'category_id': categoryId,
+            'name': name,
+            'description': description,
+            'specs': specs,
+            'cost_price': costPrice,
+            'selling_price': sellingPrice,
+            'min_stock': minStock,
+          })
+          .eq('id', id);
     } catch (e) {
       throw AppException.from(e);
     }
@@ -222,17 +271,26 @@ class SupabaseProductRepository implements ProductRepository {
   @override
   Future<void> setProductActive(String id, bool isActive) async {
     try {
-      await _client.from('products').update({'is_active': isActive}).eq('id', id);
+      await _client
+          .from('products')
+          .update({'is_active': isActive})
+          .eq('id', id);
     } catch (e) {
       throw AppException.from(e);
     }
   }
 
   @override
-  Future<ProductImage> uploadProductImage(String productId, Uint8List bytes, String fileExt) async {
+  Future<ProductImage> uploadProductImage(
+    String productId,
+    Uint8List bytes,
+    String fileExt,
+  ) async {
     try {
       final path = '$productId/${const Uuid().v4()}.$fileExt';
-      await _client.storage.from('products').uploadBinary(
+      await _client.storage
+          .from('products')
+          .uploadBinary(
             path,
             bytes,
             fileOptions: const FileOptions(upsert: true),
@@ -280,7 +338,10 @@ class SupabaseProductRepository implements ProductRepository {
           .from('product_images')
           .update({'is_primary': false})
           .eq('product_id', productId);
-      await _client.from('product_images').update({'is_primary': true}).eq('id', imageId);
+      await _client
+          .from('product_images')
+          .update({'is_primary': true})
+          .eq('id', imageId);
     } catch (e) {
       throw AppException.from(e);
     }

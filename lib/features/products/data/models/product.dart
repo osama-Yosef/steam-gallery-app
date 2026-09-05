@@ -19,27 +19,32 @@ abstract class Product with _$Product {
     required double sellingPrice,
     required int minStock,
     required bool isActive,
+    @Default(false) bool isService,
     required DateTime createdAt,
     String? primaryImageUrl,
   }) = _Product;
 
   factory Product.fromRow(Map<String, dynamic> row) => Product(
-        id: row['id'] as String,
-        sku: row['sku'] as String,
-        barcode: row['barcode'] as String?,
-        categoryId: row['category_id'] as String?,
-        name: row['name'] as String,
-        description: row['description'] as String?,
-        specs: Map<String, String>.from(
-          (row['specs'] as Map?)?.map((k, v) => MapEntry(k.toString(), v.toString())) ?? {},
-        ),
-        costPrice: (row['cost_price'] as num).toDouble(),
-        sellingPrice: (row['selling_price'] as num).toDouble(),
-        minStock: row['min_stock'] as int? ?? 0,
-        isActive: row['is_active'] as bool? ?? true,
-        createdAt: DateTime.parse(row['created_at'] as String),
-        primaryImageUrl: _primaryImageFrom(row['product_images']),
-      );
+    id: row['id'] as String,
+    sku: row['sku'] as String,
+    barcode: row['barcode'] as String?,
+    categoryId: row['category_id'] as String?,
+    name: row['name'] as String,
+    description: row['description'] as String?,
+    specs: Map<String, String>.from(
+      (row['specs'] as Map?)?.map(
+            (k, v) => MapEntry(k.toString(), v.toString()),
+          ) ??
+          {},
+    ),
+    costPrice: (row['cost_price'] as num).toDouble(),
+    sellingPrice: (row['selling_price'] as num).toDouble(),
+    minStock: row['min_stock'] as int? ?? 0,
+    isActive: row['is_active'] as bool? ?? true,
+    isService: row['is_service'] as bool? ?? false,
+    createdAt: DateTime.parse(row['created_at'] as String),
+    primaryImageUrl: _primaryImageFrom(row['product_images']),
+  );
 
   static String? _primaryImageFrom(Object? embedded) {
     if (embedded is! List || embedded.isEmpty) return null;

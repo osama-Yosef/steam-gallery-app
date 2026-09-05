@@ -386,7 +386,15 @@ GoRouter appRouter(Ref ref) {
                 routes: [
                   GoRoute(
                     path: 'sell',
-                    builder: (_, _) => const TechnicianSaleScreen(),
+                    // ?maintenance=<id> turns this into the invoice for a
+                    // finished job: the same bag-sale form, with the service
+                    // fee and fitted parts, linked back to that request.
+                    builder: (_, state) => TechnicianSaleScreen(
+                      maintenanceRequestId:
+                          state.uri.queryParameters['maintenance'],
+                      customerName: state.uri.queryParameters['name'],
+                      customerPhone: state.uri.queryParameters['phone'],
+                    ),
                   ),
                   GoRoute(
                     path: 'sales',

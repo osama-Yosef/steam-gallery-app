@@ -1,5 +1,6 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../core/errors/app_exception.dart';
+import '../../../sales/data/models/sale_line_input.dart';
 import '../models/sale.dart';
 import '../models/sale_item.dart';
 import '../models/technician_account_summary.dart';
@@ -13,11 +14,16 @@ abstract class TechnicianAccountRepository {
 
   Future<TechnicianAccountSummary?> getAccountSummary(String technicianId);
 
-  Future<List<TechnicianAccountTransaction>> getAccountTransactions(String technicianId);
+  Future<List<TechnicianAccountTransaction>> getAccountTransactions(
+    String technicianId,
+  );
 
   Future<List<Sale>> getSales(String technicianId);
 
   Future<Sale?> getSaleById(String saleId);
+
+  /// The invoice raised against a finished maintenance job, if there is one.
+  Future<Sale?> getSaleForMaintenance(String maintenanceRequestId);
 
   Future<List<SaleItem>> getSaleItems(String saleId);
 
@@ -25,18 +31,24 @@ abstract class TechnicianAccountRepository {
     required String technicianId,
     String? customerName,
     String? customerPhone,
-    required List<({String productId, int quantity})> items,
+    required List<SaleLineInput> items,
     required PaymentMethod paymentMethod,
     required double discount,
     required double paidAmount,
     required String clientRequestId,
     String? notes,
+    String? maintenanceRequestId,
   });
 
-  Future<void> recordSupply({required String technicianId, required double amount, String? notes});
+  Future<void> recordSupply({
+    required String technicianId,
+    required double amount,
+    String? notes,
+  });
 }
 
-class SupabaseTechnicianAccountRepository implements TechnicianAccountRepository {
+class SupabaseTechnicianAccountRepository
+    implements TechnicianAccountRepository {
   final SupabaseClient _client;
   SupabaseTechnicianAccountRepository(this._client);
 
@@ -52,7 +64,9 @@ class SupabaseTechnicianAccountRepository implements TechnicianAccountRepository
   }
 
   @override
-  Future<TechnicianAccountSummary?> getAccountSummary(String technicianId) async {
+  Future<TechnicianAccountSummary?> getAccountSummary(
+    String technicianId,
+  ) async {
     try {
       final row = await _client
           .from('technician_account_summary')
@@ -66,7 +80,9 @@ class SupabaseTechnicianAccountRepository implements TechnicianAccountRepository
   }
 
   @override
-  Future<List<TechnicianAccountTransaction>> getAccountTransactions(String technicianId) async {
+  Future<List<TechnicianAccountTransaction>> getAccountTransactions(
+    String technicianId,
+  ) async {
     try {
       final rows = await _client
           .from('technician_account_transactions')
@@ -96,7 +112,25 @@ class SupabaseTechnicianAccountRepository implements TechnicianAccountRepository
   @override
   Future<Sale?> getSaleById(String saleId) async {
     try {
-      final row = await _client.from('sales').select().eq('id', saleId).maybeSingle();
+      final row = await _client
+          .from('sales')
+          .select()
+          .eq('id', saleId)
+          .maybeSingle();
+      return row == null ? null : Sale.fromRow(row);
+    } catch (e) {
+      throw AppException.from(e);
+    }
+  }
+
+  @override
+  Future<Sale?> getSaleForMaintenance(String maintenanceRequestId) async {
+    try {
+      final row = await _client
+          .from('sales')
+          .select()
+          .eq('maintenance_request_id', maintenanceRequestId)
+          .maybeSingle();
       return row == null ? null : Sale.fromRow(row);
     } catch (e) {
       throw AppException.from(e);
@@ -106,7 +140,10 @@ class SupabaseTechnicianAccountRepository implements TechnicianAccountRepository
   @override
   Future<List<SaleItem>> getSaleItems(String saleId) async {
     try {
-      final rows = await _client.from('sale_items').select().eq('sale_id', saleId);
+      final rows = await _client
+          .from('sale_items')
+          .select()
+          .eq('sale_id', saleId);
       return rows.map(SaleItem.fromRow).toList();
     } catch (e) {
       throw AppException.from(e);
@@ -118,26 +155,31 @@ class SupabaseTechnicianAccountRepository implements TechnicianAccountRepository
     required String technicianId,
     String? customerName,
     String? customerPhone,
-    required List<({String productId, int quantity})> items,
+    required List<SaleLineInput> items,
     required PaymentMethod paymentMethod,
     required double discount,
     required double paidAmount,
     required String clientRequestId,
     String? notes,
+    String? maintenanceRequestId,
   }) async {
     try {
-      final saleId = await _client.rpc('rpc_technician_sale', params: {
-        'p_technician_id': technicianId,
-        'p_customer_id': null,
-        'p_customer_name': customerName,
-        'p_customer_phone': customerPhone,
-        'p_items': items.map((e) => {'product_id': e.productId, 'quantity': e.quantity}).toList(),
-        'p_payment_method': paymentMethodToString(paymentMethod),
-        'p_discount': discount,
-        'p_paid_amount': paidAmount,
-        'p_client_request_id': clientRequestId,
-        'p_notes': notes,
-      });
+      final saleId = await _client.rpc(
+        'rpc_technician_sale',
+        params: {
+          'p_technician_id': technicianId,
+          'p_customer_id': null,
+          'p_customer_name': customerName,
+          'p_customer_phone': customerPhone,
+          'p_items': items.map((e) => e.toJson()).toList(),
+          'p_payment_method': paymentMethodToString(paymentMethod),
+          'p_discount': discount,
+          'p_paid_amount': paidAmount,
+          'p_client_request_id': clientRequestId,
+          'p_notes': notes,
+          'p_maintenance_request_id': maintenanceRequestId,
+        },
+      );
       return saleId as String;
     } catch (e) {
       throw AppException.from(e);
@@ -145,13 +187,20 @@ class SupabaseTechnicianAccountRepository implements TechnicianAccountRepository
   }
 
   @override
-  Future<void> recordSupply({required String technicianId, required double amount, String? notes}) async {
+  Future<void> recordSupply({
+    required String technicianId,
+    required double amount,
+    String? notes,
+  }) async {
     try {
-      await _client.rpc('rpc_technician_supply', params: {
-        'p_technician_id': technicianId,
-        'p_amount': amount,
-        'p_notes': notes,
-      });
+      await _client.rpc(
+        'rpc_technician_supply',
+        params: {
+          'p_technician_id': technicianId,
+          'p_amount': amount,
+          'p_notes': notes,
+        },
+      );
     } catch (e) {
       throw AppException.from(e);
     }

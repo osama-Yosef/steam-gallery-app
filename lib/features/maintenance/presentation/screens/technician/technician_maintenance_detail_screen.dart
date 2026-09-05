@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../../core/errors/app_exception.dart';
+import '../../../../../core/router/route_names.dart';
 import '../../../../../core/utils/formatters.dart';
 import '../../../../../core/utils/maps_launcher.dart';
 import '../../../../../core/widgets/confirm_dialog.dart';
@@ -8,6 +10,7 @@ import '../../../../../core/widgets/state_views.dart';
 import '../../../data/models/maintenance_request.dart';
 import '../../providers/maintenance_providers.dart';
 import '../../widgets/maintenance_image_thumb.dart';
+import '../../widgets/maintenance_invoice_card.dart';
 
 class TechnicianMaintenanceDetailScreen extends ConsumerWidget {
   final String requestId;
@@ -49,7 +52,11 @@ class TechnicianMaintenanceDetailScreen extends ConsumerWidget {
     }
   }
 
-  Future<void> _complete(BuildContext context, WidgetRef ref) async {
+  Future<void> _complete(
+    BuildContext context,
+    WidgetRef ref,
+    MaintenanceRequest req,
+  ) async {
     final notesCtrl = TextEditingController();
     final proceed = await showDialog<bool>(
       context: context,
@@ -79,6 +86,17 @@ class TechnicianMaintenanceDetailScreen extends ConsumerWidget {
             requestId,
             notesCtrl.text.trim().isEmpty ? null : notesCtrl.text.trim(),
           );
+      // Straight on to the invoice: the service fee and any parts fitted are
+      // recorded together, which is what the customer then sees on the job.
+      if (context.mounted) {
+        context.push(
+          Routes.technicianMaintenanceInvoice(
+            requestId,
+            customerName: req.customerName,
+            customerPhone: req.phone,
+          ),
+        );
+      }
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(
@@ -154,6 +172,9 @@ class TechnicianMaintenanceDetailScreen extends ConsumerWidget {
                 Text('ملاحظات: ${req.notes}'),
               ],
               const SizedBox(height: 16),
+              const SizedBox(height: 16),
+              MaintenanceInvoiceCard(maintenanceRequestId: requestId),
+              const SizedBox(height: 16),
               Text('الصور', style: Theme.of(context).textTheme.titleMedium),
               const SizedBox(height: 8),
               SizedBox(
@@ -196,7 +217,7 @@ class TechnicianMaintenanceDetailScreen extends ConsumerWidget {
                 ),
               if (req.status == MaintenanceStatus.inProgress)
                 FilledButton.icon(
-                  onPressed: () => _complete(context, ref),
+                  onPressed: () => _complete(context, ref, req),
                   icon: const Icon(Icons.check_circle_outline),
                   label: const Text('تم التنفيذ'),
                 ),

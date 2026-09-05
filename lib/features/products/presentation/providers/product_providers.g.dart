@@ -460,6 +460,50 @@ final class AdminProductsFamily extends $Family
   String toString() => r'adminProductsProvider';
 }
 
+/// Service lines available to add to a sale (labour, no stock).
+
+@ProviderFor(serviceProducts)
+const serviceProductsProvider = ServiceProductsProvider._();
+
+/// Service lines available to add to a sale (labour, no stock).
+
+final class ServiceProductsProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<List<Product>>,
+          List<Product>,
+          FutureOr<List<Product>>
+        >
+    with $FutureModifier<List<Product>>, $FutureProvider<List<Product>> {
+  /// Service lines available to add to a sale (labour, no stock).
+  const ServiceProductsProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'serviceProductsProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$serviceProductsHash();
+
+  @$internal
+  @override
+  $FutureProviderElement<List<Product>> $createElement(
+    $ProviderPointer pointer,
+  ) => $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<List<Product>> create(Ref ref) {
+    return serviceProducts(ref);
+  }
+}
+
+String _$serviceProductsHash() => r'7e290ccd4612816fbeed5b119e0446e436175ca1';
+
 @ProviderFor(adminProductDetail)
 const adminProductDetailProvider = AdminProductDetailFamily._();
 
