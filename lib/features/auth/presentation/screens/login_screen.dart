@@ -28,6 +28,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 
   Future<void> _submit() async {
+    // Guards against a double sign-in request from an impatient double-tap:
+    // the button's onPressed already checks _loading, but that only takes
+    // effect after this function's first `setState` call actually runs —
+    // a second tap landing before then would otherwise slip through.
+    if (_loading) return;
     if (!_formKey.currentState!.validate()) return;
     setState(() => _loading = true);
     try {

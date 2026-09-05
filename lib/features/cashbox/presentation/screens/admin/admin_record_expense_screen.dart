@@ -74,6 +74,14 @@ class _AdminRecordExpenseScreenState extends ConsumerState<AdminRecordExpenseScr
         loading: () => const LoadingView(),
         error: (e, _) => const ErrorView(message: 'تعذَّر تحميل التصنيفات'),
         data: (categories) {
+          // An empty dropdown reads as "the app is broken" when the real
+          // problem is that no categories exist yet — say so explicitly.
+          if (categories.isEmpty) {
+            return const EmptyView(
+              message: 'لا توجد تصنيفات مصروفات — أضف تصنيفًا أولًا',
+              icon: Icons.category_outlined,
+            );
+          }
           return Form(
             key: _formKey,
             child: ListView(

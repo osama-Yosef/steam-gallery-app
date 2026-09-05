@@ -51,13 +51,16 @@ class AdminDashboardScreen extends ConsumerWidget {
                 highlight: true,
               ),
               const SizedBox(height: 12),
-              GridView.count(
-                crossAxisCount: 2,
+              GridView.extent(
+                // Width-driven rather than a fixed column count: 2 columns on
+                // a phone, more as the window widens on desktop/web, instead
+                // of two absurdly stretched cards across a monitor.
+                maxCrossAxisExtent: 260,
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
                 mainAxisSpacing: 12,
                 crossAxisSpacing: 12,
-                childAspectRatio: 1.5,
+                childAspectRatio: 1.6,
                 children: [
                   _KpiCard(icon: Icons.today_outlined, label: 'مبيعات اليوم', value: MoneyText(s.todayRevenue)),
                   _KpiCard(
@@ -170,22 +173,42 @@ class _KpiCard extends StatelessWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(16),
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          // The grid gives every card a fixed height, so this content has to
+          // fit whatever height is left after the device's font scale is
+          // applied — hence the tighter padding, the Flexible rows, and the
+          // scale-down on the value. Without them the count cards ("طلبات
+          // جديدة", "صيانات نشطة", …) overflowed on a phone with enlarged
+          // system text.
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
             children: [
-              Row(
-                children: [
-                  Icon(icon, size: 20),
-                  const SizedBox(width: 6),
-                  Expanded(
-                    child: Text(label, style: Theme.of(context).textTheme.bodySmall, overflow: TextOverflow.ellipsis),
-                  ),
-                ],
+              Flexible(
+                child: Row(
+                  children: [
+                    Icon(icon, size: 20),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        label,
+                        style: Theme.of(context).textTheme.bodySmall,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-              const SizedBox(height: 8),
-              value,
+              const SizedBox(height: 6),
+              Flexible(
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: AlignmentDirectional.centerStart,
+                  child: value,
+                ),
+              ),
             ],
           ),
         ),

@@ -14,10 +14,10 @@ class Env {
   const Env._();
 
   static const String supabaseUrl = String.fromEnvironment('SUPABASE_URL');
-  static const String supabasePublishableKey = String.fromEnvironment('SUPABASE_PUBLISHABLE_KEY');
+  static const String supabasePublishableKey = String.fromEnvironment(
+    'SUPABASE_PUBLISHABLE_KEY',
+  );
 
-  /// Module 0 must be able to `flutter run` cleanly even before a real
-  /// Supabase project exists — the app degrades to a "not configured"
-  /// screen instead of crashing on startup.
-  static bool get isConfigured => supabaseUrl.isNotEmpty && supabasePublishableKey.isNotEmpty;
+  static bool get isConfigured =>
+      supabaseUrl.isNotEmpty && supabasePublishableKey.isNotEmpty;
 }

@@ -13,7 +13,7 @@ class AppException implements Exception {
     if (error is AppException) return error;
 
     if (error is AuthException) {
-      return AppException(_mapAuthMessage(error.message), error);
+      return AppException(_mapAuthMessage(error), error);
     }
 
     if (error is PostgrestException) {
@@ -23,21 +23,50 @@ class AppException implements Exception {
     return AppException('حدث خطأ غير متوقع. حاول مرة أخرى.', error);
   }
 
-  static String _mapAuthMessage(String raw) {
-    final m = raw.toLowerCase();
+  /// Prefer Supabase's own `code` (a fixed, documented enum — see
+  /// https://supabase.com/docs/guides/auth/debugging/error-codes) over
+  /// guessing from the free-text `message`. A loose substring check like
+  /// `message.contains('password')` used to catch messages that have
+  /// nothing to do with password strength (rate limits, transient network
+  /// errors, etc.) and wrongly tell the user their correct password is
+  /// invalid — found via live testing when a correct 8-character password
+  /// intermittently got this exact wrong diagnosis.
+  static String _mapAuthMessage(AuthException error) {
+    final code = error.code;
+    if (code == 'weak_password' || code == 'same_password') {
+      return 'كلمة المرور غير صالحة (٨ أحرف على الأقل)';
+    }
+    if (code == 'over_request_rate_limit' ||
+        code == 'over_sms_send_rate_limit' ||
+        code == 'over_email_send_rate_limit') {
+      return 'محاولات كثيرة جدًا، انتظر شوية وحاول تاني';
+    }
+
+    final m = error.message.toLowerCase();
     if (m.contains('invalid login credentials')) return 'رقم الهاتف أو كلمة المرور غير صحيحة';
     if (m.contains('user already registered') || m.contains('already exists')) {
       return 'هذا الرقم مسجَّل بالفعل';
     }
-    if (m.contains('password')) return 'كلمة المرور غير صالحة (٨ أحرف على الأقل)';
-    if (m.contains('network')) return 'تعذَّر الاتصال بالخادم، تحقق من الإنترنت';
+    if (m.contains('network') || m.contains('socket') || m.contains('timeout')) {
+      return 'تعذَّر الاتصال بالخادم، تحقق من الإنترنت';
+    }
     return 'تعذَّر تسجيل الدخول. حاول مرة أخرى.';
   }
 
   static String _mapPostgrestMessage(PostgrestException e) {
     final msg = e.message;
     if (msg.contains('INSUFFICIENT_STOCK')) return 'الكمية المطلوبة غير متوفرة';
+    // Checked before FORBIDDEN: both these codes contain no overlapping text,
+    // but they describe a setup problem the admin can actually fix, so they
+    // must never fall through to the generic "تعذَّر تنفيذ العملية".
+    if (msg.contains('NO_MAIN_WAREHOUSE')) {
+      return 'لا يوجد مخزن رئيسي مُفعَّل — أنشئ المخزن الرئيسي أولًا';
+    }
+    if (msg.contains('NO_CASHBOX')) {
+      return 'لا توجد خزنة مُفعَّلة — أنشئ الخزنة أولًا';
+    }
     if (msg.contains('FORBIDDEN')) return 'ليست لديك صلاحية لتنفيذ هذه العملية';
+    if (msg.contains('INVALID_QUANTITY')) return 'الكمية المدخلة غير صحيحة';
     if (msg.contains('INVALID_AMOUNT')) return 'المبلغ المدخل غير صحيح';
     if (msg.contains('PRODUCT_NOT_FOUND')) return 'المنتج غير موجود أو غير متاح';
     if (msg.contains('TECHNICIAN_BAG_NOT_FOUND')) return 'لا توجد شنطة بضاعة لهذا الصنايعي';
