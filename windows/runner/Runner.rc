@@ -89,13 +89,13 @@ BEGIN
     BEGIN
         BLOCK "040904e4"
         BEGIN
-            VALUE "CompanyName", "com.steamgallery" "\0"
-            VALUE "FileDescription", "steam_gallery_app" "\0"
+            VALUE "CompanyName", "Madina Steam Gallery" "\0"
+            VALUE "FileDescription", "Madina Steam Gallery - ERP" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
             VALUE "InternalName", "steam_gallery_app" "\0"
-            VALUE "LegalCopyright", "Copyright (C) 2026 com.steamgallery. All rights reserved." "\0"
+            VALUE "LegalCopyright", "Copyright (C) 2026 Madina Steam Gallery. All rights reserved." "\0"
             VALUE "OriginalFilename", "steam_gallery_app.exe" "\0"
-            VALUE "ProductName", "steam_gallery_app" "\0"
+            VALUE "ProductName", "Madina Steam Gallery" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

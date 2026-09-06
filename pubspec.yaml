@@ -88,6 +88,10 @@ flutter_launcher_icons:
     image_path: "assets/icon/icon.png"
     background_color: "#0B1B3A"
     theme_color: "#0B1B3A"
+  windows:
+    generate: true
+    image_path: "assets/icon/icon.png"
+    icon_size: 256
 
 flutter_native_splash:
   color: "#0B1B3A"

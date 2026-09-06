@@ -27,7 +27,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE instance, _In_opt_ HINSTANCE prev,
   FlutterWindow window(project);
   Win32Window::Point origin(10, 10);
   Win32Window::Size size(1280, 720);
-  if (!window.Create(L"steam_gallery_app", origin, size)) {
+  // Shown in the title bar, the taskbar and Alt-Tab, so it carries the shop's
+  // actual name rather than the Flutter project id.
+  if (!window.Create(L"معرض المدينة المنورة لمكاوي بخار", origin, size)) {
     return EXIT_FAILURE;
   }
   window.SetQuitOnClose(true);

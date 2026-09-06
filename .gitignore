@@ -60,3 +60,6 @@ supabase/.temp/
 # artifacts (they're distributed outside git).
 *.apk
 *.aab
+
+# Packaged desktop builds (tool/package_windows.ps1)
+/dist/
