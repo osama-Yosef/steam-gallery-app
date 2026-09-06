@@ -14,6 +14,7 @@ abstract class WarehouseStockItem with _$WarehouseStockItem {
     required double costPrice,
     required double sellingPrice,
     required int minStock,
+    String? imageUrl,
   }) = _WarehouseStockItem;
 
   const WarehouseStockItem._();
@@ -31,6 +32,17 @@ abstract class WarehouseStockItem with _$WarehouseStockItem {
       costPrice: (product['cost_price'] as num).toDouble(),
       sellingPrice: (product['selling_price'] as num).toDouble(),
       minStock: product['min_stock'] as int,
+      imageUrl: _primaryImageFrom(product['product_images']),
     );
+  }
+
+  /// Same rule as Product.fromRow: the image flagged primary if there is one,
+  /// otherwise whichever came back first.
+  static String? _primaryImageFrom(Object? embedded) {
+    if (embedded is! List || embedded.isEmpty) return null;
+    final images = embedded.cast<Map<String, dynamic>>();
+    final primary = images.where((i) => i['is_primary'] == true);
+    final chosen = primary.isNotEmpty ? primary.first : images.first;
+    return chosen['image_url'] as String?;
   }
 }
