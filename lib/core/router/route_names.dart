@@ -79,6 +79,8 @@ abstract final class Routes {
   static const adminCashbox = '/admin/cashbox';
   static const adminExpenses = '/admin/expenses';
   static const adminExpenseNew = '/admin/expenses/new';
+  static const adminCashDeposit = '/admin/cashbox/deposit';
+  static const adminCashWithdraw = '/admin/cashbox/withdraw';
 
   // Walk-in sales
   static const adminWalkInSale = '/admin/walk-in-sale';

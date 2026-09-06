@@ -69,6 +69,9 @@ class AppException implements Exception {
     if (msg.contains('NO_CASHBOX')) {
       return 'لا توجد خزنة مُفعَّلة — أنشئ الخزنة أولًا';
     }
+    if (msg.contains('INSUFFICIENT_CASH')) {
+      return 'رصيد الخزنة لا يكفي لسحب هذا المبلغ';
+    }
     if (msg.contains('FORBIDDEN')) return 'ليست لديك صلاحية لتنفيذ هذه العملية';
     if (msg.contains('INVALID_QUANTITY')) return 'الكمية المدخلة غير صحيحة';
     if (msg.contains('INVALID_AMOUNT')) return 'المبلغ المدخل غير صحيح';

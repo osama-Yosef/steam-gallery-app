@@ -9,6 +9,7 @@ import '../../features/auth/presentation/screens/splash_screen.dart';
 import '../../features/cart/presentation/screens/cart_screen.dart';
 import '../../features/cashbox/presentation/screens/admin/admin_cashbox_screen.dart';
 import '../../features/cashbox/presentation/screens/admin/admin_expenses_list_screen.dart';
+import '../../features/cashbox/presentation/screens/admin/admin_cash_movement_screen.dart';
 import '../../features/cashbox/presentation/screens/admin/admin_record_expense_screen.dart';
 import '../../features/customer_account/presentation/screens/admin/admin_customer_account_detail_screen.dart';
 import '../../features/customer_account/presentation/screens/admin/admin_customer_payment_screen.dart';
@@ -351,6 +352,18 @@ GoRouter appRouter(Ref ref) {
               GoRoute(
                 path: Routes.adminExpenseNew,
                 builder: (_, _) => const AdminRecordExpenseScreen(),
+              ),
+              GoRoute(
+                path: Routes.adminCashDeposit,
+                builder: (_, _) => const AdminCashMovementScreen(
+                  kind: CashMovementKind.deposit,
+                ),
+              ),
+              GoRoute(
+                path: Routes.adminCashWithdraw,
+                builder: (_, _) => const AdminCashMovementScreen(
+                  kind: CashMovementKind.withdrawal,
+                ),
               ),
             ],
           ),

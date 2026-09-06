@@ -21,6 +21,15 @@ abstract class CashboxRepository {
     required DateTime expenseDate,
     String? notes,
   });
+
+  /// Cash put into the till from outside the business cycle (opening float,
+  /// an owner top-up). Deliberately NOT an expense/sale, so it moves the till
+  /// balance without touching any profit figure — see migration 0028.
+  Future<void> depositCash({required double amount, String? notes});
+
+  /// Cash taken out of the till (drawings, moving cash to the bank). Same
+  /// deal: balance only, never profit. Throws if it would overdraw the till.
+  Future<void> withdrawCash({required double amount, String? notes});
 }
 
 class SupabaseCashboxRepository implements CashboxRepository {
@@ -102,6 +111,30 @@ class SupabaseCashboxRepository implements CashboxRepository {
           'p_notes': notes,
           'p_attachment_url': null,
         },
+      );
+    } catch (e) {
+      throw AppException.from(e);
+    }
+  }
+
+  @override
+  Future<void> depositCash({required double amount, String? notes}) async {
+    try {
+      await _client.rpc(
+        'rpc_cashbox_deposit',
+        params: {'p_amount': amount, 'p_notes': notes},
+      );
+    } catch (e) {
+      throw AppException.from(e);
+    }
+  }
+
+  @override
+  Future<void> withdrawCash({required double amount, String? notes}) async {
+    try {
+      await _client.rpc(
+        'rpc_cashbox_withdraw',
+        params: {'p_amount': amount, 'p_notes': notes},
       );
     } catch (e) {
       throw AppException.from(e);

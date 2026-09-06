@@ -32,8 +32,10 @@ String cashTxnTypeLabelAr(CashTxnType t) => switch (t) {
   CashTxnType.refund => 'استرداد',
   CashTxnType.adjustment => 'تسوية',
   CashTxnType.purchase => 'شراء',
-  CashTxnType.otherIncome => 'إيراد آخر',
-  CashTxnType.otherExpense => 'مصروف آخر',
+  // These two are what rpc_cashbox_deposit / rpc_cashbox_withdraw record;
+  // they move the till balance only and never reach the profit reports.
+  CashTxnType.otherIncome => 'إيداع نقدي',
+  CashTxnType.otherExpense => 'سحب نقدي',
 };
 
 @freezed

@@ -29,13 +29,9 @@ class AdminCashboxScreen extends ConsumerWidget {
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () async {
-          await context.push(Routes.adminExpenseNew);
-          ref.invalidate(cashboxBalanceProvider);
-          ref.invalidate(cashTransactionsProvider);
-        },
-        icon: const Icon(Icons.remove_circle_outline),
-        label: const Text('تسجيل مصروف'),
+        onPressed: () => _openMovementSheet(context, ref),
+        icon: const Icon(Icons.add),
+        label: const Text('حركة جديدة'),
       ),
       body: Column(
         children: [
@@ -118,6 +114,54 @@ class AdminCashboxScreen extends ConsumerWidget {
         ],
       ),
     );
+  }
+
+  /// Three ways money moves by hand: an expense (hits the profit reports) and
+  /// a deposit/withdrawal (till balance only). They're listed together so the
+  /// difference is a deliberate choice at the moment of recording, not
+  /// something the admin discovers later in the reports.
+  Future<void> _openMovementSheet(BuildContext context, WidgetRef ref) async {
+    final route = await showModalBottomSheet<String>(
+      context: context,
+      showDragHandle: true,
+      builder: (sheetContext) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.remove_circle_outline),
+              title: const Text('تسجيل مصروف'),
+              subtitle: const Text('يخصم من الخزنة ويُحتسب في المصروفات'),
+              onTap: () =>
+                  Navigator.of(sheetContext).pop(Routes.adminExpenseNew),
+            ),
+            ListTile(
+              leading: const Icon(
+                Icons.south_west_rounded,
+                color: AppColors.success,
+              ),
+              title: const Text('إيداع في الخزنة'),
+              subtitle: const Text('يزوّد الرصيد فقط، بدون أي أثر على الأرباح'),
+              onTap: () =>
+                  Navigator.of(sheetContext).pop(Routes.adminCashDeposit),
+            ),
+            ListTile(
+              leading: const Icon(Icons.north_east_rounded),
+              title: const Text('سحب من الخزنة'),
+              subtitle: const Text(
+                'يخصم من الرصيد فقط، بدون أي أثر على الأرباح',
+              ),
+              onTap: () =>
+                  Navigator.of(sheetContext).pop(Routes.adminCashWithdraw),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (route == null || !context.mounted) return;
+    await context.push(route);
+    ref.invalidate(cashboxBalanceProvider);
+    ref.invalidate(cashTransactionsProvider);
   }
 
   Widget _typeIcon(BuildContext context, CashTxnType type) {
