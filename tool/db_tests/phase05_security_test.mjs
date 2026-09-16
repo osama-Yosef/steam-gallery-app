@@ -43,6 +43,19 @@ const cash = async () => { await asSuper(); const r = await one(`select balance 
 const stock = async () => { await asSuper(); const r = await one(`select quantity from public.warehouse_stock where product_id = $1`, [P]); return r.quantity; };
 const custBalance = async (c) => { await asSuper(); const r = await one(`select remaining_balance from public.customer_account_summary where customer_id = $1`, [c]); return Number(r.remaining_balance); };
 
+// 0036: rpc_create_order now takes a saved, serviceable address instead of
+// free text. مدينة نصر is seeded as covered by 0032.
+const cairo = (await one(`select id from public.cities where name_ar = 'القاهرة'`)).id;
+const address = async (customer) => {
+  await as(customer);
+  const r = (await one(`select public.rpc_save_my_address(
+    p_address_id => null, p_city_id => $1, p_label => 'المنزل', p_address_line => 'addr',
+    p_latitude => 30.0561, p_longitude => 31.3301) as r`, [cairo])).r;
+  return r.id;
+};
+const addrA = await address(CUST_A);
+const addrB = await address(CUST_B);
+
 // ---------------------------------------------------------------- P0-1/2 cost leaks
 console.log('\n== P0-1/P0-2: cost never reaches a customer ==');
 await as(CUST_A);
@@ -57,28 +70,28 @@ ok('technician: products table still readable (bag screens)', (await q(`select c
 console.log('\n== P0-3: server-side order pricing ==');
 await as(CUST_A);
 const K1 = uid(9001);
-const O1 = (await one(`select public.rpc_create_order($1, $2, 'addr', null, null, null, $3) as id`,
-  [CUST_A, JSON.stringify([{ product_id: P, quantity: 2, discount: 999999 }]), K1])).id;
+const O1 = (await one(`select public.rpc_create_order($1, $2, $3, null, $4) as id`,
+  [CUST_A, JSON.stringify([{ product_id: P, quantity: 2, discount: 999999 }]), addrA, K1])).id;
 const o1 = await one(`select total from public.orders where id = $1`, [O1]);
 ok('Test 4/5: payload discount ignored, total = 2 x DB price = 200', Number(o1.total) === 200, `got ${o1.total}`);
 ok('idempotent retry returns the same order',
-  (await one(`select public.rpc_create_order($1, $2, 'addr', null, null, null, $3) as id`,
-    [CUST_A, JSON.stringify([{ product_id: P, quantity: 5 }]), K1])).id === O1);
+  (await one(`select public.rpc_create_order($1, $2, $3, null, $4) as id`,
+    [CUST_A, JSON.stringify([{ product_id: P, quantity: 5 }]), addrA, K1])).id === O1);
 await as(CUST_B);
 ok('another customer reusing the key gets IDEMPOTENCY_KEY_CONFLICT',
-  (await err(`select public.rpc_create_order($1, $2, null, null, null, null, $3)`,
-    [CUST_B, JSON.stringify([{ product_id: P, quantity: 1 }]), K1]))?.includes('IDEMPOTENCY_KEY_CONFLICT'));
+  (await err(`select public.rpc_create_order($1, $2, $3, null, $4)`,
+    [CUST_B, JSON.stringify([{ product_id: P, quantity: 1 }]), addrB, K1]))?.includes('IDEMPOTENCY_KEY_CONFLICT'));
 ok('customer cannot order on behalf of another customer',
-  (await err(`select public.rpc_create_order($1, $2, null, null, null, null, null)`,
-    [CUST_A, JSON.stringify([{ product_id: P, quantity: 1 }])]))?.includes('FORBIDDEN'));
+  (await err(`select public.rpc_create_order($1, $2, $3, null, null)`,
+    [CUST_A, JSON.stringify([{ product_id: P, quantity: 1 }]), addrA]))?.includes('FORBIDDEN'));
 ok('service line cannot be ordered',
-  (await err(`select public.rpc_create_order($1, $2, null, null, null, null, null)`,
-    [CUST_B, JSON.stringify([{ product_id: SERVICE, quantity: 1 }])]))?.includes('PRODUCT_NOT_FOUND'));
+  (await err(`select public.rpc_create_order($1, $2, $3, null, null)`,
+    [CUST_B, JSON.stringify([{ product_id: SERVICE, quantity: 1 }]), addrB]))?.includes('PRODUCT_NOT_FOUND'));
 ok('zero quantity rejected',
-  (await err(`select public.rpc_create_order($1, $2, null, null, null, null, null)`,
-    [CUST_B, JSON.stringify([{ product_id: P, quantity: 0 }])]))?.includes('INVALID_QUANTITY'));
+  (await err(`select public.rpc_create_order($1, $2, $3, null, null)`,
+    [CUST_B, JSON.stringify([{ product_id: P, quantity: 0 }]), addrB]))?.includes('INVALID_QUANTITY'));
 ok('empty order rejected',
-  (await err(`select public.rpc_create_order($1, '[]'::jsonb, null, null, null, null, null)`, [CUST_B]))?.includes('EMPTY_ORDER'));
+  (await err(`select public.rpc_create_order($1, '[]'::jsonb, $2, null, null)`, [CUST_B, addrB]))?.includes('EMPTY_ORDER'));
 
 // ---------------------------------------------------------------- P0-4 function lockdown
 console.log('\n== P0-4: internal functions not callable ==');
@@ -91,7 +104,7 @@ await as(null);
 ok('anon cannot call notify_user',
   (await err(`select public.notify_user($1, 'x', 'phish', 'phish')`, [ADMIN]))?.includes('permission denied'));
 ok('anon cannot call rpc_create_order',
-  (await err(`select public.rpc_create_order($1, '[]'::jsonb, null, null, null, null, null)`, [CUST_A]))?.includes('permission denied'));
+  (await err(`select public.rpc_create_order($1, '[]'::jsonb, $2, null, null)`, [CUST_A, addrA]))?.includes('permission denied'));
 await asSuper();
 const leakedAnon = await q(`
   select p.oid::regprocedure::text as f from pg_proc p join pg_namespace n on n.oid = p.pronamespace
@@ -134,8 +147,8 @@ ok('other customer: orders row invisible (IDOR)', (await q(`select * from public
 // ---------------------------------------------------------------- P1-7 state machine
 console.log('\n== P1-7: order state machine ==');
 await as(CUST_B);
-const O2 = (await one(`select public.rpc_create_order($1, $2, null, null, null, null, null) as id`,
-  [CUST_B, JSON.stringify([{ product_id: P, quantity: 1 }])])).id;
+const O2 = (await one(`select public.rpc_create_order($1, $2, $3, null, null) as id`,
+  [CUST_B, JSON.stringify([{ product_id: P, quantity: 1 }]), addrB])).id;
 await as(ADMIN);
 ok('pending -> completed refused',
   (await err(`select public.rpc_update_order_status($1, 'completed')`, [O2]))?.includes('INVALID_STATUS_TRANSITION'));

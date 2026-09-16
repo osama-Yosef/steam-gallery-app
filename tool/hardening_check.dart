@@ -17,9 +17,11 @@
 //   4) Phase 0.5 probes (0029/0030) — read-only: no cost price reachable by a
 //      customer, internal SECURITY DEFINER helpers not callable by a customer
 //      or by anon, phone not self-editable.
-//   5) [optional, --run-order-discount-test --product-id=<uuid>] A customer
-//      cannot discount their own order through the RPC payload. This DOES
-//      create one real pending order — cancel it from the admin app after.
+//   5) [optional, --run-order-discount-test --product-id=<uuid>
+//      --address-id=<uuid>] A customer cannot discount their own order
+//      through the RPC payload. This DOES create one real pending order —
+//      cancel it from the admin app after. --address-id must be a saved,
+//      serviceable address belonging to --customer-phone (0036).
 //
 // Usage:
 //   dart run tool/hardening_check.dart \
@@ -71,11 +73,12 @@ Future<void> main(List<String> args) async {
 
   if (a.containsKey('run-order-discount-test')) {
     final productId = a['product-id'];
-    if (productId == null) {
-      stderr.writeln('--run-order-discount-test needs --product-id.');
+    final addressId = a['address-id'];
+    if (productId == null || addressId == null) {
+      stderr.writeln('--run-order-discount-test needs --product-id and --address-id (a saved, serviceable address for --customer-phone).');
       exit(2);
     }
-    await _orderDiscountTest(customerToken, productId);
+    await _orderDiscountTest(customerToken, productId, addressId);
   }
 
   if (a.containsKey('run-race-test')) {
@@ -331,7 +334,7 @@ Future<void> _phase05Probe(String token) async {
   print('');
 }
 
-Future<void> _orderDiscountTest(String token, String productId) async {
+Future<void> _orderDiscountTest(String token, String productId, String addressId) async {
   print('== 5) Order pricing: a payload discount must be ignored ==');
   print('  WARNING: creates one real pending order — cancel it from the admin app.');
 
@@ -349,9 +352,7 @@ Future<void> _orderDiscountTest(String token, String productId) async {
     'p_items': [
       {'product_id': productId, 'quantity': 1, 'discount': 999999},
     ],
-    'p_delivery_address': 'hardening probe',
-    'p_latitude': null,
-    'p_longitude': null,
+    'p_address_id': addressId,
     'p_notes': 'hardening discount probe — cancel me',
     'p_client_request_id': _fakeUuid('d'),
   });

@@ -95,6 +95,12 @@ class AppException implements Exception {
     ('INVALID_PAGE', 'تعذَّر تحميل هذه الصفحة من النتائج'),
     ('product_categories_name_len', 'اسم القسم مطلوب ولا يزيد عن 60 حرفًا'),
     ('product_categories_not_own_parent', 'القسم لا يمكن أن يكون تابعًا لنفسه'),
+    // Checkout (0036): a saved address that no longer exists or isn't covered.
+    ('ADDRESS_NOT_FOUND', 'العنوان ده مش موجود — اختر عنوانًا تانيًا'),
+    (
+      'ADDRESS_NOT_SERVICEABLE',
+      'المنطقة دي غير مغطاة حاليًا — اختر عنوانًا تانيًا',
+    ),
     // Setup problems the admin can actually fix — never the generic message.
     (
       'NO_MAIN_WAREHOUSE',

@@ -39,6 +39,15 @@ abstract class Order with _$Order {
     required double total,
     required double paidAmount,
     String? deliveryAddress,
+    // Snapshotted from customer_addresses at order time (0036) — never the
+    // live address row, so editing/deleting a saved address never rewrites
+    // a past order's delivery details.
+    String? deliveryRecipientName,
+    String? deliveryPhone,
+    String? deliveryBuilding,
+    String? deliveryFloor,
+    String? deliveryApartment,
+    String? deliveryLandmark,
     String? notes,
     String? cancelledReason,
     required DateTime createdAt,
@@ -47,6 +56,14 @@ abstract class Order with _$Order {
   const Order._();
 
   double get remaining => total - paidAmount;
+
+  /// "عمارة 12، الدور 3، شقة 7" from the snapshot — mirrors
+  /// CustomerAddress.detailsLine, only the parts that were filled in.
+  String get deliveryDetailsLine => [
+    if (deliveryBuilding != null) 'عمارة $deliveryBuilding',
+    if (deliveryFloor != null) 'الدور $deliveryFloor',
+    if (deliveryApartment != null) 'شقة $deliveryApartment',
+  ].join('، ');
 
   factory Order.fromRow(Map<String, dynamic> row) => Order(
     id: row['id'] as String,
@@ -58,6 +75,12 @@ abstract class Order with _$Order {
     total: (row['total'] as num).toDouble(),
     paidAmount: (row['paid_amount'] as num).toDouble(),
     deliveryAddress: row['delivery_address'] as String?,
+    deliveryRecipientName: row['delivery_recipient_name'] as String?,
+    deliveryPhone: row['delivery_phone'] as String?,
+    deliveryBuilding: row['delivery_building'] as String?,
+    deliveryFloor: row['delivery_floor'] as String?,
+    deliveryApartment: row['delivery_apartment'] as String?,
+    deliveryLandmark: row['delivery_landmark'] as String?,
     notes: row['notes'] as String?,
     cancelledReason: row['cancelled_reason'] as String?,
     createdAt: DateTime.parse(row['created_at'] as String),

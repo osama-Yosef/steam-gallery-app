@@ -113,7 +113,23 @@ class CustomerOrderDetailScreen extends ConsumerWidget {
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
                 const SizedBox(height: 4),
+                if (order.deliveryRecipientName != null ||
+                    order.deliveryPhone != null)
+                  Text(
+                    [
+                      if (order.deliveryRecipientName != null)
+                        order.deliveryRecipientName!,
+                      if (order.deliveryPhone != null) order.deliveryPhone!,
+                    ].join(' — '),
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                 Text(order.deliveryAddress!),
+                if (order.deliveryDetailsLine.isNotEmpty)
+                  Text(order.deliveryDetailsLine),
+                if (order.deliveryLandmark != null)
+                  Text('علامة مميزة: ${order.deliveryLandmark}'),
               ],
             ],
           );

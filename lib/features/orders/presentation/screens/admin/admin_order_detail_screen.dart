@@ -201,7 +201,21 @@ class AdminOrderDetailScreen extends ConsumerWidget {
               ),
               if (order.deliveryAddress != null) ...[
                 const SizedBox(height: 8),
+                if (order.deliveryRecipientName != null ||
+                    order.deliveryPhone != null)
+                  Text(
+                    [
+                      if (order.deliveryRecipientName != null)
+                        order.deliveryRecipientName!,
+                      if (order.deliveryPhone != null) order.deliveryPhone!,
+                    ].join(' — '),
+                    style: const TextStyle(fontWeight: FontWeight.w600),
+                  ),
                 Text('عنوان التوصيل: ${order.deliveryAddress}'),
+                if (order.deliveryDetailsLine.isNotEmpty)
+                  Text(order.deliveryDetailsLine),
+                if (order.deliveryLandmark != null)
+                  Text('علامة مميزة: ${order.deliveryLandmark}'),
               ],
               if (order.notes != null) ...[
                 const SizedBox(height: 8),

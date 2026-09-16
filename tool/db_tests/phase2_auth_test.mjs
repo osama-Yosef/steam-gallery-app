@@ -19,7 +19,15 @@ const audit = async (action, id) => { await asSuper(); return (await one(`select
 await as(ADMIN);
 const P = (await one(`insert into public.products (sku, name, cost_price, selling_price) values ('P2', 'Iron', 60, 100) returning id`)).id;
 await q(`select public.rpc_receive_purchase($1, 10, 60, 'seed')`, [P]);
-const order = (customer) => `select public.rpc_create_order('${customer}', '[{"product_id":"${P}","quantity":1}]'::jsonb, null, null, null, null, null)`;
+// 0036: rpc_create_order now takes a saved, serviceable address. Seeded while
+// the verification switch is still off, so this call itself isn't what's
+// under test here.
+const cairo = (await one(`select id from public.cities where name_ar = 'القاهرة'`)).id;
+await as(CUST_A);
+const addrA = (await one(`select public.rpc_save_my_address(
+  p_address_id => null, p_city_id => $1, p_label => 'المنزل', p_address_line => 'addr',
+  p_latitude => 30.0561, p_longitude => 31.3301) as r`, [cairo])).r.id;
+const order = (customer) => `select public.rpc_create_order('${customer}', '[{"product_id":"${P}","quantity":1}]'::jsonb, '${addrA}', null, null)`;
 
 // ---------------------------------------------------------------- defaults
 console.log('\n== Defaults: deploying 0031 changes nothing for existing users ==');

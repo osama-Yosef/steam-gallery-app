@@ -12,7 +12,7 @@ abstract class OrderRepository {
   Future<String> createOrder({
     required String customerId,
     required List<({String productId, int quantity})> items,
-    String? deliveryAddress,
+    required String addressId,
     String? notes,
     required String clientRequestId,
   });
@@ -43,7 +43,7 @@ class SupabaseOrderRepository implements OrderRepository {
   Future<String> createOrder({
     required String customerId,
     required List<({String productId, int quantity})> items,
-    String? deliveryAddress,
+    required String addressId,
     String? notes,
     required String clientRequestId,
   }) async {
@@ -55,9 +55,7 @@ class SupabaseOrderRepository implements OrderRepository {
           'p_items': items
               .map((e) => {'product_id': e.productId, 'quantity': e.quantity})
               .toList(),
-          'p_delivery_address': deliveryAddress,
-          'p_latitude': null,
-          'p_longitude': null,
+          'p_address_id': addressId,
           'p_notes': notes,
           'p_client_request_id': clientRequestId,
         },

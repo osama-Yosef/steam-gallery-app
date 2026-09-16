@@ -69,9 +69,14 @@ ok('nobody can delete an offer', (await err(`delete from public.offers where id 
 
 // ---------------------------------------------------------------- price is fixed
 console.log('\n== Offers never change the order price ==');
+// 0036: rpc_create_order now takes a saved, serviceable address.
 await as(CUST_A);
-const orderId = (await one(`select public.rpc_create_order($1, $2, null, null, null, null, null) as id`,
-  [CUST_A, JSON.stringify([{ product_id: P1, quantity: 2 }])])).id;
+const cairo = (await one(`select id from public.cities where name_ar = 'القاهرة'`)).id;
+const addrA = (await one(`select public.rpc_save_my_address(
+  p_address_id => null, p_city_id => $1, p_label => 'المنزل', p_address_line => 'addr',
+  p_latitude => 30.0561, p_longitude => 31.3301) as r`, [cairo])).r.id;
+const orderId = (await one(`select public.rpc_create_order($1, $2, $3, null, null) as id`,
+  [CUST_A, JSON.stringify([{ product_id: P1, quantity: 2 }]), addrA])).id;
 ok('order in a live offer charges selling_price × qty (200)',
   Number((await one(`select total from public.orders where id = $1`, [orderId])).total) === 200);
 
