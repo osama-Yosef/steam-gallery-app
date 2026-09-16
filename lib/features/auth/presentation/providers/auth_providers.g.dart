@@ -96,6 +96,56 @@ final class CurrentUserProfileProvider
 String _$currentUserProfileHash() =>
     r'ff0ca977312dce0e14a55ddedcbb65a9b92ee53c';
 
+/// Server auth switches, refreshed on every auth event. Falls back to
+/// [AuthSettings.unknown] rather than failing: the database enforces the real
+/// rule either way, this only picks the screen.
+
+@ProviderFor(authSettings)
+const authSettingsProvider = AuthSettingsProvider._();
+
+/// Server auth switches, refreshed on every auth event. Falls back to
+/// [AuthSettings.unknown] rather than failing: the database enforces the real
+/// rule either way, this only picks the screen.
+
+final class AuthSettingsProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<AuthSettings>,
+          AuthSettings,
+          FutureOr<AuthSettings>
+        >
+    with $FutureModifier<AuthSettings>, $FutureProvider<AuthSettings> {
+  /// Server auth switches, refreshed on every auth event. Falls back to
+  /// [AuthSettings.unknown] rather than failing: the database enforces the real
+  /// rule either way, this only picks the screen.
+  const AuthSettingsProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'authSettingsProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$authSettingsHash();
+
+  @$internal
+  @override
+  $FutureProviderElement<AuthSettings> $createElement(
+    $ProviderPointer pointer,
+  ) => $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<AuthSettings> create(Ref ref) {
+    return authSettings(ref);
+  }
+}
+
+String _$authSettingsHash() => r'db134ea28895c48bacdafb0fdc4a030b03d74768';
+
 @ProviderFor(userProfileById)
 const userProfileByIdProvider = UserProfileByIdFamily._();
 
@@ -164,4 +214,128 @@ final class UserProfileByIdFamily extends $Family
 
   @override
   String toString() => r'userProfileByIdProvider';
+}
+
+@ProviderFor(PendingOtp)
+const pendingOtpProvider = PendingOtpProvider._();
+
+final class PendingOtpProvider
+    extends $NotifierProvider<PendingOtp, OtpRequest?> {
+  const PendingOtpProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'pendingOtpProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$pendingOtpHash();
+
+  @$internal
+  @override
+  PendingOtp create() => PendingOtp();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(OtpRequest? value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<OtpRequest?>(value),
+    );
+  }
+}
+
+String _$pendingOtpHash() => r'c1834ae1b7681398bea2966f6a050423e62b8fd3';
+
+abstract class _$PendingOtp extends $Notifier<OtpRequest?> {
+  OtpRequest? build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final created = build();
+    final ref = this.ref as $Ref<OtpRequest?, OtpRequest?>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<OtpRequest?, OtpRequest?>,
+              OtpRequest?,
+              Object?,
+              Object?
+            >;
+    element.handleValue(ref, created);
+  }
+}
+
+/// True from the moment a password-recovery code is submitted until the new
+/// password is saved (or the user backs out). Verifying the code signs the
+/// user in, and without this the router would send them straight home,
+/// skipping the new-password screen.
+
+@ProviderFor(PasswordRecovery)
+const passwordRecoveryProvider = PasswordRecoveryProvider._();
+
+/// True from the moment a password-recovery code is submitted until the new
+/// password is saved (or the user backs out). Verifying the code signs the
+/// user in, and without this the router would send them straight home,
+/// skipping the new-password screen.
+final class PasswordRecoveryProvider
+    extends $NotifierProvider<PasswordRecovery, bool> {
+  /// True from the moment a password-recovery code is submitted until the new
+  /// password is saved (or the user backs out). Verifying the code signs the
+  /// user in, and without this the router would send them straight home,
+  /// skipping the new-password screen.
+  const PasswordRecoveryProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'passwordRecoveryProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$passwordRecoveryHash();
+
+  @$internal
+  @override
+  PasswordRecovery create() => PasswordRecovery();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(bool value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<bool>(value),
+    );
+  }
+}
+
+String _$passwordRecoveryHash() => r'a8539e88c3627533f255d48da63e6a613e344ffb';
+
+/// True from the moment a password-recovery code is submitted until the new
+/// password is saved (or the user backs out). Verifying the code signs the
+/// user in, and without this the router would send them straight home,
+/// skipping the new-password screen.
+
+abstract class _$PasswordRecovery extends $Notifier<bool> {
+  bool build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final created = build();
+    final ref = this.ref as $Ref<bool, bool>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<bool, bool>,
+              bool,
+              Object?,
+              Object?
+            >;
+    element.handleValue(ref, created);
+  }
 }

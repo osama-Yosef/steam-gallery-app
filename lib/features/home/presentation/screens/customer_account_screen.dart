@@ -2,8 +2,10 @@ import 'dart:typed_data';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../../core/errors/app_exception.dart';
+import '../../../../core/router/route_names.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/confirm_dialog.dart';
 import '../../../../core/widgets/glass_panel.dart';
@@ -87,6 +89,23 @@ class CustomerAccountScreen extends ConsumerWidget {
                 ],
               ),
             ),
+            if (profile != null && !profile.isPhoneVerified) ...[
+              const SizedBox(height: 16),
+              GlassPanel(
+                borderRadius: BorderRadius.circular(18),
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: ListTile(
+                  leading: const Icon(
+                    Icons.verified_user_outlined,
+                    color: AppColors.warning,
+                  ),
+                  title: const Text('أكِّد رقم هاتفك'),
+                  subtitle: const Text('خطوة سريعة بكود في رسالة لحماية حسابك'),
+                  trailing: const Icon(Icons.chevron_left),
+                  onTap: () => context.push(Routes.verifyPhone),
+                ),
+              ),
+            ],
             const SizedBox(height: 24),
             OutlinedButton.icon(
               onPressed: () async {

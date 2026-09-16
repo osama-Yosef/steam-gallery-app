@@ -18,6 +18,25 @@ abstract final class Validators {
     return null;
   }
 
+  /// Length must match the OTP length set in Supabase Auth (6 by default).
+  static const otpLength = 6;
+  static final _otp = RegExp('^[0-9]{$otpLength}\$');
+
+  static String? otpCode(String? value) {
+    if (value == null || value.trim().isEmpty) return 'اكتب الكود';
+    if (!_otp.hasMatch(value.trim())) return 'الكود $otpLength أرقام';
+    return null;
+  }
+
+  static String? Function(String?) confirmPassword(
+    String Function() original,
+  ) => (value) {
+    final base = password(value);
+    if (base != null) return base;
+    if (value != original()) return 'كلمتا المرور غير متطابقتين';
+    return null;
+  };
+
   static String? required(String? value, [String label = 'هذا الحقل']) {
     if (value == null || value.trim().isEmpty) return '$label مطلوب';
     return null;

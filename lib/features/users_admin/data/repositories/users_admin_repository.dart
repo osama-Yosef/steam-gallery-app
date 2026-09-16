@@ -11,6 +11,11 @@ abstract class UsersAdminRepository {
 
   Future<void> setActive(String userId, bool isActive);
 
+  /// Turns the server-side "customers must verify their phone by OTP" switch
+  /// on or off (rpc_admin_set_setting, audited). Only turn it on once an SMS
+  /// provider and "Confirm phone" are enabled in Supabase Auth.
+  Future<void> setRequireVerifiedPhone(bool value);
+
   /// Calls the create-user Edge Function — the only place a
   /// technician/admin account is ever created (see
   /// supabase/functions/create-user). Never touches the service role key
@@ -51,6 +56,18 @@ class SupabaseUsersAdminRepository implements UsersAdminRepository {
       await _client.rpc(
         'rpc_admin_set_role',
         params: {'p_user_id': userId, 'p_new_role': role.name},
+      );
+    } catch (e) {
+      throw AppException.from(e);
+    }
+  }
+
+  @override
+  Future<void> setRequireVerifiedPhone(bool value) async {
+    try {
+      await _client.rpc(
+        'rpc_admin_set_setting',
+        params: {'p_key': 'require_verified_phone', 'p_value': value},
       );
     } catch (e) {
       throw AppException.from(e);

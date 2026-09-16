@@ -1,11 +1,16 @@
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../features/audit_log/presentation/screens/admin_audit_log_screen.dart';
-import '../../features/auth/data/models/app_user.dart';
+import '../../features/auth/data/models/auth_settings.dart';
 import '../../features/auth/presentation/providers/auth_providers.dart';
+import '../../features/auth/presentation/screens/account_suspended_screen.dart';
+import '../../features/auth/presentation/screens/forgot_password_screen.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
+import '../../features/auth/presentation/screens/otp_verify_screen.dart';
 import '../../features/auth/presentation/screens/register_screen.dart';
+import '../../features/auth/presentation/screens/reset_password_screen.dart';
 import '../../features/auth/presentation/screens/splash_screen.dart';
+import '../../features/auth/presentation/screens/verify_phone_screen.dart';
 import '../../features/cart/presentation/screens/cart_screen.dart';
 import '../../features/cashbox/presentation/screens/admin/admin_cashbox_screen.dart';
 import '../../features/cashbox/presentation/screens/admin/admin_expenses_list_screen.dart';
@@ -61,6 +66,7 @@ import '../navigation/customer_shell.dart';
 import '../navigation/technician_shell.dart';
 import '../screens/config_missing_screen.dart';
 import '../supabase/supabase_client_provider.dart';
+import 'auth_redirect.dart';
 import 'go_router_refresh_stream.dart';
 import 'route_names.dart';
 
@@ -95,21 +101,13 @@ GoRouter appRouter(Ref ref) {
   // without this, the app gets stuck on the splash screen forever right
   // after sign-in/sign-up.
   ref.listen(currentUserProfileProvider, (_, _) => refreshStream.ping());
+  ref.listen(authSettingsProvider, (_, _) => refreshStream.ping());
+  ref.listen(passwordRecoveryProvider, (_, _) => refreshStream.ping());
 
   return GoRouter(
     initialLocation: Routes.splash,
     refreshListenable: refreshStream,
     redirect: (context, state) {
-      final loc = state.matchedLocation;
-
-      final session = ref.read(supabaseClientProvider).auth.currentSession;
-      final onAuthScreen = loc == Routes.login || loc == Routes.register;
-
-      if (session == null) {
-        return onAuthScreen ? null : Routes.login;
-      }
-
-      // Signed in: figure out the role to pick the right shell.
       final profileAsync = ref.read(currentUserProfileProvider);
 
       // A cached profile (even while a background refetch is in flight —
@@ -117,29 +115,32 @@ GoRouter appRouter(Ref ref) {
       // edit) means routing is already settled: bouncing through splash
       // here would remount the current StatefulShellRoute while the old
       // instance hasn't finished disposing, crashing with "Duplicate
-      // GlobalKey<StatefulNavigationShellState>". Only the very first,
-      // truly-unloaded fetch should route through splash.
+      // GlobalKey<StatefulNavigationShellState>". So a cached user counts
+      // as ready; only the very first, truly-unloaded fetch goes to splash.
+      // A loaded-but-missing row means handle_new_auth_user() may still be
+      // provisioning it right after sign-up: splash, which retries.
       final cachedUser = profileAsync.value;
+      final ProfileStatus status;
       if (cachedUser != null) {
-        if (onAuthScreen || loc == Routes.splash) {
-          return _homeFor(cachedUser.role);
-        }
-        return null;
+        status = ProfileStatus.ready;
+      } else if (profileAsync.hasError) {
+        status = ProfileStatus.error;
+      } else if (profileAsync.isLoading) {
+        status = ProfileStatus.loading;
+      } else {
+        status = ProfileStatus.missing;
       }
 
-      return profileAsync.when(
-        data: (user) {
-          if (user == null) {
-            // handle_new_auth_user() trigger may still be provisioning the
-            // row right after sign-up — stay on splash briefly, it retries
-            // automatically because authStateChanges keeps refreshing.
-            return loc == Routes.splash ? null : Routes.splash;
-          }
-          if (onAuthScreen || loc == Routes.splash) return _homeFor(user.role);
-          return null;
-        },
-        loading: () => loc == Routes.splash ? null : Routes.splash,
-        error: (_, _) => Routes.login,
+      return resolveAuthRedirect(
+        location: state.matchedLocation,
+        hasSession:
+            ref.read(supabaseClientProvider).auth.currentSession != null,
+        profileStatus: status,
+        user: cachedUser,
+        requireVerifiedPhone:
+            (ref.read(authSettingsProvider).value ?? AuthSettings.unknown)
+                .requireVerifiedPhone,
+        passwordRecoveryInProgress: ref.read(passwordRecoveryProvider),
       );
     },
     routes: [
@@ -150,6 +151,26 @@ GoRouter appRouter(Ref ref) {
       ),
       GoRoute(path: Routes.login, builder: (_, _) => const LoginScreen()),
       GoRoute(path: Routes.register, builder: (_, _) => const RegisterScreen()),
+      GoRoute(
+        path: Routes.forgotPassword,
+        builder: (_, _) => const ForgotPasswordScreen(),
+      ),
+      GoRoute(
+        path: Routes.verifyOtp,
+        builder: (_, _) => const OtpVerifyScreen(),
+      ),
+      GoRoute(
+        path: Routes.resetPassword,
+        builder: (_, _) => const ResetPasswordScreen(),
+      ),
+      GoRoute(
+        path: Routes.verifyPhone,
+        builder: (_, _) => const VerifyPhoneScreen(),
+      ),
+      GoRoute(
+        path: Routes.accountSuspended,
+        builder: (_, _) => const AccountSuspendedScreen(),
+      ),
 
       // Admin — persistent glass sidebar, branch order matches AdminShell._items.
       StatefulShellRoute.indexedStack(
@@ -535,9 +556,3 @@ GoRouter appRouter(Ref ref) {
     ],
   );
 }
-
-String _homeFor(AppRole role) => switch (role) {
-  AppRole.admin => Routes.adminHome,
-  AppRole.technician => Routes.technicianHome,
-  AppRole.customer => Routes.customerHome,
-};

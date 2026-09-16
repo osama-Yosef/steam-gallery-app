@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' show AuthException;
 import '../../../../core/constants/brand.dart';
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/router/route_names.dart';
@@ -37,11 +38,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     if (_loading) return;
     if (!_formKey.currentState!.validate()) return;
     setState(() => _loading = true);
+    final localPhone = _phoneCtrl.text.trim();
     try {
       await ref
           .read(authRepositoryProvider)
           .signInWithPhone(
-            localPhone: _phoneCtrl.text.trim(),
+            localPhone: localPhone,
             password: _passwordCtrl.text,
           );
       ref.invalidate(currentUserProfileProvider);
@@ -49,6 +51,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       // automatically once the profile loads.
     } catch (e) {
       if (!mounted) return;
+      // The password was right but the sign-up code was never entered:
+      // offer a fresh code instead of a dead end. (Auth only reports this
+      // after checking the password, so it reveals nothing to a guesser.)
+      if (AppException.from(e).cause case AuthException(
+        code: 'phone_not_confirmed',
+      )) {
+        await _continueSignupVerification(localPhone);
+        return;
+      }
       final message = AppException.from(e).messageAr;
       ScaffoldMessenger.of(
         context,
@@ -56,6 +67,24 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     } finally {
       if (mounted) setState(() => _loading = false);
     }
+  }
+
+  Future<void> _continueSignupVerification(String localPhone) async {
+    final phone = Validators.toE164Egypt(localPhone);
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      await ref.read(authRepositoryProvider).resendSignupOtp(phone);
+    } catch (e) {
+      // e.g. a code was sent moments ago (cooldown) — the screen still lets
+      // them type that one or resend later.
+      messenger.showSnackBar(
+        SnackBar(content: Text(AppException.from(e).messageAr)),
+      );
+    }
+    ref
+        .read(pendingOtpProvider.notifier)
+        .start(OtpRequest(phoneE164: phone, purpose: OtpPurpose.signup));
+    if (mounted) context.push(Routes.verifyOtp);
   }
 
   @override
@@ -125,7 +154,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             )
                           : const Text('دخول'),
                     ),
-                    const SizedBox(height: 12),
+                    Align(
+                      alignment: AlignmentDirectional.centerEnd,
+                      child: TextButton(
+                        onPressed: () => context.push(Routes.forgotPassword),
+                        child: const Text('نسيت كلمة المرور؟'),
+                      ),
+                    ),
                     TextButton(
                       onPressed: () => context.push(Routes.register),
                       child: const Text('عميل جديد؟ إنشاء حساب'),

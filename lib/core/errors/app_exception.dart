@@ -33,13 +33,36 @@ class AppException implements Exception {
   /// intermittently got this exact wrong diagnosis.
   static String _mapAuthMessage(AuthException error) {
     final code = error.code;
-    if (code == 'weak_password' || code == 'same_password') {
-      return 'كلمة المرور غير صالحة (٨ أحرف على الأقل)';
-    }
-    if (code == 'over_request_rate_limit' ||
-        code == 'over_sms_send_rate_limit' ||
-        code == 'over_email_send_rate_limit') {
-      return 'محاولات كثيرة جدًا، انتظر شوية وحاول تاني';
+    switch (code) {
+      case 'weak_password':
+        return 'كلمة المرور غير صالحة (٨ أحرف على الأقل)';
+      case 'same_password':
+        return 'كلمة المرور الجديدة لازم تختلف عن القديمة';
+      case 'over_request_rate_limit' ||
+          'over_sms_send_rate_limit' ||
+          'over_email_send_rate_limit':
+        return 'محاولات كثيرة جدًا، انتظر شوية وحاول تاني';
+      // Supabase answers both a wrong code and an expired one with this.
+      case 'otp_expired':
+        return 'الكود غير صحيح أو انتهت صلاحيته';
+      case 'phone_not_confirmed':
+        return 'رقم الهاتف لم يتم تأكيده بعد';
+      case 'user_banned':
+        return 'هذا الحساب موقوف. تواصل مع الإدارة.';
+      case 'phone_exists' || 'user_already_exists':
+        return 'هذا الرقم مسجَّل بالفعل';
+      case 'sms_send_failed':
+        return 'تعذَّر إرسال الرسالة. تأكد من الرقم وحاول بعد قليل.';
+      case 'signup_disabled':
+        return 'التسجيل مغلق حاليًا';
+      case 'phone_provider_disabled' || 'otp_disabled':
+        return 'التحقق برسالة غير متاح حاليًا';
+      case 'session_expired' ||
+          'session_not_found' ||
+          'refresh_token_not_found':
+        return 'انتهت الجلسة، سجِّل الدخول مرة أخرى';
+      case 'reauthentication_needed' || 'reauthentication_not_valid':
+        return 'لازم تسجِّل الدخول من جديد قبل تغيير كلمة المرور';
     }
 
     final m = error.message.toLowerCase();
@@ -54,7 +77,10 @@ class AppException implements Exception {
         m.contains('timeout')) {
       return 'تعذَّر الاتصال بالخادم، تحقق من الإنترنت';
     }
-    return 'تعذَّر تسجيل الدخول. حاول مرة أخرى.';
+    if (m.contains('token has expired or is invalid')) {
+      return 'الكود غير صحيح أو انتهت صلاحيته';
+    }
+    return 'تعذَّرت العملية. حاول مرة أخرى.';
   }
 
   /// Error codes raised by the rpc_* functions, checked in order. More
@@ -75,6 +101,9 @@ class AppException implements Exception {
     ('FORBIDDEN_OR_NOT_CANCELLABLE', 'لا يمكن إلغاء هذا الطلب الآن'),
     ('FORBIDDEN', 'ليست لديك صلاحية لتنفيذ هذه العملية'),
     ('CANNOT_CHANGE_OWN_ACCOUNT', 'لا يمكنك تغيير صلاحية أو حالة حسابك أنت'),
+    ('OTP_SESSION_REQUIRED', 'أكِّد رقمك بالكود المرسل في رسالة أولًا'),
+    ('PHONE_NOT_VERIFIED', 'رقم الهاتف غير مؤكَّد'),
+    ('UNKNOWN_SETTING', 'إعداد غير معروف'),
     ('USER_NOT_FOUND', 'المستخدم غير موجود'),
     ('CUSTOMER_NOT_FOUND', 'العميل غير موجود'),
     (

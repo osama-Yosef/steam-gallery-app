@@ -1,9 +1,11 @@
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../../core/constants/brand.dart';
 import '../../../../core/errors/app_exception.dart';
+import '../../../../core/router/route_names.dart';
 import '../../../../core/utils/validators.dart';
 import '../providers/auth_providers.dart';
 
@@ -49,18 +51,36 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
+    if (_loading) return;
     setState(() => _loading = true);
     try {
-      await ref
+      final localPhone = _phoneCtrl.text.trim();
+      final needsVerification = await ref
           .read(authRepositoryProvider)
           .signUpCustomer(
-            localPhone: _phoneCtrl.text.trim(),
+            localPhone: localPhone,
             password: _passwordCtrl.text,
             fullName: _nameCtrl.text.trim(),
             avatarBytes: _avatarBytes,
             avatarExt: _avatarExt,
           );
-      ref.invalidate(currentUserProfileProvider);
+      if (needsVerification) {
+        // Auth has texted a code; the account only becomes usable once it's
+        // entered. The photo waits for that session too.
+        ref
+            .read(pendingOtpProvider.notifier)
+            .start(
+              OtpRequest(
+                phoneE164: Validators.toE164Egypt(localPhone),
+                purpose: OtpPurpose.signup,
+                avatarBytes: _avatarBytes,
+                avatarExt: _avatarExt,
+              ),
+            );
+        if (mounted) context.push(Routes.verifyOtp);
+      } else {
+        ref.invalidate(currentUserProfileProvider);
+      }
     } catch (e) {
       if (!mounted) return;
       final message = AppException.from(e).messageAr;

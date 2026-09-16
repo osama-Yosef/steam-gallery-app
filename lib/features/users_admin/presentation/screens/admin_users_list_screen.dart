@@ -8,6 +8,7 @@ import '../../../../core/widgets/state_views.dart';
 import '../../../auth/data/models/app_user.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
 import '../providers/users_admin_providers.dart';
+import '../widgets/phone_verification_switch.dart';
 
 class AdminUsersListScreen extends ConsumerStatefulWidget {
   const AdminUsersListScreen({super.key});
@@ -47,6 +48,10 @@ class _AdminUsersListScreenState extends ConsumerState<AdminUsersListScreen> {
       ),
       body: Column(
         children: [
+          const Card(
+            margin: EdgeInsets.fromLTRB(16, 12, 16, 0),
+            child: PhoneVerificationSwitch(),
+          ),
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
             child: TextField(

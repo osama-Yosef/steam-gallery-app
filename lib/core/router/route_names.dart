@@ -4,6 +4,13 @@ abstract final class Routes {
   static const login = '/login';
   static const register = '/register';
 
+  // Authentication (Phase 2)
+  static const forgotPassword = '/forgot-password';
+  static const verifyOtp = '/verify-otp';
+  static const resetPassword = '/reset-password';
+  static const verifyPhone = '/verify-phone';
+  static const accountSuspended = '/account-suspended';
+
   static const adminHome = '/admin';
   static const technicianHome = '/technician';
   static const customerHome = '/customer';

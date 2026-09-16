@@ -211,6 +211,27 @@ Future<void> _phase05Probe(String token) async {
   _report('customer cannot change their own phone', patch.statusCode >= 400,
       extra: 'got ${patch.statusCode}: ${patch.body}');
 
+  // Phase 2 (0031). This script signs in with a password, so its session is
+  // exactly the kind that must NOT be able to claim a verified phone.
+  final selfVerify = await _patch(
+    '/rest/v1/users?id=eq.$userId',
+    headers: {
+      'apikey': anonKey,
+      'Authorization': 'Bearer $token',
+      'Content-Type': 'application/json',
+    },
+    body: {'phone_verified_at': DateTime.now().toUtc().toIso8601String()},
+  );
+  _report('customer cannot set phone_verified_at directly', selfVerify.statusCode >= 400,
+      extra: 'got ${selfVerify.statusCode}: ${selfVerify.body}');
+  final markVerified = await _restPost('/rest/v1/rpc/rpc_mark_phone_verified', token, {});
+  _report('a password session cannot mark the phone verified',
+      markVerified.statusCode >= 400 && markVerified.body.contains('OTP_SESSION_REQUIRED'),
+      extra: 'got ${markVerified.statusCode}: ${markVerified.body}');
+  final flip = await _restPost('/rest/v1/rpc/rpc_admin_set_setting', token,
+      {'p_key': 'require_verified_phone', 'p_value': false});
+  _report('customer cannot change auth settings', flip.statusCode >= 400,
+      extra: 'got ${flip.statusCode}: ${flip.body}');
   print('');
 }
 
