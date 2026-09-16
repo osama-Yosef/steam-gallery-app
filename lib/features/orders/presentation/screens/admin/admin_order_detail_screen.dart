@@ -8,6 +8,7 @@ import '../../../../../core/widgets/state_views.dart';
 import '../../../../auth/presentation/providers/auth_providers.dart';
 import '../../../data/models/order.dart';
 import '../../../presentation/providers/order_providers.dart';
+import '../../widgets/order_status_chips.dart';
 
 class AdminOrderDetailScreen extends ConsumerWidget {
   final String orderId;
@@ -178,15 +179,24 @@ class AdminOrderDetailScreen extends ConsumerWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    'طلب #${order.orderNumber}',
-                    style: Theme.of(context).textTheme.titleLarge,
+                  Expanded(
+                    child: Text(
+                      'طلب #${order.orderNumber}',
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
                   ),
-                  Chip(label: Text(orderStatusLabelAr(order.status))),
+                  OrderStatusChip(status: order.status),
                 ],
               ),
               const SizedBox(height: 4),
               Text(Formatters.dateTime(order.createdAt)),
+              const SizedBox(height: 8),
+              // Independent of order status on purpose (0037) — an admin
+              // needs to see both facts at once.
+              Align(
+                alignment: AlignmentDirectional.centerStart,
+                child: PaymentStatusChip(status: order.paymentStatus),
+              ),
               const SizedBox(height: 12),
               customerAsync.when(
                 data: (c) => Card(

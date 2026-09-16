@@ -7,6 +7,7 @@ import '../../../../../core/widgets/state_views.dart';
 import '../../../../auth/presentation/providers/auth_providers.dart';
 import '../../../data/models/order.dart';
 import '../../../presentation/providers/order_providers.dart';
+import '../../widgets/order_status_chips.dart';
 
 class CustomerOrdersListScreen extends ConsumerWidget {
   const CustomerOrdersListScreen({super.key});
@@ -42,7 +43,15 @@ class CustomerOrdersListScreen extends ConsumerWidget {
                           subtitle: Text(
                             '${orderStatusLabelAr(o.status)} · ${Formatters.date(o.createdAt)}',
                           ),
-                          trailing: Text(Formatters.currency(o.total)),
+                          trailing: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Text(Formatters.currency(o.total)),
+                              const SizedBox(height: 2),
+                              PaymentStatusLabel(status: o.paymentStatus),
+                            ],
+                          ),
                           onTap: () =>
                               context.push(Routes.customerOrderDetail(o.id)),
                         );

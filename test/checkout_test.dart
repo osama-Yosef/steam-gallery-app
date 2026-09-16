@@ -200,6 +200,7 @@ void main() {
       'discount': 0,
       'total': 100,
       'paid_amount': 0,
+      'payment_status': 'unpaid',
       'delivery_address': 'شارع عباس العقاد',
       'delivery_recipient_name': recipient,
       'delivery_phone': phone,

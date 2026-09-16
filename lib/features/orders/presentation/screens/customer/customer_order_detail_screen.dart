@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../../core/utils/formatters.dart';
 import '../../../../../core/widgets/state_views.dart';
-import '../../../data/models/order.dart';
 import '../../../presentation/providers/order_providers.dart';
+import '../../widgets/order_status_chips.dart';
 
 class CustomerOrderDetailScreen extends ConsumerWidget {
   final String orderId;
@@ -35,17 +35,27 @@ class CustomerOrderDetailScreen extends ConsumerWidget {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(
-                            'طلب #${order.orderNumber}',
-                            style: Theme.of(context).textTheme.titleLarge,
+                          Expanded(
+                            child: Text(
+                              'طلب #${order.orderNumber}',
+                              style: Theme.of(context).textTheme.titleLarge,
+                            ),
                           ),
-                          _StatusChip(status: order.status),
+                          OrderStatusChip(status: order.status),
                         ],
                       ),
                       const SizedBox(height: 4),
                       Text(
                         Formatters.dateTime(order.createdAt),
                         style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                      const SizedBox(height: 8),
+                      // Order status and payment status are independent
+                      // facts (0037) — an order can be "جاري التجهيز" and
+                      // "مدفوع بالكامل" at the same time.
+                      Align(
+                        alignment: AlignmentDirectional.centerStart,
+                        child: PaymentStatusChip(status: order.paymentStatus),
                       ),
                       if (order.cancelledReason != null) ...[
                         const SizedBox(height: 8),
@@ -158,28 +168,6 @@ class CustomerOrderDetailScreen extends ConsumerWidget {
           Text(value, style: style),
         ],
       ),
-    );
-  }
-}
-
-class _StatusChip extends StatelessWidget {
-  final OrderStatus status;
-  const _StatusChip({required this.status});
-
-  @override
-  Widget build(BuildContext context) {
-    final color = switch (status) {
-      OrderStatus.pending => Colors.orange,
-      OrderStatus.confirmed || OrderStatus.preparing => Colors.blue,
-      OrderStatus.delivered || OrderStatus.completed => Colors.green,
-      OrderStatus.cancelled ||
-      OrderStatus.returned => Theme.of(context).colorScheme.error,
-    };
-    return Chip(
-      label: Text(orderStatusLabelAr(status)),
-      backgroundColor: color.withValues(alpha: 0.15),
-      labelStyle: TextStyle(color: color),
-      side: BorderSide.none,
     );
   }
 }

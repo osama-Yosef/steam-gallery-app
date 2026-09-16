@@ -27,6 +27,25 @@ String orderStatusLabelAr(OrderStatus s) => switch (s) {
   OrderStatus.returned => 'مرتجع',
 };
 
+/// Whether the order was PAID — independent of [OrderStatus] (0037). A
+/// cancelled-and-refunded order is `cancelled` + `refunded` at the same
+/// time; a delivered order can still be `partiallyPaid` (deferred payment).
+enum PaymentStatus { unpaid, partiallyPaid, paid, refunded }
+
+PaymentStatus paymentStatusFromString(String v) => switch (v) {
+  'partially_paid' => PaymentStatus.partiallyPaid,
+  'paid' => PaymentStatus.paid,
+  'refunded' => PaymentStatus.refunded,
+  _ => PaymentStatus.unpaid,
+};
+
+String paymentStatusLabelAr(PaymentStatus s) => switch (s) {
+  PaymentStatus.unpaid => 'غير مدفوع',
+  PaymentStatus.partiallyPaid => 'مدفوع جزئيًا',
+  PaymentStatus.paid => 'مدفوع بالكامل',
+  PaymentStatus.refunded => 'تم الاسترداد',
+};
+
 @freezed
 abstract class Order with _$Order {
   const factory Order({
@@ -38,6 +57,7 @@ abstract class Order with _$Order {
     required double discount,
     required double total,
     required double paidAmount,
+    required PaymentStatus paymentStatus,
     String? deliveryAddress,
     // Snapshotted from customer_addresses at order time (0036) — never the
     // live address row, so editing/deleting a saved address never rewrites
@@ -74,6 +94,7 @@ abstract class Order with _$Order {
     discount: (row['discount'] as num).toDouble(),
     total: (row['total'] as num).toDouble(),
     paidAmount: (row['paid_amount'] as num).toDouble(),
+    paymentStatus: paymentStatusFromString(row['payment_status'] as String),
     deliveryAddress: row['delivery_address'] as String?,
     deliveryRecipientName: row['delivery_recipient_name'] as String?,
     deliveryPhone: row['delivery_phone'] as String?,
