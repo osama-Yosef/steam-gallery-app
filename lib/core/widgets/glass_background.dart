@@ -2,7 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 
-/// App-wide backdrop: a deep navy gradient with a few large, heavily
+/// App-wide backdrop: a soft paper-to-teal gradient with a few large, heavily
 /// blurred color "blobs" behind it. Every Scaffold is transparent (see
 /// AppTheme) so this shows through everywhere — the same one-place trick
 /// used for the dark-navy rollout, now producing the glass look for free

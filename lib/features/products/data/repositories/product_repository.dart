@@ -55,6 +55,9 @@ abstract class ProductRepository {
     required int minStock,
   });
   Future<void> setProductActive(String id, bool isActive);
+
+  /// Shows the product in the home screen's "مختارات مكوجي" (0033).
+  Future<void> setProductFeatured(String id, bool isFeatured);
   Future<ProductImage> uploadProductImage(
     String productId,
     Uint8List bytes,
@@ -262,6 +265,18 @@ class SupabaseProductRepository implements ProductRepository {
             'selling_price': sellingPrice,
             'min_stock': minStock,
           })
+          .eq('id', id);
+    } catch (e) {
+      throw AppException.from(e);
+    }
+  }
+
+  @override
+  Future<void> setProductFeatured(String id, bool isFeatured) async {
+    try {
+      await _client
+          .from('products')
+          .update({'is_featured': isFeatured})
           .eq('id', id);
     } catch (e) {
       throw AppException.from(e);

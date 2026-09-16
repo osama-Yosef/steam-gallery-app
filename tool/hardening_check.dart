@@ -265,6 +265,19 @@ Future<void> _phase05Probe(String token) async {
   _report('anon cannot read coverage tables',
       anonCities.statusCode >= 400 || (jsonDecode(anonCities.body) is List && (jsonDecode(anonCities.body) as List).isEmpty),
       extra: 'got ${anonCities.statusCode}: ${anonCities.body}');
+
+  // Phase 5 (0033). Marketing content is admin-managed; offers never price.
+  final offer = await _restPost('/rest/v1/offers', token, {'title': 'probe', 'is_active': true});
+  _report('customer cannot create an offer', offer.statusCode >= 400,
+      extra: 'got ${offer.statusCode}: ${offer.body}');
+  final banner = await _restPost('/rest/v1/home_banners', token,
+      {'title': 'probe', 'image_url': 'https://example.invalid/x.jpg', 'is_active': true});
+  _report('customer cannot create a banner', banner.statusCode >= 400,
+      extra: 'got ${banner.statusCode}: ${banner.body}');
+  final anonBanners = await _restGet('/rest/v1/home_banners?select=id&limit=1', anonKey);
+  _report('anon cannot read banners',
+      anonBanners.statusCode >= 400 || (jsonDecode(anonBanners.body) is List && (jsonDecode(anonBanners.body) as List).isEmpty),
+      extra: 'got ${anonBanners.statusCode}: ${anonBanners.body}');
   print('');
 }
 

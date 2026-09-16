@@ -16,6 +16,19 @@ abstract final class Routes {
   static const customerHome = '/customer';
   static const customerAccount = '/customer/account';
 
+  // Storefront (Phase 5): «الرئيسية» is customerHome, «المتجر» is the catalog.
+  static const customerStore = '/customer/store';
+  static String customerStoreCategory(String categoryId) => Uri(
+    path: customerStore,
+    queryParameters: {'category': categoryId},
+  ).toString();
+  static String customerOffer(String id) => '/customer/offers/$id';
+  static const adminMarketing = '/admin/marketing';
+  static const adminOfferNew = '/admin/marketing/offers/new';
+  static String adminOfferEdit(String id) => '/admin/marketing/offers/$id';
+  static const adminBannerNew = '/admin/marketing/banners/new';
+  static String adminBannerEdit(String id) => '/admin/marketing/banners/$id';
+
   // Addresses & coverage (Phase 3)
   static const customerAddresses = '/customer/account/addresses';
   static const customerAddressNew = '/customer/account/addresses/new';

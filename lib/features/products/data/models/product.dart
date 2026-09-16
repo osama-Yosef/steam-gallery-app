@@ -20,6 +20,7 @@ abstract class Product with _$Product {
     required int minStock,
     required bool isActive,
     @Default(false) bool isService,
+    @Default(false) bool isFeatured,
     required DateTime createdAt,
     String? primaryImageUrl,
   }) = _Product;
@@ -42,6 +43,7 @@ abstract class Product with _$Product {
     minStock: row['min_stock'] as int? ?? 0,
     isActive: row['is_active'] as bool? ?? true,
     isService: row['is_service'] as bool? ?? false,
+    isFeatured: row['is_featured'] as bool? ?? false,
     createdAt: DateTime.parse(row['created_at'] as String),
     primaryImageUrl: _primaryImageFrom(row['product_images']),
   );

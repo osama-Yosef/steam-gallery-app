@@ -14,6 +14,7 @@ class CustomerShell extends ConsumerWidget {
   const CustomerShell({required this.navigationShell, super.key});
 
   static const _items = [
+    (icon: Icons.home_rounded, label: 'الرئيسية'),
     (icon: Icons.storefront_rounded, label: 'المتجر'),
     (icon: Icons.build_rounded, label: 'الصيانة'),
     (icon: Icons.shopping_cart_rounded, label: 'السلة'),
@@ -21,13 +22,15 @@ class CustomerShell extends ConsumerWidget {
     (icon: Icons.person_rounded, label: 'حسابي'),
   ];
 
+  static const _cartTab = 3;
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final cartCount = ref.watch(cartItemCountProvider);
 
     return PopScope(
-      // Back button/gesture from any non-"المتجر" tab steps toward the
-      // store tab first instead of doing nothing (see AdminShell).
+      // Back button/gesture from any non-"الرئيسية" tab steps toward the
+      // home tab first instead of doing nothing (see AdminShell).
       canPop: navigationShell.currentIndex == 0,
       onPopInvokedWithResult: (didPop, _) {
         if (!didPop) navigationShell.goBranch(0);
@@ -52,7 +55,7 @@ class CustomerShell extends ConsumerWidget {
                     icon: _items[i].icon,
                     label: _items[i].label,
                     selected: navigationShell.currentIndex == i,
-                    badge: i == 2 && cartCount > 0 ? cartCount : null,
+                    badge: i == _cartTab && cartCount > 0 ? cartCount : null,
                     onTap: () => navigationShell.goBranch(
                       i,
                       initialLocation: i == navigationShell.currentIndex,
@@ -92,7 +95,8 @@ class _TabItem extends StatelessWidget {
         onTap: onTap,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 180),
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          // Six tabs share a phone's width.
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(18),
             gradient: selected

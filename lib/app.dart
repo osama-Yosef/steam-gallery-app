@@ -23,8 +23,8 @@ class MokojiApp extends ConsumerWidget {
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
-      theme: AppTheme.dark(),
-      themeMode: ThemeMode.dark,
+      theme: AppTheme.light(),
+      themeMode: ThemeMode.light,
       routerConfig: router,
       builder: (context, child) => Directionality(
         textDirection: TextDirection.rtl,

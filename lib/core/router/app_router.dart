@@ -1,3 +1,4 @@
+import 'package:flutter/widgets.dart' show ValueKey;
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../features/audit_log/presentation/screens/admin_audit_log_screen.dart';
@@ -58,6 +59,11 @@ import '../../features/products/presentation/screens/customer/product_detail_scr
 import '../../features/reports/presentation/screens/admin_report_detail_screen.dart';
 import '../../features/reports/presentation/screens/admin_reports_home_screen.dart';
 import '../../features/sales/presentation/screens/admin/admin_walk_in_sale_screen.dart';
+import '../../features/storefront/presentation/screens/admin/admin_banner_editor_screen.dart';
+import '../../features/storefront/presentation/screens/admin/admin_marketing_screen.dart';
+import '../../features/storefront/presentation/screens/admin/admin_offer_editor_screen.dart';
+import '../../features/storefront/presentation/screens/customer/customer_home_screen.dart';
+import '../../features/storefront/presentation/screens/customer/offer_detail_screen.dart';
 import '../../features/technician_account/presentation/screens/technician/technician_account_history_screen.dart';
 import '../../features/technician_account/presentation/screens/technician/technician_account_screen.dart';
 import '../../features/technician_account/presentation/screens/technician/technician_sale_detail_screen.dart';
@@ -225,6 +231,33 @@ GoRouter appRouter(Ref ref) {
                             ),
                           ),
                         ],
+                      ),
+                    ],
+                  ),
+                  GoRoute(
+                    path: 'marketing',
+                    builder: (_, _) => const AdminMarketingScreen(),
+                    routes: [
+                      // "new" before ":id", which would otherwise match it.
+                      GoRoute(
+                        path: 'offers/new',
+                        builder: (_, _) => const AdminOfferEditorScreen(),
+                      ),
+                      GoRoute(
+                        path: 'offers/:id',
+                        builder: (_, state) => AdminOfferEditorScreen(
+                          offerId: state.pathParameters['id'],
+                        ),
+                      ),
+                      GoRoute(
+                        path: 'banners/new',
+                        builder: (_, _) => const AdminBannerEditorScreen(),
+                      ),
+                      GoRoute(
+                        path: 'banners/:id',
+                        builder: (_, state) => AdminBannerEditorScreen(
+                          bannerId: state.pathParameters['id'],
+                        ),
                       ),
                     ],
                   ),
@@ -514,15 +547,23 @@ GoRouter appRouter(Ref ref) {
             routes: [
               GoRoute(
                 path: Routes.customerHome,
-                builder: (_, _) => const CustomerCatalogScreen(),
-                routes: [
-                  GoRoute(
-                    path: 'product/:id',
-                    builder: (_, state) => ProductDetailScreen(
-                      productId: state.pathParameters['id']!,
-                    ),
-                  ),
-                ],
+                builder: (_, _) => const CustomerHomeScreen(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: Routes.customerStore,
+                // Keyed by the category so arriving from the home screen with
+                // a different category starts that filter fresh.
+                builder: (_, state) {
+                  final category = state.uri.queryParameters['category'];
+                  return CustomerCatalogScreen(
+                    key: ValueKey('store-$category'),
+                    initialCategoryId: category,
+                  );
+                },
               ),
             ],
           ),
@@ -609,6 +650,19 @@ GoRouter appRouter(Ref ref) {
       GoRoute(
         path: Routes.notifications,
         builder: (_, _) => const NotificationsScreen(),
+      ),
+      // Product and offer pages open full-screen over whichever customer tab
+      // they were reached from (home rows, store grid, banners, offers), so
+      // going back returns to that tab instead of jumping between branches.
+      GoRoute(
+        path: '/customer/product/:id',
+        builder: (_, state) =>
+            ProductDetailScreen(productId: state.pathParameters['id']!),
+      ),
+      GoRoute(
+        path: '/customer/offers/:id',
+        builder: (_, state) =>
+            OfferDetailScreen(offerId: state.pathParameters['id']!),
       ),
     ],
   );

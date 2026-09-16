@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'app_colors.dart';
 
-/// Single dark, glassmorphic theme — GlassBackground paints a gradient +
+/// Single light theme for every role (Mokoji identity: paper background,
+/// navy text, teal actions). GlassBackground paints a soft gradient +
 /// blurred color blobs behind the whole app (see app.dart), every Scaffold
 /// here is transparent so that shows through, and cards/inputs/app bars use
-/// a translucent "frosted" fill with a light hairline border. This is the
+/// a near-opaque white fill with a faint navy hairline. This is the
 /// same one-place-cascades-everywhere trick as the earlier dark-navy theme:
 /// no BackdropFilter blur on ordinary content cards (too expensive to apply
 /// screen-wide), just color/opacity — genuine blur is reserved for the new
@@ -17,11 +19,11 @@ import 'app_colors.dart';
 /// docs/05-flutter-architecture.md — this is a purely visual follow-up, not
 /// an architectural one.
 abstract final class AppTheme {
-  static ThemeData dark() {
+  static ThemeData light() {
     final scheme =
         ColorScheme.fromSeed(
           seedColor: AppColors.primary,
-          brightness: Brightness.dark,
+          brightness: Brightness.light,
           surface: AppColors.surface,
           onSurface: AppColors.textPrimary,
           error: AppColors.danger,
@@ -32,14 +34,14 @@ abstract final class AppTheme {
           surfaceContainerHighest: AppColors.surfaceHigh,
         );
 
-    final textTheme = ThemeData(brightness: Brightness.dark).textTheme.apply(
+    final textTheme = ThemeData(brightness: Brightness.light).textTheme.apply(
       bodyColor: AppColors.textPrimary,
       displayColor: AppColors.textPrimary,
     );
 
     return ThemeData(
       useMaterial3: true,
-      brightness: Brightness.dark,
+      brightness: Brightness.light,
       colorScheme: scheme,
       scaffoldBackgroundColor: Colors.transparent,
       // NOT transparent: canvasColor backs popup/dropdown menus (Dropdown
@@ -68,6 +70,8 @@ abstract final class AppTheme {
         surfaceTintColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
+        // Dark status-bar icons over the light background.
+        systemOverlayStyle: SystemUiOverlayStyle.dark,
       ),
       inputDecorationTheme: InputDecorationTheme(
         border: OutlineInputBorder(
@@ -86,15 +90,15 @@ abstract final class AppTheme {
         fillColor: AppColors.glassFill,
         hintStyle: const TextStyle(color: AppColors.textSecondary),
       ),
-      // Filled surfaces carrying white labels use the deep teal: the lighter
-      // `primary` teal is for text/icons and fails contrast under white text.
+      // Filled surfaces carrying white labels use the deepest teal for
+      // contrast; `primary` is for text and icons.
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.primaryDark,
           foregroundColor: Colors.white,
           padding: const EdgeInsets.symmetric(vertical: 14),
-          elevation: 8,
-          shadowColor: AppColors.primaryDark.withValues(alpha: 0.5),
+          elevation: 2,
+          shadowColor: AppColors.primaryDark.withValues(alpha: 0.3),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
@@ -105,8 +109,8 @@ abstract final class AppTheme {
           backgroundColor: AppColors.primaryDark,
           foregroundColor: Colors.white,
           padding: const EdgeInsets.symmetric(vertical: 14),
-          elevation: 8,
-          shadowColor: AppColors.primaryDark.withValues(alpha: 0.5),
+          elevation: 2,
+          shadowColor: AppColors.primaryDark.withValues(alpha: 0.3),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
@@ -157,7 +161,7 @@ abstract final class AppTheme {
       navigationBarTheme: NavigationBarThemeData(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        indicatorColor: AppColors.primary.withValues(alpha: 0.24),
+        indicatorColor: AppColors.primary.withValues(alpha: 0.14),
         labelTextStyle: WidgetStateProperty.resolveWith(
           (states) => TextStyle(
             fontSize: 12,
@@ -177,8 +181,8 @@ abstract final class AppTheme {
       floatingActionButtonTheme: FloatingActionButtonThemeData(
         backgroundColor: AppColors.primaryDark,
         foregroundColor: Colors.white,
-        elevation: 8,
-        highlightElevation: 12,
+        elevation: 3,
+        highlightElevation: 6,
       ),
     );
   }

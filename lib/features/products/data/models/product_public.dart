@@ -18,6 +18,7 @@ abstract class ProductPublic with _$ProductPublic {
     required bool isAvailable,
     required DateTime createdAt,
     String? primaryImageUrl,
+    @Default(false) bool isFeatured,
   }) = _ProductPublic;
 
   factory ProductPublic.fromRow(Map<String, dynamic> row) => ProductPublic(
@@ -37,5 +38,6 @@ abstract class ProductPublic with _$ProductPublic {
     isAvailable: row['is_available'] as bool? ?? false,
     createdAt: DateTime.parse(row['created_at'] as String),
     primaryImageUrl: row['primary_image_url'] as String?,
+    isFeatured: row['is_featured'] as bool? ?? false,
   );
 }
