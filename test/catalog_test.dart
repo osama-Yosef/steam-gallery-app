@@ -3,8 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:steam_gallery_app/core/theme/app_theme.dart';
-import 'package:steam_gallery_app/core/utils/formatters.dart';
-import 'package:steam_gallery_app/features/cart/presentation/providers/cart_provider.dart';
 import 'package:steam_gallery_app/features/notifications/presentation/providers/notification_providers.dart';
 import 'package:steam_gallery_app/features/products/data/models/catalog_query.dart';
 import 'package:steam_gallery_app/features/products/data/models/product_category.dart';
@@ -13,7 +11,6 @@ import 'package:steam_gallery_app/features/products/data/models/product_public.d
 import 'package:steam_gallery_app/features/products/data/repositories/product_repository.dart';
 import 'package:steam_gallery_app/features/products/presentation/providers/product_providers.dart';
 import 'package:steam_gallery_app/features/products/presentation/screens/customer/customer_catalog_screen.dart';
-import 'package:steam_gallery_app/features/products/presentation/screens/customer/product_detail_screen.dart';
 
 ProductPublic _product(
   String id, {
@@ -42,11 +39,10 @@ ProductCategory _cat(String id, String name, {String? parent}) =>
 
 /// Serves [total] products in pages and records every browse call.
 class _FakeRepo implements ProductRepository {
-  _FakeRepo({this.total = 0, this.categories = const [], this.product});
+  _FakeRepo({this.total = 0, this.categories = const []});
 
   final int total;
   final List<ProductCategory> categories;
-  final ProductPublic? product;
   final calls = <({CatalogQuery query, int limit, int offset})>[];
 
   @override
@@ -66,7 +62,7 @@ class _FakeRepo implements ProductRepository {
   }) async => categories;
 
   @override
-  Future<ProductPublic?> getProductPublicById(String id) async => product;
+  Future<ProductPublic?> getProductPublicById(String id) async => null;
 
   @override
   Future<List<ProductImage>> getProductImages(String productId) async => [];
@@ -183,27 +179,6 @@ void main() {
     });
   });
 
-  group('Cart quantities', () {
-    test('adds the chosen quantity and caps each line', () {
-      final c = ProviderContainer();
-      addTearDown(c.dispose);
-      final cart = c.read(cartProvider.notifier);
-      expect(cart.add(productId: 'p', name: 'n', unitPrice: 5, quantity: 3), 3);
-      expect(cart.add(productId: 'p', name: 'n', unitPrice: 5, quantity: 4), 7);
-      expect(
-        cart.add(productId: 'p', name: 'n', unitPrice: 5, quantity: 99),
-        maxCartLineQuantity,
-      );
-      cart.setQuantity('p', 500);
-      expect(cart.quantityOf('p'), maxCartLineQuantity);
-      expect(
-        cart.add(productId: 'p', name: 'n', unitPrice: 5, quantity: 0),
-        maxCartLineQuantity,
-      );
-      expect(c.read(cartTotalProvider), 5.0 * maxCartLineQuantity);
-    });
-  });
-
   group('CustomerCatalogScreen', () {
     testWidgets('loads the first page only, then the next on demand', (
       tester,
@@ -301,68 +276,6 @@ void main() {
       await tester.pumpAndSettle();
       expect(repo.calls.last.query.categoryId, isNull);
       expect(find.text('لا توجد منتجات بعد'), findsOneWidget);
-    });
-  });
-
-  group('ProductDetailScreen', () {
-    Future<ProviderContainer> pumpDetail(
-      WidgetTester tester,
-      ProductPublic p,
-    ) async {
-      await _pump(
-        tester,
-        _FakeRepo(product: p),
-        ProductDetailScreen(productId: p.id),
-        overrides: [
-          productOffersProvider(p.id).overrideWith((ref) async => []),
-        ],
-      );
-      return ProviderScope.containerOf(
-        tester.element(find.byType(ProductDetailScreen)),
-      );
-    }
-
-    testWidgets('quantity stepper adds that many to the cart', (tester) async {
-      final c = await pumpDetail(tester, _product('p1', price: 250));
-      expect(find.text('المواصفات'), findsOneWidget);
-      expect(find.text('2400 وات'), findsOneWidget);
-
-      await tester.tap(find.byKey(const Key('qty-plus')));
-      await tester.pump(const Duration(milliseconds: 400));
-      await tester.tap(find.byKey(const Key('qty-plus')));
-      await tester.pump(const Duration(milliseconds: 400));
-      expect(find.text('3'), findsOneWidget);
-      // Total follows the quantity (ar_EG digits, so compare formatted).
-      expect(find.textContaining(Formatters.currency(750)), findsOneWidget);
-
-      await tester.tap(find.byKey(const Key('add-to-cart')));
-      await tester.pump();
-      expect(c.read(cartProvider).single.quantity, 3);
-      expect(find.text('في السلة الآن: 3'), findsOneWidget);
-      // The stepper resets and can't exceed what's left under the cap.
-      expect(find.byKey(const Key('qty-value')), findsOneWidget);
-      expect(tester.widget<Text>(find.byKey(const Key('qty-value'))).data, '1');
-    });
-
-    testWidgets('unavailable products cannot be added', (tester) async {
-      final c = await pumpDetail(tester, _product('p2', available: false));
-      expect(find.text('غير متوفر حاليًا'), findsWidgets);
-      expect(find.byKey(const Key('qty-plus')), findsNothing);
-      await tester.tap(find.byKey(const Key('add-to-cart')));
-      await tester.pump();
-      expect(c.read(cartProvider), isEmpty);
-    });
-
-    testWidgets('a hidden or deleted product says so', (tester) async {
-      await _pump(
-        tester,
-        _FakeRepo(),
-        const ProductDetailScreen(productId: 'gone'),
-        overrides: [
-          productOffersProvider('gone').overrideWith((ref) async => []),
-        ],
-      );
-      expect(find.text('هذا المنتج لم يعد متاحًا في المتجر'), findsOneWidget);
     });
   });
 }

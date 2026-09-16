@@ -295,6 +295,39 @@ Future<void> _phase05Probe(String token) async {
   final anonBrowse = await _restPost('/rest/v1/rpc/rpc_browse_products', anonKey, {});
   _report('anon cannot browse', anonBrowse.statusCode >= 400,
       extra: 'got ${anonBrowse.statusCode}: ${anonBrowse.body}');
+
+  // Phase 7 (0035). Server-side cart: no direct writes, no cost column, and
+  // the server (not Flutter) enforces the per-line quantity cap.
+  final cartProduct = await _restGet('/rest/v1/products_public?select=id&limit=1', token);
+  final cartProductRows = cartProduct.statusCode == 200 ? jsonDecode(cartProduct.body) as List : const [];
+  if (cartProductRows.isEmpty) {
+    print('  SKIPPED cart checks — no product in products_public to add.');
+  } else {
+    final pid = cartProductRows.first['id'] as String;
+    final addToCart = await _restPost('/rest/v1/rpc/rpc_cart_add_item', token,
+        {'p_product_id': pid, 'p_quantity': 1});
+    _report('customer can add to their own cart', addToCart.statusCode == 200,
+        extra: 'got ${addToCart.statusCode}: ${addToCart.body}');
+    final cartBody = addToCart.statusCode == 200 ? jsonDecode(addToCart.body) as Map : const {};
+    final cartItems = (cartBody['items'] as List?) ?? const [];
+    _report('cart items carry no cost column',
+        cartItems.every((r) => !(r as Map).keys.any((k) => k.toString().contains('cost'))),
+        extra: cartBody.toString());
+    final directInsert = await _restPost('/rest/v1/cart_items', token,
+        {'customer_id': await _getUserId(token), 'product_id': pid, 'quantity': 1, 'price_seen': 0});
+    _report('customer cannot insert into cart_items directly', directInsert.statusCode >= 400,
+        extra: 'got ${directInsert.statusCode}: ${directInsert.body}');
+    final overCap = await _restPost('/rest/v1/rpc/rpc_cart_set_item', token,
+        {'p_product_id': pid, 'p_quantity': 999});
+    _report('cart quantity above the server cap is refused',
+        overCap.statusCode >= 400 && overCap.body.contains('INVALID_QUANTITY'),
+        extra: 'got ${overCap.statusCode}: ${overCap.body}');
+    final anonCart = await _restPost('/rest/v1/rpc/rpc_get_my_cart', anonKey, {});
+    _report('anon cannot read a cart', anonCart.statusCode >= 400,
+        extra: 'got ${anonCart.statusCode}: ${anonCart.body}');
+    // Leave no residue from this probe run.
+    await _restPost('/rest/v1/rpc/rpc_cart_clear', token, {});
+  }
   print('');
 }
 

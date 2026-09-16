@@ -2,10 +2,12 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../../core/errors/app_exception.dart';
 import '../../../../../core/router/route_names.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/utils/formatters.dart';
 import '../../../../../core/widgets/state_views.dart';
+import '../../../../cart/data/models/cart.dart';
 import '../../../../cart/presentation/providers/cart_provider.dart';
 import '../../../data/models/product_image.dart';
 import '../../../data/models/product_public.dart';
@@ -318,46 +320,50 @@ class _AddToCartBar extends ConsumerStatefulWidget {
 
 class _AddToCartBarState extends ConsumerState<_AddToCartBar> {
   int _quantity = 1;
+  bool _adding = false;
 
-  void _add() {
+  Future<void> _add() async {
     final p = widget.product;
     final notifier = ref.read(cartProvider.notifier);
-    final before = notifier.quantityOf(p.id);
-    final after = notifier.add(
-      productId: p.id,
-      name: p.name,
-      unitPrice: p.sellingPrice,
-      quantity: _quantity,
-    );
-    final added = after - before;
-    final messenger = ScaffoldMessenger.of(context)..hideCurrentSnackBar();
-    messenger.showSnackBar(
-      SnackBar(
-        content: Text(
-          added <= 0
-              ? 'وصلت للحد الأقصى ($maxCartLineQuantity) من هذا المنتج في السلة'
-              : added < _quantity
-              ? 'تمت إضافة $added فقط — الحد الأقصى $maxCartLineQuantity للمنتج'
-              : 'تمت إضافة $added × ${p.name} إلى السلة',
+    final before = ref.read(cartProvider).value?.quantityOf(p.id) ?? 0;
+    setState(() => _adding = true);
+    try {
+      final after = await notifier.add(p.id, quantity: _quantity);
+      final added = after.quantityOf(p.id) - before;
+      if (!mounted) return;
+      final messenger = ScaffoldMessenger.of(context)..hideCurrentSnackBar();
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(
+            added <= 0
+                ? 'وصلت للحد الأقصى ($maxCartLineQuantity) من هذا المنتج في السلة'
+                : added < _quantity
+                ? 'تمت إضافة $added فقط — الحد الأقصى $maxCartLineQuantity للمنتج'
+                : 'تمت إضافة $added × ${p.name} إلى السلة',
+          ),
+          action: SnackBarAction(
+            label: 'عرض السلة',
+            onPressed: () => context.go(Routes.customerCart),
+          ),
         ),
-        action: SnackBarAction(
-          label: 'عرض السلة',
-          onPressed: () => context.go(Routes.customerCart),
-        ),
-      ),
-    );
-    setState(() => _quantity = 1);
+      );
+      setState(() => _quantity = 1);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(AppException.from(e).messageAr)));
+      }
+    } finally {
+      if (mounted) setState(() => _adding = false);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final p = widget.product;
     final inCart = ref.watch(
-      cartProvider.select(
-        (items) => items
-            .where((e) => e.productId == p.id)
-            .fold<int>(0, (s, e) => s + e.quantity),
-      ),
+      cartProvider.select((c) => c.value?.quantityOf(p.id) ?? 0),
     );
     final room = maxCartLineQuantity - inCart;
     final maxPick = room < 1 ? 1 : room;
@@ -389,15 +395,25 @@ class _AddToCartBarState extends ConsumerState<_AddToCartBar> {
                     QuantityStepper(
                       value: _quantity,
                       max: maxPick,
-                      onChanged: (v) => setState(() => _quantity = v),
+                      onChanged: _adding
+                          ? (_) {}
+                          : (v) => setState(() => _quantity = v),
                     ),
                     const SizedBox(width: 12),
                   ],
                   Expanded(
                     child: FilledButton.icon(
                       key: const Key('add-to-cart'),
-                      onPressed: !p.isAvailable || room < 1 ? null : _add,
-                      icon: const Icon(Icons.add_shopping_cart_outlined),
+                      onPressed: !p.isAvailable || room < 1 || _adding
+                          ? null
+                          : _add,
+                      icon: _adding
+                          ? const SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Icon(Icons.add_shopping_cart_outlined),
                       label: FittedBox(
                         fit: BoxFit.scaleDown,
                         child: Text(
@@ -419,7 +435,6 @@ class _AddToCartBarState extends ConsumerState<_AddToCartBar> {
     );
   }
 }
-
 /// − value + control, bounded to [min]..[max].
 class QuantityStepper extends StatelessWidget {
   final int value;

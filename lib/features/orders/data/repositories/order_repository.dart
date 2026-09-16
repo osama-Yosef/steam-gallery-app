@@ -1,6 +1,5 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../core/errors/app_exception.dart';
-import '../../../cart/data/models/cart_item.dart';
 import '../models/order.dart';
 import '../models/order_item.dart';
 
@@ -8,9 +7,11 @@ abstract class OrderRepository {
   /// Snapshot-priced order creation via rpc_create_order. [clientRequestId]
   /// must stay the same across retries of the same checkout attempt so a
   /// flaky connection can't create duplicate orders (see NFR-11).
+  /// [items] is a plain (productId, quantity) list — decoupled from the
+  /// cart feature's own model so this repository does not depend on it.
   Future<String> createOrder({
     required String customerId,
-    required List<CartItem> items,
+    required List<({String productId, int quantity})> items,
     String? deliveryAddress,
     String? notes,
     required String clientRequestId,
@@ -41,7 +42,7 @@ class SupabaseOrderRepository implements OrderRepository {
   @override
   Future<String> createOrder({
     required String customerId,
-    required List<CartItem> items,
+    required List<({String productId, int quantity})> items,
     String? deliveryAddress,
     String? notes,
     required String clientRequestId,
