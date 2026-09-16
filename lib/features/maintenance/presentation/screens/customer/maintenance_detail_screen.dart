@@ -214,7 +214,10 @@ class MaintenanceDetailScreen extends ConsumerWidget {
                   );
                 },
               ),
-              if (isActive) ...[
+              // Once a technician has started, only an admin can cancel
+              // (enforced server-side in rpc_cancel_maintenance).
+              if (req.status == MaintenanceStatus.waiting ||
+                  req.status == MaintenanceStatus.assigned) ...[
                 const SizedBox(height: 24),
                 OutlinedButton.icon(
                   style: OutlinedButton.styleFrom(

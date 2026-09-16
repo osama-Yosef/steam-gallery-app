@@ -91,11 +91,25 @@ class SupabaseUsersAdminRepository implements UsersAdminRepository {
       );
       final data = res.data;
       if (data is Map && data['error'] != null) {
-        throw AppException(data['error'].toString());
+        throw AppException(_createUserErrorAr(data['error'].toString()));
       }
       return (data as Map)['user_id'] as String;
+    } on FunctionException catch (e) {
+      // Non-2xx responses surface here; the function returns a stable code.
+      final details = e.details;
+      final code = details is Map ? details['error']?.toString() : null;
+      throw AppException(_createUserErrorAr(code), e);
     } catch (e) {
       throw AppException.from(e);
     }
   }
+
+  static String _createUserErrorAr(String? code) => switch (code) {
+    'phone_already_registered' => 'هذا الرقم مسجَّل بالفعل',
+    'unauthorized' ||
+    'forbidden: admin only' => 'ليست لديك صلاحية لإنشاء حسابات',
+    'password must be at least 8 characters' =>
+      'كلمة المرور يجب أن تكون ٨ أحرف على الأقل',
+    _ => 'تعذَّر إنشاء الحساب. حاول مرة أخرى.',
+  };
 }

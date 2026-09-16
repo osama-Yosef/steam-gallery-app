@@ -14,6 +14,12 @@
 //      unit of stock cannot both succeed (race condition test — this DOES
 //      mutate real data: it consumes real stock and creates a real sale
 //      row. Only run it against a disposable test product/technician).
+//   4) Phase 0.5 probes (0029/0030) — read-only: no cost price reachable by a
+//      customer, internal SECURITY DEFINER helpers not callable by a customer
+//      or by anon, phone not self-editable.
+//   5) [optional, --run-order-discount-test --product-id=<uuid>] A customer
+//      cannot discount their own order through the RPC payload. This DOES
+//      create one real pending order — cancel it from the admin app after.
 //
 // Usage:
 //   dart run tool/hardening_check.dart \
@@ -61,6 +67,16 @@ Future<void> main(List<String> args) async {
 
   await _rlsProbe(customerToken);
   await _rpcProbe(customerToken);
+  await _phase05Probe(customerToken);
+
+  if (a.containsKey('run-order-discount-test')) {
+    final productId = a['product-id'];
+    if (productId == null) {
+      stderr.writeln('--run-order-discount-test needs --product-id.');
+      exit(2);
+    }
+    await _orderDiscountTest(customerToken, productId);
+  }
 
   if (a.containsKey('run-race-test')) {
     final techPhone = a['technician-phone'];
@@ -130,6 +146,106 @@ Future<void> _rpcProbe(String token) async {
     final rejected = res.statusCode == 400 || res.statusCode == 403 || res.statusCode >= 400;
     _report('customer cannot call `${entry.key}`', rejected, extra: 'got ${res.statusCode}: ${res.body}');
   }
+  print('');
+}
+
+Future<void> _phase05Probe(String token) async {
+  print('== 4) Phase 0.5 probes (0029/0030) ==');
+
+  // RLS filters a blocked SELECT to an empty list; a revoked column is a 4xx.
+  bool emptyOrDenied(HttpClientResponseLike res) {
+    if (res.statusCode >= 400) return true;
+    final body = jsonDecode(res.body);
+    return body is List && body.isEmpty;
+  }
+
+  final costQueries = {
+    'products.cost_price': '/rest/v1/products?select=id,cost_price&limit=1',
+    'order_items.unit_cost_snapshot': '/rest/v1/order_items?select=id,unit_cost_snapshot&limit=1',
+    'sale_items.unit_cost_snapshot': '/rest/v1/sale_items?select=id,unit_cost_snapshot&limit=1',
+    'daily_sales_summary.cogs': '/rest/v1/daily_sales_summary?select=day,cogs&limit=1',
+  };
+  for (final entry in costQueries.entries) {
+    final res = await _restGet(entry.value, token);
+    _report('customer cannot read `${entry.key}`', emptyOrDenied(res), extra: 'got ${res.statusCode}: ${res.body}');
+  }
+
+  // The safe views must still work for the customer (empty is fine for a
+  // customer with no orders; an error is not).
+  for (final view in ['order_items_display', 'sale_items_display', 'products_public']) {
+    final res = await _restGet('/rest/v1/$view?select=*&limit=1', token);
+    final rows = res.statusCode == 200 ? jsonDecode(res.body) : null;
+    final noCost = rows is List &&
+        rows.every((r) => (r as Map).keys.every((k) => !k.toString().contains('cost')));
+    _report('customer can read `$view` without any cost column', res.statusCode == 200 && noCost,
+        extra: 'got ${res.statusCode}: ${res.body}');
+  }
+
+  const bogus = '00000000-0000-0000-0000-000000000000';
+  final internal = <String, Map<String, dynamic>>{
+    'notify_user': {'p_user_id': bogus, 'p_type': 'probe', 'p_title': 'probe', 'p_body': 'probe', 'p_data': {}},
+    'notify_all_admins': {'p_type': 'probe', 'p_title': 'probe', 'p_body': 'probe', 'p_data': {}},
+    'post_technician_supply': {'p_supply_id': bogus},
+  };
+  for (final entry in internal.entries) {
+    final asCustomer = await _restPost('/rest/v1/rpc/${entry.key}', token, entry.value);
+    _report('customer cannot call internal `${entry.key}`', asCustomer.statusCode >= 400,
+        extra: 'got ${asCustomer.statusCode}: ${asCustomer.body}');
+    // Sending the publishable key as the bearer token makes the request anon.
+    final asAnon = await _restPost('/rest/v1/rpc/${entry.key}', anonKey, entry.value);
+    _report('anon cannot call internal `${entry.key}`', asAnon.statusCode >= 400,
+        extra: 'got ${asAnon.statusCode}: ${asAnon.body}');
+  }
+
+  final userId = await _getUserId(token);
+  final patch = await _patch(
+    '/rest/v1/users?id=eq.$userId',
+    headers: {
+      'apikey': anonKey,
+      'Authorization': 'Bearer $token',
+      'Content-Type': 'application/json',
+      'Prefer': 'return=representation',
+    },
+    body: {'phone': '+200000000000'},
+  );
+  _report('customer cannot change their own phone', patch.statusCode >= 400,
+      extra: 'got ${patch.statusCode}: ${patch.body}');
+
+  print('');
+}
+
+Future<void> _orderDiscountTest(String token, String productId) async {
+  print('== 5) Order pricing: a payload discount must be ignored ==');
+  print('  WARNING: creates one real pending order — cancel it from the admin app.');
+
+  final productRes = await _restGet('/rest/v1/products_public?select=selling_price&id=eq.$productId', token);
+  final products = jsonDecode(productRes.body) as List;
+  if (products.isEmpty) {
+    print('  SKIPPED — product $productId is not in products_public.');
+    return;
+  }
+  final price = (products.first['selling_price'] as num).toDouble();
+
+  final userId = await _getUserId(token);
+  final create = await _restPost('/rest/v1/rpc/rpc_create_order', token, {
+    'p_customer_id': userId,
+    'p_items': [
+      {'product_id': productId, 'quantity': 1, 'discount': 999999},
+    ],
+    'p_delivery_address': 'hardening probe',
+    'p_latitude': null,
+    'p_longitude': null,
+    'p_notes': 'hardening discount probe — cancel me',
+    'p_client_request_id': _fakeUuid('d'),
+  });
+  if (create.statusCode >= 300) {
+    _report('order creation succeeded for the probe', false, extra: 'got ${create.statusCode}: ${create.body}');
+    return;
+  }
+  final orderId = jsonDecode(create.body) as String;
+  final orderRes = await _restGet('/rest/v1/orders?select=total&id=eq.$orderId', token);
+  final total = ((jsonDecode(orderRes.body) as List).first['total'] as num).toDouble();
+  _report('order total uses the database price ($price), got $total', total == price);
   print('');
 }
 
@@ -249,6 +365,16 @@ Future<HttpClientResponseLike> _get(String path, {required Map<String, String> h
   final res = await req.close();
   final body = await res.transform(utf8.decoder).join();
   return HttpClientResponseLike(res.statusCode, body);
+}
+
+Future<HttpClientResponseLike> _patch(String path,
+    {required Map<String, String> headers, required Map<String, dynamic> body}) async {
+  final req = await client.patchUrl(Uri.parse('$baseUrl$path'));
+  headers.forEach(req.headers.set);
+  req.write(jsonEncode(body));
+  final res = await req.close();
+  final resBody = await res.transform(utf8.decoder).join();
+  return HttpClientResponseLike(res.statusCode, resBody);
 }
 
 Future<HttpClientResponseLike> _post(String path,

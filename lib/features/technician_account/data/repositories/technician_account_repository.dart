@@ -5,6 +5,7 @@ import '../models/sale.dart';
 import '../models/sale_item.dart';
 import '../models/technician_account_summary.dart';
 import '../models/technician_account_transaction.dart';
+import '../models/technician_supply.dart';
 
 abstract class TechnicianAccountRepository {
   /// All technicians' summaries at once — used by the admin Technicians
@@ -44,6 +45,18 @@ abstract class TechnicianAccountRepository {
     required String technicianId,
     required double amount,
     String? notes,
+  });
+
+  /// Supplies awaiting an admin's confirmation, newest first.
+  Future<List<TechnicianSupply>> getPendingSupplies(String technicianId);
+
+  /// Admin only. Approving posts the supply to the technician account and
+  /// the cashbox; rejecting requires a [reason]. Repeating the same decision
+  /// is a server-side no-op.
+  Future<void> reviewSupply({
+    required String supplyId,
+    required bool approve,
+    String? reason,
   });
 }
 
@@ -140,8 +153,11 @@ class SupabaseTechnicianAccountRepository
   @override
   Future<List<SaleItem>> getSaleItems(String saleId) async {
     try {
+      // sale_items_display, not sale_items: the customer of a maintenance
+      // invoice reads this too, and the raw table carries unit_cost_snapshot
+      // (see 0029_security_hotfix_p0.sql).
       final rows = await _client
-          .from('sale_items')
+          .from('sale_items_display')
           .select()
           .eq('sale_id', saleId);
       return rows.map(SaleItem.fromRow).toList();
@@ -199,6 +215,41 @@ class SupabaseTechnicianAccountRepository
           'p_technician_id': technicianId,
           'p_amount': amount,
           'p_notes': notes,
+        },
+      );
+    } catch (e) {
+      throw AppException.from(e);
+    }
+  }
+
+  @override
+  Future<List<TechnicianSupply>> getPendingSupplies(String technicianId) async {
+    try {
+      final rows = await _client
+          .from('technician_supplies')
+          .select()
+          .eq('technician_id', technicianId)
+          .eq('status', 'pending')
+          .order('created_at', ascending: false);
+      return rows.map(TechnicianSupply.fromRow).toList();
+    } catch (e) {
+      throw AppException.from(e);
+    }
+  }
+
+  @override
+  Future<void> reviewSupply({
+    required String supplyId,
+    required bool approve,
+    String? reason,
+  }) async {
+    try {
+      await _client.rpc(
+        'rpc_admin_review_technician_supply',
+        params: {
+          'p_supply_id': supplyId,
+          'p_approve': approve,
+          'p_reason': reason,
         },
       );
     } catch (e) {

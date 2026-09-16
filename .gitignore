@@ -63,3 +63,6 @@ supabase/.temp/
 
 # Packaged desktop builds (tool/package_windows.ps1)
 /dist/
+
+# Node tooling (tool/db_tests)
+node_modules/

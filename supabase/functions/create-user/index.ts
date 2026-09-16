@@ -87,7 +87,13 @@ Deno.serve(async (req) => {
     });
 
     if (createErr) {
-      return json({ error: createErr.message }, 400);
+      // Full detail goes to the function logs only; the client gets a stable
+      // code, never raw auth/database internals.
+      console.error("create-user: createUser failed", createErr.code, createErr.message);
+      const alreadyExists = createErr.code === "phone_exists" ||
+        createErr.code === "user_already_exists" ||
+        /already (been )?registered|already exists/i.test(createErr.message);
+      return json({ error: alreadyExists ? "phone_already_registered" : "create_user_failed" }, 400);
     }
 
     // handle_new_auth_user() trigger takes it from here: creates public.users
@@ -95,7 +101,8 @@ Deno.serve(async (req) => {
     // customer_accounts) rows automatically.
     return json({ user_id: created.user?.id }, 201);
   } catch (e) {
-    return json({ error: String(e) }, 500);
+    console.error("create-user: unexpected error", e);
+    return json({ error: "internal_error" }, 500);
   }
 });
 

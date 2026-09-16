@@ -30,6 +30,7 @@ abstract class OrderRepository {
     required double amount,
     String? orderId,
     String? notes,
+    required String clientRequestId,
   });
 }
 
@@ -146,6 +147,7 @@ class SupabaseOrderRepository implements OrderRepository {
     required double amount,
     String? orderId,
     String? notes,
+    required String clientRequestId,
   }) async {
     try {
       await _client.rpc(
@@ -155,6 +157,7 @@ class SupabaseOrderRepository implements OrderRepository {
           'p_amount': amount,
           'p_order_id': orderId,
           'p_notes': notes,
+          'p_client_request_id': clientRequestId,
         },
       );
     } catch (e) {

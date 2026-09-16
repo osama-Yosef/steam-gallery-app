@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:uuid/uuid.dart';
 import '../../../../../core/errors/app_exception.dart';
 import '../../../../../core/utils/formatters.dart';
 import '../../../../../core/widgets/confirm_dialog.dart';
@@ -112,6 +113,9 @@ class AdminOrderDetailScreen extends ConsumerWidget {
       ),
     );
     if (amount == null || amount <= 0 || !context.mounted) return;
+    // The dialog is already closed, so this call can't be re-triggered by a
+    // double tap; the key covers a retried request carrying the same entry.
+    final clientRequestId = const Uuid().v4();
     await _run(
       context,
       ref,
@@ -121,6 +125,7 @@ class AdminOrderDetailScreen extends ConsumerWidget {
             customerId: customerId,
             amount: amount,
             orderId: orderId,
+            clientRequestId: clientRequestId,
           ),
     );
   }
