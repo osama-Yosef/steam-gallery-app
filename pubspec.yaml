@@ -1,5 +1,5 @@
 name: steam_gallery_app
-description: "نظام إدارة معرض أجهزة البخار — ERP للمبيعات والمخازن والصيانة والحسابات."
+description: "مكوجي — منصة مكاوي البخار: متجر وصيانة، فوق نظام ERP للمبيعات والمخازن والحسابات."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
@@ -76,29 +76,33 @@ dev_dependencies:
   flutter_launcher_icons: ^0.14.3
   flutter_native_splash: ^2.4.4
 
+# Brand assets are generated from the Mokoji logo artwork; colours match
+# lib/core/theme/app_colors.dart (paper #F4F9FA, navy #244A61).
 flutter_launcher_icons:
   android: true
   ios: true
   image_path: "assets/icon/icon.png"
+  adaptive_icon_background: "#F4F9FA"
+  adaptive_icon_foreground: "assets/icon/icon_foreground.png"
   min_sdk_android: 21
   remove_alpha_ios: true
-  background_color_ios: "#0B1B3A"
+  background_color_ios: "#F4F9FA"
   web:
     generate: true
     image_path: "assets/icon/icon.png"
-    background_color: "#0B1B3A"
-    theme_color: "#0B1B3A"
+    background_color: "#F4F9FA"
+    theme_color: "#244A61"
   windows:
     generate: true
     image_path: "assets/icon/icon.png"
     icon_size: 256
 
 flutter_native_splash:
-  color: "#0B1B3A"
-  image: "assets/icon/icon.png"
+  color: "#F4F9FA"
+  image: "assets/brand/mokoji_splash.png"
   android_12:
-    color: "#0B1B3A"
-    image: "assets/icon/icon.png"
+    color: "#F4F9FA"
+    image: "assets/brand/mokoji_splash_android12.png"
   web: false
 
 # For information on the generic Dart part of this file, see the
@@ -112,8 +116,11 @@ flutter:
   # the material Icons class.
   uses-material-design: true
 
+  # Only what screens load at runtime; launcher/splash sources above are
+  # consumed at build time by the generators and don't need bundling.
   assets:
-    - assets/icon/icon.png
+    - assets/brand/mokoji_logo.png
+    - assets/brand/mokoji_mark.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

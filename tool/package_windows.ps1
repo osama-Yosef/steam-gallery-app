@@ -19,7 +19,7 @@ if (-not (Test-Path (Join-Path $release "steam_gallery_app.exe"))) {
   throw "No release build found. Run: flutter build windows --release"
 }
 
-$name = "MadinaSteamGallery-Windows-v$Version"
+$name = "Mokoji-Windows-v$Version"
 $stage = Join-Path $repo "$OutDir\$name"
 if (Test-Path $stage) { Remove-Item $stage -Recurse -Force }
 New-Item -ItemType Directory -Path $stage -Force | Out-Null
@@ -35,7 +35,7 @@ foreach ($dll in "msvcp140.dll", "vcruntime140.dll", "vcruntime140_1.dll") {
 }
 
 $readme = @'
-معرض المدينة المنورة لمكاوي بخار — نسخة ويندوز
+مكوجي — نسخة ويندوز
 
 التشغيل
   افتح ملف  steam_gallery_app.exe

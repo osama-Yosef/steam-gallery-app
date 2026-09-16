@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/constants/brand.dart';
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/router/route_names.dart';
 import '../../../../core/utils/validators.dart';
+import '../../../../core/widgets/brand_logo.dart';
 import '../providers/auth_providers.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -71,19 +73,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(18),
-                      child: Image.asset(
-                        'assets/icon/icon.png',
-                        width: 72,
-                        height: 72,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
+                    const Center(child: BrandLogo(width: 120)),
+                    const SizedBox(height: 16),
                     Text(
                       'تسجيل الدخول',
                       textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.headlineSmall,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      Brand.tagline,
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.bodyMedium,
                     ),
                     const SizedBox(height: 24),
                     TextFormField(

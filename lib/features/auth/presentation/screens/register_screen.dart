@@ -2,6 +2,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
+import '../../../../core/constants/brand.dart';
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/utils/validators.dart';
 import '../providers/auth_providers.dart';
@@ -74,7 +75,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('حساب جديد')),
+      appBar: AppBar(title: const Text('حساب جديد في ${Brand.name}')),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(

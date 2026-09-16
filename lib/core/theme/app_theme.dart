@@ -86,13 +86,15 @@ abstract final class AppTheme {
         fillColor: AppColors.glassFill,
         hintStyle: const TextStyle(color: AppColors.textSecondary),
       ),
+      // Filled surfaces carrying white labels use the deep teal: the lighter
+      // `primary` teal is for text/icons and fails contrast under white text.
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.primary,
+          backgroundColor: AppColors.primaryDark,
           foregroundColor: Colors.white,
           padding: const EdgeInsets.symmetric(vertical: 14),
           elevation: 8,
-          shadowColor: AppColors.primary.withValues(alpha: 0.5),
+          shadowColor: AppColors.primaryDark.withValues(alpha: 0.5),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
@@ -100,11 +102,11 @@ abstract final class AppTheme {
       ),
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
-          backgroundColor: AppColors.primary,
+          backgroundColor: AppColors.primaryDark,
           foregroundColor: Colors.white,
           padding: const EdgeInsets.symmetric(vertical: 14),
           elevation: 8,
-          shadowColor: AppColors.primary.withValues(alpha: 0.5),
+          shadowColor: AppColors.primaryDark.withValues(alpha: 0.5),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
@@ -173,7 +175,7 @@ abstract final class AppTheme {
         ),
       ),
       floatingActionButtonTheme: FloatingActionButtonThemeData(
-        backgroundColor: AppColors.primary,
+        backgroundColor: AppColors.primaryDark,
         foregroundColor: Colors.white,
         elevation: 8,
         highlightElevation: 12,

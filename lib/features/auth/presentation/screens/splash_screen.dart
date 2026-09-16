@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/constants/brand.dart';
+import '../../../../core/widgets/brand_logo.dart';
 import '../providers/auth_providers.dart';
 
 /// Shown while the router waits for [currentUserProfileProvider] to resolve
@@ -49,14 +51,12 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(24),
-              child: Image.asset('assets/icon/icon.png', width: 96, height: 96),
-            ),
+            // The logo already carries the wordmark — no separate title.
+            const BrandLogo(width: 150),
             const SizedBox(height: 16),
-            const Text(
-              'معرض المدينة المنورة لمكاوي بخار',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            Text(
+              Brand.tagline,
+              style: Theme.of(context).textTheme.bodyMedium,
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),
