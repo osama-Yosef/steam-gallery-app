@@ -16,6 +16,9 @@ abstract class StorefrontRepository {
 
   Future<List<ProductPublic>> getOfferProducts(String offerId);
 
+  /// Live offers that include [productId] (shown on the product page).
+  Future<List<Offer>> getOffersForProduct(String productId);
+
   // Admin
   Future<List<HomeBanner>> listBannersAdmin();
 
@@ -94,6 +97,23 @@ class SupabaseStorefrontRepository implements StorefrontRepository {
           .eq('id', offerId)
           .maybeSingle();
       return row == null ? null : Offer.fromRow(row);
+    } catch (e) {
+      throw AppException.from(e);
+    }
+  }
+
+  @override
+  Future<List<Offer>> getOffersForProduct(String productId) async {
+    try {
+      final rows = await _client
+          .from('offers')
+          .select('*, offer_products!inner(product_id)')
+          .eq('offer_products.product_id', productId)
+          .order('sort_order');
+      final now = DateTime.now();
+      // Customers only ever get live rows (RLS); an admin previewing the
+      // store gets every offer, so filter the same way here.
+      return rows.map(Offer.fromRow).where((o) => o.isLiveAt(now)).toList();
     } catch (e) {
       throw AppException.from(e);
     }

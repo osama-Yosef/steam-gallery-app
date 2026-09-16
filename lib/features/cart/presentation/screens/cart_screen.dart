@@ -57,9 +57,14 @@ class CartScreen extends ConsumerWidget {
                           ),
                           IconButton(
                             icon: const Icon(Icons.add_circle_outline),
-                            onPressed: () => ref
-                                .read(cartProvider.notifier)
-                                .setQuantity(item.productId, item.quantity + 1),
+                            onPressed: item.quantity >= maxCartLineQuantity
+                                ? null
+                                : () => ref
+                                      .read(cartProvider.notifier)
+                                      .setQuantity(
+                                        item.productId,
+                                        item.quantity + 1,
+                                      ),
                           ),
                           SizedBox(
                             width: 80,

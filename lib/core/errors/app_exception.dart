@@ -89,6 +89,12 @@ class AppException implements Exception {
   /// them all.
   static const List<(String, String)> _rpcErrorMessages = [
     ('INSUFFICIENT_STOCK', 'الكمية المطلوبة غير متوفرة'),
+    // Catalogue browsing (0034).
+    ('INVALID_PRICE_RANGE', 'نطاق السعر غير صحيح'),
+    ('INVALID_SORT', 'طريقة الترتيب غير مدعومة'),
+    ('INVALID_PAGE', 'تعذَّر تحميل هذه الصفحة من النتائج'),
+    ('product_categories_name_len', 'اسم القسم مطلوب ولا يزيد عن 60 حرفًا'),
+    ('product_categories_not_own_parent', 'القسم لا يمكن أن يكون تابعًا لنفسه'),
     // Setup problems the admin can actually fix — never the generic message.
     (
       'NO_MAIN_WAREHOUSE',

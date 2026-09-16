@@ -278,6 +278,23 @@ Future<void> _phase05Probe(String token) async {
   _report('anon cannot read banners',
       anonBanners.statusCode >= 400 || (jsonDecode(anonBanners.body) is List && (jsonDecode(anonBanners.body) as List).isEmpty),
       extra: 'got ${anonBanners.statusCode}: ${anonBanners.body}');
+
+  // Phase 6 (0034). Paginated browse: no cost column, sort whitelist, caps.
+  final browse = await _restPost('/rest/v1/rpc/rpc_browse_products', token, {'p_limit': 5});
+  final browseRows = browse.statusCode == 200 ? jsonDecode(browse.body) as List : const [];
+  _report('customer browses the catalogue without any cost column',
+      browse.statusCode == 200 &&
+          browseRows.every((r) => !(r as Map).keys.any((k) => k.toString().contains('cost'))),
+      extra: 'got ${browse.statusCode}: ${browse.body}');
+  final badSort = await _restPost('/rest/v1/rpc/rpc_browse_products', token, {'p_sort': 'cost_price'});
+  _report('browse refuses an unknown sort', badSort.statusCode >= 400 && badSort.body.contains('INVALID_SORT'),
+      extra: 'got ${badSort.statusCode}: ${badSort.body}');
+  final bigPage = await _restPost('/rest/v1/rpc/rpc_browse_products', token, {'p_limit': 1000});
+  _report('browse refuses pages over 50', bigPage.statusCode >= 400,
+      extra: 'got ${bigPage.statusCode}: ${bigPage.body}');
+  final anonBrowse = await _restPost('/rest/v1/rpc/rpc_browse_products', anonKey, {});
+  _report('anon cannot browse', anonBrowse.statusCode >= 400,
+      extra: 'got ${anonBrowse.statusCode}: ${anonBrowse.body}');
   print('');
 }
 
