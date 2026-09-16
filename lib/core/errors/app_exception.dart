@@ -122,6 +122,23 @@ class AppException implements Exception {
     ('INVALID_ITEM', 'بيانات أحد الأصناف غير صحيحة'),
     ('INPUT_TOO_LONG', 'أحد الحقول أطول من المسموح'),
     ('INVALID_LOCATION', 'الموقع الجغرافي غير صحيح'),
+    (
+      'LOCATION_OUTSIDE_CITY',
+      'الموقع بعيد عن المدينة المختارة — راجع المدينة أو مكان المؤشر',
+    ),
+    ('CITY_NOT_AVAILABLE', 'المدينة غير متاحة حاليًا'),
+    ('CITY_NOT_FOUND', 'المدينة غير موجودة'),
+    ('TOO_MANY_ADDRESSES', 'وصلت للحد الأقصى من العناوين (10)'),
+    ('ADDRESS_NOT_FOUND', 'العنوان غير موجود'),
+    (
+      'customer_addresses_one_default',
+      'تعذَّر تعيين العنوان الافتراضي، حاول مرة أخرى',
+    ),
+    ('cities_country_id_name_ar_key', 'توجد مدينة بنفس الاسم في هذه الدولة'),
+    (
+      'service_areas_city_id_name_ar_key',
+      'توجد منطقة بنفس الاسم في هذه المدينة',
+    ),
     ('INVALID_PHONE', 'رقم الهاتف غير صحيح'),
     ('INVALID_INPUT', 'البيانات المدخلة غير مكتملة أو غير صحيحة'),
     ('REASON_REQUIRED', 'لازم تكتب السبب'),

@@ -16,6 +16,19 @@ abstract final class Routes {
   static const customerHome = '/customer';
   static const customerAccount = '/customer/account';
 
+  // Addresses & coverage (Phase 3)
+  static const customerAddresses = '/customer/account/addresses';
+  static const customerAddressNew = '/customer/account/addresses/new';
+  static String customerAddressEdit(String id) =>
+      '/customer/account/addresses/$id';
+  static const adminServiceAreas = '/admin/service-areas';
+  static const adminCityNew = '/admin/service-areas/new-city';
+  static String adminCityAreas(String cityId) => '/admin/service-areas/$cityId';
+  static String adminServiceAreaNew(String cityId) =>
+      '/admin/service-areas/$cityId/new';
+  static String adminServiceAreaEdit(String cityId, String areaId) =>
+      '/admin/service-areas/$cityId/$areaId';
+
   // Products & Catalog (Module 2)
   static const adminProducts = '/admin/products';
   static const adminProductNew = '/admin/products/new';

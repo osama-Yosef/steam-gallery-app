@@ -232,6 +232,39 @@ Future<void> _phase05Probe(String token) async {
       {'p_key': 'require_verified_phone', 'p_value': false});
   _report('customer cannot change auth settings', flip.statusCode >= 400,
       extra: 'got ${flip.statusCode}: ${flip.body}');
+
+  // Phase 3 (0032). Addresses are RPC-only; coverage is admin-only.
+  final cities = await _restGet('/rest/v1/cities?select=id,center_latitude,center_longitude&limit=1', token);
+  final cityRows = cities.statusCode == 200 ? jsonDecode(cities.body) as List : const [];
+  if (cityRows.isEmpty) {
+    print('  (skipping address probes — no active city visible)');
+  } else {
+    final city = cityRows.first as Map;
+    final directAddress = await _restPost('/rest/v1/customer_addresses', token, {
+      'customer_id': userId,
+      'country_id': city['id'],
+      'city_id': city['id'],
+      'label': 'probe',
+      'address_line': 'hardening probe',
+      'latitude': city['center_latitude'],
+      'longitude': city['center_longitude'],
+    });
+    _report('customer cannot insert an address around the RPC', directAddress.statusCode >= 400,
+        extra: 'got ${directAddress.statusCode}: ${directAddress.body}');
+    final area = await _restPost('/rest/v1/service_areas', token, {
+      'city_id': city['id'],
+      'name_ar': 'probe',
+      'center_latitude': city['center_latitude'],
+      'center_longitude': city['center_longitude'],
+      'radius_km': 50,
+    });
+    _report('customer cannot create a service area', area.statusCode >= 400,
+        extra: 'got ${area.statusCode}: ${area.body}');
+  }
+  final anonCities = await _restGet('/rest/v1/cities?select=id&limit=1', anonKey);
+  _report('anon cannot read coverage tables',
+      anonCities.statusCode >= 400 || (jsonDecode(anonCities.body) is List && (jsonDecode(anonCities.body) as List).isEmpty),
+      extra: 'got ${anonCities.statusCode}: ${anonCities.body}');
   print('');
 }
 

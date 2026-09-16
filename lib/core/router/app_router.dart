@@ -31,6 +31,12 @@ import '../../features/inventory/presentation/screens/admin/admin_warehouse_scre
 import '../../features/inventory/presentation/screens/technician/technician_bag_screen.dart';
 import '../../features/inventory_count/presentation/screens/admin/admin_inventory_count_detail_screen.dart';
 import '../../features/inventory_count/presentation/screens/admin/admin_inventory_counts_list_screen.dart';
+import '../../features/locations/presentation/screens/admin/admin_cities_screen.dart';
+import '../../features/locations/presentation/screens/admin/admin_city_areas_screen.dart';
+import '../../features/locations/presentation/screens/admin/admin_city_editor_screen.dart';
+import '../../features/locations/presentation/screens/admin/admin_service_area_editor_screen.dart';
+import '../../features/locations/presentation/screens/customer/address_form_screen.dart';
+import '../../features/locations/presentation/screens/customer/my_addresses_screen.dart';
 import '../../features/maintenance/presentation/screens/admin/admin_maintenance_detail_screen.dart';
 import '../../features/maintenance/presentation/screens/admin/admin_maintenance_list_screen.dart';
 import '../../features/maintenance/presentation/screens/customer/customer_maintenance_home_screen.dart';
@@ -216,6 +222,38 @@ GoRouter appRouter(Ref ref) {
                             path: 'payment',
                             builder: (_, state) => AdminCustomerPaymentScreen(
                               customerId: state.pathParameters['id']!,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  GoRoute(
+                    path: 'service-areas',
+                    builder: (_, _) => const AdminCitiesScreen(),
+                    routes: [
+                      // Before ':cityId', which would otherwise match it.
+                      GoRoute(
+                        path: 'new-city',
+                        builder: (_, _) => const AdminCityEditorScreen(),
+                      ),
+                      GoRoute(
+                        path: ':cityId',
+                        builder: (_, state) => AdminCityAreasScreen(
+                          cityId: state.pathParameters['cityId']!,
+                        ),
+                        routes: [
+                          GoRoute(
+                            path: 'new',
+                            builder: (_, state) => AdminServiceAreaEditorScreen(
+                              cityId: state.pathParameters['cityId']!,
+                            ),
+                          ),
+                          GoRoute(
+                            path: ':areaId',
+                            builder: (_, state) => AdminServiceAreaEditorScreen(
+                              cityId: state.pathParameters['cityId']!,
+                              areaId: state.pathParameters['areaId'],
                             ),
                           ),
                         ],
@@ -541,6 +579,25 @@ GoRouter appRouter(Ref ref) {
               GoRoute(
                 path: Routes.customerAccount,
                 builder: (_, _) => const CustomerAccountScreen(),
+                routes: [
+                  GoRoute(
+                    path: 'addresses',
+                    builder: (_, _) => const MyAddressesScreen(),
+                    routes: [
+                      // Before ':id', which would otherwise match it.
+                      GoRoute(
+                        path: 'new',
+                        builder: (_, _) => const AddressFormScreen(),
+                      ),
+                      GoRoute(
+                        path: ':id',
+                        builder: (_, state) => AddressFormScreen(
+                          addressId: state.pathParameters['id'],
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ],
           ),

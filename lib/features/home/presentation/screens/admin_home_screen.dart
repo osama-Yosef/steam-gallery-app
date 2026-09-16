@@ -89,6 +89,12 @@ class AdminHomeScreen extends ConsumerWidget {
                 onTap: () => context.push(Routes.adminCustomers),
               ),
               _MenuTile(
+                icon: Icons.map_rounded,
+                label: 'مناطق الخدمة',
+                colors: const [Color(0xFF67A9B2), Color(0xFF2F7784)],
+                onTap: () => context.push(Routes.adminServiceAreas),
+              ),
+              _MenuTile(
                 icon: Icons.manage_accounts_rounded,
                 label: 'المستخدمون',
                 colors: const [Color(0xFF80CBC4), Color(0xFF00897B)],
