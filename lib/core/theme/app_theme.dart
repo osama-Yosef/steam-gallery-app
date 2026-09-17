@@ -13,11 +13,9 @@ import 'app_colors.dart';
 /// navigation chrome (GlassPanel: sidebar / bottom nav), see AdminShell /
 /// CustomerShell / TechnicianShell.
 ///
-/// NOTE: production polish should bundle an Arabic-first font (Cairo or
-/// Tajawal) as an asset and reference it here via `fontFamily:`. Left as the
-/// platform default for now (no network font fetch inside this build), see
-/// docs/05-flutter-architecture.md — this is a purely visual follow-up, not
-/// an architectural one.
+/// Arabic-first typography: Cairo, bundled as assets (see pubspec.yaml)
+/// rather than fetched over the network, applied once here via
+/// `ThemeData.fontFamily` so every Text widget in the app inherits it.
 abstract final class AppTheme {
   static ThemeData light() {
     final scheme =
@@ -42,6 +40,7 @@ abstract final class AppTheme {
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.light,
+      fontFamily: 'Cairo',
       colorScheme: scheme,
       scaffoldBackgroundColor: Colors.transparent,
       // NOT transparent: canvasColor backs popup/dropdown menus (Dropdown

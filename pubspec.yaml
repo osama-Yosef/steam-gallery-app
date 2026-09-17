@@ -36,6 +36,8 @@ dependencies:
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
+  # Modern outline/bold icon set used across the customer storefront UI.
+  iconsax_flutter: ^1.0.1
 
   # Backend
   supabase_flutter: ^2.8.0
@@ -128,6 +130,21 @@ flutter:
   assets:
     - assets/brand/mokoji_logo.png
     - assets/brand/mokoji_mark.png
+
+  # Cairo (SIL OFL) — bundled as assets, not fetched at runtime, so the app
+  # never needs a network font fetch (docs/05-flutter-architecture.md).
+  fonts:
+    - family: Cairo
+      fonts:
+        - asset: assets/fonts/Cairo-Regular.ttf
+        - asset: assets/fonts/Cairo-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/Cairo-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/Cairo-Bold.ttf
+          weight: 700
+        - asset: assets/fonts/Cairo-ExtraBold.ttf
+          weight: 800
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

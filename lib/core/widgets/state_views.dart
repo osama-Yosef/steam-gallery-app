@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../theme/app_colors.dart';
 
 /// The three states every async-data screen must handle explicitly
 /// (see docs/05-flutter-architecture.md §9). Pair with AsyncValue.when(...).
@@ -82,14 +83,27 @@ class EmptyView extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 56, color: Theme.of(context).colorScheme.outline),
-            const SizedBox(height: 12),
+            Container(
+              width: 100,
+              height: 100,
+              decoration: const BoxDecoration(
+                shape: BoxShape.circle,
+                color: AppColors.accentSoft,
+              ),
+              child: Icon(icon, size: 44, color: AppColors.primary),
+            ),
+            const SizedBox(height: 20),
             Text(
               message,
               textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodyLarge,
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
             ),
-            if (action != null) ...[const SizedBox(height: 16), action!],
+            if (action != null) ...[
+              const SizedBox(height: 24),
+              SizedBox(width: 240, child: action!),
+            ],
           ],
         ),
       ),
