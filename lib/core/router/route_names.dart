@@ -123,6 +123,9 @@ abstract final class Routes {
   // Walk-in sales
   static const adminWalkInSale = '/admin/walk-in-sale';
 
+  // Wallets (Phase 15 — admin financial visibility)
+  static const adminWallets = '/admin/wallets';
+
   // Customer Accounts (Module 8)
   static const adminCustomers = '/admin/customers';
   static String adminCustomerDetail(String customerId) =>

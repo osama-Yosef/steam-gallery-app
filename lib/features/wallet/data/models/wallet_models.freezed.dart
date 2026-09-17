@@ -278,6 +278,278 @@ as bool,
 }
 
 /// @nodoc
+mixin _$WalletSummary {
+
+ String get walletId; String get customerId; String get customerName; double get balance; String get currency; bool get isActive;
+/// Create a copy of WalletSummary
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$WalletSummaryCopyWith<WalletSummary> get copyWith => _$WalletSummaryCopyWithImpl<WalletSummary>(this as WalletSummary, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is WalletSummary&&(identical(other.walletId, walletId) || other.walletId == walletId)&&(identical(other.customerId, customerId) || other.customerId == customerId)&&(identical(other.customerName, customerName) || other.customerName == customerName)&&(identical(other.balance, balance) || other.balance == balance)&&(identical(other.currency, currency) || other.currency == currency)&&(identical(other.isActive, isActive) || other.isActive == isActive));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,walletId,customerId,customerName,balance,currency,isActive);
+
+@override
+String toString() {
+  return 'WalletSummary(walletId: $walletId, customerId: $customerId, customerName: $customerName, balance: $balance, currency: $currency, isActive: $isActive)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $WalletSummaryCopyWith<$Res>  {
+  factory $WalletSummaryCopyWith(WalletSummary value, $Res Function(WalletSummary) _then) = _$WalletSummaryCopyWithImpl;
+@useResult
+$Res call({
+ String walletId, String customerId, String customerName, double balance, String currency, bool isActive
+});
+
+
+
+
+}
+/// @nodoc
+class _$WalletSummaryCopyWithImpl<$Res>
+    implements $WalletSummaryCopyWith<$Res> {
+  _$WalletSummaryCopyWithImpl(this._self, this._then);
+
+  final WalletSummary _self;
+  final $Res Function(WalletSummary) _then;
+
+/// Create a copy of WalletSummary
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? walletId = null,Object? customerId = null,Object? customerName = null,Object? balance = null,Object? currency = null,Object? isActive = null,}) {
+  return _then(_self.copyWith(
+walletId: null == walletId ? _self.walletId : walletId // ignore: cast_nullable_to_non_nullable
+as String,customerId: null == customerId ? _self.customerId : customerId // ignore: cast_nullable_to_non_nullable
+as String,customerName: null == customerName ? _self.customerName : customerName // ignore: cast_nullable_to_non_nullable
+as String,balance: null == balance ? _self.balance : balance // ignore: cast_nullable_to_non_nullable
+as double,currency: null == currency ? _self.currency : currency // ignore: cast_nullable_to_non_nullable
+as String,isActive: null == isActive ? _self.isActive : isActive // ignore: cast_nullable_to_non_nullable
+as bool,
+  ));
+}
+
+}
+
+
+/// Adds pattern-matching-related methods to [WalletSummary].
+extension WalletSummaryPatterns on WalletSummary {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _WalletSummary value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _WalletSummary() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _WalletSummary value)  $default,){
+final _that = this;
+switch (_that) {
+case _WalletSummary():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _WalletSummary value)?  $default,){
+final _that = this;
+switch (_that) {
+case _WalletSummary() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String walletId,  String customerId,  String customerName,  double balance,  String currency,  bool isActive)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _WalletSummary() when $default != null:
+return $default(_that.walletId,_that.customerId,_that.customerName,_that.balance,_that.currency,_that.isActive);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String walletId,  String customerId,  String customerName,  double balance,  String currency,  bool isActive)  $default,) {final _that = this;
+switch (_that) {
+case _WalletSummary():
+return $default(_that.walletId,_that.customerId,_that.customerName,_that.balance,_that.currency,_that.isActive);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String walletId,  String customerId,  String customerName,  double balance,  String currency,  bool isActive)?  $default,) {final _that = this;
+switch (_that) {
+case _WalletSummary() when $default != null:
+return $default(_that.walletId,_that.customerId,_that.customerName,_that.balance,_that.currency,_that.isActive);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+
+
+class _WalletSummary implements WalletSummary {
+  const _WalletSummary({required this.walletId, required this.customerId, required this.customerName, required this.balance, required this.currency, required this.isActive});
+  
+
+@override final  String walletId;
+@override final  String customerId;
+@override final  String customerName;
+@override final  double balance;
+@override final  String currency;
+@override final  bool isActive;
+
+/// Create a copy of WalletSummary
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$WalletSummaryCopyWith<_WalletSummary> get copyWith => __$WalletSummaryCopyWithImpl<_WalletSummary>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _WalletSummary&&(identical(other.walletId, walletId) || other.walletId == walletId)&&(identical(other.customerId, customerId) || other.customerId == customerId)&&(identical(other.customerName, customerName) || other.customerName == customerName)&&(identical(other.balance, balance) || other.balance == balance)&&(identical(other.currency, currency) || other.currency == currency)&&(identical(other.isActive, isActive) || other.isActive == isActive));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,walletId,customerId,customerName,balance,currency,isActive);
+
+@override
+String toString() {
+  return 'WalletSummary(walletId: $walletId, customerId: $customerId, customerName: $customerName, balance: $balance, currency: $currency, isActive: $isActive)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$WalletSummaryCopyWith<$Res> implements $WalletSummaryCopyWith<$Res> {
+  factory _$WalletSummaryCopyWith(_WalletSummary value, $Res Function(_WalletSummary) _then) = __$WalletSummaryCopyWithImpl;
+@override @useResult
+$Res call({
+ String walletId, String customerId, String customerName, double balance, String currency, bool isActive
+});
+
+
+
+
+}
+/// @nodoc
+class __$WalletSummaryCopyWithImpl<$Res>
+    implements _$WalletSummaryCopyWith<$Res> {
+  __$WalletSummaryCopyWithImpl(this._self, this._then);
+
+  final _WalletSummary _self;
+  final $Res Function(_WalletSummary) _then;
+
+/// Create a copy of WalletSummary
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? walletId = null,Object? customerId = null,Object? customerName = null,Object? balance = null,Object? currency = null,Object? isActive = null,}) {
+  return _then(_WalletSummary(
+walletId: null == walletId ? _self.walletId : walletId // ignore: cast_nullable_to_non_nullable
+as String,customerId: null == customerId ? _self.customerId : customerId // ignore: cast_nullable_to_non_nullable
+as String,customerName: null == customerName ? _self.customerName : customerName // ignore: cast_nullable_to_non_nullable
+as String,balance: null == balance ? _self.balance : balance // ignore: cast_nullable_to_non_nullable
+as double,currency: null == currency ? _self.currency : currency // ignore: cast_nullable_to_non_nullable
+as String,isActive: null == isActive ? _self.isActive : isActive // ignore: cast_nullable_to_non_nullable
+as bool,
+  ));
+}
+
+
+}
+
+/// @nodoc
 mixin _$WalletTransaction {
 
  String get id; WalletTxnType get type; double get amount; double get balanceBefore; double get balanceAfter; String? get notes; DateTime get createdAt;

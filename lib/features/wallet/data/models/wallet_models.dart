@@ -45,6 +45,29 @@ String walletTxnTypeLabelAr(WalletTxnType t) => switch (t) {
   WalletTxnType.adjustment => 'تسوية',
 };
 
+/// One row of `wallet_summary` (0042) — the admin-only per-customer wallet
+/// listing. Unlike [Wallet], this always carries whose wallet it is.
+@freezed
+abstract class WalletSummary with _$WalletSummary {
+  const factory WalletSummary({
+    required String walletId,
+    required String customerId,
+    required String customerName,
+    required double balance,
+    required String currency,
+    required bool isActive,
+  }) = _WalletSummary;
+
+  factory WalletSummary.fromRow(Map<String, dynamic> row) => WalletSummary(
+    walletId: row['wallet_id'] as String,
+    customerId: row['customer_id'] as String,
+    customerName: row['customer_name'] as String,
+    balance: (row['balance'] as num).toDouble(),
+    currency: row['currency'] as String? ?? 'EGP',
+    isActive: row['is_active'] as bool? ?? true,
+  );
+}
+
 /// One immutable row of `wallet_transactions` (0040).
 @freezed
 abstract class WalletTransaction with _$WalletTransaction {

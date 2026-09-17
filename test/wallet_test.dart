@@ -84,6 +84,13 @@ class _FakeWalletRepo implements WalletRepository {
     payCalls.add((orderId: orderId, amount: amount));
     wallet = _wallet(wallet.balance - amount);
   }
+
+  @override
+  Future<List<WalletSummary>> getAllWallets({String? search}) async => [];
+
+  @override
+  Future<({double totalLiability, int walletCount})>
+  getLiabilitySummary() async => (totalLiability: 0.0, walletCount: 0);
 }
 
 class _FakePaymentRepoForWallet implements PaymentRepository {

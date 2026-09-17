@@ -74,6 +74,7 @@ import '../../features/technician_account/presentation/screens/technician/techni
 import '../../features/technician_account/presentation/screens/technician/technician_supply_screen.dart';
 import '../../features/users_admin/presentation/screens/admin_create_user_screen.dart';
 import '../../features/users_admin/presentation/screens/admin_users_list_screen.dart';
+import '../../features/wallet/presentation/screens/admin/admin_wallets_list_screen.dart';
 import '../../features/wallet/presentation/screens/customer/wallet_screen.dart';
 import '../../features/wallet/presentation/screens/customer/wallet_topup_screen.dart';
 import '../config/env.dart';
@@ -221,6 +222,10 @@ GoRouter appRouter(Ref ref) {
                   GoRoute(
                     path: 'dashboard',
                     builder: (_, _) => const AdminDashboardScreen(),
+                  ),
+                  GoRoute(
+                    path: 'wallets',
+                    builder: (_, _) => const AdminWalletsListScreen(),
                   ),
                   GoRoute(
                     path: 'customers',

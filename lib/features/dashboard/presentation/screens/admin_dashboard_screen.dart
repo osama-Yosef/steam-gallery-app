@@ -154,6 +154,12 @@ class AdminDashboardScreen extends ConsumerWidget {
                         value: MoneyText(s.monthExpenses),
                         onTap: () => context.push(Routes.adminExpenses),
                       ),
+                      _KpiCard(
+                        icon: Icons.account_balance_wallet_outlined,
+                        label: 'أرصدة محافظ العملاء',
+                        value: MoneyText(s.walletLiabilityTotal),
+                        onTap: () => context.push(Routes.adminWallets),
+                      ),
                     ],
                   );
                 },

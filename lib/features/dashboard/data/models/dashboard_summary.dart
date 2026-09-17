@@ -18,6 +18,10 @@ abstract class DashboardSummary with _$DashboardSummary {
     required double customerDebtsTotal,
     required double technicianDuesTotal,
     required double warehouseStockValue,
+    // Phase 15 — money held in customer wallets is a liability, not
+    // revenue; invisible everywhere else (wallet top-ups never touch
+    // cashbox_balances).
+    required double walletLiabilityTotal,
   }) = _DashboardSummary;
 }
 

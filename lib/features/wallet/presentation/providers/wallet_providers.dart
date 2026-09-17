@@ -28,3 +28,14 @@ class MyWallet extends _$MyWallet {
 Future<List<WalletTransaction>> myWalletTransactions(Ref ref) {
   return ref.watch(walletRepositoryProvider).getMyTransactions();
 }
+
+// ---------------------------------------------------------------- admin (Phase 15)
+@riverpod
+Future<List<WalletSummary>> adminWallets(Ref ref, {String? search}) {
+  return ref.watch(walletRepositoryProvider).getAllWallets(search: search);
+}
+
+@riverpod
+Future<({double totalLiability, int walletCount})> walletLiability(Ref ref) {
+  return ref.watch(walletRepositoryProvider).getLiabilitySummary();
+}

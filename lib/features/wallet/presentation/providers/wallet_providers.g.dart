@@ -140,3 +140,120 @@ final class MyWalletTransactionsProvider
 
 String _$myWalletTransactionsHash() =>
     r'46b2ffc8a1b3dfb106cc1427b62f6f37c59ab689';
+
+@ProviderFor(adminWallets)
+const adminWalletsProvider = AdminWalletsFamily._();
+
+final class AdminWalletsProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<List<WalletSummary>>,
+          List<WalletSummary>,
+          FutureOr<List<WalletSummary>>
+        >
+    with
+        $FutureModifier<List<WalletSummary>>,
+        $FutureProvider<List<WalletSummary>> {
+  const AdminWalletsProvider._({
+    required AdminWalletsFamily super.from,
+    required String? super.argument,
+  }) : super(
+         retry: null,
+         name: r'adminWalletsProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
+  @override
+  String debugGetCreateSourceHash() => _$adminWalletsHash();
+
+  @override
+  String toString() {
+    return r'adminWalletsProvider'
+        ''
+        '($argument)';
+  }
+
+  @$internal
+  @override
+  $FutureProviderElement<List<WalletSummary>> $createElement(
+    $ProviderPointer pointer,
+  ) => $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<List<WalletSummary>> create(Ref ref) {
+    final argument = this.argument as String?;
+    return adminWallets(ref, search: argument);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is AdminWalletsProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$adminWalletsHash() => r'15ef35dd27cefaddd404f7b3292ccd6d6342616e';
+
+final class AdminWalletsFamily extends $Family
+    with $FunctionalFamilyOverride<FutureOr<List<WalletSummary>>, String?> {
+  const AdminWalletsFamily._()
+    : super(
+        retry: null,
+        name: r'adminWalletsProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  AdminWalletsProvider call({String? search}) =>
+      AdminWalletsProvider._(argument: search, from: this);
+
+  @override
+  String toString() => r'adminWalletsProvider';
+}
+
+@ProviderFor(walletLiability)
+const walletLiabilityProvider = WalletLiabilityProvider._();
+
+final class WalletLiabilityProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<({double totalLiability, int walletCount})>,
+          ({double totalLiability, int walletCount}),
+          FutureOr<({double totalLiability, int walletCount})>
+        >
+    with
+        $FutureModifier<({double totalLiability, int walletCount})>,
+        $FutureProvider<({double totalLiability, int walletCount})> {
+  const WalletLiabilityProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'walletLiabilityProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$walletLiabilityHash();
+
+  @$internal
+  @override
+  $FutureProviderElement<({double totalLiability, int walletCount})>
+  $createElement($ProviderPointer pointer) => $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<({double totalLiability, int walletCount})> create(Ref ref) {
+    return walletLiability(ref);
+  }
+}
+
+String _$walletLiabilityHash() => r'28d98140fcefbc0e5162d6d74293c58781f369d1';

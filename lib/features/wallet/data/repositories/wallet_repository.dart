@@ -22,6 +22,10 @@ abstract class WalletRepository {
     required double amount,
     required String clientRequestId,
   });
+
+  // Admin (Phase 15)
+  Future<List<WalletSummary>> getAllWallets({String? search});
+  Future<({double totalLiability, int walletCount})> getLiabilitySummary();
 }
 
 class SupabaseWalletRepository implements WalletRepository {
@@ -88,6 +92,39 @@ class SupabaseWalletRepository implements WalletRepository {
           'p_amount': amount,
           'p_client_request_id': clientRequestId,
         },
+      );
+    } catch (e) {
+      throw AppException.from(e);
+    }
+  }
+
+  @override
+  Future<List<WalletSummary>> getAllWallets({String? search}) async {
+    try {
+      var query = _client.from('wallet_summary').select();
+      if (search != null && search.trim().isNotEmpty) {
+        query = query.ilike('customer_name', '%${search.trim()}%');
+      }
+      final rows = await query;
+      final wallets = rows.map(WalletSummary.fromRow).toList()
+        ..sort((a, b) => b.balance.compareTo(a.balance));
+      return wallets;
+    } catch (e) {
+      throw AppException.from(e);
+    }
+  }
+
+  @override
+  Future<({double totalLiability, int walletCount})>
+  getLiabilitySummary() async {
+    try {
+      final row = await _client
+          .from('wallet_liability_summary')
+          .select()
+          .maybeSingle();
+      return (
+        totalLiability: (row?['total_liability'] as num?)?.toDouble() ?? 0,
+        walletCount: (row?['wallet_count'] as num?)?.toInt() ?? 0,
       );
     } catch (e) {
       throw AppException.from(e);
