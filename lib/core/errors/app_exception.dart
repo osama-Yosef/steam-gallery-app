@@ -182,6 +182,14 @@ class AppException implements Exception {
     ('ORDER_NOT_FOUND', 'الطلب غير موجود'),
     ('ORDER_NOT_PENDING', 'لا يمكن تنفيذ هذا الإجراء على حالة الطلب الحالية'),
     ('ORDER_NOT_CANCELLABLE', 'لا يمكن إلغاء هذا الطلب في حالته الحالية'),
+    (
+      'ORDER_NOT_RETURNABLE',
+      'الاسترجاع متاح فقط للطلبات المُسلَّمة أو المكتملة',
+    ),
+    (
+      'GATEWAY_REFUND_NOT_IMPLEMENTED',
+      'استرداد دفعات بوابة الدفع غير متاح بعد',
+    ),
     ('ORDER_NOT_PAYABLE', 'لا يمكن تسجيل دفعة على طلب ملغي أو مرتجع'),
     ('ORDER_CUSTOMER_MISMATCH', 'الطلب لا يخص هذا العميل'),
     ('REQUEST_NOT_WAITING', 'طلب الصيانة لم يعد في حالة الانتظار'),

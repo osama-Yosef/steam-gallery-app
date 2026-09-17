@@ -138,6 +138,8 @@ class _FakeOrderRepo implements OrderRepository {
   @override
   Future<void> cancelOrder(String orderId, String reason) async {}
   @override
+  Future<void> returnOrder(String orderId, String reason) async {}
+  @override
   Future<void> recordPayment({
     required String customerId,
     required double amount,

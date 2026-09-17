@@ -26,6 +26,11 @@ abstract class OrderRepository {
   Future<void> confirmOrder(String orderId);
   Future<void> updateOrderStatus(String orderId, OrderStatus status);
   Future<void> cancelOrder(String orderId, String reason);
+  /// Post-delivery return (Phase 14) — restocks items and refunds through
+  /// whichever channel(s) actually paid for the order (wallet, InstaPay, or
+  /// cash), unlike [cancelOrder] this only applies to a delivered/completed
+  /// order.
+  Future<void> returnOrder(String orderId, String reason);
   Future<void> recordPayment({
     required String customerId,
     required double amount,
@@ -133,6 +138,18 @@ class SupabaseOrderRepository implements OrderRepository {
     try {
       await _client.rpc(
         'rpc_cancel_order',
+        params: {'p_order_id': orderId, 'p_reason': reason},
+      );
+    } catch (e) {
+      throw AppException.from(e);
+    }
+  }
+
+  @override
+  Future<void> returnOrder(String orderId, String reason) async {
+    try {
+      await _client.rpc(
+        'rpc_admin_return_order',
         params: {'p_order_id': orderId, 'p_reason': reason},
       );
     } catch (e) {

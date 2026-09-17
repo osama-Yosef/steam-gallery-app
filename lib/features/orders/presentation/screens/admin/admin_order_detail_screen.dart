@@ -81,6 +81,40 @@ class AdminOrderDetailScreen extends ConsumerWidget {
     );
   }
 
+  Future<void> _returnOrder(BuildContext context, WidgetRef ref) async {
+    final reasonCtrl = TextEditingController();
+    final reason = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('استرجاع الطلب'),
+        content: TextField(
+          controller: reasonCtrl,
+          decoration: const InputDecoration(labelText: 'سبب الاسترجاع'),
+          autofocus: true,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('تراجع'),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: Theme.of(ctx).colorScheme.error,
+            ),
+            onPressed: () => Navigator.of(ctx).pop(reasonCtrl.text.trim()),
+            child: const Text('تأكيد الاسترجاع'),
+          ),
+        ],
+      ),
+    );
+    if (reason == null || reason.isEmpty || !context.mounted) return;
+    await _run(
+      context,
+      ref,
+      () => ref.read(orderRepositoryProvider).returnOrder(orderId, reason),
+    );
+  }
+
   Future<void> _recordPayment(
     BuildContext context,
     WidgetRef ref,
@@ -334,6 +368,18 @@ class AdminOrderDetailScreen extends ConsumerWidget {
                       onPressed: () => _cancel(context, ref),
                       icon: const Icon(Icons.cancel_outlined),
                       label: const Text('إلغاء الطلب'),
+                    ),
+                  if ([
+                    OrderStatus.delivered,
+                    OrderStatus.completed,
+                  ].contains(order.status))
+                    OutlinedButton.icon(
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Theme.of(context).colorScheme.error,
+                      ),
+                      onPressed: () => _returnOrder(context, ref),
+                      icon: const Icon(Icons.assignment_return_outlined),
+                      label: const Text('استرجاع الطلب'),
                     ),
                 ],
               ),
