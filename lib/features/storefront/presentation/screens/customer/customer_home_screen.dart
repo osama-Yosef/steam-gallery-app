@@ -3,14 +3,13 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:iconsax_flutter/iconsax_flutter.dart';
 import '../../../../../core/constants/brand.dart';
 import '../../../../../core/router/route_names.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/widgets/state_views.dart';
 import '../../../../auth/presentation/providers/auth_providers.dart';
-import '../../../../locations/presentation/providers/locations_providers.dart';
 import '../../../../notifications/presentation/widgets/notification_bell_icon.dart';
-import '../../../../products/data/models/product_category.dart';
 import '../../../../products/data/models/product_public.dart';
 import '../../../../products/presentation/widgets/product_card.dart';
 import '../../../data/models/storefront_models.dart';
@@ -18,6 +17,13 @@ import '../../providers/storefront_providers.dart';
 
 /// «الرئيسية»: where the customer lands. Sections with nothing in them are
 /// simply not shown, so an empty catalogue still looks deliberate.
+///
+/// Layout (redesigned per the user's 2026-09-17 request): a plain branded
+/// app bar, a proper greeting header, then a single "hero" slot right under
+/// the name — live offers if there are any, otherwise the maintenance CTA
+/// (never both at once, so the hero slot is never empty and never doubled
+/// up). The old address/coverage bar and the categories row are gone;
+/// "newest" now sits where categories used to.
 class CustomerHomeScreen extends ConsumerWidget {
   const CustomerHomeScreen({super.key});
 
@@ -30,16 +36,11 @@ class CustomerHomeScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         centerTitle: false,
-        title: Text(
-          firstName == null || firstName.isEmpty
-              ? Brand.name
-              : 'أهلًا، $firstName',
-        ),
+        title: Text(Brand.name),
         actions: const [NotificationBellIcon()],
       ),
       body: RefreshIndicator(
         onRefresh: () async {
-          ref.invalidate(myAddressesProvider);
           ref.invalidate(customerHomeProvider);
           await ref.read(customerHomeProvider.future);
         },
@@ -57,24 +58,25 @@ class CustomerHomeScreen extends ConsumerWidget {
           data: (home) => ListView(
             padding: const EdgeInsets.only(bottom: 24),
             children: [
-              const _DeliveryBar(),
+              _GreetingHeader(firstName: firstName),
+              if (home.offers.isNotEmpty)
+                _Offers(home.offers)
+              else
+                const _MaintenanceCard(),
               if (home.banners.isNotEmpty) _BannerCarousel(home.banners),
               const _QuickActions(),
-              if (home.categories.isNotEmpty) _Categories(home.categories),
-              if (home.offers.isNotEmpty) _Offers(home.offers),
-              if (home.featured.isNotEmpty)
-                _ProductRow(
-                  key: const Key('home-featured'),
-                  title: 'مختارات مكوجي',
-                  products: home.featured,
-                ),
               if (home.newest.isNotEmpty)
                 _ProductRow(
                   key: const Key('home-newest'),
                   title: 'وصل حديثًا',
                   products: home.newest,
                 ),
-              const _MaintenanceCard(),
+              if (home.featured.isNotEmpty)
+                _ProductRow(
+                  key: const Key('home-featured'),
+                  title: 'مختارات مكوجي',
+                  products: home.featured,
+                ),
             ],
           ),
         ),
@@ -123,63 +125,23 @@ class _SectionHeader extends StatelessWidget {
   }
 }
 
-/// "التوصيل إلى: المنزل — الخدمة متاحة" from the default address, so coverage
-/// is visible before anything goes in the cart.
-class _DeliveryBar extends ConsumerWidget {
-  const _DeliveryBar();
+/// The proper "أهلًا، اسم" greeting — this is the section that replaced the
+/// old address/coverage bar; the app bar itself now just carries the brand.
+class _GreetingHeader extends StatelessWidget {
+  final String? firstName;
+  const _GreetingHeader({required this.firstName});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final addresses = ref.watch(myAddressesProvider).value;
-    if (addresses == null) return const SizedBox(height: 8);
-    final address = addresses.where((a) => a.isDefault).firstOrNull;
-
-    final (IconData icon, Color color, String line) = address == null
-        ? (
-            Icons.add_location_alt_outlined,
-            AppColors.primary,
-            'أضف عنوانك لنعرف لو الخدمة متاحة عندك',
-          )
-        : address.isServiceable
-        ? (
-            Icons.check_circle,
-            AppColors.success,
-            'التوصيل إلى ${address.label} — الخدمة متاحة',
-          )
-        : (
-            Icons.info_outline,
-            AppColors.warning,
-            'التوصيل إلى ${address.label} — المنطقة غير مغطاة حاليًا',
-          );
-
+  Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 4, 16, 4),
-      child: Material(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(14),
-        child: InkWell(
-          key: const Key('home-delivery-bar'),
-          borderRadius: BorderRadius.circular(14),
-          onTap: () => context.push(Routes.customerAddresses),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-            child: Row(
-              children: [
-                Icon(icon, color: color, size: 20),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    line,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(color: color, fontWeight: FontWeight.w600),
-                  ),
-                ),
-                const Icon(Icons.chevron_left, size: 20),
-              ],
-            ),
-          ),
-        ),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
+      child: Text(
+        firstName == null || firstName!.isEmpty
+            ? 'أهلًا بيك 👋'
+            : 'أهلًا، $firstName 👋',
+        style: Theme.of(
+          context,
+        ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
       ),
     );
   }
@@ -298,22 +260,22 @@ class _QuickActions extends StatelessWidget {
   Widget build(BuildContext context) {
     final actions = [
       (
-        icon: Icons.build_circle_outlined,
+        icon: Iconsax.setting_2_copy,
         label: 'طلب صيانة',
         onTap: () => context.push(Routes.customerMaintenanceNew),
       ),
       (
-        icon: Icons.storefront_outlined,
+        icon: Iconsax.shop_copy,
         label: 'كل المنتجات',
         onTap: () => context.go(Routes.customerStore),
       ),
       (
-        icon: Icons.receipt_long_outlined,
+        icon: Iconsax.receipt_text_copy,
         label: 'طلباتي',
         onTap: () => context.go(Routes.customerOrders),
       ),
       (
-        icon: Icons.home_work_outlined,
+        icon: Iconsax.location_copy,
         label: 'عناويني',
         onTap: () => context.push(Routes.customerAddresses),
       ),
@@ -355,70 +317,6 @@ class _QuickActions extends StatelessWidget {
             ),
         ],
       ),
-    );
-  }
-}
-
-class _Categories extends StatelessWidget {
-  final List<ProductCategory> categories;
-  const _Categories(this.categories);
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        _SectionHeader(
-          'الأقسام',
-          actionLabel: 'الكل',
-          onAction: () => context.go(Routes.customerStore),
-        ),
-        SizedBox(
-          height: 104,
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            itemCount: categories.length,
-            separatorBuilder: (_, _) => const SizedBox(width: 12),
-            itemBuilder: (context, i) {
-              final c = categories[i];
-              return InkWell(
-                borderRadius: BorderRadius.circular(16),
-                onTap: () => context.go(Routes.customerStoreCategory(c.id)),
-                child: SizedBox(
-                  width: 76,
-                  child: Column(
-                    children: [
-                      CircleAvatar(
-                        radius: 32,
-                        backgroundColor: AppColors.surface,
-                        backgroundImage: c.imageUrl == null
-                            ? null
-                            : CachedNetworkImageProvider(c.imageUrl!),
-                        child: c.imageUrl == null
-                            ? const Icon(
-                                Icons.category_outlined,
-                                color: AppColors.primary,
-                              )
-                            : null,
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        c.name,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: AppColors.textPrimary,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            },
-          ),
-        ),
-      ],
     );
   }
 }
@@ -588,7 +486,7 @@ class _MaintenanceCard extends StatelessWidget {
         child: Row(
           children: [
             const Icon(
-              Icons.handyman_rounded,
+              Iconsax.setting_2_copy,
               color: AppColors.brandGold,
               size: 40,
             ),
