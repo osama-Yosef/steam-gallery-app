@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:iconsax_flutter/iconsax_flutter.dart';
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/router/route_names.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -91,10 +92,10 @@ class _CartScreenState extends ConsumerState<CartScreen> {
           if (cart.isEmpty) {
             return EmptyView(
               message: 'السلة فارغة',
-              icon: Icons.shopping_cart_outlined,
+              icon: Iconsax.shopping_cart_copy,
               action: FilledButton.icon(
                 onPressed: () => context.go(Routes.customerStore),
-                icon: const Icon(Icons.storefront_outlined),
+                icon: const Icon(Iconsax.shop_copy),
                 label: const Text('تصفح المتجر'),
               ),
             );
