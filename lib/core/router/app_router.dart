@@ -74,6 +74,8 @@ import '../../features/technician_account/presentation/screens/technician/techni
 import '../../features/technician_account/presentation/screens/technician/technician_supply_screen.dart';
 import '../../features/users_admin/presentation/screens/admin_create_user_screen.dart';
 import '../../features/users_admin/presentation/screens/admin_users_list_screen.dart';
+import '../../features/wallet/presentation/screens/customer/wallet_screen.dart';
+import '../../features/wallet/presentation/screens/customer/wallet_topup_screen.dart';
 import '../config/env.dart';
 import '../navigation/admin_shell.dart';
 import '../navigation/customer_shell.dart';
@@ -641,6 +643,16 @@ GoRouter appRouter(Ref ref) {
                         builder: (_, state) => AddressFormScreen(
                           addressId: state.pathParameters['id'],
                         ),
+                      ),
+                    ],
+                  ),
+                  GoRoute(
+                    path: 'wallet',
+                    builder: (_, _) => const WalletScreen(),
+                    routes: [
+                      GoRoute(
+                        path: 'topup',
+                        builder: (_, _) => const WalletTopupScreen(),
                       ),
                     ],
                   ),

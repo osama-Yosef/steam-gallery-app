@@ -109,6 +109,20 @@ class CustomerAccountScreen extends ConsumerWidget {
             ),
           ],
           const SizedBox(height: 16),
+          GlassPanel(
+            borderRadius: BorderRadius.circular(18),
+            padding: const EdgeInsets.symmetric(vertical: 4),
+            child: ListTile(
+              leading: const Icon(
+                Icons.account_balance_wallet_outlined,
+                color: AppColors.primaryDark,
+              ),
+              title: const Text('المحفظة'),
+              trailing: const Icon(Icons.chevron_left),
+              onTap: () => context.push(Routes.customerWallet),
+            ),
+          ),
+          const SizedBox(height: 16),
           const _LocationSection(),
           const SizedBox(height: 24),
           OutlinedButton.icon(

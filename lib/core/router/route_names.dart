@@ -15,6 +15,8 @@ abstract final class Routes {
   static const technicianHome = '/technician';
   static const customerHome = '/customer';
   static const customerAccount = '/customer/account';
+  static const customerWallet = '/customer/account/wallet';
+  static const customerWalletTopup = '/customer/account/wallet/topup';
 
   // Storefront (Phase 5): «الرئيسية» is customerHome, «المتجر» is the catalog.
   static const customerStore = '/customer/store';

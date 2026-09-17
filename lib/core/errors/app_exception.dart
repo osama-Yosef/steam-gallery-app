@@ -117,6 +117,8 @@ class AppException implements Exception {
       'PAYMENT_NOT_PENDING_VERIFICATION',
       'التحويل ده اتراجع قبل كدا',
     ),
+    // Wallet (0040).
+    ('INSUFFICIENT_WALLET_BALANCE', 'رصيد محفظتك مش كافي لدفع المبلغ ده'),
     // Setup problems the admin can actually fix — never the generic message.
     (
       'NO_MAIN_WAREHOUSE',
