@@ -51,6 +51,8 @@ import '../../features/orders/presentation/screens/admin/admin_orders_list_scree
 import '../../features/orders/presentation/screens/customer/checkout_screen.dart';
 import '../../features/orders/presentation/screens/customer/customer_order_detail_screen.dart';
 import '../../features/orders/presentation/screens/customer/customer_orders_list_screen.dart';
+import '../../features/payments/presentation/screens/admin/admin_instapay_review_screen.dart';
+import '../../features/payments/presentation/screens/customer/instapay_payment_screen.dart';
 import '../../features/products/presentation/screens/admin/admin_category_list_screen.dart';
 import '../../features/products/presentation/screens/admin/admin_product_form_screen.dart';
 import '../../features/products/presentation/screens/admin/admin_product_list_screen.dart';
@@ -197,6 +199,10 @@ GoRouter appRouter(Ref ref) {
                   GoRoute(
                     path: 'walk-in-sale',
                     builder: (_, _) => const AdminWalkInSaleScreen(),
+                  ),
+                  GoRoute(
+                    path: 'instapay',
+                    builder: (_, _) => const AdminInstapayReviewScreen(),
                   ),
                   GoRoute(
                     path: 'reports',
@@ -663,6 +669,12 @@ GoRouter appRouter(Ref ref) {
         path: '/customer/offers/:id',
         builder: (_, state) =>
             OfferDetailScreen(offerId: state.pathParameters['id']!),
+      ),
+      GoRoute(
+        path: '/customer/orders/:id/instapay',
+        builder: (_, state) => InstapayPaymentScreen(
+          orderId: state.pathParameters['id']!,
+        ),
       ),
     ],
   );

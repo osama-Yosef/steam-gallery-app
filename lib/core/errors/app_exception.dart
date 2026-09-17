@@ -101,6 +101,22 @@ class AppException implements Exception {
       'ADDRESS_NOT_SERVICEABLE',
       'المنطقة دي غير مغطاة حاليًا — اختر عنوانًا تانيًا',
     ),
+    // InstaPay manual verification (0039).
+    ('REFERENCE_REQUIRED', 'اكتب رقم أو مرجع العملية'),
+    ('PROOF_REQUIRED', 'أرفق صورة إثبات التحويل'),
+    ('INVALID_PROOF_PATH', 'تعذَّر التحقق من صورة الإثبات — أعد المحاولة'),
+    (
+      'VERIFICATION_ALREADY_PENDING',
+      'في تحويل بانتظار المراجعة لنفس الطلب بالفعل',
+    ),
+    (
+      'DUPLICATE_REFERENCE_OR_REQUEST',
+      'المرجع ده مُسجَّل قبل كدا',
+    ),
+    (
+      'PAYMENT_NOT_PENDING_VERIFICATION',
+      'التحويل ده اتراجع قبل كدا',
+    ),
     // Setup problems the admin can actually fix — never the generic message.
     (
       'NO_MAIN_WAREHOUSE',

@@ -112,6 +112,12 @@ class AdminHomeScreen extends ConsumerWidget {
                 colors: const [Color(0xFFBCAAA4), Color(0xFF6D4C41)],
                 onTap: () => context.push(Routes.adminAuditLog),
               ),
+              _MenuTile(
+                icon: Icons.account_balance_outlined,
+                label: 'مراجعة InstaPay',
+                colors: const [Color(0xFF9575CD), Color(0xFF5E35B1)],
+                onTap: () => context.push(Routes.adminInstapayReview),
+              ),
             ],
           );
         },

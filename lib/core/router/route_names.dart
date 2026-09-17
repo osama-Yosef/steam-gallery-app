@@ -54,8 +54,11 @@ abstract final class Routes {
   static const customerCheckout = '/customer/checkout';
   static const customerOrders = '/customer/orders';
   static String customerOrderDetail(String id) => '/customer/orders/$id';
+  static String customerInstapayPayment(String orderId) =>
+      '/customer/orders/$orderId/instapay';
   static const adminOrders = '/admin/orders';
   static String adminOrderDetail(String id) => '/admin/orders/$id';
+  static const adminInstapayReview = '/admin/instapay';
 
   // Maintenance (Module 4)
   static const customerMaintenance = '/customer/maintenance';

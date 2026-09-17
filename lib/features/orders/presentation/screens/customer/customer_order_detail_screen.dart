@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import '../../../../../core/router/route_names.dart';
 import '../../../../../core/utils/formatters.dart';
 import '../../../../../core/widgets/state_views.dart';
+import '../../../data/models/order.dart';
 import '../../../presentation/providers/order_providers.dart';
 import '../../widgets/order_status_chips.dart';
 
@@ -116,6 +119,21 @@ class CustomerOrderDetailScreen extends ConsumerWidget {
                   ),
                 ),
               ),
+              if (order.remaining > 0 &&
+                  order.paymentStatus != PaymentStatus.refunded &&
+                  ![
+                    OrderStatus.cancelled,
+                    OrderStatus.returned,
+                  ].contains(order.status)) ...[
+                const SizedBox(height: 12),
+                OutlinedButton.icon(
+                  onPressed: () => context.push(
+                    Routes.customerInstapayPayment(order.id),
+                  ),
+                  icon: const Icon(Icons.account_balance_outlined),
+                  label: const Text('ادفع عبر InstaPay'),
+                ),
+              ],
               if (order.deliveryAddress != null) ...[
                 const SizedBox(height: 16),
                 Text(
