@@ -1,27 +1,226 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:iconsax_flutter/iconsax_flutter.dart';
 import '../../../../core/router/route_names.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/money_text.dart';
 import '../../../../core/widgets/state_views.dart';
 import '../providers/dashboard_providers.dart';
 import '../widgets/revenue_trend_chart.dart';
 
-class AdminDashboardScreen extends ConsumerWidget {
-  const AdminDashboardScreen({super.key});
+/// The KPI grid + revenue chart, with no Scaffold of its own — embedded
+/// directly at the top of [AdminHomeScreen] (the user asked for the
+/// dashboard to be the admin's actual landing page, not a separate tile),
+/// and also still reachable as its own route for a direct/bookmarked link.
+class DashboardOverview extends ConsumerWidget {
+  const DashboardOverview({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final summaryAsync = ref.watch(dashboardSummaryProvider);
     final trendAsync = ref.watch(dashboardRevenueTrendProvider);
 
+    return summaryAsync.when(
+      loading: () => const SizedBox(
+        height: 300,
+        child: LoadingView(),
+      ),
+      error: (e, _) => SizedBox(
+        height: 220,
+        child: ErrorView(
+          message: 'تعذَّر تحميل بيانات اللوحة',
+          onRetry: () => ref.invalidate(dashboardSummaryProvider),
+        ),
+      ),
+      data: (s) => Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _KpiCard(
+            icon: Iconsax.wallet_money_copy,
+            colors: const [AppColors.brandTeal, AppColors.primaryDark],
+            label: 'رصيد الخزنة',
+            value: MoneyText(
+              s.cashboxBalance,
+              style: Theme.of(
+                context,
+              ).textTheme.headlineSmall?.copyWith(color: Colors.white),
+            ),
+            onTap: () => context.push(Routes.adminCashbox),
+            highlight: true,
+          ),
+          const SizedBox(height: 14),
+          LayoutBuilder(
+            builder: (context, c) {
+              // Width-driven rather than a fixed column count, so the grid
+              // stays 2-up on a phone (where the admin rail already eats a
+              // big slice of the width) and spreads out on a desktop window
+              // instead of stretching two cards across a whole monitor.
+              // Computed explicitly rather than via GridView.extent, whose
+              // ceil() can drop a narrow phone to a single column.
+              final columns = (c.maxWidth / 210).floor().clamp(2, 6);
+              return GridView.count(
+                crossAxisCount: columns,
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                mainAxisSpacing: 14,
+                crossAxisSpacing: 14,
+                childAspectRatio: 1.15,
+                children: [
+                  _KpiCard(
+                    icon: Iconsax.calendar_1_copy,
+                    colors: const [Color(0xFF6D8CFF), Color(0xFF3B5BFF)],
+                    label: 'مبيعات اليوم',
+                    value: MoneyText(s.todayRevenue),
+                  ),
+                  _KpiCard(
+                    icon: Iconsax.trend_up_copy,
+                    colors: const [Color(0xFF34D399), Color(0xFF059669)],
+                    label: 'صافي ربح اليوم',
+                    value: MoneyText(s.todayNetProfit, colorBySign: true),
+                  ),
+                  _KpiCard(
+                    icon: Iconsax.calendar_copy,
+                    colors: const [Color(0xFF6D8CFF), Color(0xFF3B5BFF)],
+                    label: 'مبيعات الشهر',
+                    value: MoneyText(s.monthRevenue),
+                  ),
+                  _KpiCard(
+                    icon: Iconsax.chart_success_copy,
+                    colors: const [Color(0xFF34D399), Color(0xFF059669)],
+                    label: 'صافي ربح الشهر',
+                    value: MoneyText(s.monthNetProfit, colorBySign: true),
+                  ),
+                  _KpiCard(
+                    icon: Iconsax.receipt_text_copy,
+                    colors: const [Color(0xFFB07CFF), Color(0xFF7C4DFF)],
+                    label: 'طلبات جديدة',
+                    value: Text(
+                      '${s.pendingOrdersCount}',
+                      style: Theme.of(context).textTheme.headlineSmall,
+                    ),
+                    onTap: () => context.push(Routes.adminOrders),
+                  ),
+                  _KpiCard(
+                    icon: Iconsax.setting_2_copy,
+                    colors: const [Color(0xFFFBBF24), Color(0xFFF59E0B)],
+                    label: 'صيانات نشطة',
+                    value: Text(
+                      '${s.activeMaintenanceCount}',
+                      style: Theme.of(context).textTheme.headlineSmall,
+                    ),
+                    onTap: () => context.push(Routes.adminMaintenance),
+                  ),
+                  _KpiCard(
+                    icon: Iconsax.warning_2_copy,
+                    colors: const [Color(0xFFFF8A65), Color(0xFFE64A19)],
+                    label: 'منتجات منخفضة',
+                    value: Text(
+                      '${s.lowStockCount}',
+                      style: Theme.of(context).textTheme.headlineSmall,
+                    ),
+                    onTap: () => context.push(Routes.adminWarehouse),
+                  ),
+                  _KpiCard(
+                    icon: Iconsax.profile_2user_copy,
+                    colors: const [Color(0xFF80CBC4), Color(0xFF00897B)],
+                    label: 'الصنايعية النشطون',
+                    value: Text(
+                      '${s.activeTechniciansCount}',
+                      style: Theme.of(context).textTheme.headlineSmall,
+                    ),
+                  ),
+                  _KpiCard(
+                    icon: Iconsax.people_copy,
+                    colors: const [Color(0xFFF48FB1), Color(0xFFEC407A)],
+                    label: 'ديون العملاء',
+                    value: MoneyText(s.customerDebtsTotal),
+                    onTap: () => context.push(Routes.adminCustomers),
+                  ),
+                  _KpiCard(
+                    icon: Iconsax.card_receive_copy,
+                    colors: const [Color(0xFF9575CD), Color(0xFF5E35B1)],
+                    label: 'مستحقات الصنايعية',
+                    value: MoneyText(s.technicianDuesTotal),
+                    onTap: () => context.push(Routes.adminTechnicianBags),
+                  ),
+                  _KpiCard(
+                    icon: Iconsax.buildings_2_copy,
+                    colors: const [Color(0xFF34D399), Color(0xFF10B981)],
+                    label: 'قيمة المخزون',
+                    value: MoneyText(s.warehouseStockValue),
+                    onTap: () => context.push(Routes.adminWarehouse),
+                  ),
+                  _KpiCard(
+                    icon: Iconsax.card_remove_copy,
+                    colors: const [Color(0xFFFF7A7A), Color(0xFFDC2626)],
+                    label: 'مصروفات الشهر',
+                    value: MoneyText(s.monthExpenses),
+                    onTap: () => context.push(Routes.adminExpenses),
+                  ),
+                  _KpiCard(
+                    icon: Iconsax.wallet_2_copy,
+                    colors: const [Color(0xFF64B5F6), Color(0xFF1976D2)],
+                    label: 'أرصدة محافظ العملاء',
+                    value: MoneyText(s.walletLiabilityTotal),
+                    onTap: () => context.push(Routes.adminWallets),
+                  ),
+                ],
+              );
+            },
+          ),
+          const SizedBox(height: 16),
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(
+                    'مبيعات آخر 7 أيام',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  const SizedBox(height: 12),
+                  trendAsync.when(
+                    loading: () =>
+                        const SizedBox(height: 140, child: LoadingView()),
+                    error: (e, _) => const SizedBox(
+                      height: 140,
+                      child: Center(child: Text('تعذَّر تحميل الرسم')),
+                    ),
+                    data: (points) => RevenueTrendChart(points: points),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          FilledButton.tonalIcon(
+            onPressed: () => context.push(Routes.adminReports),
+            icon: const Icon(Iconsax.chart_2_copy),
+            label: const Text('التقارير التفصيلية'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Standalone wrapper kept for a direct/bookmarked `/admin/dashboard` link;
+/// [AdminHomeScreen] embeds [DashboardOverview] itself and is the normal way
+/// admins reach this.
+class AdminDashboardScreen extends ConsumerWidget {
+  const AdminDashboardScreen({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('لوحة التحكم'),
         actions: [
           IconButton(
             tooltip: 'تحديث',
-            icon: const Icon(Icons.refresh),
+            icon: const Icon(Iconsax.refresh_copy),
             onPressed: () {
               ref.invalidate(dashboardSummaryProvider);
               ref.invalidate(dashboardRevenueTrendProvider);
@@ -29,182 +228,27 @@ class AdminDashboardScreen extends ConsumerWidget {
           ),
         ],
       ),
-      body: summaryAsync.when(
-        loading: () => const LoadingView(),
-        error: (e, _) => ErrorView(
-          message: 'تعذَّر تحميل بيانات اللوحة',
-          onRetry: () => ref.invalidate(dashboardSummaryProvider),
-        ),
-        data: (s) => RefreshIndicator(
-          onRefresh: () async {
-            ref.invalidate(dashboardSummaryProvider);
-            ref.invalidate(dashboardRevenueTrendProvider);
-          },
-          child: ListView(
-            padding: const EdgeInsets.all(16),
-            children: [
-              _KpiCard(
-                icon: Icons.account_balance_wallet_outlined,
-                label: 'رصيد الخزنة',
-                value: MoneyText(
-                  s.cashboxBalance,
-                  style: Theme.of(context).textTheme.headlineSmall,
-                ),
-                onTap: () => context.push(Routes.adminCashbox),
-                highlight: true,
-              ),
-              const SizedBox(height: 12),
-              LayoutBuilder(
-                builder: (context, c) {
-                  // Width-driven rather than a fixed column count, so the grid
-                  // stays 2-up on a phone (where the admin rail already eats a
-                  // big slice of the width) and spreads out on a desktop window
-                  // instead of stretching two cards across a whole monitor.
-                  // Computed explicitly rather than via GridView.extent, whose
-                  // ceil() can drop a narrow phone to a single column.
-                  final columns = (c.maxWidth / 210).floor().clamp(2, 6);
-                  // Narrow columns stack the icon above the label (see
-                  // _KpiCard) and so need proportionally more height; wide
-                  // ones keep the compact icon-beside-label row.
-                  final aspect = columns >= 4 ? 1.7 : 0.8;
-                  return GridView.count(
-                    crossAxisCount: columns,
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    mainAxisSpacing: 12,
-                    crossAxisSpacing: 12,
-                    childAspectRatio: aspect,
-                    children: [
-                      _KpiCard(
-                        icon: Icons.today_outlined,
-                        label: 'مبيعات اليوم',
-                        value: MoneyText(s.todayRevenue),
-                      ),
-                      _KpiCard(
-                        icon: Icons.trending_up,
-                        label: 'صافي ربح اليوم',
-                        value: MoneyText(s.todayNetProfit, colorBySign: true),
-                      ),
-                      _KpiCard(
-                        icon: Icons.calendar_month_outlined,
-                        label: 'مبيعات الشهر',
-                        value: MoneyText(s.monthRevenue),
-                      ),
-                      _KpiCard(
-                        icon: Icons.savings_outlined,
-                        label: 'صافي ربح الشهر',
-                        value: MoneyText(s.monthNetProfit, colorBySign: true),
-                      ),
-                      _KpiCard(
-                        icon: Icons.receipt_long_outlined,
-                        label: 'طلبات جديدة',
-                        value: Text(
-                          '${s.pendingOrdersCount}',
-                          style: Theme.of(context).textTheme.headlineSmall,
-                        ),
-                        onTap: () => context.push(Routes.adminOrders),
-                      ),
-                      _KpiCard(
-                        icon: Icons.build_outlined,
-                        label: 'صيانات نشطة',
-                        value: Text(
-                          '${s.activeMaintenanceCount}',
-                          style: Theme.of(context).textTheme.headlineSmall,
-                        ),
-                        onTap: () => context.push(Routes.adminMaintenance),
-                      ),
-                      _KpiCard(
-                        icon: Icons.warning_amber_outlined,
-                        label: 'منتجات منخفضة',
-                        value: Text(
-                          '${s.lowStockCount}',
-                          style: Theme.of(context).textTheme.headlineSmall,
-                        ),
-                        onTap: () => context.push(Routes.adminWarehouse),
-                      ),
-                      _KpiCard(
-                        icon: Icons.engineering_outlined,
-                        label: 'الصنايعية النشطون',
-                        value: Text(
-                          '${s.activeTechniciansCount}',
-                          style: Theme.of(context).textTheme.headlineSmall,
-                        ),
-                      ),
-                      _KpiCard(
-                        icon: Icons.people_outline,
-                        label: 'ديون العملاء',
-                        value: MoneyText(s.customerDebtsTotal),
-                        onTap: () => context.push(Routes.adminCustomers),
-                      ),
-                      _KpiCard(
-                        icon: Icons.handshake_outlined,
-                        label: 'مستحقات الصنايعية',
-                        value: MoneyText(s.technicianDuesTotal),
-                        onTap: () => context.push(Routes.adminTechnicianBags),
-                      ),
-                      _KpiCard(
-                        icon: Icons.inventory_2_outlined,
-                        label: 'قيمة المخزون',
-                        value: MoneyText(s.warehouseStockValue),
-                        onTap: () => context.push(Routes.adminWarehouse),
-                      ),
-                      _KpiCard(
-                        icon: Icons.remove_circle_outline,
-                        label: 'مصروفات الشهر',
-                        value: MoneyText(s.monthExpenses),
-                        onTap: () => context.push(Routes.adminExpenses),
-                      ),
-                      _KpiCard(
-                        icon: Icons.account_balance_wallet_outlined,
-                        label: 'أرصدة محافظ العملاء',
-                        value: MoneyText(s.walletLiabilityTotal),
-                        onTap: () => context.push(Routes.adminWallets),
-                      ),
-                    ],
-                  );
-                },
-              ),
-              const SizedBox(height: 16),
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Text(
-                        'مبيعات آخر 7 أيام',
-                        style: Theme.of(context).textTheme.titleMedium,
-                      ),
-                      const SizedBox(height: 12),
-                      trendAsync.when(
-                        loading: () =>
-                            const SizedBox(height: 140, child: LoadingView()),
-                        error: (e, _) => const SizedBox(
-                          height: 140,
-                          child: Center(child: Text('تعذَّر تحميل الرسم')),
-                        ),
-                        data: (points) => RevenueTrendChart(points: points),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              FilledButton.tonalIcon(
-                onPressed: () => context.push(Routes.adminReports),
-                icon: const Icon(Icons.bar_chart_outlined),
-                label: const Text('التقارير التفصيلية'),
-              ),
-            ],
-          ),
+      body: RefreshIndicator(
+        onRefresh: () async {
+          ref.invalidate(dashboardSummaryProvider);
+          ref.invalidate(dashboardRevenueTrendProvider);
+        },
+        child: ListView(
+          padding: const EdgeInsets.all(16),
+          children: const [DashboardOverview()],
         ),
       ),
     );
   }
 }
 
+/// A KPI tile with a colour-coded icon badge — same visual language as the
+/// section-menu tiles below it on [AdminHomeScreen], so the whole screen
+/// reads as one designed surface instead of two different UI styles glued
+/// together.
 class _KpiCard extends StatelessWidget {
   final IconData icon;
+  final List<Color> colors;
   final String label;
   final Widget value;
   final VoidCallback? onTap;
@@ -212,6 +256,7 @@ class _KpiCard extends StatelessWidget {
 
   const _KpiCard({
     required this.icon,
+    required this.colors,
     required this.label,
     required this.value,
     this.onTap,
@@ -220,64 +265,119 @@ class _KpiCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
+    if (highlight) {
+      return _HighlightCard(icon: icon, colors: colors, label: label, value: value, onTap: onTap);
+    }
     return Card(
-      color: highlight ? scheme.primaryContainer : null,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(20),
         child: Padding(
-          // The grid gives every card a fixed height, so this content has to
-          // fit whatever height is left after the device's font scale is
-          // applied — hence the tighter padding, the Flexible rows, and the
-          // scale-down on the value. Without them the count cards ("طلبات
-          // جديدة", "صيانات نشطة", …) overflowed on a phone with enlarged
-          // system text.
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          padding: const EdgeInsets.all(14),
           child: LayoutBuilder(
             builder: (context, c) {
-              // Beside the icon a long label like "الصنايعية النشطون" only
-              // gets ~75px on a phone (the admin rail takes a big bite out of
-              // the width) and ellipsises mid-word. Below a threshold, put the
-              // icon on its own line so the label gets the card's full width.
-              final stacked = c.maxWidth < 150;
-              final labelText = Text(
-                label,
-                style: Theme.of(context).textTheme.bodySmall,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              );
-
+              final badgeSize = c.maxWidth < 150 ? 34.0 : 38.0;
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
-                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  if (stacked) ...[
-                    Icon(icon, size: 18),
-                    const SizedBox(height: 2),
-                    Flexible(child: labelText),
-                  ] else
-                    Flexible(
-                      child: Row(
-                        children: [
-                          Icon(icon, size: 20),
-                          const SizedBox(width: 6),
-                          Expanded(child: labelText),
-                        ],
+                  Container(
+                    width: badgeSize,
+                    height: badgeSize,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: LinearGradient(
+                        colors: colors,
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
                       ),
                     ),
-                  const SizedBox(height: 6),
-                  Flexible(
-                    child: FittedBox(
-                      fit: BoxFit.scaleDown,
-                      alignment: AlignmentDirectional.centerStart,
-                      child: value,
-                    ),
+                    child: Icon(icon, color: Colors.white, size: badgeSize * 0.5),
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    label,
+                    style: Theme.of(context).textTheme.bodySmall,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 4),
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: AlignmentDirectional.centerStart,
+                    child: value,
                   ),
                 ],
               );
             },
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _HighlightCard extends StatelessWidget {
+  final IconData icon;
+  final List<Color> colors;
+  final String label;
+  final Widget value;
+  final VoidCallback? onTap;
+
+  const _HighlightCard({
+    required this.icon,
+    required this.colors,
+    required this.label,
+    required this.value,
+    this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(24),
+      child: Material(
+        child: InkWell(
+          onTap: onTap,
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: colors,
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+            ),
+            padding: const EdgeInsets.all(20),
+            child: Row(
+              children: [
+                Container(
+                  width: 52,
+                  height: 52,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.white.withValues(alpha: 0.18),
+                  ),
+                  child: Icon(icon, color: Colors.white, size: 26),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        label,
+                        style: const TextStyle(
+                          color: Colors.white70,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      value,
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
