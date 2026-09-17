@@ -1,0 +1,12 @@
+{
+  "name": "steam-gallery-db-tests",
+  "private": true,
+  "type": "module",
+  "description": "Runs every Supabase migration on PGlite (Postgres in WASM, no Docker) and exercises RLS/RPC security and ledger behaviour.",
+  "scripts": {
+    "test": "node phase05_security_test.mjs && node phase2_auth_test.mjs && node phase3_locations_test.mjs && node phase5_storefront_test.mjs && node phase6_catalog_test.mjs && node phase7_cart_test.mjs && node phase8_checkout_test.mjs && node phase9_orders_test.mjs && node phase10_payment_architecture_test.mjs && node phase12_instapay_test.mjs && node phase13_wallet_test.mjs && node phase14_refunds_test.mjs && node phase15_wallet_admin_reporting_test.mjs"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "^0.3.0"
+  }
+}

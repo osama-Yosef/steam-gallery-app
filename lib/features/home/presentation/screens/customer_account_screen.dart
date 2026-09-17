@@ -2,17 +2,21 @@ import 'dart:typed_data';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../../core/errors/app_exception.dart';
+import '../../../../core/router/route_names.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/confirm_dialog.dart';
 import '../../../../core/widgets/glass_panel.dart';
 import '../../../auth/data/models/app_user.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
+import '../../../locations/data/models/location_models.dart';
+import '../../../locations/presentation/providers/locations_providers.dart';
 
 /// Customer's "حسابي" tab — home for the logout action now that the old
 /// catalog-screen AppBar icons moved into CustomerShell's bottom nav, plus
-/// self-service profile editing (name / photo).
+/// self-service profile editing (name / photo), city and addresses.
 class CustomerAccountScreen extends ConsumerWidget {
   const CustomerAccountScreen({super.key});
 
@@ -22,92 +26,124 @@ class CustomerAccountScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(title: const Text('حسابي')),
-      body: Padding(
+      // A list, not a Column: the account page keeps growing (addresses,
+      // city, verification) and must scroll on small phones.
+      body: ListView(
         padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            GlassPanel(
-              borderRadius: BorderRadius.circular(22),
-              padding: const EdgeInsets.all(20),
-              child: Row(
-                children: [
-                  Container(
-                    width: 52,
-                    height: 52,
-                    decoration: const BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: LinearGradient(
-                        colors: [AppColors.primary, AppColors.accent],
-                      ),
+        children: [
+          GlassPanel(
+            borderRadius: BorderRadius.circular(22),
+            padding: const EdgeInsets.all(20),
+            child: Row(
+              children: [
+                Container(
+                  width: 52,
+                  height: 52,
+                  decoration: const BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: LinearGradient(
+                      colors: [AppColors.primary, AppColors.accent],
                     ),
-                    child: ClipOval(
-                      child: profile?.avatarUrl == null
-                          ? const Icon(
+                  ),
+                  child: ClipOval(
+                    child: profile?.avatarUrl == null
+                        ? const Icon(
+                            Icons.person_rounded,
+                            color: Colors.white,
+                            size: 28,
+                          )
+                        : CachedNetworkImage(
+                            imageUrl: profile!.avatarUrl!,
+                            fit: BoxFit.cover,
+                            width: 52,
+                            height: 52,
+                            errorWidget: (_, _, _) => const Icon(
                               Icons.person_rounded,
                               color: Colors.white,
                               size: 28,
-                            )
-                          : CachedNetworkImage(
-                              imageUrl: profile!.avatarUrl!,
-                              fit: BoxFit.cover,
-                              width: 52,
-                              height: 52,
-                              errorWidget: (_, _, _) => const Icon(
-                                Icons.person_rounded,
-                                color: Colors.white,
-                                size: 28,
-                              ),
                             ),
-                    ),
-                  ),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          profile?.fullName ?? '',
-                          style: Theme.of(context).textTheme.titleMedium,
-                        ),
-                        if (profile?.phone != null)
-                          Text(
-                            profile!.phone!,
-                            style: Theme.of(context).textTheme.bodySmall,
                           ),
-                      ],
-                    ),
                   ),
-                  if (profile != null)
-                    IconButton(
-                      icon: const Icon(Icons.edit_outlined),
-                      tooltip: 'تعديل الحساب',
-                      onPressed: () => _showEditSheet(context, ref, profile),
-                    ),
-                ],
-              ),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        profile?.fullName ?? '',
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                      if (profile?.phone != null)
+                        Text(
+                          profile!.phone!,
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                    ],
+                  ),
+                ),
+                if (profile != null)
+                  IconButton(
+                    icon: const Icon(Icons.edit_outlined),
+                    tooltip: 'تعديل الحساب',
+                    onPressed: () => _showEditSheet(context, ref, profile),
+                  ),
+              ],
             ),
-            const SizedBox(height: 24),
-            OutlinedButton.icon(
-              onPressed: () async {
-                final confirmed = await showConfirmDialog(
-                  context,
-                  title: 'تسجيل الخروج',
-                  message: 'هل تريد تسجيل الخروج من حسابك؟',
-                );
-                if (confirmed) await ref.read(authRepositoryProvider).signOut();
-              },
-              icon: const Icon(Icons.logout_rounded, color: AppColors.danger),
-              label: const Text(
-                'تسجيل الخروج',
-                style: TextStyle(color: AppColors.danger),
-              ),
-              style: OutlinedButton.styleFrom(
-                side: const BorderSide(color: AppColors.danger),
+          ),
+          if (profile != null && !profile.isPhoneVerified) ...[
+            const SizedBox(height: 16),
+            GlassPanel(
+              borderRadius: BorderRadius.circular(18),
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              child: ListTile(
+                leading: const Icon(
+                  Icons.verified_user_outlined,
+                  color: AppColors.warning,
+                ),
+                title: const Text('أكِّد رقم هاتفك'),
+                subtitle: const Text('خطوة سريعة بكود في رسالة لحماية حسابك'),
+                trailing: const Icon(Icons.chevron_left),
+                onTap: () => context.push(Routes.verifyPhone),
               ),
             ),
           ],
-        ),
+          const SizedBox(height: 16),
+          GlassPanel(
+            borderRadius: BorderRadius.circular(18),
+            padding: const EdgeInsets.symmetric(vertical: 4),
+            child: ListTile(
+              leading: const Icon(
+                Icons.account_balance_wallet_outlined,
+                color: AppColors.primaryDark,
+              ),
+              title: const Text('المحفظة'),
+              trailing: const Icon(Icons.chevron_left),
+              onTap: () => context.push(Routes.customerWallet),
+            ),
+          ),
+          const SizedBox(height: 16),
+          const _LocationSection(),
+          const SizedBox(height: 24),
+          OutlinedButton.icon(
+            onPressed: () async {
+              final confirmed = await showConfirmDialog(
+                context,
+                title: 'تسجيل الخروج',
+                message: 'هل تريد تسجيل الخروج من حسابك؟',
+              );
+              if (confirmed) await ref.read(authRepositoryProvider).signOut();
+            },
+            icon: const Icon(Icons.logout_rounded, color: AppColors.danger),
+            label: const Text(
+              'تسجيل الخروج',
+              style: TextStyle(color: AppColors.danger),
+            ),
+            style: OutlinedButton.styleFrom(
+              side: const BorderSide(color: AppColors.danger),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -231,6 +267,111 @@ class _EditProfileSheetState extends ConsumerState<_EditProfileSheet> {
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
                 : const Text('حفظ'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Country, city and saved addresses. Country is shown, not chosen: the
+/// launch is Egypt-only, and the city list already comes from active
+/// countries only.
+class _LocationSection extends ConsumerWidget {
+  const _LocationSection();
+
+  Future<void> _pickCity(
+    BuildContext context,
+    WidgetRef ref,
+    List<City> cities,
+    String? current,
+  ) async {
+    final picked = await showModalBottomSheet<String>(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: ListView(
+          shrinkWrap: true,
+          children: [
+            const Padding(
+              padding: EdgeInsets.all(16),
+              child: Text('اختر مدينتك', textAlign: TextAlign.center),
+            ),
+            for (final c in cities)
+              ListTile(
+                title: Text(c.nameAr),
+                trailing: c.id == current ? const Icon(Icons.check) : null,
+                onTap: () => Navigator.of(ctx).pop(c.id),
+              ),
+          ],
+        ),
+      ),
+    );
+    if (picked == null || picked == current || !context.mounted) return;
+    try {
+      await ref.read(locationsRepositoryProvider).setMyCity(picked);
+      ref.invalidate(myCityIdProvider);
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(AppException.from(e).messageAr)));
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final cities = ref.watch(citiesProvider()).value ?? const <City>[];
+    final countries = ref.watch(countriesProvider).value ?? const <Country>[];
+    final myCityId = ref.watch(myCityIdProvider).value;
+    final addresses = ref.watch(myAddressesProvider).value;
+    final city = cities.where((c) => c.id == myCityId).firstOrNull;
+    final country = city == null
+        ? countries.firstOrNull
+        : countries.where((c) => c.id == city.countryId).firstOrNull;
+
+    final addressCount = addresses?.length;
+    final defaultAddress = addresses?.where((a) => a.isDefault).firstOrNull;
+
+    return GlassPanel(
+      borderRadius: BorderRadius.circular(18),
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Column(
+        children: [
+          ListTile(
+            leading: const Icon(Icons.flag_outlined),
+            title: const Text('الدولة'),
+            trailing: Text(country?.nameAr ?? '—'),
+          ),
+          const Divider(height: 1),
+          ListTile(
+            key: const Key('account-city'),
+            leading: const Icon(Icons.location_city_outlined),
+            title: const Text('المدينة'),
+            subtitle: Text(city?.nameAr ?? 'لم تُحدَّد'),
+            trailing: const Icon(Icons.chevron_left),
+            onTap: cities.isEmpty
+                ? null
+                : () => _pickCity(context, ref, cities, myCityId),
+          ),
+          const Divider(height: 1),
+          ListTile(
+            key: const Key('account-addresses'),
+            leading: const Icon(Icons.home_work_outlined),
+            title: Text(
+              addressCount == null || addressCount == 0
+                  ? 'عناويني'
+                  : 'عناويني ($addressCount)',
+            ),
+            subtitle: Text(
+              defaultAddress == null
+                  ? 'أضف عنوانك لنعرف لو الخدمة متاحة عندك'
+                  : '${defaultAddress.label} — ${defaultAddress.addressLine}',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            trailing: const Icon(Icons.chevron_left),
+            onTap: () => context.push(Routes.customerAddresses),
           ),
         ],
       ),

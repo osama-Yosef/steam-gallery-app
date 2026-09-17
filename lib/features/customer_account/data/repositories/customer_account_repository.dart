@@ -10,10 +10,13 @@ abstract class CustomerAccountRepository {
 
   Future<List<CustomerAccountTransaction>> getTransactions(String customerId);
 
+  /// [clientRequestId] must stay the same across retries of one payment
+  /// entry so a double-tap or flaky connection can't record it twice.
   Future<void> recordPayment({
     required String customerId,
     required double amount,
     String? notes,
+    required String clientRequestId,
   });
 }
 
@@ -72,6 +75,7 @@ class SupabaseCustomerAccountRepository implements CustomerAccountRepository {
     required String customerId,
     required double amount,
     String? notes,
+    required String clientRequestId,
   }) async {
     try {
       await _client.rpc(
@@ -81,6 +85,7 @@ class SupabaseCustomerAccountRepository implements CustomerAccountRepository {
           'p_amount': amount,
           'p_order_id': null,
           'p_notes': notes,
+          'p_client_request_id': clientRequestId,
         },
       );
     } catch (e) {

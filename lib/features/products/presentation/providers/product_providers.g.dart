@@ -133,10 +133,120 @@ final class CategoriesFamily extends $Family
   String toString() => r'categoriesProvider';
 }
 
-@ProviderFor(customerProducts)
-const customerProductsProvider = CustomerProductsFamily._();
+/// Paginated store results for one [CatalogQuery]: the first page loads on
+/// watch, [loadMore] appends the next one (infinite scroll).
 
-final class CustomerProductsProvider
+@ProviderFor(CatalogProducts)
+const catalogProductsProvider = CatalogProductsFamily._();
+
+/// Paginated store results for one [CatalogQuery]: the first page loads on
+/// watch, [loadMore] appends the next one (infinite scroll).
+final class CatalogProductsProvider
+    extends $AsyncNotifierProvider<CatalogProducts, CatalogPage> {
+  /// Paginated store results for one [CatalogQuery]: the first page loads on
+  /// watch, [loadMore] appends the next one (infinite scroll).
+  const CatalogProductsProvider._({
+    required CatalogProductsFamily super.from,
+    required CatalogQuery super.argument,
+  }) : super(
+         retry: null,
+         name: r'catalogProductsProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
+  @override
+  String debugGetCreateSourceHash() => _$catalogProductsHash();
+
+  @override
+  String toString() {
+    return r'catalogProductsProvider'
+        ''
+        '($argument)';
+  }
+
+  @$internal
+  @override
+  CatalogProducts create() => CatalogProducts();
+
+  @override
+  bool operator ==(Object other) {
+    return other is CatalogProductsProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$catalogProductsHash() => r'7a93a74f014e1469766d96b06b7e234be9b28952';
+
+/// Paginated store results for one [CatalogQuery]: the first page loads on
+/// watch, [loadMore] appends the next one (infinite scroll).
+
+final class CatalogProductsFamily extends $Family
+    with
+        $ClassFamilyOverride<
+          CatalogProducts,
+          AsyncValue<CatalogPage>,
+          CatalogPage,
+          FutureOr<CatalogPage>,
+          CatalogQuery
+        > {
+  const CatalogProductsFamily._()
+    : super(
+        retry: null,
+        name: r'catalogProductsProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  /// Paginated store results for one [CatalogQuery]: the first page loads on
+  /// watch, [loadMore] appends the next one (infinite scroll).
+
+  CatalogProductsProvider call(CatalogQuery query) =>
+      CatalogProductsProvider._(argument: query, from: this);
+
+  @override
+  String toString() => r'catalogProductsProvider';
+}
+
+/// Paginated store results for one [CatalogQuery]: the first page loads on
+/// watch, [loadMore] appends the next one (infinite scroll).
+
+abstract class _$CatalogProducts extends $AsyncNotifier<CatalogPage> {
+  late final _$args = ref.$arg as CatalogQuery;
+  CatalogQuery get query => _$args;
+
+  FutureOr<CatalogPage> build(CatalogQuery query);
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final created = build(_$args);
+    final ref = this.ref as $Ref<AsyncValue<CatalogPage>, CatalogPage>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<AsyncValue<CatalogPage>, CatalogPage>,
+              AsyncValue<CatalogPage>,
+              Object?,
+              Object?
+            >;
+    element.handleValue(ref, created);
+  }
+}
+
+/// «منتجات مشابهة»: same category, the product itself excluded.
+
+@ProviderFor(relatedProducts)
+const relatedProductsProvider = RelatedProductsFamily._();
+
+/// «منتجات مشابهة»: same category, the product itself excluded.
+
+final class RelatedProductsProvider
     extends
         $FunctionalProvider<
           AsyncValue<List<ProductPublic>>,
@@ -146,23 +256,24 @@ final class CustomerProductsProvider
     with
         $FutureModifier<List<ProductPublic>>,
         $FutureProvider<List<ProductPublic>> {
-  const CustomerProductsProvider._({
-    required CustomerProductsFamily super.from,
-    required ({String? search, String? categoryId}) super.argument,
+  /// «منتجات مشابهة»: same category, the product itself excluded.
+  const RelatedProductsProvider._({
+    required RelatedProductsFamily super.from,
+    required ({String productId, String categoryId}) super.argument,
   }) : super(
          retry: null,
-         name: r'customerProductsProvider',
+         name: r'relatedProductsProvider',
          isAutoDispose: true,
          dependencies: null,
          $allTransitiveDependencies: null,
        );
 
   @override
-  String debugGetCreateSourceHash() => _$customerProductsHash();
+  String debugGetCreateSourceHash() => _$relatedProductsHash();
 
   @override
   String toString() {
-    return r'customerProductsProvider'
+    return r'relatedProductsProvider'
         ''
         '$argument';
   }
@@ -175,17 +286,17 @@ final class CustomerProductsProvider
 
   @override
   FutureOr<List<ProductPublic>> create(Ref ref) {
-    final argument = this.argument as ({String? search, String? categoryId});
-    return customerProducts(
+    final argument = this.argument as ({String productId, String categoryId});
+    return relatedProducts(
       ref,
-      search: argument.search,
+      productId: argument.productId,
       categoryId: argument.categoryId,
     );
   }
 
   @override
   bool operator ==(Object other) {
-    return other is CustomerProductsProvider && other.argument == argument;
+    return other is RelatedProductsProvider && other.argument == argument;
   }
 
   @override
@@ -194,31 +305,121 @@ final class CustomerProductsProvider
   }
 }
 
-String _$customerProductsHash() => r'e2a474bed455595103ec442ae8867d65312b8fd5';
+String _$relatedProductsHash() => r'6af0c7d00f2b01ea2e67b9cfa85576cf1c0dda90';
 
-final class CustomerProductsFamily extends $Family
+/// «منتجات مشابهة»: same category, the product itself excluded.
+
+final class RelatedProductsFamily extends $Family
     with
         $FunctionalFamilyOverride<
           FutureOr<List<ProductPublic>>,
-          ({String? search, String? categoryId})
+          ({String productId, String categoryId})
         > {
-  const CustomerProductsFamily._()
+  const RelatedProductsFamily._()
     : super(
         retry: null,
-        name: r'customerProductsProvider',
+        name: r'relatedProductsProvider',
         dependencies: null,
         $allTransitiveDependencies: null,
         isAutoDispose: true,
       );
 
-  CustomerProductsProvider call({String? search, String? categoryId}) =>
-      CustomerProductsProvider._(
-        argument: (search: search, categoryId: categoryId),
-        from: this,
-      );
+  /// «منتجات مشابهة»: same category, the product itself excluded.
+
+  RelatedProductsProvider call({
+    required String productId,
+    required String categoryId,
+  }) => RelatedProductsProvider._(
+    argument: (productId: productId, categoryId: categoryId),
+    from: this,
+  );
 
   @override
-  String toString() => r'customerProductsProvider';
+  String toString() => r'relatedProductsProvider';
+}
+
+/// Live offers this product is part of (RLS already hides the others).
+
+@ProviderFor(productOffers)
+const productOffersProvider = ProductOffersFamily._();
+
+/// Live offers this product is part of (RLS already hides the others).
+
+final class ProductOffersProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<List<Offer>>,
+          List<Offer>,
+          FutureOr<List<Offer>>
+        >
+    with $FutureModifier<List<Offer>>, $FutureProvider<List<Offer>> {
+  /// Live offers this product is part of (RLS already hides the others).
+  const ProductOffersProvider._({
+    required ProductOffersFamily super.from,
+    required String super.argument,
+  }) : super(
+         retry: null,
+         name: r'productOffersProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
+  @override
+  String debugGetCreateSourceHash() => _$productOffersHash();
+
+  @override
+  String toString() {
+    return r'productOffersProvider'
+        ''
+        '($argument)';
+  }
+
+  @$internal
+  @override
+  $FutureProviderElement<List<Offer>> $createElement(
+    $ProviderPointer pointer,
+  ) => $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<List<Offer>> create(Ref ref) {
+    final argument = this.argument as String;
+    return productOffers(ref, argument);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is ProductOffersProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$productOffersHash() => r'74e31e909319b7fbb49fddb7238cb339d7e29c9f';
+
+/// Live offers this product is part of (RLS already hides the others).
+
+final class ProductOffersFamily extends $Family
+    with $FunctionalFamilyOverride<FutureOr<List<Offer>>, String> {
+  const ProductOffersFamily._()
+    : super(
+        retry: null,
+        name: r'productOffersProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  /// Live offers this product is part of (RLS already hides the others).
+
+  ProductOffersProvider call(String productId) =>
+      ProductOffersProvider._(argument: productId, from: this);
+
+  @override
+  String toString() => r'productOffersProvider';
 }
 
 @ProviderFor(customerProductDetail)

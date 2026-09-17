@@ -4,6 +4,7 @@ import '../../data/models/sale.dart';
 import '../../data/models/sale_item.dart';
 import '../../data/models/technician_account_summary.dart';
 import '../../data/models/technician_account_transaction.dart';
+import '../../data/models/technician_supply.dart';
 import '../../data/repositories/technician_account_repository.dart';
 
 part 'technician_account_providers.g.dart';
@@ -53,6 +54,16 @@ Future<Sale?> technicianSaleDetail(Ref ref, String saleId) {
 @riverpod
 Future<List<SaleItem>> saleItems(Ref ref, String saleId) {
   return ref.watch(technicianAccountRepositoryProvider).getSaleItems(saleId);
+}
+
+@riverpod
+Future<List<TechnicianSupply>> pendingTechnicianSupplies(
+  Ref ref,
+  String technicianId,
+) {
+  return ref
+      .watch(technicianAccountRepositoryProvider)
+      .getPendingSupplies(technicianId);
 }
 
 /// The invoice for a finished maintenance job — null until the technician

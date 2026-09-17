@@ -2,7 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 
-/// App-wide backdrop: a deep navy→violet gradient with a few large, heavily
+/// App-wide backdrop: a soft paper-to-teal gradient with a few large, heavily
 /// blurred color "blobs" behind it. Every Scaffold is transparent (see
 /// AppTheme) so this shows through everywhere — the same one-place trick
 /// used for the dark-navy rollout, now producing the glass look for free
@@ -26,19 +26,21 @@ class GlassBackground extends StatelessWidget {
         fit: StackFit.expand,
         children: [
           _Blob(
-            color: AppColors.blobBlue,
+            color: AppColors.blobTeal,
             size: size.width * 0.9,
             top: -size.width * 0.35,
             left: -size.width * 0.3,
           ),
           _Blob(
-            color: AppColors.blobViolet,
+            color: AppColors.blobGold,
             size: size.width * 0.95,
             top: size.height * 0.35,
             right: -size.width * 0.4,
+            // Gold reads much brighter than teal at the same opacity.
+            opacity: 0.12,
           ),
           _Blob(
-            color: AppColors.blobCyan,
+            color: AppColors.blobSky,
             size: size.width * 0.7,
             bottom: -size.width * 0.25,
             left: -size.width * 0.2,

@@ -1,8 +1,11 @@
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
+import '../../../../core/constants/brand.dart';
 import '../../../../core/errors/app_exception.dart';
+import '../../../../core/router/route_names.dart';
 import '../../../../core/utils/validators.dart';
 import '../providers/auth_providers.dart';
 
@@ -21,7 +24,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _nameCtrl = TextEditingController();
   final _phoneCtrl = TextEditingController();
   final _passwordCtrl = TextEditingController();
+  final _confirmPasswordCtrl = TextEditingController();
   bool _loading = false;
+  bool _obscurePassword = true;
+  bool _obscureConfirmPassword = true;
   Uint8List? _avatarBytes;
   String? _avatarExt;
 
@@ -30,6 +36,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     _nameCtrl.dispose();
     _phoneCtrl.dispose();
     _passwordCtrl.dispose();
+    _confirmPasswordCtrl.dispose();
     super.dispose();
   }
 
@@ -48,18 +55,36 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
+    if (_loading) return;
     setState(() => _loading = true);
     try {
-      await ref
+      final localPhone = _phoneCtrl.text.trim();
+      final needsVerification = await ref
           .read(authRepositoryProvider)
           .signUpCustomer(
-            localPhone: _phoneCtrl.text.trim(),
+            localPhone: localPhone,
             password: _passwordCtrl.text,
             fullName: _nameCtrl.text.trim(),
             avatarBytes: _avatarBytes,
             avatarExt: _avatarExt,
           );
-      ref.invalidate(currentUserProfileProvider);
+      if (needsVerification) {
+        // Auth has texted a code; the account only becomes usable once it's
+        // entered. The photo waits for that session too.
+        ref
+            .read(pendingOtpProvider.notifier)
+            .start(
+              OtpRequest(
+                phoneE164: Validators.toE164Egypt(localPhone),
+                purpose: OtpPurpose.signup,
+                avatarBytes: _avatarBytes,
+                avatarExt: _avatarExt,
+              ),
+            );
+        if (mounted) context.push(Routes.verifyOtp);
+      } else {
+        ref.invalidate(currentUserProfileProvider);
+      }
     } catch (e) {
       if (!mounted) return;
       final message = AppException.from(e).messageAr;
@@ -74,7 +99,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('حساب جديد')),
+      appBar: AppBar(title: const Text('حساب جديد في ${Brand.name}')),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -150,12 +175,45 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     const SizedBox(height: 12),
                     TextFormField(
                       controller: _passwordCtrl,
-                      obscureText: true,
-                      decoration: const InputDecoration(
+                      obscureText: _obscurePassword,
+                      decoration: InputDecoration(
                         labelText: 'كلمة المرور',
-                        prefixIcon: Icon(Icons.lock_outline),
+                        prefixIcon: const Icon(Icons.lock_outline),
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _obscurePassword
+                                ? Icons.visibility_off
+                                : Icons.visibility,
+                          ),
+                          onPressed: () => setState(
+                            () => _obscurePassword = !_obscurePassword,
+                          ),
+                        ),
                       ),
                       validator: Validators.password,
+                    ),
+                    const SizedBox(height: 12),
+                    TextFormField(
+                      controller: _confirmPasswordCtrl,
+                      obscureText: _obscureConfirmPassword,
+                      decoration: InputDecoration(
+                        labelText: 'تأكيد كلمة المرور',
+                        prefixIcon: const Icon(Icons.lock_outline),
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _obscureConfirmPassword
+                                ? Icons.visibility_off
+                                : Icons.visibility,
+                          ),
+                          onPressed: () => setState(
+                            () => _obscureConfirmPassword =
+                                !_obscureConfirmPassword,
+                          ),
+                        ),
+                      ),
+                      validator: (v) => v != _passwordCtrl.text
+                          ? 'كلمة المرور غير متطابقة'
+                          : null,
                     ),
                     const SizedBox(height: 20),
                     FilledButton(

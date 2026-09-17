@@ -14,5 +14,5 @@ Future<void> main() async {
     );
   }
 
-  runApp(const ProviderScope(child: SteamGalleryApp()));
+  runApp(const ProviderScope(child: MokojiApp()));
 }

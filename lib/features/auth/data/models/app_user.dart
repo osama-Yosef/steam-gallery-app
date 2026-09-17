@@ -27,7 +27,13 @@ abstract class AppUser with _$AppUser {
     String? email,
     String? avatarUrl,
     required bool isActive,
+
+    /// When this account proved it holds [phone] by OTP (0031). Set only
+    /// server-side; null for accounts that haven't verified yet.
+    DateTime? phoneVerifiedAt,
   }) = _AppUser;
+
+  const AppUser._();
 
   factory AppUser.fromRow(Map<String, dynamic> json) => AppUser(
     id: json['id'] as String,
@@ -37,5 +43,17 @@ abstract class AppUser with _$AppUser {
     email: json['email'] as String?,
     avatarUrl: json['avatar_url'] as String?,
     isActive: json['is_active'] as bool? ?? true,
+    phoneVerifiedAt: json['phone_verified_at'] == null
+        ? null
+        : DateTime.parse(json['phone_verified_at'] as String),
   );
+
+  bool get isPhoneVerified => phoneVerifiedAt != null;
+
+  /// [phone] in the E.164 form Supabase Auth expects. Auth stores numbers
+  /// without the leading "+", and the profile copies that as-is.
+  String? get phoneE164 {
+    final digits = phone?.replaceAll(RegExp(r'\D'), '') ?? '';
+    return digits.isEmpty ? null : '+$digits';
+  }
 }

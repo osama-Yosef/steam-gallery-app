@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:uuid/uuid.dart';
 import '../../../../../core/errors/app_exception.dart';
 import '../../providers/customer_account_providers.dart';
 
@@ -17,6 +18,9 @@ class _AdminCustomerPaymentScreenState
   final _formKey = GlobalKey<FormState>();
   final _amountCtrl = TextEditingController();
   final _notesCtrl = TextEditingController();
+  // One key per payment entry, reused on retry, so a lost response followed
+  // by a second tap can't record the same payment twice.
+  final String _clientRequestId = const Uuid().v4();
   bool _submitting = false;
 
   @override
@@ -38,6 +42,7 @@ class _AdminCustomerPaymentScreenState
             notes: _notesCtrl.text.trim().isEmpty
                 ? null
                 : _notesCtrl.text.trim(),
+            clientRequestId: _clientRequestId,
           );
       if (mounted) Navigator.of(context).pop(true);
     } catch (e) {

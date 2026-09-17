@@ -2,7 +2,9 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../../core/errors/app_exception.dart';
 import '../../../../../core/router/route_names.dart';
+import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/utils/formatters.dart';
 import '../../../../../core/widgets/state_views.dart';
 import '../../../presentation/providers/product_providers.dart';
@@ -122,7 +124,45 @@ class _AdminProductListScreenState
                       subtitle: Text(
                         'SKU: ${p.sku}${p.isActive ? '' : ' — معطَّل'}',
                       ),
-                      trailing: Text(Formatters.currency(p.sellingPrice)),
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(Formatters.currency(p.sellingPrice)),
+                          // Services never appear in the storefront.
+                          if (!p.isService)
+                            IconButton(
+                              tooltip: p.isFeatured
+                                  ? 'إزالة من مختارات مكوجي'
+                                  : 'إضافة لمختارات مكوجي',
+                              icon: Icon(
+                                p.isFeatured
+                                    ? Icons.star_rounded
+                                    : Icons.star_border_rounded,
+                                color: p.isFeatured
+                                    ? AppColors.brandGold
+                                    : null,
+                              ),
+                              onPressed: () async {
+                                try {
+                                  await ref
+                                      .read(productRepositoryProvider)
+                                      .setProductFeatured(p.id, !p.isFeatured);
+                                  ref.invalidate(adminProductsProvider);
+                                } catch (e) {
+                                  if (context.mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                          AppException.from(e).messageAr,
+                                        ),
+                                      ),
+                                    );
+                                  }
+                                }
+                              },
+                            ),
+                        ],
+                      ),
                       onTap: () async {
                         await context.push(Routes.adminProductEdit(p.id));
                         ref.invalidate(adminProductsProvider);

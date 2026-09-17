@@ -1,9 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:uuid/uuid.dart';
+import '../../../../../core/errors/app_exception.dart';
+import '../../../../../core/router/route_names.dart';
 import '../../../../../core/utils/formatters.dart';
+import '../../../../../core/widgets/confirm_dialog.dart';
 import '../../../../../core/widgets/state_views.dart';
+import '../../../../wallet/presentation/providers/wallet_providers.dart';
 import '../../../data/models/order.dart';
 import '../../../presentation/providers/order_providers.dart';
+import '../../widgets/order_status_chips.dart';
 
 class CustomerOrderDetailScreen extends ConsumerWidget {
   final String orderId;
@@ -35,17 +42,27 @@ class CustomerOrderDetailScreen extends ConsumerWidget {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(
-                            'طلب #${order.orderNumber}',
-                            style: Theme.of(context).textTheme.titleLarge,
+                          Expanded(
+                            child: Text(
+                              'طلب #${order.orderNumber}',
+                              style: Theme.of(context).textTheme.titleLarge,
+                            ),
                           ),
-                          _StatusChip(status: order.status),
+                          OrderStatusChip(status: order.status),
                         ],
                       ),
                       const SizedBox(height: 4),
                       Text(
                         Formatters.dateTime(order.createdAt),
                         style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                      const SizedBox(height: 8),
+                      // Order status and payment status are independent
+                      // facts (0037) — an order can be "جاري التجهيز" and
+                      // "مدفوع بالكامل" at the same time.
+                      Align(
+                        alignment: AlignmentDirectional.centerStart,
+                        child: PaymentStatusChip(status: order.paymentStatus),
                       ),
                       if (order.cancelledReason != null) ...[
                         const SizedBox(height: 8),
@@ -106,6 +123,23 @@ class CustomerOrderDetailScreen extends ConsumerWidget {
                   ),
                 ),
               ),
+              if (order.remaining > 0 &&
+                  order.paymentStatus != PaymentStatus.refunded &&
+                  ![
+                    OrderStatus.cancelled,
+                    OrderStatus.returned,
+                  ].contains(order.status)) ...[
+                const SizedBox(height: 12),
+                OutlinedButton.icon(
+                  onPressed: () => context.push(
+                    Routes.customerInstapayPayment(order.id),
+                  ),
+                  icon: const Icon(Icons.account_balance_outlined),
+                  label: const Text('ادفع عبر InstaPay'),
+                ),
+                const SizedBox(height: 8),
+                _WalletPayButton(orderId: order.id, amount: order.remaining),
+              ],
               if (order.deliveryAddress != null) ...[
                 const SizedBox(height: 16),
                 Text(
@@ -113,7 +147,23 @@ class CustomerOrderDetailScreen extends ConsumerWidget {
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
                 const SizedBox(height: 4),
+                if (order.deliveryRecipientName != null ||
+                    order.deliveryPhone != null)
+                  Text(
+                    [
+                      if (order.deliveryRecipientName != null)
+                        order.deliveryRecipientName!,
+                      if (order.deliveryPhone != null) order.deliveryPhone!,
+                    ].join(' — '),
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                 Text(order.deliveryAddress!),
+                if (order.deliveryDetailsLine.isNotEmpty)
+                  Text(order.deliveryDetailsLine),
+                if (order.deliveryLandmark != null)
+                  Text('علامة مميزة: ${order.deliveryLandmark}'),
               ],
             ],
           );
@@ -146,24 +196,70 @@ class CustomerOrderDetailScreen extends ConsumerWidget {
   }
 }
 
-class _StatusChip extends StatelessWidget {
-  final OrderStatus status;
-  const _StatusChip({required this.status});
+/// Instant, no admin review needed — the money already cleared when the
+/// wallet was topped up (rpc_pay_order_from_wallet, 0040). Confirmed first
+/// since spending it is immediate and cannot be undone from the app.
+class _WalletPayButton extends ConsumerStatefulWidget {
+  final String orderId;
+  final double amount;
+  const _WalletPayButton({required this.orderId, required this.amount});
+
+  @override
+  ConsumerState<_WalletPayButton> createState() => _WalletPayButtonState();
+}
+
+class _WalletPayButtonState extends ConsumerState<_WalletPayButton> {
+  bool _paying = false;
+
+  Future<void> _pay() async {
+    final confirmed = await showConfirmDialog(
+      context,
+      title: 'الدفع من المحفظة',
+      message:
+          'هيتم خصم ${Formatters.currency(widget.amount)} من رصيد محفظتك الآن. متأكد؟',
+      confirmLabel: 'ادفع',
+    );
+    if (!confirmed || !mounted) return;
+
+    setState(() => _paying = true);
+    try {
+      await ref
+          .read(walletRepositoryProvider)
+          .payOrderFromWallet(
+            orderId: widget.orderId,
+            amount: widget.amount,
+            clientRequestId: const Uuid().v4(),
+          );
+      ref.invalidate(orderDetailProvider(widget.orderId));
+      ref.invalidate(myWalletProvider);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(AppException.from(e).messageAr)));
+      }
+    } finally {
+      if (mounted) setState(() => _paying = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final color = switch (status) {
-      OrderStatus.pending => Colors.orange,
-      OrderStatus.confirmed || OrderStatus.preparing => Colors.blue,
-      OrderStatus.delivered || OrderStatus.completed => Colors.green,
-      OrderStatus.cancelled ||
-      OrderStatus.returned => Theme.of(context).colorScheme.error,
-    };
-    return Chip(
-      label: Text(orderStatusLabelAr(status)),
-      backgroundColor: color.withValues(alpha: 0.15),
-      labelStyle: TextStyle(color: color),
-      side: BorderSide.none,
+    final wallet = ref.watch(myWalletProvider).value;
+    return OutlinedButton.icon(
+      onPressed: _paying ? null : _pay,
+      icon: _paying
+          ? const SizedBox(
+              width: 16,
+              height: 16,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            )
+          : const Icon(Icons.account_balance_wallet_outlined),
+      label: Text(
+        wallet == null
+            ? 'ادفع من المحفظة'
+            : 'ادفع من المحفظة (الرصيد: ${Formatters.currency(wallet.balance)})',
+      ),
     );
   }
 }

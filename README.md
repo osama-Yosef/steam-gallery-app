@@ -1,10 +1,12 @@
 <div align="center">
 
-<img src="assets/icon/icon.png" width="120" alt="شعار معرض المدينة المنورة لمكاوي بخار" />
+<img src="assets/brand/mokoji_logo.png" width="220" alt="شعار مكوجي" />
 
-# معرض المدينة المنورة لمكاوي بخار
+# مكوجي
 
-**نظام ERP متكامل لإدارة معرض أجهزة البخار** — مبيعات، مخازن، صيانة، خزنة، وحسابات، في تطبيق واحد بثلاثة أدوار.
+**منصة مكاوي البخار** — متجر وصيانة للعملاء، فوق نظام ERP متكامل (مبيعات، مخازن، صيانة، خزنة، وحسابات) في تطبيق واحد بثلاثة أدوار.
+
+> المشروع في مرحلة تحويل من «معرض المدينة المنورة لمكاوي بخار» إلى منصة «مكوجي» — راجع `docs/08-phase-0.5-security-hotfix.md` وما بعده. لقطات الشاشة أدناه من الهوية السابقة.
 
 [![Flutter](https://img.shields.io/badge/Flutter-3.11-02569B?logo=flutter&logoColor=white)](https://flutter.dev)
 [![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-3ECF8E?logo=supabase&logoColor=white)](https://supabase.com)

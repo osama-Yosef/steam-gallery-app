@@ -1,6 +1,5 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../core/errors/app_exception.dart';
-import '../../../cart/data/models/cart_item.dart';
 import '../models/order.dart';
 import '../models/order_item.dart';
 
@@ -8,10 +7,12 @@ abstract class OrderRepository {
   /// Snapshot-priced order creation via rpc_create_order. [clientRequestId]
   /// must stay the same across retries of the same checkout attempt so a
   /// flaky connection can't create duplicate orders (see NFR-11).
+  /// [items] is a plain (productId, quantity) list — decoupled from the
+  /// cart feature's own model so this repository does not depend on it.
   Future<String> createOrder({
     required String customerId,
-    required List<CartItem> items,
-    String? deliveryAddress,
+    required List<({String productId, int quantity})> items,
+    required String addressId,
     String? notes,
     required String clientRequestId,
   });
@@ -25,11 +26,17 @@ abstract class OrderRepository {
   Future<void> confirmOrder(String orderId);
   Future<void> updateOrderStatus(String orderId, OrderStatus status);
   Future<void> cancelOrder(String orderId, String reason);
+  /// Post-delivery return (Phase 14) — restocks items and refunds through
+  /// whichever channel(s) actually paid for the order (wallet, InstaPay, or
+  /// cash), unlike [cancelOrder] this only applies to a delivered/completed
+  /// order.
+  Future<void> returnOrder(String orderId, String reason);
   Future<void> recordPayment({
     required String customerId,
     required double amount,
     String? orderId,
     String? notes,
+    required String clientRequestId,
   });
 }
 
@@ -40,8 +47,8 @@ class SupabaseOrderRepository implements OrderRepository {
   @override
   Future<String> createOrder({
     required String customerId,
-    required List<CartItem> items,
-    String? deliveryAddress,
+    required List<({String productId, int quantity})> items,
+    required String addressId,
     String? notes,
     required String clientRequestId,
   }) async {
@@ -53,9 +60,7 @@ class SupabaseOrderRepository implements OrderRepository {
           'p_items': items
               .map((e) => {'product_id': e.productId, 'quantity': e.quantity})
               .toList(),
-          'p_delivery_address': deliveryAddress,
-          'p_latitude': null,
-          'p_longitude': null,
+          'p_address_id': addressId,
           'p_notes': notes,
           'p_client_request_id': clientRequestId,
         },
@@ -141,11 +146,24 @@ class SupabaseOrderRepository implements OrderRepository {
   }
 
   @override
+  Future<void> returnOrder(String orderId, String reason) async {
+    try {
+      await _client.rpc(
+        'rpc_admin_return_order',
+        params: {'p_order_id': orderId, 'p_reason': reason},
+      );
+    } catch (e) {
+      throw AppException.from(e);
+    }
+  }
+
+  @override
   Future<void> recordPayment({
     required String customerId,
     required double amount,
     String? orderId,
     String? notes,
+    required String clientRequestId,
   }) async {
     try {
       await _client.rpc(
@@ -155,6 +173,7 @@ class SupabaseOrderRepository implements OrderRepository {
           'p_amount': amount,
           'p_order_id': orderId,
           'p_notes': notes,
+          'p_client_request_id': clientRequestId,
         },
       );
     } catch (e) {

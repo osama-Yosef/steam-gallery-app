@@ -4,10 +4,45 @@ abstract final class Routes {
   static const login = '/login';
   static const register = '/register';
 
+  // Authentication (Phase 2)
+  static const forgotPassword = '/forgot-password';
+  static const verifyOtp = '/verify-otp';
+  static const resetPassword = '/reset-password';
+  static const verifyPhone = '/verify-phone';
+  static const accountSuspended = '/account-suspended';
+
   static const adminHome = '/admin';
   static const technicianHome = '/technician';
   static const customerHome = '/customer';
   static const customerAccount = '/customer/account';
+  static const customerWallet = '/customer/account/wallet';
+  static const customerWalletTopup = '/customer/account/wallet/topup';
+
+  // Storefront (Phase 5): «الرئيسية» is customerHome, «المتجر» is the catalog.
+  static const customerStore = '/customer/store';
+  static String customerStoreCategory(String categoryId) => Uri(
+    path: customerStore,
+    queryParameters: {'category': categoryId},
+  ).toString();
+  static String customerOffer(String id) => '/customer/offers/$id';
+  static const adminMarketing = '/admin/marketing';
+  static const adminOfferNew = '/admin/marketing/offers/new';
+  static String adminOfferEdit(String id) => '/admin/marketing/offers/$id';
+  static const adminBannerNew = '/admin/marketing/banners/new';
+  static String adminBannerEdit(String id) => '/admin/marketing/banners/$id';
+
+  // Addresses & coverage (Phase 3)
+  static const customerAddresses = '/customer/account/addresses';
+  static const customerAddressNew = '/customer/account/addresses/new';
+  static String customerAddressEdit(String id) =>
+      '/customer/account/addresses/$id';
+  static const adminServiceAreas = '/admin/service-areas';
+  static const adminCityNew = '/admin/service-areas/new-city';
+  static String adminCityAreas(String cityId) => '/admin/service-areas/$cityId';
+  static String adminServiceAreaNew(String cityId) =>
+      '/admin/service-areas/$cityId/new';
+  static String adminServiceAreaEdit(String cityId, String areaId) =>
+      '/admin/service-areas/$cityId/$areaId';
 
   // Products & Catalog (Module 2)
   static const adminProducts = '/admin/products';
@@ -21,8 +56,11 @@ abstract final class Routes {
   static const customerCheckout = '/customer/checkout';
   static const customerOrders = '/customer/orders';
   static String customerOrderDetail(String id) => '/customer/orders/$id';
+  static String customerInstapayPayment(String orderId) =>
+      '/customer/orders/$orderId/instapay';
   static const adminOrders = '/admin/orders';
   static String adminOrderDetail(String id) => '/admin/orders/$id';
+  static const adminInstapayReview = '/admin/instapay';
 
   // Maintenance (Module 4)
   static const customerMaintenance = '/customer/maintenance';
@@ -84,6 +122,9 @@ abstract final class Routes {
 
   // Walk-in sales
   static const adminWalkInSale = '/admin/walk-in-sale';
+
+  // Wallets (Phase 15 — admin financial visibility)
+  static const adminWallets = '/admin/wallets';
 
   // Customer Accounts (Module 8)
   static const adminCustomers = '/admin/customers';

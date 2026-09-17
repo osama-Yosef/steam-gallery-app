@@ -5,6 +5,10 @@
          failed every request with "تعذَّر الاتصال بالخادم" — caught on the
          device the first time a release build was actually installed. -->
     <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- Only for the "my location" button when picking an address pin; asked
+         at that moment, never in the background. -->
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <application
         android:label="@string/app_name"
         android:name="${applicationName}"

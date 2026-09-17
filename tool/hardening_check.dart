@@ -14,6 +14,14 @@
 //      unit of stock cannot both succeed (race condition test — this DOES
 //      mutate real data: it consumes real stock and creates a real sale
 //      row. Only run it against a disposable test product/technician).
+//   4) Phase 0.5 probes (0029/0030) — read-only: no cost price reachable by a
+//      customer, internal SECURITY DEFINER helpers not callable by a customer
+//      or by anon, phone not self-editable.
+//   5) [optional, --run-order-discount-test --product-id=<uuid>
+//      --address-id=<uuid>] A customer cannot discount their own order
+//      through the RPC payload. This DOES create one real pending order —
+//      cancel it from the admin app after. --address-id must be a saved,
+//      serviceable address belonging to --customer-phone (0036).
 //
 // Usage:
 //   dart run tool/hardening_check.dart \
@@ -61,6 +69,17 @@ Future<void> main(List<String> args) async {
 
   await _rlsProbe(customerToken);
   await _rpcProbe(customerToken);
+  await _phase05Probe(customerToken);
+
+  if (a.containsKey('run-order-discount-test')) {
+    final productId = a['product-id'];
+    final addressId = a['address-id'];
+    if (productId == null || addressId == null) {
+      stderr.writeln('--run-order-discount-test needs --product-id and --address-id (a saved, serviceable address for --customer-phone).');
+      exit(2);
+    }
+    await _orderDiscountTest(customerToken, productId, addressId);
+  }
 
   if (a.containsKey('run-race-test')) {
     final techPhone = a['technician-phone'];
@@ -130,6 +149,221 @@ Future<void> _rpcProbe(String token) async {
     final rejected = res.statusCode == 400 || res.statusCode == 403 || res.statusCode >= 400;
     _report('customer cannot call `${entry.key}`', rejected, extra: 'got ${res.statusCode}: ${res.body}');
   }
+  print('');
+}
+
+Future<void> _phase05Probe(String token) async {
+  print('== 4) Phase 0.5 probes (0029/0030) ==');
+
+  // RLS filters a blocked SELECT to an empty list; a revoked column is a 4xx.
+  bool emptyOrDenied(HttpClientResponseLike res) {
+    if (res.statusCode >= 400) return true;
+    final body = jsonDecode(res.body);
+    return body is List && body.isEmpty;
+  }
+
+  final costQueries = {
+    'products.cost_price': '/rest/v1/products?select=id,cost_price&limit=1',
+    'order_items.unit_cost_snapshot': '/rest/v1/order_items?select=id,unit_cost_snapshot&limit=1',
+    'sale_items.unit_cost_snapshot': '/rest/v1/sale_items?select=id,unit_cost_snapshot&limit=1',
+    'daily_sales_summary.cogs': '/rest/v1/daily_sales_summary?select=day,cogs&limit=1',
+  };
+  for (final entry in costQueries.entries) {
+    final res = await _restGet(entry.value, token);
+    _report('customer cannot read `${entry.key}`', emptyOrDenied(res), extra: 'got ${res.statusCode}: ${res.body}');
+  }
+
+  // The safe views must still work for the customer (empty is fine for a
+  // customer with no orders; an error is not).
+  for (final view in ['order_items_display', 'sale_items_display', 'products_public']) {
+    final res = await _restGet('/rest/v1/$view?select=*&limit=1', token);
+    final rows = res.statusCode == 200 ? jsonDecode(res.body) : null;
+    final noCost = rows is List &&
+        rows.every((r) => (r as Map).keys.every((k) => !k.toString().contains('cost')));
+    _report('customer can read `$view` without any cost column', res.statusCode == 200 && noCost,
+        extra: 'got ${res.statusCode}: ${res.body}');
+  }
+
+  const bogus = '00000000-0000-0000-0000-000000000000';
+  final internal = <String, Map<String, dynamic>>{
+    'notify_user': {'p_user_id': bogus, 'p_type': 'probe', 'p_title': 'probe', 'p_body': 'probe', 'p_data': {}},
+    'notify_all_admins': {'p_type': 'probe', 'p_title': 'probe', 'p_body': 'probe', 'p_data': {}},
+    'post_technician_supply': {'p_supply_id': bogus},
+  };
+  for (final entry in internal.entries) {
+    final asCustomer = await _restPost('/rest/v1/rpc/${entry.key}', token, entry.value);
+    _report('customer cannot call internal `${entry.key}`', asCustomer.statusCode >= 400,
+        extra: 'got ${asCustomer.statusCode}: ${asCustomer.body}');
+    // Sending the publishable key as the bearer token makes the request anon.
+    final asAnon = await _restPost('/rest/v1/rpc/${entry.key}', anonKey, entry.value);
+    _report('anon cannot call internal `${entry.key}`', asAnon.statusCode >= 400,
+        extra: 'got ${asAnon.statusCode}: ${asAnon.body}');
+  }
+
+  final userId = await _getUserId(token);
+  final patch = await _patch(
+    '/rest/v1/users?id=eq.$userId',
+    headers: {
+      'apikey': anonKey,
+      'Authorization': 'Bearer $token',
+      'Content-Type': 'application/json',
+      'Prefer': 'return=representation',
+    },
+    body: {'phone': '+200000000000'},
+  );
+  _report('customer cannot change their own phone', patch.statusCode >= 400,
+      extra: 'got ${patch.statusCode}: ${patch.body}');
+
+  // Phase 2 (0031). This script signs in with a password, so its session is
+  // exactly the kind that must NOT be able to claim a verified phone.
+  final selfVerify = await _patch(
+    '/rest/v1/users?id=eq.$userId',
+    headers: {
+      'apikey': anonKey,
+      'Authorization': 'Bearer $token',
+      'Content-Type': 'application/json',
+    },
+    body: {'phone_verified_at': DateTime.now().toUtc().toIso8601String()},
+  );
+  _report('customer cannot set phone_verified_at directly', selfVerify.statusCode >= 400,
+      extra: 'got ${selfVerify.statusCode}: ${selfVerify.body}');
+  final markVerified = await _restPost('/rest/v1/rpc/rpc_mark_phone_verified', token, {});
+  _report('a password session cannot mark the phone verified',
+      markVerified.statusCode >= 400 && markVerified.body.contains('OTP_SESSION_REQUIRED'),
+      extra: 'got ${markVerified.statusCode}: ${markVerified.body}');
+  final flip = await _restPost('/rest/v1/rpc/rpc_admin_set_setting', token,
+      {'p_key': 'require_verified_phone', 'p_value': false});
+  _report('customer cannot change auth settings', flip.statusCode >= 400,
+      extra: 'got ${flip.statusCode}: ${flip.body}');
+
+  // Phase 3 (0032). Addresses are RPC-only; coverage is admin-only.
+  final cities = await _restGet('/rest/v1/cities?select=id,center_latitude,center_longitude&limit=1', token);
+  final cityRows = cities.statusCode == 200 ? jsonDecode(cities.body) as List : const [];
+  if (cityRows.isEmpty) {
+    print('  (skipping address probes — no active city visible)');
+  } else {
+    final city = cityRows.first as Map;
+    final directAddress = await _restPost('/rest/v1/customer_addresses', token, {
+      'customer_id': userId,
+      'country_id': city['id'],
+      'city_id': city['id'],
+      'label': 'probe',
+      'address_line': 'hardening probe',
+      'latitude': city['center_latitude'],
+      'longitude': city['center_longitude'],
+    });
+    _report('customer cannot insert an address around the RPC', directAddress.statusCode >= 400,
+        extra: 'got ${directAddress.statusCode}: ${directAddress.body}');
+    final area = await _restPost('/rest/v1/service_areas', token, {
+      'city_id': city['id'],
+      'name_ar': 'probe',
+      'center_latitude': city['center_latitude'],
+      'center_longitude': city['center_longitude'],
+      'radius_km': 50,
+    });
+    _report('customer cannot create a service area', area.statusCode >= 400,
+        extra: 'got ${area.statusCode}: ${area.body}');
+  }
+  final anonCities = await _restGet('/rest/v1/cities?select=id&limit=1', anonKey);
+  _report('anon cannot read coverage tables',
+      anonCities.statusCode >= 400 || (jsonDecode(anonCities.body) is List && (jsonDecode(anonCities.body) as List).isEmpty),
+      extra: 'got ${anonCities.statusCode}: ${anonCities.body}');
+
+  // Phase 5 (0033). Marketing content is admin-managed; offers never price.
+  final offer = await _restPost('/rest/v1/offers', token, {'title': 'probe', 'is_active': true});
+  _report('customer cannot create an offer', offer.statusCode >= 400,
+      extra: 'got ${offer.statusCode}: ${offer.body}');
+  final banner = await _restPost('/rest/v1/home_banners', token,
+      {'title': 'probe', 'image_url': 'https://example.invalid/x.jpg', 'is_active': true});
+  _report('customer cannot create a banner', banner.statusCode >= 400,
+      extra: 'got ${banner.statusCode}: ${banner.body}');
+  final anonBanners = await _restGet('/rest/v1/home_banners?select=id&limit=1', anonKey);
+  _report('anon cannot read banners',
+      anonBanners.statusCode >= 400 || (jsonDecode(anonBanners.body) is List && (jsonDecode(anonBanners.body) as List).isEmpty),
+      extra: 'got ${anonBanners.statusCode}: ${anonBanners.body}');
+
+  // Phase 6 (0034). Paginated browse: no cost column, sort whitelist, caps.
+  final browse = await _restPost('/rest/v1/rpc/rpc_browse_products', token, {'p_limit': 5});
+  final browseRows = browse.statusCode == 200 ? jsonDecode(browse.body) as List : const [];
+  _report('customer browses the catalogue without any cost column',
+      browse.statusCode == 200 &&
+          browseRows.every((r) => !(r as Map).keys.any((k) => k.toString().contains('cost'))),
+      extra: 'got ${browse.statusCode}: ${browse.body}');
+  final badSort = await _restPost('/rest/v1/rpc/rpc_browse_products', token, {'p_sort': 'cost_price'});
+  _report('browse refuses an unknown sort', badSort.statusCode >= 400 && badSort.body.contains('INVALID_SORT'),
+      extra: 'got ${badSort.statusCode}: ${badSort.body}');
+  final bigPage = await _restPost('/rest/v1/rpc/rpc_browse_products', token, {'p_limit': 1000});
+  _report('browse refuses pages over 50', bigPage.statusCode >= 400,
+      extra: 'got ${bigPage.statusCode}: ${bigPage.body}');
+  final anonBrowse = await _restPost('/rest/v1/rpc/rpc_browse_products', anonKey, {});
+  _report('anon cannot browse', anonBrowse.statusCode >= 400,
+      extra: 'got ${anonBrowse.statusCode}: ${anonBrowse.body}');
+
+  // Phase 7 (0035). Server-side cart: no direct writes, no cost column, and
+  // the server (not Flutter) enforces the per-line quantity cap.
+  final cartProduct = await _restGet('/rest/v1/products_public?select=id&limit=1', token);
+  final cartProductRows = cartProduct.statusCode == 200 ? jsonDecode(cartProduct.body) as List : const [];
+  if (cartProductRows.isEmpty) {
+    print('  SKIPPED cart checks — no product in products_public to add.');
+  } else {
+    final pid = cartProductRows.first['id'] as String;
+    final addToCart = await _restPost('/rest/v1/rpc/rpc_cart_add_item', token,
+        {'p_product_id': pid, 'p_quantity': 1});
+    _report('customer can add to their own cart', addToCart.statusCode == 200,
+        extra: 'got ${addToCart.statusCode}: ${addToCart.body}');
+    final cartBody = addToCart.statusCode == 200 ? jsonDecode(addToCart.body) as Map : const {};
+    final cartItems = (cartBody['items'] as List?) ?? const [];
+    _report('cart items carry no cost column',
+        cartItems.every((r) => !(r as Map).keys.any((k) => k.toString().contains('cost'))),
+        extra: cartBody.toString());
+    final directInsert = await _restPost('/rest/v1/cart_items', token,
+        {'customer_id': await _getUserId(token), 'product_id': pid, 'quantity': 1, 'price_seen': 0});
+    _report('customer cannot insert into cart_items directly', directInsert.statusCode >= 400,
+        extra: 'got ${directInsert.statusCode}: ${directInsert.body}');
+    final overCap = await _restPost('/rest/v1/rpc/rpc_cart_set_item', token,
+        {'p_product_id': pid, 'p_quantity': 999});
+    _report('cart quantity above the server cap is refused',
+        overCap.statusCode >= 400 && overCap.body.contains('INVALID_QUANTITY'),
+        extra: 'got ${overCap.statusCode}: ${overCap.body}');
+    final anonCart = await _restPost('/rest/v1/rpc/rpc_get_my_cart', anonKey, {});
+    _report('anon cannot read a cart', anonCart.statusCode >= 400,
+        extra: 'got ${anonCart.statusCode}: ${anonCart.body}');
+    // Leave no residue from this probe run.
+    await _restPost('/rest/v1/rpc/rpc_cart_clear', token, {});
+  }
+  print('');
+}
+
+Future<void> _orderDiscountTest(String token, String productId, String addressId) async {
+  print('== 5) Order pricing: a payload discount must be ignored ==');
+  print('  WARNING: creates one real pending order — cancel it from the admin app.');
+
+  final productRes = await _restGet('/rest/v1/products_public?select=selling_price&id=eq.$productId', token);
+  final products = jsonDecode(productRes.body) as List;
+  if (products.isEmpty) {
+    print('  SKIPPED — product $productId is not in products_public.');
+    return;
+  }
+  final price = (products.first['selling_price'] as num).toDouble();
+
+  final userId = await _getUserId(token);
+  final create = await _restPost('/rest/v1/rpc/rpc_create_order', token, {
+    'p_customer_id': userId,
+    'p_items': [
+      {'product_id': productId, 'quantity': 1, 'discount': 999999},
+    ],
+    'p_address_id': addressId,
+    'p_notes': 'hardening discount probe — cancel me',
+    'p_client_request_id': _fakeUuid('d'),
+  });
+  if (create.statusCode >= 300) {
+    _report('order creation succeeded for the probe', false, extra: 'got ${create.statusCode}: ${create.body}');
+    return;
+  }
+  final orderId = jsonDecode(create.body) as String;
+  final orderRes = await _restGet('/rest/v1/orders?select=total&id=eq.$orderId', token);
+  final total = ((jsonDecode(orderRes.body) as List).first['total'] as num).toDouble();
+  _report('order total uses the database price ($price), got $total', total == price);
   print('');
 }
 
@@ -249,6 +483,16 @@ Future<HttpClientResponseLike> _get(String path, {required Map<String, String> h
   final res = await req.close();
   final body = await res.transform(utf8.decoder).join();
   return HttpClientResponseLike(res.statusCode, body);
+}
+
+Future<HttpClientResponseLike> _patch(String path,
+    {required Map<String, String> headers, required Map<String, dynamic> body}) async {
+  final req = await client.patchUrl(Uri.parse('$baseUrl$path'));
+  headers.forEach(req.headers.set);
+  req.write(jsonEncode(body));
+  final res = await req.close();
+  final resBody = await res.transform(utf8.decoder).join();
+  return HttpClientResponseLike(res.statusCode, resBody);
 }
 
 Future<HttpClientResponseLike> _post(String path,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:uuid/uuid.dart';
 import '../../../../../core/errors/app_exception.dart';
 import '../../../../../core/utils/formatters.dart';
 import '../../../../../core/widgets/confirm_dialog.dart';
@@ -7,6 +8,7 @@ import '../../../../../core/widgets/state_views.dart';
 import '../../../../auth/presentation/providers/auth_providers.dart';
 import '../../../data/models/order.dart';
 import '../../../presentation/providers/order_providers.dart';
+import '../../widgets/order_status_chips.dart';
 
 class AdminOrderDetailScreen extends ConsumerWidget {
   final String orderId;
@@ -79,6 +81,40 @@ class AdminOrderDetailScreen extends ConsumerWidget {
     );
   }
 
+  Future<void> _returnOrder(BuildContext context, WidgetRef ref) async {
+    final reasonCtrl = TextEditingController();
+    final reason = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('استرجاع الطلب'),
+        content: TextField(
+          controller: reasonCtrl,
+          decoration: const InputDecoration(labelText: 'سبب الاسترجاع'),
+          autofocus: true,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('تراجع'),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: Theme.of(ctx).colorScheme.error,
+            ),
+            onPressed: () => Navigator.of(ctx).pop(reasonCtrl.text.trim()),
+            child: const Text('تأكيد الاسترجاع'),
+          ),
+        ],
+      ),
+    );
+    if (reason == null || reason.isEmpty || !context.mounted) return;
+    await _run(
+      context,
+      ref,
+      () => ref.read(orderRepositoryProvider).returnOrder(orderId, reason),
+    );
+  }
+
   Future<void> _recordPayment(
     BuildContext context,
     WidgetRef ref,
@@ -112,6 +148,9 @@ class AdminOrderDetailScreen extends ConsumerWidget {
       ),
     );
     if (amount == null || amount <= 0 || !context.mounted) return;
+    // The dialog is already closed, so this call can't be re-triggered by a
+    // double tap; the key covers a retried request carrying the same entry.
+    final clientRequestId = const Uuid().v4();
     await _run(
       context,
       ref,
@@ -121,6 +160,7 @@ class AdminOrderDetailScreen extends ConsumerWidget {
             customerId: customerId,
             amount: amount,
             orderId: orderId,
+            clientRequestId: clientRequestId,
           ),
     );
   }
@@ -173,15 +213,24 @@ class AdminOrderDetailScreen extends ConsumerWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    'طلب #${order.orderNumber}',
-                    style: Theme.of(context).textTheme.titleLarge,
+                  Expanded(
+                    child: Text(
+                      'طلب #${order.orderNumber}',
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
                   ),
-                  Chip(label: Text(orderStatusLabelAr(order.status))),
+                  OrderStatusChip(status: order.status),
                 ],
               ),
               const SizedBox(height: 4),
               Text(Formatters.dateTime(order.createdAt)),
+              const SizedBox(height: 8),
+              // Independent of order status on purpose (0037) — an admin
+              // needs to see both facts at once.
+              Align(
+                alignment: AlignmentDirectional.centerStart,
+                child: PaymentStatusChip(status: order.paymentStatus),
+              ),
               const SizedBox(height: 12),
               customerAsync.when(
                 data: (c) => Card(
@@ -196,7 +245,21 @@ class AdminOrderDetailScreen extends ConsumerWidget {
               ),
               if (order.deliveryAddress != null) ...[
                 const SizedBox(height: 8),
+                if (order.deliveryRecipientName != null ||
+                    order.deliveryPhone != null)
+                  Text(
+                    [
+                      if (order.deliveryRecipientName != null)
+                        order.deliveryRecipientName!,
+                      if (order.deliveryPhone != null) order.deliveryPhone!,
+                    ].join(' — '),
+                    style: const TextStyle(fontWeight: FontWeight.w600),
+                  ),
                 Text('عنوان التوصيل: ${order.deliveryAddress}'),
+                if (order.deliveryDetailsLine.isNotEmpty)
+                  Text(order.deliveryDetailsLine),
+                if (order.deliveryLandmark != null)
+                  Text('علامة مميزة: ${order.deliveryLandmark}'),
               ],
               if (order.notes != null) ...[
                 const SizedBox(height: 8),
@@ -305,6 +368,18 @@ class AdminOrderDetailScreen extends ConsumerWidget {
                       onPressed: () => _cancel(context, ref),
                       icon: const Icon(Icons.cancel_outlined),
                       label: const Text('إلغاء الطلب'),
+                    ),
+                  if ([
+                    OrderStatus.delivered,
+                    OrderStatus.completed,
+                  ].contains(order.status))
+                    OutlinedButton.icon(
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Theme.of(context).colorScheme.error,
+                      ),
+                      onPressed: () => _returnOrder(context, ref),
+                      icon: const Icon(Icons.assignment_return_outlined),
+                      label: const Text('استرجاع الطلب'),
                     ),
                 ],
               ),

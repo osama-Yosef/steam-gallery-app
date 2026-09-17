@@ -1,69 +1,55 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import '../../data/models/cart_item.dart';
+import '../../../../core/supabase/supabase_client_provider.dart';
+import '../../../auth/data/models/app_user.dart';
+import '../../../auth/presentation/providers/auth_providers.dart';
+import '../../data/models/cart.dart';
+import '../../data/repositories/cart_repository.dart';
 
 part 'cart_provider.g.dart';
 
 @Riverpod(keepAlive: true)
+CartRepository cartRepository(Ref ref) {
+  return SupabaseCartRepository(ref.watch(supabaseClientProvider));
+}
+
+/// The signed-in customer's cart, stored and priced by the server (0035).
+/// Rebuilds on every sign-in/out, so one account never sees another's cart.
+/// Mutations replace the state with the cart the server returns.
+@Riverpod(keepAlive: true)
 class Cart extends _$Cart {
   @override
-  List<CartItem> build() => [];
-
-  void add({
-    required String productId,
-    required String name,
-    required double unitPrice,
-  }) {
-    final i = state.indexWhere((e) => e.productId == productId);
-    if (i == -1) {
-      state = [
-        ...state,
-        CartItem(
-          productId: productId,
-          name: name,
-          unitPrice: unitPrice,
-          quantity: 1,
-        ),
-      ];
-    } else {
-      state = [
-        for (final item in state)
-          if (item.productId == productId)
-            item.copyWith(quantity: item.quantity + 1)
-          else
-            item,
-      ];
+  Future<CartSummary> build() async {
+    final profile = await ref.watch(currentUserProfileProvider.future);
+    if (profile == null || profile.role != AppRole.customer) {
+      return CartSummary.empty;
     }
+    return ref.watch(cartRepositoryProvider).getCart();
   }
 
-  void setQuantity(String productId, int quantity) {
-    if (quantity <= 0) {
-      remove(productId);
-      return;
-    }
-    state = [
-      for (final item in state)
-        if (item.productId == productId)
-          item.copyWith(quantity: quantity)
-        else
-          item,
-    ];
+  Future<CartSummary> _apply(Future<CartSummary> Function() op) async {
+    final next = await op();
+    if (ref.mounted) state = AsyncData(next);
+    return next;
   }
 
-  void remove(String productId) {
-    state = state.where((e) => e.productId != productId).toList();
-  }
+  /// Adds [quantity] to the line (the server caps it). Returns the new cart.
+  Future<CartSummary> add(String productId, {int quantity = 1}) =>
+      _apply(() => ref.read(cartRepositoryProvider).addItem(productId, quantity));
 
-  void clear() => state = [];
+  /// Sets the line's quantity; 0 removes it.
+  Future<CartSummary> setQuantity(String productId, int quantity) => _apply(
+    () => ref.read(cartRepositoryProvider).setQuantity(productId, quantity),
+  );
+
+  Future<CartSummary> remove(String productId) => setQuantity(productId, 0);
+
+  Future<CartSummary> clear() =>
+      _apply(() => ref.read(cartRepositoryProvider).clear());
+
+  Future<CartSummary> acknowledgePrices() =>
+      _apply(() => ref.read(cartRepositoryProvider).acknowledgePrices());
 }
 
+/// Badge count on the «السلة» tab.
 @riverpod
-double cartTotal(Ref ref) {
-  final items = ref.watch(cartProvider);
-  return items.fold<double>(0, (sum, e) => sum + e.lineTotal);
-}
-
-@riverpod
-int cartItemCount(Ref ref) {
-  final items = ref.watch(cartProvider);
-  return items.fold<int>(0, (sum, e) => sum + e.quantity);
-}
+int cartItemCount(Ref ref) => ref.watch(cartProvider).value?.itemCount ?? 0;

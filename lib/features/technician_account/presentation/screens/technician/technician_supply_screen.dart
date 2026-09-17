@@ -43,7 +43,19 @@ class _TechnicianSupplyScreenState
                 ? null
                 : _notesCtrl.text.trim(),
           );
-      if (mounted) Navigator.of(context).pop(true);
+      if (!mounted) return;
+      // A technician's own entry stays pending until an admin confirms the
+      // cash was received; an admin's entry posts immediately.
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            widget.technicianId == null
+                ? 'تم إرسال التوريد، وبانتظار تأكيد الإدارة للاستلام'
+                : 'تم تسجيل التوريد',
+          ),
+        ),
+      );
+      Navigator.of(context).pop(true);
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(

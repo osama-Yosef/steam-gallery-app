@@ -6,6 +6,7 @@ import '../../../../../core/utils/formatters.dart';
 import '../../../../../core/widgets/state_views.dart';
 import '../../../data/models/order.dart';
 import '../../../presentation/providers/order_providers.dart';
+import '../../widgets/order_status_chips.dart';
 
 class AdminOrdersListScreen extends ConsumerStatefulWidget {
   const AdminOrdersListScreen({super.key});
@@ -72,7 +73,15 @@ class _AdminOrdersListScreenState extends ConsumerState<AdminOrdersListScreen> {
                       subtitle: Text(
                         '${orderStatusLabelAr(o.status)} · ${Formatters.date(o.createdAt)}',
                       ),
-                      trailing: Text(Formatters.currency(o.total)),
+                      trailing: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Text(Formatters.currency(o.total)),
+                          const SizedBox(height: 2),
+                          PaymentStatusLabel(status: o.paymentStatus),
+                        ],
+                      ),
                       onTap: () => context.push(Routes.adminOrderDetail(o.id)),
                     );
                   },

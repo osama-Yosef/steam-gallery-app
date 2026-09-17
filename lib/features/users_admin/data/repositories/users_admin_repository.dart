@@ -11,6 +11,11 @@ abstract class UsersAdminRepository {
 
   Future<void> setActive(String userId, bool isActive);
 
+  /// Turns the server-side "customers must verify their phone by OTP" switch
+  /// on or off (rpc_admin_set_setting, audited). Only turn it on once an SMS
+  /// provider and "Confirm phone" are enabled in Supabase Auth.
+  Future<void> setRequireVerifiedPhone(bool value);
+
   /// Calls the create-user Edge Function — the only place a
   /// technician/admin account is ever created (see
   /// supabase/functions/create-user). Never touches the service role key
@@ -58,6 +63,18 @@ class SupabaseUsersAdminRepository implements UsersAdminRepository {
   }
 
   @override
+  Future<void> setRequireVerifiedPhone(bool value) async {
+    try {
+      await _client.rpc(
+        'rpc_admin_set_setting',
+        params: {'p_key': 'require_verified_phone', 'p_value': value},
+      );
+    } catch (e) {
+      throw AppException.from(e);
+    }
+  }
+
+  @override
   Future<void> setActive(String userId, bool isActive) async {
     try {
       await _client.rpc(
@@ -91,11 +108,25 @@ class SupabaseUsersAdminRepository implements UsersAdminRepository {
       );
       final data = res.data;
       if (data is Map && data['error'] != null) {
-        throw AppException(data['error'].toString());
+        throw AppException(_createUserErrorAr(data['error'].toString()));
       }
       return (data as Map)['user_id'] as String;
+    } on FunctionException catch (e) {
+      // Non-2xx responses surface here; the function returns a stable code.
+      final details = e.details;
+      final code = details is Map ? details['error']?.toString() : null;
+      throw AppException(_createUserErrorAr(code), e);
     } catch (e) {
       throw AppException.from(e);
     }
   }
+
+  static String _createUserErrorAr(String? code) => switch (code) {
+    'phone_already_registered' => 'هذا الرقم مسجَّل بالفعل',
+    'unauthorized' ||
+    'forbidden: admin only' => 'ليست لديك صلاحية لإنشاء حسابات',
+    'password must be at least 8 characters' =>
+      'كلمة المرور يجب أن تكون ٨ أحرف على الأقل',
+    _ => 'تعذَّر إنشاء الحساب. حاول مرة أخرى.',
+  };
 }

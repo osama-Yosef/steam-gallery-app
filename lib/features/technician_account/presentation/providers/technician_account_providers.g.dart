@@ -487,6 +487,85 @@ final class SaleItemsFamily extends $Family
   String toString() => r'saleItemsProvider';
 }
 
+@ProviderFor(pendingTechnicianSupplies)
+const pendingTechnicianSuppliesProvider = PendingTechnicianSuppliesFamily._();
+
+final class PendingTechnicianSuppliesProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<List<TechnicianSupply>>,
+          List<TechnicianSupply>,
+          FutureOr<List<TechnicianSupply>>
+        >
+    with
+        $FutureModifier<List<TechnicianSupply>>,
+        $FutureProvider<List<TechnicianSupply>> {
+  const PendingTechnicianSuppliesProvider._({
+    required PendingTechnicianSuppliesFamily super.from,
+    required String super.argument,
+  }) : super(
+         retry: null,
+         name: r'pendingTechnicianSuppliesProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
+  @override
+  String debugGetCreateSourceHash() => _$pendingTechnicianSuppliesHash();
+
+  @override
+  String toString() {
+    return r'pendingTechnicianSuppliesProvider'
+        ''
+        '($argument)';
+  }
+
+  @$internal
+  @override
+  $FutureProviderElement<List<TechnicianSupply>> $createElement(
+    $ProviderPointer pointer,
+  ) => $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<List<TechnicianSupply>> create(Ref ref) {
+    final argument = this.argument as String;
+    return pendingTechnicianSupplies(ref, argument);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is PendingTechnicianSuppliesProvider &&
+        other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$pendingTechnicianSuppliesHash() =>
+    r'218494449f0e0910286126c42a4af75c2c890927';
+
+final class PendingTechnicianSuppliesFamily extends $Family
+    with $FunctionalFamilyOverride<FutureOr<List<TechnicianSupply>>, String> {
+  const PendingTechnicianSuppliesFamily._()
+    : super(
+        retry: null,
+        name: r'pendingTechnicianSuppliesProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  PendingTechnicianSuppliesProvider call(String technicianId) =>
+      PendingTechnicianSuppliesProvider._(argument: technicianId, from: this);
+
+  @override
+  String toString() => r'pendingTechnicianSuppliesProvider';
+}
+
 /// The invoice for a finished maintenance job — null until the technician
 /// raises one.
 

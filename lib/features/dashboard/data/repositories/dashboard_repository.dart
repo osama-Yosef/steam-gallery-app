@@ -37,6 +37,11 @@ class SupabaseDashboardRepository implements DashboardRepository {
         _client.from('customer_account_summary').select('remaining_balance'),
         _client.from('technician_account_summary').select('amount_due'),
         _client.from('warehouse_stock_value').select().limit(1).maybeSingle(),
+        _client
+            .from('wallet_liability_summary')
+            .select()
+            .limit(1)
+            .maybeSingle(),
       ]);
 
       final balanceRow = results[0] as Map<String, dynamic>?;
@@ -51,6 +56,7 @@ class SupabaseDashboardRepository implements DashboardRepository {
       final technicianAccounts = (results[8] as List)
           .cast<Map<String, dynamic>>();
       final warehouseValueRow = results[9] as Map<String, dynamic>?;
+      final walletLiabilityRow = results[10] as Map<String, dynamic>?;
 
       final now = DateTime.now();
       bool isToday(DateTime d) {
@@ -115,6 +121,8 @@ class SupabaseDashboardRepository implements DashboardRepository {
         technicianDuesTotal: technicianDues,
         warehouseStockValue:
             (warehouseValueRow?['stock_value'] as num?)?.toDouble() ?? 0,
+        walletLiabilityTotal:
+            (walletLiabilityRow?['total_liability'] as num?)?.toDouble() ?? 0,
       );
     } catch (e) {
       throw AppException.from(e);

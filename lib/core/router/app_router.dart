@@ -1,11 +1,17 @@
+import 'package:flutter/widgets.dart' show ValueKey;
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../features/audit_log/presentation/screens/admin_audit_log_screen.dart';
-import '../../features/auth/data/models/app_user.dart';
+import '../../features/auth/data/models/auth_settings.dart';
 import '../../features/auth/presentation/providers/auth_providers.dart';
+import '../../features/auth/presentation/screens/account_suspended_screen.dart';
+import '../../features/auth/presentation/screens/forgot_password_screen.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
+import '../../features/auth/presentation/screens/otp_verify_screen.dart';
 import '../../features/auth/presentation/screens/register_screen.dart';
+import '../../features/auth/presentation/screens/reset_password_screen.dart';
 import '../../features/auth/presentation/screens/splash_screen.dart';
+import '../../features/auth/presentation/screens/verify_phone_screen.dart';
 import '../../features/cart/presentation/screens/cart_screen.dart';
 import '../../features/cashbox/presentation/screens/admin/admin_cashbox_screen.dart';
 import '../../features/cashbox/presentation/screens/admin/admin_expenses_list_screen.dart';
@@ -26,6 +32,12 @@ import '../../features/inventory/presentation/screens/admin/admin_warehouse_scre
 import '../../features/inventory/presentation/screens/technician/technician_bag_screen.dart';
 import '../../features/inventory_count/presentation/screens/admin/admin_inventory_count_detail_screen.dart';
 import '../../features/inventory_count/presentation/screens/admin/admin_inventory_counts_list_screen.dart';
+import '../../features/locations/presentation/screens/admin/admin_cities_screen.dart';
+import '../../features/locations/presentation/screens/admin/admin_city_areas_screen.dart';
+import '../../features/locations/presentation/screens/admin/admin_city_editor_screen.dart';
+import '../../features/locations/presentation/screens/admin/admin_service_area_editor_screen.dart';
+import '../../features/locations/presentation/screens/customer/address_form_screen.dart';
+import '../../features/locations/presentation/screens/customer/my_addresses_screen.dart';
 import '../../features/maintenance/presentation/screens/admin/admin_maintenance_detail_screen.dart';
 import '../../features/maintenance/presentation/screens/admin/admin_maintenance_list_screen.dart';
 import '../../features/maintenance/presentation/screens/customer/customer_maintenance_home_screen.dart';
@@ -39,6 +51,8 @@ import '../../features/orders/presentation/screens/admin/admin_orders_list_scree
 import '../../features/orders/presentation/screens/customer/checkout_screen.dart';
 import '../../features/orders/presentation/screens/customer/customer_order_detail_screen.dart';
 import '../../features/orders/presentation/screens/customer/customer_orders_list_screen.dart';
+import '../../features/payments/presentation/screens/admin/admin_instapay_review_screen.dart';
+import '../../features/payments/presentation/screens/customer/instapay_payment_screen.dart';
 import '../../features/products/presentation/screens/admin/admin_category_list_screen.dart';
 import '../../features/products/presentation/screens/admin/admin_product_form_screen.dart';
 import '../../features/products/presentation/screens/admin/admin_product_list_screen.dart';
@@ -47,6 +61,11 @@ import '../../features/products/presentation/screens/customer/product_detail_scr
 import '../../features/reports/presentation/screens/admin_report_detail_screen.dart';
 import '../../features/reports/presentation/screens/admin_reports_home_screen.dart';
 import '../../features/sales/presentation/screens/admin/admin_walk_in_sale_screen.dart';
+import '../../features/storefront/presentation/screens/admin/admin_banner_editor_screen.dart';
+import '../../features/storefront/presentation/screens/admin/admin_marketing_screen.dart';
+import '../../features/storefront/presentation/screens/admin/admin_offer_editor_screen.dart';
+import '../../features/storefront/presentation/screens/customer/customer_home_screen.dart';
+import '../../features/storefront/presentation/screens/customer/offer_detail_screen.dart';
 import '../../features/technician_account/presentation/screens/technician/technician_account_history_screen.dart';
 import '../../features/technician_account/presentation/screens/technician/technician_account_screen.dart';
 import '../../features/technician_account/presentation/screens/technician/technician_sale_detail_screen.dart';
@@ -55,12 +74,16 @@ import '../../features/technician_account/presentation/screens/technician/techni
 import '../../features/technician_account/presentation/screens/technician/technician_supply_screen.dart';
 import '../../features/users_admin/presentation/screens/admin_create_user_screen.dart';
 import '../../features/users_admin/presentation/screens/admin_users_list_screen.dart';
+import '../../features/wallet/presentation/screens/admin/admin_wallets_list_screen.dart';
+import '../../features/wallet/presentation/screens/customer/wallet_screen.dart';
+import '../../features/wallet/presentation/screens/customer/wallet_topup_screen.dart';
 import '../config/env.dart';
 import '../navigation/admin_shell.dart';
 import '../navigation/customer_shell.dart';
 import '../navigation/technician_shell.dart';
 import '../screens/config_missing_screen.dart';
 import '../supabase/supabase_client_provider.dart';
+import 'auth_redirect.dart';
 import 'go_router_refresh_stream.dart';
 import 'route_names.dart';
 
@@ -95,21 +118,13 @@ GoRouter appRouter(Ref ref) {
   // without this, the app gets stuck on the splash screen forever right
   // after sign-in/sign-up.
   ref.listen(currentUserProfileProvider, (_, _) => refreshStream.ping());
+  ref.listen(authSettingsProvider, (_, _) => refreshStream.ping());
+  ref.listen(passwordRecoveryProvider, (_, _) => refreshStream.ping());
 
   return GoRouter(
     initialLocation: Routes.splash,
     refreshListenable: refreshStream,
     redirect: (context, state) {
-      final loc = state.matchedLocation;
-
-      final session = ref.read(supabaseClientProvider).auth.currentSession;
-      final onAuthScreen = loc == Routes.login || loc == Routes.register;
-
-      if (session == null) {
-        return onAuthScreen ? null : Routes.login;
-      }
-
-      // Signed in: figure out the role to pick the right shell.
       final profileAsync = ref.read(currentUserProfileProvider);
 
       // A cached profile (even while a background refetch is in flight —
@@ -117,29 +132,32 @@ GoRouter appRouter(Ref ref) {
       // edit) means routing is already settled: bouncing through splash
       // here would remount the current StatefulShellRoute while the old
       // instance hasn't finished disposing, crashing with "Duplicate
-      // GlobalKey<StatefulNavigationShellState>". Only the very first,
-      // truly-unloaded fetch should route through splash.
+      // GlobalKey<StatefulNavigationShellState>". So a cached user counts
+      // as ready; only the very first, truly-unloaded fetch goes to splash.
+      // A loaded-but-missing row means handle_new_auth_user() may still be
+      // provisioning it right after sign-up: splash, which retries.
       final cachedUser = profileAsync.value;
+      final ProfileStatus status;
       if (cachedUser != null) {
-        if (onAuthScreen || loc == Routes.splash) {
-          return _homeFor(cachedUser.role);
-        }
-        return null;
+        status = ProfileStatus.ready;
+      } else if (profileAsync.hasError) {
+        status = ProfileStatus.error;
+      } else if (profileAsync.isLoading) {
+        status = ProfileStatus.loading;
+      } else {
+        status = ProfileStatus.missing;
       }
 
-      return profileAsync.when(
-        data: (user) {
-          if (user == null) {
-            // handle_new_auth_user() trigger may still be provisioning the
-            // row right after sign-up — stay on splash briefly, it retries
-            // automatically because authStateChanges keeps refreshing.
-            return loc == Routes.splash ? null : Routes.splash;
-          }
-          if (onAuthScreen || loc == Routes.splash) return _homeFor(user.role);
-          return null;
-        },
-        loading: () => loc == Routes.splash ? null : Routes.splash,
-        error: (_, _) => Routes.login,
+      return resolveAuthRedirect(
+        location: state.matchedLocation,
+        hasSession:
+            ref.read(supabaseClientProvider).auth.currentSession != null,
+        profileStatus: status,
+        user: cachedUser,
+        requireVerifiedPhone:
+            (ref.read(authSettingsProvider).value ?? AuthSettings.unknown)
+                .requireVerifiedPhone,
+        passwordRecoveryInProgress: ref.read(passwordRecoveryProvider),
       );
     },
     routes: [
@@ -150,6 +168,26 @@ GoRouter appRouter(Ref ref) {
       ),
       GoRoute(path: Routes.login, builder: (_, _) => const LoginScreen()),
       GoRoute(path: Routes.register, builder: (_, _) => const RegisterScreen()),
+      GoRoute(
+        path: Routes.forgotPassword,
+        builder: (_, _) => const ForgotPasswordScreen(),
+      ),
+      GoRoute(
+        path: Routes.verifyOtp,
+        builder: (_, _) => const OtpVerifyScreen(),
+      ),
+      GoRoute(
+        path: Routes.resetPassword,
+        builder: (_, _) => const ResetPasswordScreen(),
+      ),
+      GoRoute(
+        path: Routes.verifyPhone,
+        builder: (_, _) => const VerifyPhoneScreen(),
+      ),
+      GoRoute(
+        path: Routes.accountSuspended,
+        builder: (_, _) => const AccountSuspendedScreen(),
+      ),
 
       // Admin — persistent glass sidebar, branch order matches AdminShell._items.
       StatefulShellRoute.indexedStack(
@@ -164,6 +202,10 @@ GoRouter appRouter(Ref ref) {
                   GoRoute(
                     path: 'walk-in-sale',
                     builder: (_, _) => const AdminWalkInSaleScreen(),
+                  ),
+                  GoRoute(
+                    path: 'instapay',
+                    builder: (_, _) => const AdminInstapayReviewScreen(),
                   ),
                   GoRoute(
                     path: 'reports',
@@ -182,6 +224,10 @@ GoRouter appRouter(Ref ref) {
                     builder: (_, _) => const AdminDashboardScreen(),
                   ),
                   GoRoute(
+                    path: 'wallets',
+                    builder: (_, _) => const AdminWalletsListScreen(),
+                  ),
+                  GoRoute(
                     path: 'customers',
                     builder: (_, _) => const AdminCustomersListScreen(),
                     routes: [
@@ -195,6 +241,65 @@ GoRouter appRouter(Ref ref) {
                             path: 'payment',
                             builder: (_, state) => AdminCustomerPaymentScreen(
                               customerId: state.pathParameters['id']!,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  GoRoute(
+                    path: 'marketing',
+                    builder: (_, _) => const AdminMarketingScreen(),
+                    routes: [
+                      // "new" before ":id", which would otherwise match it.
+                      GoRoute(
+                        path: 'offers/new',
+                        builder: (_, _) => const AdminOfferEditorScreen(),
+                      ),
+                      GoRoute(
+                        path: 'offers/:id',
+                        builder: (_, state) => AdminOfferEditorScreen(
+                          offerId: state.pathParameters['id'],
+                        ),
+                      ),
+                      GoRoute(
+                        path: 'banners/new',
+                        builder: (_, _) => const AdminBannerEditorScreen(),
+                      ),
+                      GoRoute(
+                        path: 'banners/:id',
+                        builder: (_, state) => AdminBannerEditorScreen(
+                          bannerId: state.pathParameters['id'],
+                        ),
+                      ),
+                    ],
+                  ),
+                  GoRoute(
+                    path: 'service-areas',
+                    builder: (_, _) => const AdminCitiesScreen(),
+                    routes: [
+                      // Before ':cityId', which would otherwise match it.
+                      GoRoute(
+                        path: 'new-city',
+                        builder: (_, _) => const AdminCityEditorScreen(),
+                      ),
+                      GoRoute(
+                        path: ':cityId',
+                        builder: (_, state) => AdminCityAreasScreen(
+                          cityId: state.pathParameters['cityId']!,
+                        ),
+                        routes: [
+                          GoRoute(
+                            path: 'new',
+                            builder: (_, state) => AdminServiceAreaEditorScreen(
+                              cityId: state.pathParameters['cityId']!,
+                            ),
+                          ),
+                          GoRoute(
+                            path: ':areaId',
+                            builder: (_, state) => AdminServiceAreaEditorScreen(
+                              cityId: state.pathParameters['cityId']!,
+                              areaId: state.pathParameters['areaId'],
                             ),
                           ),
                         ],
@@ -455,15 +560,23 @@ GoRouter appRouter(Ref ref) {
             routes: [
               GoRoute(
                 path: Routes.customerHome,
-                builder: (_, _) => const CustomerCatalogScreen(),
-                routes: [
-                  GoRoute(
-                    path: 'product/:id',
-                    builder: (_, state) => ProductDetailScreen(
-                      productId: state.pathParameters['id']!,
-                    ),
-                  ),
-                ],
+                builder: (_, _) => const CustomerHomeScreen(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: Routes.customerStore,
+                // Keyed by the category so arriving from the home screen with
+                // a different category starts that filter fresh.
+                builder: (_, state) {
+                  final category = state.uri.queryParameters['category'];
+                  return CustomerCatalogScreen(
+                    key: ValueKey('store-$category'),
+                    initialCategoryId: category,
+                  );
+                },
               ),
             ],
           ),
@@ -520,6 +633,35 @@ GoRouter appRouter(Ref ref) {
               GoRoute(
                 path: Routes.customerAccount,
                 builder: (_, _) => const CustomerAccountScreen(),
+                routes: [
+                  GoRoute(
+                    path: 'addresses',
+                    builder: (_, _) => const MyAddressesScreen(),
+                    routes: [
+                      // Before ':id', which would otherwise match it.
+                      GoRoute(
+                        path: 'new',
+                        builder: (_, _) => const AddressFormScreen(),
+                      ),
+                      GoRoute(
+                        path: ':id',
+                        builder: (_, state) => AddressFormScreen(
+                          addressId: state.pathParameters['id'],
+                        ),
+                      ),
+                    ],
+                  ),
+                  GoRoute(
+                    path: 'wallet',
+                    builder: (_, _) => const WalletScreen(),
+                    routes: [
+                      GoRoute(
+                        path: 'topup',
+                        builder: (_, _) => const WalletTopupScreen(),
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ],
           ),
@@ -532,12 +674,25 @@ GoRouter appRouter(Ref ref) {
         path: Routes.notifications,
         builder: (_, _) => const NotificationsScreen(),
       ),
+      // Product and offer pages open full-screen over whichever customer tab
+      // they were reached from (home rows, store grid, banners, offers), so
+      // going back returns to that tab instead of jumping between branches.
+      GoRoute(
+        path: '/customer/product/:id',
+        builder: (_, state) =>
+            ProductDetailScreen(productId: state.pathParameters['id']!),
+      ),
+      GoRoute(
+        path: '/customer/offers/:id',
+        builder: (_, state) =>
+            OfferDetailScreen(offerId: state.pathParameters['id']!),
+      ),
+      GoRoute(
+        path: '/customer/orders/:id/instapay',
+        builder: (_, state) => InstapayPaymentScreen(
+          orderId: state.pathParameters['id']!,
+        ),
+      ),
     ],
   );
 }
-
-String _homeFor(AppRole role) => switch (role) {
-  AppRole.admin => Routes.adminHome,
-  AppRole.technician => Routes.technicianHome,
-  AppRole.customer => Routes.customerHome,
-};

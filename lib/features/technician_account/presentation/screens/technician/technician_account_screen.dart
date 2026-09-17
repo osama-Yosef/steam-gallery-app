@@ -7,6 +7,7 @@ import '../../../../../core/widgets/state_views.dart';
 import '../../../../auth/presentation/providers/auth_providers.dart';
 import '../../providers/technician_account_providers.dart';
 import '../../widgets/account_summary_card.dart';
+import '../../widgets/pending_supplies_section.dart';
 
 /// Shows the signed-in technician's own account when [technicianId] is null,
 /// or a specific technician's account when an admin navigates here with one.
@@ -67,6 +68,11 @@ class TechnicianAccountScreen extends ConsumerWidget {
           return ListView(
             children: [
               AccountSummaryCard(summary: summary),
+              PendingSuppliesSection(
+                technicianId: resolvedId,
+                // An admin opens this screen with an explicit technicianId.
+                canReview: !isSelf,
+              ),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Column(
@@ -79,6 +85,9 @@ class TechnicianAccountScreen extends ConsumerWidget {
                         await context.push(route);
                         ref.invalidate(
                           technicianAccountSummaryProvider(resolvedId),
+                        );
+                        ref.invalidate(
+                          pendingTechnicianSuppliesProvider(resolvedId),
                         );
                       },
                       icon: const Icon(Icons.payments_outlined),

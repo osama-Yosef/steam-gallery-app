@@ -7,9 +7,11 @@
 		<key>CFBundleDevelopmentRegion</key>
 		<string>$(DEVELOPMENT_LANGUAGE)</string>
 		<key>CFBundleDisplayName</key>
-		<string>معرض المدينة المنورة لمكاوي بخار</string>
+		<string>مكوجي</string>
 		<key>CFBundleExecutable</key>
 		<string>$(EXECUTABLE_NAME)</string>
+		<key>NSLocationWhenInUseUsageDescription</key>
+		<string>نستخدم موقعك فقط لتحديد عنوانك على الخريطة عند إضافة عنوان.</string>
 		<key>CFBundleIdentifier</key>
 		<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
 		<key>CFBundleInfoDictionaryVersion</key>
