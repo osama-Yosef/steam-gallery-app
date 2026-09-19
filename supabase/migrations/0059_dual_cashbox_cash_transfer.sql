@@ -19,15 +19,26 @@
 -- 'cash' unconditionally — no signature change needed there.
 -- ============================================================================
 
-alter table public.cashboxes add column kind text not null default 'cash' check (kind in ('cash', 'transfer'));
-update public.cashboxes set kind = 'cash';
+-- Guarded (if not exists / where not exists) throughout this section: live
+-- drift discovered 2026-09-19 showed this had already been partially
+-- applied out-of-band (ad hoc SQL, never through `db push`) — both
+-- cashboxes already existed with the right `kind`. The original
+-- unconditional `update ... set kind = 'cash'` that followed the ADD
+-- COLUMN is dropped entirely on replay: it was already redundant even on
+-- a fresh run (ADD COLUMN ... NOT NULL DEFAULT 'cash' already backfills
+-- every pre-existing row), and on a replay it would silently reset the
+-- transfer cashbox's kind back to 'cash', which the original file being
+-- rerun verbatim would have done.
+alter table public.cashboxes add column if not exists kind text not null default 'cash' check (kind in ('cash', 'transfer'));
 
-insert into public.cashboxes (name, kind, is_active) values ('خزنة التحويلات', 'transfer', true);
+insert into public.cashboxes (name, kind, is_active)
+select 'خزنة التحويلات', 'transfer', true
+where not exists (select 1 from public.cashboxes where kind = 'transfer');
 
 -- At most one active cashbox per kind — mirrors every existing
 -- "where is_active limit 1" lookup now needing "and kind = ...", and keeps
 -- that assumption actually true.
-create unique index idx_cashboxes_one_active_per_kind on public.cashboxes (kind) where is_active;
+create unique index if not exists idx_cashboxes_one_active_per_kind on public.cashboxes (kind) where is_active;
 
 create or replace view public.cashbox_balances
   with (security_invoker = true) as

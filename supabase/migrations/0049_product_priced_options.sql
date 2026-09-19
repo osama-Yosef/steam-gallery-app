@@ -17,7 +17,18 @@
 -- ----------------------------------------------------------------------------
 -- 1. product_options — admin-managed, no cost (pure price add-on).
 -- ----------------------------------------------------------------------------
-create table public.product_options (
+-- Guarded (if not exists / drop-then-create) throughout this section: live
+-- drift discovered 2026-09-19 showed this table, its index/policies, and
+-- cart_items' option_ids column + PK had already been created out-of-band
+-- (ad hoc SQL, never through `db push`) while other parts of this same
+-- file — critically the function bodies further down — had not, leaving
+-- e.g. rpc_create_order still charging raw selling_price with no offer/
+-- option awareness live. Guarding every statement here is what lets this
+-- file replay safely and bring the function bodies (and the one genuinely
+-- missing piece, order_items.selected_options_snapshot) up to date
+-- regardless of exactly how much of it limped through before. Same
+-- rationale as 0062's `create table if not exists` for this exact table.
+create table if not exists public.product_options (
   id uuid primary key default gen_random_uuid(),
   product_id uuid not null references public.products(id) on delete cascade,
   name text not null check (btrim(name) <> ''),
@@ -26,14 +37,16 @@ create table public.product_options (
   created_at timestamptz not null default now()
 );
 
-create index idx_product_options_product on public.product_options (product_id, sort_order);
+create index if not exists idx_product_options_product on public.product_options (product_id, sort_order);
 
 alter table public.product_options enable row level security;
 
 -- No sensitive data (no cost) — same open-read policy as product_images.
 grant select on public.product_options to authenticated;
 grant insert, update, delete on public.product_options to authenticated;
+drop policy if exists product_options_select on public.product_options;
 create policy product_options_select on public.product_options for select to authenticated using (true);
+drop policy if exists product_options_write on public.product_options;
 create policy product_options_write on public.product_options for all to authenticated
   using (public.is_admin()) with check (public.is_admin());
 
@@ -44,9 +57,24 @@ create policy product_options_write on public.product_options for all to authent
 --    (sorted, deduplicated) by the RPCs below so the same combination
 --    always maps to the same line regardless of tick order.
 -- ----------------------------------------------------------------------------
-alter table public.cart_items add column option_ids uuid[] not null default '{}';
-alter table public.cart_items drop constraint cart_items_pkey;
-alter table public.cart_items add primary key (customer_id, product_id, option_ids);
+alter table public.cart_items add column if not exists option_ids uuid[] not null default '{}';
+
+do $$
+declare
+  v_pk_cols text[];
+begin
+  select coalesce(array_agg(kcu.column_name order by kcu.column_name), '{}')
+    into v_pk_cols
+    from information_schema.table_constraints tc
+    join information_schema.key_column_usage kcu
+      on kcu.constraint_name = tc.constraint_name and kcu.table_schema = tc.table_schema
+    where tc.table_schema = 'public' and tc.table_name = 'cart_items' and tc.constraint_type = 'PRIMARY KEY';
+
+  if v_pk_cols <> array['customer_id', 'option_ids', 'product_id'] then
+    alter table public.cart_items drop constraint cart_items_pkey;
+    alter table public.cart_items add primary key (customer_id, product_id, option_ids);
+  end if;
+end $$;
 
 -- ----------------------------------------------------------------------------
 -- 3. Cart RPCs — same bodies as 0035, extended with option_ids.
@@ -209,7 +237,7 @@ $$;
 --    order time" discipline as the delivery address (0036).
 -- ----------------------------------------------------------------------------
 alter table public.order_items
-  add column selected_options_snapshot jsonb not null default '[]'::jsonb;
+  add column if not exists selected_options_snapshot jsonb not null default '[]'::jsonb;
 
 create or replace view public.order_items_display
   with (security_invoker = true) as
