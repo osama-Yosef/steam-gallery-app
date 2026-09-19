@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:iconsax_flutter/iconsax_flutter.dart';
 import '../../../../../core/errors/app_exception.dart';
 import '../../../../../core/maps/device_location_service.dart';
 import '../../../../../core/maps/geo_point.dart';
@@ -267,7 +268,7 @@ class _AddressFormScreenState extends ConsumerState<AddressFormScreen> {
         appBar: AppBar(title: Text(title)),
         body: const EmptyView(
           message: 'الخدمة لم تبدأ في أي مدينة بعد.',
-          icon: Icons.location_city_outlined,
+          icon: Iconsax.buildings_2_copy,
         ),
       );
     }
@@ -315,7 +316,7 @@ class _AddressFormScreenState extends ConsumerState<AddressFormScreen> {
             isExpanded: true,
             decoration: const InputDecoration(
               labelText: 'المدينة',
-              prefixIcon: Icon(Icons.location_city_outlined),
+              prefixIcon: Icon(Iconsax.buildings_2_copy),
             ),
             items: [
               for (final c in cities)
@@ -358,7 +359,7 @@ class _AddressFormScreenState extends ConsumerState<AddressFormScreen> {
                           height: 18,
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )
-                      : const Icon(Icons.my_location),
+                      : const Icon(Iconsax.gps_copy),
                 ),
               ),
             ],
@@ -437,7 +438,7 @@ class _AddressFormScreenState extends ConsumerState<AddressFormScreen> {
                     end: 8,
                     child: FilledButton.tonalIcon(
                       onPressed: () => setState(() => _step = _Step.pin),
-                      icon: const Icon(Icons.edit_location_alt_outlined),
+                      icon: const Icon(Iconsax.edit_2_copy),
                       label: const Text('تغيير'),
                     ),
                   ),
@@ -470,7 +471,7 @@ class _AddressFormScreenState extends ConsumerState<AddressFormScreen> {
               labelText: 'العنوان بالتفصيل',
               hintText: 'الشارع، المنطقة، أقرب علامة',
               counterText: '',
-              prefixIcon: const Icon(Icons.signpost_outlined),
+              prefixIcon: const Icon(Iconsax.signpost_copy),
               suffixIcon: _suggesting
                   ? const Padding(
                       padding: EdgeInsets.all(14),

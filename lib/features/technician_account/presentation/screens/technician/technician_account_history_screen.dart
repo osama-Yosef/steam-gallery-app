@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:iconsax_flutter/iconsax_flutter.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/utils/formatters.dart';
 import '../../../../../core/widgets/money_text.dart';
@@ -37,7 +38,7 @@ class TechnicianAccountHistoryScreen extends ConsumerWidget {
           if (txns.isEmpty) {
             return const EmptyView(
               message: 'لا توجد حركات بعد',
-              icon: Icons.receipt_long_outlined,
+              icon: Iconsax.receipt_text_copy,
             );
           }
           return ListView.separated(
@@ -49,8 +50,8 @@ class TechnicianAccountHistoryScreen extends ConsumerWidget {
               return ListTile(
                 leading: Icon(
                   increases
-                      ? Icons.add_circle_outline
-                      : Icons.remove_circle_outline,
+                      ? Iconsax.add_circle_copy
+                      : Iconsax.minus_cirlce_copy,
                   color: increases
                       ? Theme.of(context).colorScheme.error
                       : AppColors.success,

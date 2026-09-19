@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:uuid/uuid.dart';
 import '../../../../../core/errors/app_exception.dart';
 import '../../../../../core/theme/app_colors.dart';
@@ -66,7 +67,12 @@ class AdminWalkInSaleScreen extends ConsumerStatefulWidget {
 }
 
 class _AdminWalkInSaleScreenState extends ConsumerState<AdminWalkInSaleScreen> {
-  final String _clientRequestId = const Uuid().v4();
+  // Not final: reached two ways — pushed from the admin dashboard (a fresh
+  // screen, and so a fresh key, per sale) and as the sales role's bottom-nav
+  // home tab, where IndexedStack keeps this same State alive across many
+  // sales in a row. A key that never changed would make every sale after
+  // the first in that tab reuse the first one's idempotency key.
+  String _clientRequestId = const Uuid().v4();
   final _customerNameCtrl = TextEditingController();
   final _customerPhoneCtrl = TextEditingController();
   final _searchCtrl = TextEditingController();
@@ -264,7 +270,25 @@ class _AdminWalkInSaleScreenState extends ConsumerState<AdminWalkInSaleScreen> {
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(const SnackBar(content: Text('تم تسجيل البيع بنجاح')));
-        Navigator.of(context).pop(true);
+        // Pushed from the admin dashboard, this screen sits on top of it and
+        // should pop back. Reached as the sales role's home tab, it IS the
+        // screen — there's nothing above it to pop to, and forcing a pop
+        // here crashed the shell's nested navigator right after the sale
+        // had already gone through server-side. Reset in place instead so
+        // the next walk-in sale starts clean either way.
+        if (Navigator.of(context).canPop()) {
+          Navigator.of(context).pop(true);
+        } else {
+          setState(() {
+            _lines.clear();
+            _customerNameCtrl.clear();
+            _customerPhoneCtrl.clear();
+            _discountCtrl.text = '0';
+            _notesCtrl.clear();
+            _paymentMethod = PaymentMethod.cash;
+            _clientRequestId = const Uuid().v4();
+          });
+        }
       }
     } catch (e) {
       if (mounted) {
@@ -289,7 +313,7 @@ class _AdminWalkInSaleScreenState extends ConsumerState<AdminWalkInSaleScreen> {
         actions: [
           TextButton.icon(
             onPressed: _addServiceLine,
-            icon: const Icon(Icons.handyman_outlined),
+            icon: const Icon(Iconsax.setting_2_copy),
             label: const Text('خدمة'),
           ),
         ],
@@ -306,11 +330,11 @@ class _AdminWalkInSaleScreenState extends ConsumerState<AdminWalkInSaleScreen> {
               controller: _searchCtrl,
               decoration: InputDecoration(
                 hintText: 'ابحث عن منتج...',
-                prefixIcon: const Icon(Icons.search),
+                prefixIcon: const Icon(Iconsax.search_normal_1_copy),
                 suffixIcon: _search.isEmpty
                     ? null
                     : IconButton(
-                        icon: const Icon(Icons.close),
+                        icon: const Icon(Iconsax.close_circle_copy),
                         onPressed: () {
                           _searchCtrl.clear();
                           setState(() => _search = '');
@@ -344,7 +368,7 @@ class _AdminWalkInSaleScreenState extends ConsumerState<AdminWalkInSaleScreen> {
                     message: _search.isEmpty
                         ? 'لا توجد منتجات متاحة بالمخزن'
                         : 'لا توجد نتائج لـ "$_search"',
-                    icon: Icons.inventory_2_outlined,
+                    icon: Iconsax.box_copy,
                   );
                 }
                 return LayoutBuilder(
@@ -467,7 +491,7 @@ class _ProductCard extends StatelessWidget {
                       ? ColoredBox(
                           color: theme.colorScheme.surfaceContainerHighest,
                           child: const Icon(
-                            Icons.inventory_2_outlined,
+                            Iconsax.box_copy,
                             size: 32,
                           ),
                         )
@@ -602,13 +626,13 @@ class _CheckoutBar extends StatelessWidget {
                           children: [
                             IconButton(
                               visualDensity: VisualDensity.compact,
-                              icon: const Icon(Icons.remove_circle_outline),
+                              icon: const Icon(Iconsax.minus_cirlce_copy),
                               onPressed: () => onChangeQuantity(line, -1),
                             ),
                             Text('${line.quantity}'),
                             IconButton(
                               visualDensity: VisualDensity.compact,
-                              icon: const Icon(Icons.add_circle_outline),
+                              icon: const Icon(Iconsax.add_circle_copy),
                               onPressed: () => onChangeQuantity(line, 1),
                             ),
                           ],
@@ -687,7 +711,7 @@ class _CheckoutBar extends StatelessWidget {
                       : Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const Icon(Icons.point_of_sale_rounded, size: 20),
+                            const Icon(Iconsax.card_pos_copy, size: 20),
                             const SizedBox(width: 8),
                             Text(
                               'تأكيد البيع · ${Formatters.currency(total)}',

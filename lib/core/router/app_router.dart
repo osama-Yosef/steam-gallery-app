@@ -60,6 +60,8 @@ import '../../features/products/presentation/screens/customer/customer_catalog_s
 import '../../features/products/presentation/screens/customer/product_detail_screen.dart';
 import '../../features/reports/presentation/screens/admin_report_detail_screen.dart';
 import '../../features/reports/presentation/screens/admin_reports_home_screen.dart';
+import '../../features/sales/presentation/screens/admin/admin_sale_return_detail_screen.dart';
+import '../../features/sales/presentation/screens/admin/admin_sales_returns_screen.dart';
 import '../../features/sales/presentation/screens/admin/admin_walk_in_sale_screen.dart';
 import '../../features/storefront/presentation/screens/admin/admin_banner_editor_screen.dart';
 import '../../features/storefront/presentation/screens/admin/admin_marketing_screen.dart';
@@ -78,7 +80,10 @@ import '../../features/wallet/presentation/screens/admin/admin_wallets_list_scre
 import '../../features/wallet/presentation/screens/customer/wallet_screen.dart';
 import '../../features/wallet/presentation/screens/customer/wallet_topup_screen.dart';
 import '../config/env.dart';
+import '../navigation/admin_sections_screen.dart';
 import '../navigation/admin_shell.dart';
+import '../navigation/sales_sections_screen.dart';
+import '../navigation/sales_shell.dart';
 import '../navigation/customer_shell.dart';
 import '../navigation/technician_shell.dart';
 import '../screens/config_missing_screen.dart';
@@ -200,12 +205,28 @@ GoRouter appRouter(Ref ref) {
                 builder: (_, _) => const AdminHomeScreen(),
                 routes: [
                   GoRoute(
+                    path: 'sections',
+                    builder: (_, _) => const AdminSectionsScreen(),
+                  ),
+                  GoRoute(
                     path: 'walk-in-sale',
                     builder: (_, _) => const AdminWalkInSaleScreen(),
                   ),
                   GoRoute(
                     path: 'instapay',
                     builder: (_, _) => const AdminInstapayReviewScreen(),
+                  ),
+                  GoRoute(
+                    path: 'sales-returns',
+                    builder: (_, _) => const AdminSalesReturnsScreen(),
+                    routes: [
+                      GoRoute(
+                        path: ':id',
+                        builder: (_, state) => AdminSaleReturnDetailScreen(
+                          saleId: state.pathParameters['id']!,
+                        ),
+                      ),
+                    ],
                   ),
                   GoRoute(
                     path: 'reports',
@@ -469,6 +490,122 @@ GoRouter appRouter(Ref ref) {
                 builder: (_, _) => const AdminCashMovementScreen(
                   kind: CashMovementKind.withdrawal,
                 ),
+              ),
+            ],
+          ),
+        ],
+      ),
+
+      // Sales — floating glass bottom nav (0046), branch order matches
+      // SalesShell._items: بيع مباشر (home/landing) / الطلبات / الأقسام.
+      // Reuses several admin screens directly (they have no role check of
+      // their own — see migration 0044 for the actual authorization
+      // boundary); products and the warehouse are NOT reachable at all
+      // under this shell (0046 hides them from sales entirely).
+      StatefulShellRoute.indexedStack(
+        builder: (_, _, shell) => SalesShell(navigationShell: shell),
+        branches: [
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: Routes.salesHome,
+                builder: (_, _) => const AdminWalkInSaleScreen(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: Routes.salesOrders,
+                builder: (_, _) => const AdminOrdersListScreen(),
+                routes: [
+                  GoRoute(
+                    path: ':id',
+                    builder: (_, state) => AdminOrderDetailScreen(
+                      orderId: state.pathParameters['id']!,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: Routes.salesSections,
+                builder: (_, _) => const SalesSectionsScreen(),
+                routes: [
+                  GoRoute(
+                    path: 'marketing',
+                    builder: (_, _) => const AdminMarketingScreen(),
+                    routes: [
+                      GoRoute(
+                        path: 'offers/new',
+                        builder: (_, _) => const AdminOfferEditorScreen(),
+                      ),
+                      GoRoute(
+                        path: 'offers/:id',
+                        builder: (_, state) => AdminOfferEditorScreen(
+                          offerId: state.pathParameters['id'],
+                        ),
+                      ),
+                      GoRoute(
+                        path: 'banners/new',
+                        builder: (_, _) => const AdminBannerEditorScreen(),
+                      ),
+                      GoRoute(
+                        path: 'banners/:id',
+                        builder: (_, state) => AdminBannerEditorScreen(
+                          bannerId: state.pathParameters['id'],
+                        ),
+                      ),
+                    ],
+                  ),
+                  GoRoute(
+                    path: 'instapay',
+                    builder: (_, _) => const AdminInstapayReviewScreen(),
+                  ),
+                  GoRoute(
+                    path: 'sales-returns',
+                    builder: (_, _) => const AdminSalesReturnsScreen(),
+                    routes: [
+                      GoRoute(
+                        path: ':id',
+                        builder: (_, state) => AdminSaleReturnDetailScreen(
+                          saleId: state.pathParameters['id']!,
+                        ),
+                      ),
+                    ],
+                  ),
+                  GoRoute(
+                    path: 'cashbox',
+                    builder: (_, _) => const AdminCashboxScreen(),
+                    routes: [
+                      GoRoute(
+                        path: 'expenses',
+                        builder: (_, _) => const AdminExpensesListScreen(),
+                        routes: [
+                          GoRoute(
+                            path: 'new',
+                            builder: (_, _) => const AdminRecordExpenseScreen(),
+                          ),
+                        ],
+                      ),
+                      GoRoute(
+                        path: 'deposit',
+                        builder: (_, _) => const AdminCashMovementScreen(
+                          kind: CashMovementKind.deposit,
+                        ),
+                      ),
+                      GoRoute(
+                        path: 'withdraw',
+                        builder: (_, _) => const AdminCashMovementScreen(
+                          kind: CashMovementKind.withdrawal,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ],
           ),

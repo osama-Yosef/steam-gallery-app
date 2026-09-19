@@ -6,10 +6,14 @@ import '../models/expense.dart';
 import '../models/expense_category.dart';
 
 abstract class CashboxRepository {
-  /// v1 has exactly one active cashbox — see docs/02-database-design.md.
-  Future<CashboxBalance?> getBalance();
+  /// Both tills (0059: cash + transfer), one row each.
+  Future<List<CashboxBalance>> getBalances();
 
-  Future<List<CashTransaction>> getCashTransactions({int limit = 200});
+  /// [cashboxId] filters to one till; omitted shows both mixed together.
+  Future<List<CashTransaction>> getCashTransactions({
+    String? cashboxId,
+    int limit = 200,
+  });
 
   Future<List<ExpenseCategory>> getExpenseCategories();
 
@@ -19,17 +23,26 @@ abstract class CashboxRepository {
     required String categoryId,
     required double amount,
     required DateTime expenseDate,
+    required CashboxKind kind,
     String? notes,
   });
 
   /// Cash put into the till from outside the business cycle (opening float,
   /// an owner top-up). Deliberately NOT an expense/sale, so it moves the till
   /// balance without touching any profit figure — see migration 0028.
-  Future<void> depositCash({required double amount, String? notes});
+  Future<void> depositCash({
+    required double amount,
+    required CashboxKind kind,
+    String? notes,
+  });
 
   /// Cash taken out of the till (drawings, moving cash to the bank). Same
   /// deal: balance only, never profit. Throws if it would overdraw the till.
-  Future<void> withdrawCash({required double amount, String? notes});
+  Future<void> withdrawCash({
+    required double amount,
+    required CashboxKind kind,
+    String? notes,
+  });
 }
 
 class SupabaseCashboxRepository implements CashboxRepository {
@@ -37,25 +50,24 @@ class SupabaseCashboxRepository implements CashboxRepository {
   SupabaseCashboxRepository(this._client);
 
   @override
-  Future<CashboxBalance?> getBalance() async {
+  Future<List<CashboxBalance>> getBalances() async {
     try {
-      final row = await _client
-          .from('cashbox_balances')
-          .select()
-          .limit(1)
-          .maybeSingle();
-      return row == null ? null : CashboxBalance.fromRow(row);
+      final rows = await _client.from('cashbox_balances').select();
+      return rows.map(CashboxBalance.fromRow).toList();
     } catch (e) {
       throw AppException.from(e);
     }
   }
 
   @override
-  Future<List<CashTransaction>> getCashTransactions({int limit = 200}) async {
+  Future<List<CashTransaction>> getCashTransactions({
+    String? cashboxId,
+    int limit = 200,
+  }) async {
     try {
-      final rows = await _client
-          .from('cash_transactions')
-          .select()
+      var query = _client.from('cash_transactions').select();
+      if (cashboxId != null) query = query.eq('cashbox_id', cashboxId);
+      final rows = await query
           .order('created_at', ascending: false)
           .limit(limit);
       return rows.map(CashTransaction.fromRow).toList();
@@ -99,6 +111,7 @@ class SupabaseCashboxRepository implements CashboxRepository {
     required String categoryId,
     required double amount,
     required DateTime expenseDate,
+    required CashboxKind kind,
     String? notes,
   }) async {
     try {
@@ -110,6 +123,7 @@ class SupabaseCashboxRepository implements CashboxRepository {
           'p_expense_date': expenseDate.toIso8601String().split('T').first,
           'p_notes': notes,
           'p_attachment_url': null,
+          'p_kind': cashboxKindToString(kind),
         },
       );
     } catch (e) {
@@ -118,11 +132,19 @@ class SupabaseCashboxRepository implements CashboxRepository {
   }
 
   @override
-  Future<void> depositCash({required double amount, String? notes}) async {
+  Future<void> depositCash({
+    required double amount,
+    required CashboxKind kind,
+    String? notes,
+  }) async {
     try {
       await _client.rpc(
         'rpc_cashbox_deposit',
-        params: {'p_amount': amount, 'p_notes': notes},
+        params: {
+          'p_amount': amount,
+          'p_notes': notes,
+          'p_kind': cashboxKindToString(kind),
+        },
       );
     } catch (e) {
       throw AppException.from(e);
@@ -130,11 +152,19 @@ class SupabaseCashboxRepository implements CashboxRepository {
   }
 
   @override
-  Future<void> withdrawCash({required double amount, String? notes}) async {
+  Future<void> withdrawCash({
+    required double amount,
+    required CashboxKind kind,
+    String? notes,
+  }) async {
     try {
       await _client.rpc(
         'rpc_cashbox_withdraw',
-        params: {'p_amount': amount, 'p_notes': notes},
+        params: {
+          'p_amount': amount,
+          'p_notes': notes,
+          'p_kind': cashboxKindToString(kind),
+        },
       );
     } catch (e) {
       throw AppException.from(e);

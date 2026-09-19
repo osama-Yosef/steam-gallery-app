@@ -211,6 +211,88 @@ final class ProfitReportFamily extends $Family
   String toString() => r'profitReportProvider';
 }
 
+@ProviderFor(ordersProfitReport)
+const ordersProfitReportProvider = OrdersProfitReportFamily._();
+
+final class OrdersProfitReportProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<OrdersProfitReport>,
+          OrdersProfitReport,
+          FutureOr<OrdersProfitReport>
+        >
+    with
+        $FutureModifier<OrdersProfitReport>,
+        $FutureProvider<OrdersProfitReport> {
+  const OrdersProfitReportProvider._({
+    required OrdersProfitReportFamily super.from,
+    required (DateTime, DateTime) super.argument,
+  }) : super(
+         retry: null,
+         name: r'ordersProfitReportProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
+  @override
+  String debugGetCreateSourceHash() => _$ordersProfitReportHash();
+
+  @override
+  String toString() {
+    return r'ordersProfitReportProvider'
+        ''
+        '$argument';
+  }
+
+  @$internal
+  @override
+  $FutureProviderElement<OrdersProfitReport> $createElement(
+    $ProviderPointer pointer,
+  ) => $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<OrdersProfitReport> create(Ref ref) {
+    final argument = this.argument as (DateTime, DateTime);
+    return ordersProfitReport(ref, argument.$1, argument.$2);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is OrdersProfitReportProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$ordersProfitReportHash() =>
+    r'466b18458cbee1c0d606038afc0020d40a6d045f';
+
+final class OrdersProfitReportFamily extends $Family
+    with
+        $FunctionalFamilyOverride<
+          FutureOr<OrdersProfitReport>,
+          (DateTime, DateTime)
+        > {
+  const OrdersProfitReportFamily._()
+    : super(
+        retry: null,
+        name: r'ordersProfitReportProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  OrdersProfitReportProvider call(DateTime from, DateTime to) =>
+      OrdersProfitReportProvider._(argument: (from, to), from: this);
+
+  @override
+  String toString() => r'ordersProfitReportProvider';
+}
+
 @ProviderFor(expensesReport)
 const expensesReportProvider = ExpensesReportFamily._();
 

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:iconsax_flutter/iconsax_flutter.dart';
 import '../../../../../core/router/route_names.dart';
 import '../../../../../core/widgets/money_text.dart';
 import '../../../../../core/widgets/state_views.dart';
@@ -41,10 +42,10 @@ class _AdminCustomersListScreenState
               controller: _searchCtrl,
               decoration: InputDecoration(
                 hintText: 'ابحث بالاسم...',
-                prefixIcon: const Icon(Icons.search),
+                prefixIcon: const Icon(Iconsax.search_normal_1_copy),
                 suffixIcon: _search.isNotEmpty
                     ? IconButton(
-                        icon: const Icon(Icons.close),
+                        icon: const Icon(Iconsax.close_circle_copy),
                         onPressed: () {
                           _searchCtrl.clear();
                           setState(() => _search = '');
@@ -66,7 +67,7 @@ class _AdminCustomersListScreenState
                 if (accounts.isEmpty) {
                   return const EmptyView(
                     message: 'لا يوجد عملاء بعد',
-                    icon: Icons.people_outline,
+                    icon: Iconsax.people_copy,
                   );
                 }
                 return ListView.separated(
@@ -76,7 +77,7 @@ class _AdminCustomersListScreenState
                     final a = accounts[i];
                     return ListTile(
                       leading: const CircleAvatar(
-                        child: Icon(Icons.person_outline),
+                        child: Icon(Iconsax.user_copy),
                       ),
                       title: Text(a.customerName),
                       subtitle: Text(

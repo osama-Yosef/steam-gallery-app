@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../features/auth/presentation/providers/auth_providers.dart';
+import '../router/route_names.dart';
 import '../theme/app_colors.dart';
 import '../widgets/confirm_dialog.dart';
 import '../widgets/glass_panel.dart';
@@ -97,7 +98,7 @@ class _AdminShellState extends ConsumerState<AdminShell> {
                               child: Column(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  for (var i = 0; i < _items.length; i++)
+                                  for (var i = 0; i < _items.length; i++) ...[
                                     _RailItem(
                                       icon: _items[i].icon,
                                       label: _items[i].label,
@@ -115,6 +116,21 @@ class _AdminShellState extends ConsumerState<AdminShell> {
                                                     .currentIndex,
                                           ),
                                     ),
+                                    // "الأقسام" ranks 2nd, right after
+                                    // "الرئيسية" — it isn't a branch of its
+                                    // own (it pushes a page instead), so it's
+                                    // spliced into the loop rather than
+                                    // living in _items.
+                                    if (i == 0)
+                                      _RailItem(
+                                        icon: Icons.apps_rounded,
+                                        label: 'الأقسام',
+                                        expanded: isWide,
+                                        selected: false,
+                                        onTap: () =>
+                                            context.push(Routes.adminSections),
+                                      ),
+                                  ],
                                   const SizedBox(height: 12),
                                   Container(
                                     height: 1,

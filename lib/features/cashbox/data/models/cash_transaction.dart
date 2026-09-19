@@ -42,6 +42,7 @@ String cashTxnTypeLabelAr(CashTxnType t) => switch (t) {
 abstract class CashTransaction with _$CashTransaction {
   const factory CashTransaction({
     required String id,
+    required String cashboxId,
     required CashTxnType type,
     required double amount,
     String? referenceType,
@@ -51,6 +52,7 @@ abstract class CashTransaction with _$CashTransaction {
 
   factory CashTransaction.fromRow(Map<String, dynamic> row) => CashTransaction(
     id: row['id'] as String,
+    cashboxId: row['cashbox_id'] as String,
     type: cashTxnTypeFromString(row['transaction_type'] as String),
     amount: (row['amount'] as num).toDouble(),
     referenceType: row['reference_type'] as String?,

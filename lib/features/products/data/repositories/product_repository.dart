@@ -6,6 +6,7 @@ import '../models/catalog_query.dart';
 import '../models/product.dart';
 import '../models/product_category.dart';
 import '../models/product_image.dart';
+import '../models/product_option.dart';
 import '../models/product_public.dart';
 
 abstract class ProductRepository {
@@ -25,6 +26,18 @@ abstract class ProductRepository {
 
   // Shared
   Future<List<ProductImage>> getProductImages(String productId);
+
+  /// Priced options (0049) — ordered for display, everyone can read them
+  /// (no cost data, matches product_images' open-read policy).
+  Future<List<ProductOption>> getProductOptions(String productId);
+
+  /// Whole-list overwrite, mirroring how the old specs Map used to be
+  /// saved: whatever's in [options] becomes the product's full option list
+  /// — anything no longer present is deleted, the rest is upserted.
+  Future<void> saveProductOptions(
+    String productId,
+    List<ProductOptionInput> options,
+  );
 
   // Admin catalog management — full Product model incl. cost_price.
   Future<List<Product>> listProductsAdmin({String? search, String? categoryId});
@@ -165,6 +178,52 @@ class SupabaseProductRepository implements ProductRepository {
           .eq('product_id', productId)
           .order('sort_order');
       return rows.map(ProductImage.fromRow).toList();
+    } catch (e) {
+      throw AppException.from(e);
+    }
+  }
+
+  @override
+  Future<List<ProductOption>> getProductOptions(String productId) async {
+    try {
+      final rows = await _client
+          .from('product_options')
+          .select()
+          .eq('product_id', productId)
+          .order('sort_order');
+      return rows.map(ProductOption.fromRow).toList();
+    } catch (e) {
+      throw AppException.from(e);
+    }
+  }
+
+  @override
+  Future<void> saveProductOptions(
+    String productId,
+    List<ProductOptionInput> options,
+  ) async {
+    try {
+      final keepIds = options.map((o) => o.id).whereType<String>().toList();
+      var del = _client
+          .from('product_options')
+          .delete()
+          .eq('product_id', productId);
+      await (keepIds.isEmpty ? del : del.not('id', 'in', keepIds));
+
+      for (var i = 0; i < options.length; i++) {
+        final o = options[i];
+        final row = {
+          'product_id': productId,
+          'name': o.name,
+          'extra_price': o.extraPrice,
+          'sort_order': i,
+        };
+        if (o.id == null) {
+          await _client.from('product_options').insert(row);
+        } else {
+          await _client.from('product_options').update(row).eq('id', o.id!);
+        }
+      }
     } catch (e) {
       throw AppException.from(e);
     }

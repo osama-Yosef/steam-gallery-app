@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:iconsax_flutter/iconsax_flutter.dart';
 import '../../../../../core/utils/formatters.dart';
 import '../../../../../core/widgets/money_text.dart';
 import '../../../../../core/widgets/state_views.dart';
@@ -25,7 +26,7 @@ class AdminStockMovementsScreen extends ConsumerWidget {
           if (movements.isEmpty) {
             return const EmptyView(
               message: 'لا توجد حركات مخزون بعد',
-              icon: Icons.swap_horiz_outlined,
+              icon: Iconsax.arrow_swap_horizontal_copy,
             );
           }
           return ListView.separated(

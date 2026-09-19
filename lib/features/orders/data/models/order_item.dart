@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import '../../../products/data/models/product_option.dart';
 
 part 'order_item.freezed.dart';
 
@@ -15,6 +16,9 @@ abstract class OrderItem with _$OrderItem {
     required double unitPriceSnapshot,
     required double discount,
     required double lineTotal,
+    // Snapshotted at order time (0049) — the exact options and their price
+    // at that moment, even if the product's options change/disappear later.
+    required List<SelectedOption> selectedOptions,
   }) = _OrderItem;
 
   factory OrderItem.fromRow(Map<String, dynamic> row) => OrderItem(
@@ -26,5 +30,9 @@ abstract class OrderItem with _$OrderItem {
     unitPriceSnapshot: (row['unit_price_snapshot'] as num).toDouble(),
     discount: (row['discount'] as num).toDouble(),
     lineTotal: (row['line_total'] as num).toDouble(),
+    selectedOptions: [
+      for (final o in (row['selected_options_snapshot'] as List? ?? const []))
+        SelectedOption.fromJson(Map<String, dynamic>.from(o as Map)),
+    ],
   );
 }

@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:iconsax_flutter/iconsax_flutter.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/utils/formatters.dart';
 import '../../../../../core/widgets/state_views.dart';
@@ -31,7 +32,7 @@ class OfferDetailScreen extends ConsumerWidget {
         data: (offer) => offer == null
             ? const EmptyView(
                 message: 'هذا العرض انتهى أو غير متاح',
-                icon: Icons.local_offer_outlined,
+                icon: Iconsax.tag_copy,
               )
             : CustomScrollView(
                 slivers: [

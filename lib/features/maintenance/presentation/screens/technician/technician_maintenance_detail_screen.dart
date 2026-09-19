@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:iconsax_flutter/iconsax_flutter.dart';
 import '../../../../../core/errors/app_exception.dart';
 import '../../../../../core/router/route_names.dart';
 import '../../../../../core/utils/formatters.dart';
@@ -137,7 +138,7 @@ class TechnicianMaintenanceDetailScreen extends ConsumerWidget {
               const SizedBox(height: 16),
               Card(
                 child: ListTile(
-                  leading: const Icon(Icons.person_outline),
+                  leading: const Icon(Iconsax.profile_circle_copy),
                   title: Text(req.customerName),
                   subtitle: Text(req.phone),
                 ),
@@ -153,7 +154,7 @@ class TechnicianMaintenanceDetailScreen extends ConsumerWidget {
                   longitude: req.longitude,
                   address: req.address,
                 ),
-                icon: const Icon(Icons.location_on_outlined),
+                icon: const Icon(Iconsax.location_copy),
                 label: const Text('فتح الموقع'),
               ),
               const SizedBox(height: 16),
@@ -212,13 +213,13 @@ class TechnicianMaintenanceDetailScreen extends ConsumerWidget {
               if (req.status == MaintenanceStatus.assigned)
                 FilledButton.icon(
                   onPressed: () => _start(context, ref),
-                  icon: const Icon(Icons.play_arrow_outlined),
+                  icon: const Icon(Iconsax.play_copy),
                   label: const Text('بدء التنفيذ'),
                 ),
               if (req.status == MaintenanceStatus.inProgress)
                 FilledButton.icon(
                   onPressed: () => _complete(context, ref, req),
-                  icon: const Icon(Icons.check_circle_outline),
+                  icon: const Icon(Iconsax.tick_circle_copy),
                   label: const Text('تم التنفيذ'),
                 ),
             ],

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:iconsax_flutter/iconsax_flutter.dart';
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/widgets/state_views.dart';
 import '../providers/auth_providers.dart';
@@ -73,7 +74,7 @@ class _VerifyPhoneScreenState extends ConsumerState<VerifyPhoneScreen> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const Icon(Icons.verified_user_outlined, size: 56),
+                const Icon(Iconsax.verify_copy, size: 56),
                 const SizedBox(height: 16),
                 const Text(
                   'لحماية حسابك، أكِّد إن رقم الهاتف ده بتاعك. هنبعتلك كود في رسالة.',

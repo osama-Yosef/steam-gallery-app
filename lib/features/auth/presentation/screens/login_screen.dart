@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' show AuthException;
 import '../../../../core/constants/brand.dart';
 import '../../../../core/errors/app_exception.dart';
@@ -123,7 +124,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       decoration: const InputDecoration(
                         labelText: 'رقم الهاتف',
                         hintText: '01012345678',
-                        prefixIcon: Icon(Icons.phone_outlined),
+                        prefixIcon: Icon(Iconsax.call_copy),
                       ),
                       validator: Validators.phone,
                     ),
@@ -133,10 +134,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       obscureText: _obscure,
                       decoration: InputDecoration(
                         labelText: 'كلمة المرور',
-                        prefixIcon: const Icon(Icons.lock_outline),
+                        prefixIcon: const Icon(Iconsax.lock_copy),
                         suffixIcon: IconButton(
                           icon: Icon(
-                            _obscure ? Icons.visibility_off : Icons.visibility,
+                            _obscure ? Iconsax.eye_slash_copy : Iconsax.eye_copy,
                           ),
                           onPressed: () => setState(() => _obscure = !_obscure),
                         ),

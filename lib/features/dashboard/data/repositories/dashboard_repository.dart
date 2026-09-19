@@ -17,7 +17,9 @@ class SupabaseDashboardRepository implements DashboardRepository {
   Future<DashboardSummary> getSummary() async {
     try {
       final results = await Future.wait<dynamic>([
-        _client.from('cashbox_balances').select().limit(1).maybeSingle(),
+        // 0059 split this into two rows (cash + transfer) — the dashboard
+        // figure is the business's total across both, not one arbitrary row.
+        _client.from('cashbox_balances').select(),
         // 31 days is enough to derive both "today" and "this month" client-side
         // without fighting DB-vs-device timezone truncation on the view itself.
         _client
@@ -44,7 +46,11 @@ class SupabaseDashboardRepository implements DashboardRepository {
             .maybeSingle(),
       ]);
 
-      final balanceRow = results[0] as Map<String, dynamic>?;
+      final balanceRows = (results[0] as List).cast<Map<String, dynamic>>();
+      final totalCashboxBalance = balanceRows.fold<double>(
+        0,
+        (sum, r) => sum + (r['balance'] as num).toDouble(),
+      );
       final dailyRows = (results[1] as List).cast<Map<String, dynamic>>();
       final expenseRows = (results[2] as List).cast<Map<String, dynamic>>();
       final pendingOrders = results[3] as List;
@@ -107,7 +113,7 @@ class SupabaseDashboardRepository implements DashboardRepository {
       }
 
       return DashboardSummary(
-        cashboxBalance: (balanceRow?['balance'] as num?)?.toDouble() ?? 0,
+        cashboxBalance: totalCashboxBalance,
         todayRevenue: todayRevenue,
         todayNetProfit: todayRevenue - todayCogs,
         monthRevenue: monthRevenue,

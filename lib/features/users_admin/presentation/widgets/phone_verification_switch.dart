@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:iconsax_flutter/iconsax_flutter.dart';
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/widgets/confirm_dialog.dart';
 import '../../../auth/data/models/auth_settings.dart';
@@ -56,7 +57,7 @@ class _PhoneVerificationSwitchState
     final settings =
         ref.watch(authSettingsProvider).value ?? AuthSettings.unknown;
     return SwitchListTile(
-      secondary: const Icon(Icons.verified_user_outlined),
+      secondary: const Icon(Iconsax.verify_copy),
       title: const Text('طلب تأكيد رقم الهاتف للعملاء'),
       subtitle: const Text('كود برسالة قبل الطلب أو فتح طلب صيانة'),
       value: settings.requireVerifiedPhone,

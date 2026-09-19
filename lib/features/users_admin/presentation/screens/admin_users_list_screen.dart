@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:iconsax_flutter/iconsax_flutter.dart';
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/router/route_names.dart';
 import '../../../../core/widgets/confirm_dialog.dart';
@@ -43,8 +44,8 @@ class _AdminUsersListScreenState extends ConsumerState<AdminUsersListScreen> {
       appBar: AppBar(title: const Text('المستخدمون والصلاحيات')),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => context.push(Routes.adminUserNewTechnician),
-        icon: const Icon(Icons.person_add_alt_outlined),
-        label: const Text('إضافة صنايعي/أدمن'),
+        icon: const Icon(Iconsax.user_add_copy),
+        label: const Text('إضافة صنايعي/مبيعات/أدمن'),
       ),
       body: Column(
         children: [
@@ -58,7 +59,7 @@ class _AdminUsersListScreenState extends ConsumerState<AdminUsersListScreen> {
               controller: _searchCtrl,
               decoration: const InputDecoration(
                 hintText: 'بحث بالاسم أو رقم الهاتف',
-                prefixIcon: Icon(Icons.search),
+                prefixIcon: Icon(Iconsax.search_normal_1_copy),
               ),
               onChanged: (v) => setState(() => _search = v),
             ),
@@ -91,6 +92,12 @@ class _AdminUsersListScreenState extends ConsumerState<AdminUsersListScreen> {
                   selected: _roleFilter == AppRole.customer,
                   onTap: () => setState(() => _roleFilter = AppRole.customer),
                 ),
+                const SizedBox(width: 8),
+                _RoleChip(
+                  label: 'مبيعات',
+                  selected: _roleFilter == AppRole.sales,
+                  onTap: () => setState(() => _roleFilter = AppRole.sales),
+                ),
               ],
             ),
           ),
@@ -106,7 +113,7 @@ class _AdminUsersListScreenState extends ConsumerState<AdminUsersListScreen> {
                 if (users.isEmpty) {
                   return const EmptyView(
                     message: 'لا يوجد مستخدمون',
-                    icon: Icons.people_outline,
+                    icon: Iconsax.people_copy,
                   );
                 }
                 return ListView.separated(
@@ -159,7 +166,7 @@ class _AdminUsersListScreenState extends ConsumerState<AdminUsersListScreen> {
               const SizedBox(height: 16),
               if (!isSelf) ...[
                 ListTile(
-                  leading: const Icon(Icons.swap_horiz),
+                  leading: const Icon(Iconsax.arrow_swap_horizontal_copy),
                   title: const Text('تغيير الصلاحية'),
                   onTap: () async {
                     Navigator.pop(sheetContext);
@@ -169,8 +176,8 @@ class _AdminUsersListScreenState extends ConsumerState<AdminUsersListScreen> {
                 ListTile(
                   leading: Icon(
                     u.isActive
-                        ? Icons.block_outlined
-                        : Icons.check_circle_outline,
+                        ? Iconsax.lock_slash_copy
+                        : Iconsax.tick_circle_copy,
                   ),
                   title: Text(u.isActive ? 'إيقاف الحساب' : 'تفعيل الحساب'),
                   onTap: () async {
@@ -255,15 +262,17 @@ class _AdminUsersListScreenState extends ConsumerState<AdminUsersListScreen> {
   }
 
   IconData _roleIcon(AppRole r) => switch (r) {
-    AppRole.admin => Icons.admin_panel_settings_outlined,
-    AppRole.technician => Icons.build_outlined,
-    AppRole.customer => Icons.person_outline,
+    AppRole.admin => Iconsax.shield_tick_copy,
+    AppRole.technician => Iconsax.setting_2_copy,
+    AppRole.customer => Iconsax.user_copy,
+    AppRole.sales => Iconsax.card_pos_copy,
   };
 
   String _roleLabel(AppRole r) => switch (r) {
     AppRole.admin => 'أدمن',
     AppRole.technician => 'صنايعي',
     AppRole.customer => 'عميل',
+    AppRole.sales => 'مبيعات',
   };
 }
 

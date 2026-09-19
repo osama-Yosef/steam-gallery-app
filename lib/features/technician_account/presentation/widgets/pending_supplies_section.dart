@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:iconsax_flutter/iconsax_flutter.dart';
 import '../../../../core/errors/app_exception.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../../core/widgets/confirm_dialog.dart';
 import '../../data/models/technician_supply.dart';
@@ -125,7 +127,7 @@ class PendingSuppliesSection extends ConsumerWidget {
                 ),
                 for (final supply in supplies)
                   ListTile(
-                    leading: const Icon(Icons.hourglass_top),
+                    leading: const Icon(Iconsax.timer_copy),
                     title: Text(Formatters.currency(supply.amount)),
                     subtitle: Text(
                       [
@@ -139,17 +141,17 @@ class PendingSuppliesSection extends ConsumerWidget {
                             children: [
                               IconButton(
                                 tooltip: 'رفض',
-                                icon: Icon(
-                                  Icons.close,
-                                  color: Theme.of(context).colorScheme.error,
+                                icon: const Icon(
+                                  Iconsax.close_circle_copy,
+                                  color: AppColors.danger,
                                 ),
                                 onPressed: () => _reject(context, ref, supply),
                               ),
                               IconButton(
                                 tooltip: 'تأكيد الاستلام',
                                 icon: const Icon(
-                                  Icons.check_circle,
-                                  color: Colors.green,
+                                  Iconsax.tick_circle_copy,
+                                  color: AppColors.success,
                                 ),
                                 onPressed: () => _approve(context, ref, supply),
                               ),

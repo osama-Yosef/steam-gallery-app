@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:iconsax_flutter/iconsax_flutter.dart';
 import '../../../../../core/maps/map_widget_factory.dart';
 import '../../../../../core/maps/maps_providers.dart';
 import '../../../../../core/router/route_names.dart';
@@ -31,7 +32,7 @@ class AdminCityAreasScreen extends ConsumerWidget {
           ? null
           : FloatingActionButton.extended(
               onPressed: () => context.push(Routes.adminServiceAreaNew(cityId)),
-              icon: const Icon(Icons.add_circle_outline),
+              icon: const Icon(Iconsax.add_circle_copy),
               label: const Text('إضافة منطقة'),
             ),
       body: city == null
@@ -57,7 +58,7 @@ class AdminCityAreasScreen extends ConsumerWidget {
                   ),
                   if (!city.isActive)
                     const ListTile(
-                      leading: Icon(Icons.info_outline),
+                      leading: Icon(Iconsax.info_circle_copy),
                       title: Text(
                         'المدينة متوقفة: لا منطقة فيها مغطاة حتى تفعيلها.',
                       ),
@@ -73,14 +74,14 @@ class AdminCityAreasScreen extends ConsumerWidget {
                   for (final a in areas)
                     ListTile(
                       leading: Icon(
-                        Icons.radio_button_checked,
+                        Iconsax.record_circle,
                         color: a.isActive ? null : Colors.grey,
                       ),
                       title: Text(a.nameAr),
                       subtitle: Text(
                         '${a.isActive ? 'مفعّلة' : 'متوقفة'} · نصف قطر ${a.radiusKm.toStringAsFixed(1)} كم',
                       ),
-                      trailing: const Icon(Icons.chevron_left),
+                      trailing: const Icon(Iconsax.arrow_left_2_copy),
                       onTap: () => context.push(
                         Routes.adminServiceAreaEdit(cityId, a.id),
                       ),

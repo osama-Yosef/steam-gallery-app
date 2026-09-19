@@ -21,6 +21,15 @@ Future<ProfitReport> profitReport(Ref ref, DateTime from, DateTime to) {
 }
 
 @riverpod
+Future<OrdersProfitReport> ordersProfitReport(
+  Ref ref,
+  DateTime from,
+  DateTime to,
+) {
+  return ref.watch(reportsRepositoryProvider).getOrdersProfitReport(from, to);
+}
+
+@riverpod
 Future<ExpensesReport> expensesReport(Ref ref, DateTime from, DateTime to) {
   return ref.watch(reportsRepositoryProvider).getExpensesReport(from, to);
 }

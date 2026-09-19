@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:iconsax_flutter/iconsax_flutter.dart';
 import '../../../../../core/utils/formatters.dart';
 import '../../../../../core/widgets/money_text.dart';
 import '../../../../../core/widgets/state_views.dart';
@@ -40,7 +41,7 @@ class TechnicianSaleDetailScreen extends ConsumerWidget {
               const SizedBox(height: 16),
               Card(
                 child: ListTile(
-                  leading: const Icon(Icons.person_outline),
+                  leading: const Icon(Iconsax.profile_circle_copy),
                   title: Text(sale.customerName ?? 'عميل نقدي'),
                   subtitle: sale.customerPhone != null
                       ? Text(sale.customerPhone!)

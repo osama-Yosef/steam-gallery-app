@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../../../core/errors/app_exception.dart';
 import '../../../../../core/widgets/state_views.dart';
@@ -36,7 +37,7 @@ class AdminCategoryListScreen extends ConsumerWidget {
       floatingActionButton: FloatingActionButton(
         tooltip: 'قسم جديد',
         onPressed: () => _edit(context, categoriesAsync.value ?? const []),
-        child: const Icon(Icons.add),
+        child: const Icon(Iconsax.add_copy),
       ),
       body: categoriesAsync.when(
         loading: () => const LoadingView(),
@@ -48,7 +49,7 @@ class AdminCategoryListScreen extends ConsumerWidget {
           if (categories.isEmpty) {
             return const EmptyView(
               message: 'لا توجد أقسام بعد',
-              icon: Icons.category_outlined,
+              icon: Iconsax.category_copy,
             );
           }
           final names = {for (final c in categories) c.id: c.name};
@@ -70,12 +71,12 @@ class AdminCategoryListScreen extends ConsumerWidget {
                       ? null
                       : CachedNetworkImageProvider(c.imageUrl!),
                   child: c.imageUrl == null
-                      ? const Icon(Icons.category_outlined)
+                      ? const Icon(Iconsax.category_copy)
                       : null,
                 ),
                 title: Text(c.name),
                 subtitle: Text(details),
-                trailing: const Icon(Icons.edit_outlined),
+                trailing: const Icon(Iconsax.edit_copy),
                 onTap: () => _edit(context, categories, existing: c),
               );
             },
@@ -207,13 +208,13 @@ class _CategoryFormState extends ConsumerState<_CategoryForm> {
                   child: _uploading
                       ? const CircularProgressIndicator()
                       : _imageUrl == null
-                      ? const Icon(Icons.category_outlined, size: 28)
+                      ? const Icon(Iconsax.category_copy, size: 28)
                       : null,
                 ),
                 const SizedBox(width: 12),
                 OutlinedButton.icon(
                   onPressed: _uploading ? null : _pickImage,
-                  icon: const Icon(Icons.image_outlined),
+                  icon: const Icon(Iconsax.image_copy),
                   label: Text(
                     _imageUrl == null ? 'إضافة صورة' : 'تغيير الصورة',
                   ),
@@ -222,7 +223,7 @@ class _CategoryFormState extends ConsumerState<_CategoryForm> {
                   IconButton(
                     tooltip: 'إزالة الصورة',
                     onPressed: () => setState(() => _imageUrl = null),
-                    icon: const Icon(Icons.close),
+                    icon: const Icon(Iconsax.close_circle_copy),
                   ),
               ],
             ),

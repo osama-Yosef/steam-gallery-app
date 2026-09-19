@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
@@ -118,7 +119,7 @@ class _InstapayPaymentScreenState extends ConsumerState<InstapayPaymentScreen> {
                   return const EmptyView(
                     message:
                         'الدفع عبر InstaPay مش متاح دلوقتي.\nاختر طريقة دفع تانية.',
-                    icon: Icons.info_outline,
+                    icon: Iconsax.info_circle_copy,
                   );
                 }
                 final remaining = orderAsync.value?.remaining;
@@ -144,10 +145,30 @@ class _InstapayPaymentScreenState extends ConsumerState<InstapayPaymentScreen> {
                               style: Theme.of(context).textTheme.titleSmall,
                             ),
                             const SizedBox(height: 6),
-                            SelectableText(
-                              details.ipaAddress!,
-                              style: Theme.of(context).textTheme.headlineSmall
-                                  ?.copyWith(fontWeight: FontWeight.bold),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: SelectableText(
+                                    details.ipaAddress!,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .headlineSmall
+                                        ?.copyWith(fontWeight: FontWeight.bold),
+                                  ),
+                                ),
+                                IconButton(
+                                  tooltip: 'نسخ',
+                                  icon: const Icon(Iconsax.copy_copy),
+                                  onPressed: () {
+                                    Clipboard.setData(
+                                      ClipboardData(text: details.ipaAddress!),
+                                    );
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(content: Text('تم النسخ')),
+                                    );
+                                  },
+                                ),
+                              ],
                             ),
                             if (details.beneficiaryName != null) ...[
                               const SizedBox(height: 4),
@@ -189,7 +210,7 @@ class _InstapayPaymentScreenState extends ConsumerState<InstapayPaymentScreen> {
                     const SizedBox(height: 8),
                     OutlinedButton.icon(
                       onPressed: _submitting ? null : _pickProof,
-                      icon: const Icon(Icons.image_outlined),
+                      icon: const Icon(Iconsax.gallery_copy),
                       label: Text(
                         _proofBytes == null
                             ? 'أرفق صورة إثبات التحويل'
@@ -249,7 +270,7 @@ class _SubmittedView extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
-              Icons.hourglass_top_rounded,
+              Iconsax.timer_copy,
               size: 56,
               color: Theme.of(context).colorScheme.primary,
             ),

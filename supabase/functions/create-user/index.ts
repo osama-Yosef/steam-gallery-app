@@ -3,22 +3,22 @@
 // The ONLY place in the whole system that touches SUPABASE_SERVICE_ROLE_KEY.
 // Runs on Supabase's servers (Deno Edge Runtime) — never shipped to Flutter.
 //
-// Purpose: create a technician or admin account. There is no self sign-up
-// for these roles (see docs/04-security-architecture.md §1); only an
+// Purpose: create a technician, sales, or admin account. There is no self
+// sign-up for these roles (see docs/04-security-architecture.md §1); only an
 // existing admin may call this, authenticated with their own normal user
 // JWT (passed in the Authorization header exactly like any other request).
 //
-// Every account in this system (customer, technician, admin) logs in with
-// phone + password (see docs/01-system-analysis.md §9, A1) — no email, no
-// SMS OTP. "Confirm phone" must be disabled in the project's Auth settings
-// so phone_confirm below actually skips SMS verification.
+// Every account in this system (customer, technician, sales, admin) logs in
+// with phone + password (see docs/01-system-analysis.md §9, A1) — no email,
+// no SMS OTP. "Confirm phone" must be disabled in the project's Auth
+// settings so phone_confirm below actually skips SMS verification.
 //
 // Request body:
 //   {
 //     "phone": string,        // local Egyptian format, e.g. "01012345678"
 //     "password": string,
 //     "full_name": string,
-//     "role": "technician" | "admin",
+//     "role": "technician" | "sales" | "admin",
 //     "employee_code"?: string   // technician only, auto-generated if omitted
 //   }
 
@@ -61,8 +61,8 @@ Deno.serve(async (req) => {
     if (!phone || !password || !full_name || !role) {
       return json({ error: "missing required fields" }, 400);
     }
-    if (role !== "technician" && role !== "admin") {
-      return json({ error: "role must be technician or admin" }, 400);
+    if (role !== "technician" && role !== "sales" && role !== "admin") {
+      return json({ error: "role must be technician, sales, or admin" }, 400);
     }
     if (typeof password !== "string" || password.length < 8) {
       return json({ error: "password must be at least 8 characters" }, 400);

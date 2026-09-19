@@ -2,6 +2,7 @@ import 'dart:typed_data';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../../../core/errors/app_exception.dart';
 import '../../../../../core/utils/validators.dart';
@@ -10,7 +11,17 @@ import '../../../../../core/widgets/state_views.dart';
 import '../../../data/models/product.dart';
 import '../../../data/models/product_category.dart';
 import '../../../data/models/product_image.dart';
+import '../../../data/models/product_option.dart';
 import '../../../presentation/providers/product_providers.dart';
+
+/// One editable row in the "الخيارات الإضافية" section. [id] null means the
+/// row is new and hasn't been saved yet.
+class _OptionRow {
+  String? id;
+  String name;
+  String priceText;
+  _OptionRow({this.id, this.name = '', this.priceText = ''});
+}
 
 /// Create when [productId] is null, edit otherwise. Image management is
 /// only available once the product exists (needs a real product_id for the
@@ -47,8 +58,9 @@ class _AdminProductFormScreenState
   final _minStockCtrl = TextEditingController(text: '0');
   String? _categoryId;
   bool _isActive = true;
-  final List<MapEntry<String, String>> _specs = [];
+  final List<_OptionRow> _options = [];
   bool _prefilled = false;
+  bool _optionsPrefilled = false;
   bool _saving = false;
   late String? _currentProductId = widget.productId;
 
@@ -78,17 +90,30 @@ class _AdminProductFormScreenState
     _minStockCtrl.text = p.minStock.toString();
     _categoryId = p.categoryId;
     _isActive = p.isActive;
-    _specs.addAll(p.specs.entries);
+  }
+
+  void _prefillOptions(List<ProductOption> options) {
+    if (_optionsPrefilled) return;
+    _optionsPrefilled = true;
+    _options.addAll([
+      for (final o in options)
+        _OptionRow(id: o.id, name: o.name, priceText: o.extraPrice.toString()),
+    ]);
   }
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _saving = true);
     final repo = ref.read(productRepositoryProvider);
-    final specsMap = {
-      for (final e in _specs)
-        if (e.key.trim().isNotEmpty) e.key.trim(): e.value.trim(),
-    };
+    final optionInputs = [
+      for (final o in _options)
+        if (o.name.trim().isNotEmpty)
+          ProductOptionInput(
+            id: o.id,
+            name: o.name.trim(),
+            extraPrice: double.tryParse(o.priceText.trim()) ?? 0,
+          ),
+    ];
     try {
       if (_isEdit) {
         await repo.updateProduct(
@@ -102,13 +127,15 @@ class _AdminProductFormScreenState
           description: _descCtrl.text.trim().isEmpty
               ? null
               : _descCtrl.text.trim(),
-          specs: specsMap,
+          specs: const {},
           costPrice: double.parse(_costCtrl.text),
           sellingPrice: double.parse(_priceCtrl.text),
           minStock: int.parse(_minStockCtrl.text),
         );
         await repo.setProductActive(_currentProductId!, _isActive);
+        await repo.saveProductOptions(_currentProductId!, optionInputs);
         ref.invalidate(adminProductDetailProvider(_currentProductId!));
+        ref.invalidate(productOptionsProvider(_currentProductId!));
         if (mounted) {
           ScaffoldMessenger.of(
             context,
@@ -125,11 +152,12 @@ class _AdminProductFormScreenState
           description: _descCtrl.text.trim().isEmpty
               ? null
               : _descCtrl.text.trim(),
-          specs: specsMap,
+          specs: const {},
           costPrice: double.parse(_costCtrl.text),
           sellingPrice: double.parse(_priceCtrl.text),
           minStock: int.parse(_minStockCtrl.text),
         );
+        await repo.saveProductOptions(id, optionInputs);
         if (mounted) {
           setState(() => _currentProductId = id);
           ScaffoldMessenger.of(context).showSnackBar(
@@ -160,6 +188,9 @@ class _AdminProductFormScreenState
     if (_isEdit && productAsync != null) {
       final p = productAsync.value;
       if (p != null) _prefill(p);
+      final options = ref.watch(productOptionsProvider(_currentProductId!));
+      final list = options.value;
+      if (list != null) _prefillOptions(list);
     }
 
     return Scaffold(
@@ -285,41 +316,55 @@ class _AdminProductFormScreenState
             ),
           ],
           const SizedBox(height: 16),
-          Text('المواصفات', style: Theme.of(context).textTheme.titleMedium),
-          ..._specs.asMap().entries.map((entry) {
+          Text(
+            'الخيارات الإضافية',
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+          Text(
+            'كل خيار يقدر العميل يختاره فيضيف سعره لسعر المنتج — لو ماختارش '
+            'أي خيار، يفضل سعر المنتج زي ما هو.',
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+          ..._options.asMap().entries.map((entry) {
             final i = entry.key;
+            final row = entry.value;
             return Padding(
               padding: const EdgeInsets.symmetric(vertical: 4),
               child: Row(
                 children: [
                   Expanded(
+                    flex: 2,
                     child: TextFormField(
-                      initialValue: entry.value.key,
-                      decoration: const InputDecoration(labelText: 'الخاصية'),
-                      onChanged: (v) =>
-                          _specs[i] = MapEntry(v, _specs[i].value),
+                      initialValue: row.name,
+                      decoration: const InputDecoration(labelText: 'الخيار'),
+                      onChanged: (v) => row.name = v,
                     ),
                   ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: TextFormField(
-                      initialValue: entry.value.value,
-                      decoration: const InputDecoration(labelText: 'القيمة'),
-                      onChanged: (v) => _specs[i] = MapEntry(_specs[i].key, v),
+                      initialValue: row.priceText,
+                      decoration: const InputDecoration(
+                        labelText: 'سعر إضافي',
+                      ),
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
+                      onChanged: (v) => row.priceText = v,
                     ),
                   ),
                   IconButton(
-                    icon: const Icon(Icons.remove_circle_outline),
-                    onPressed: () => setState(() => _specs.removeAt(i)),
+                    icon: const Icon(Iconsax.minus_cirlce_copy),
+                    onPressed: () => setState(() => _options.removeAt(i)),
                   ),
                 ],
               ),
             );
           }),
           TextButton.icon(
-            onPressed: () => setState(() => _specs.add(const MapEntry('', ''))),
-            icon: const Icon(Icons.add),
-            label: const Text('إضافة خاصية'),
+            onPressed: () => setState(() => _options.add(_OptionRow())),
+            icon: const Icon(Iconsax.add_copy),
+            label: const Text('إضافة خيار'),
           ),
           const SizedBox(height: 24),
           FilledButton(
@@ -428,7 +473,7 @@ class _ProductImagesSection extends ConsumerWidget {
                               radius: 12,
                               backgroundColor: Colors.black54,
                               child: Icon(
-                                Icons.close,
+                                Iconsax.close_circle_copy,
                                 size: 14,
                                 color: Colors.white,
                               ),
@@ -449,7 +494,7 @@ class _ProductImagesSection extends ConsumerWidget {
                       ),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: const Icon(Icons.add_photo_alternate_outlined),
+                    child: const Icon(Iconsax.gallery_add_copy),
                   ),
                 ),
               ],

@@ -575,6 +575,83 @@ final class ProductImagesFamily extends $Family
   String toString() => r'productImagesProvider';
 }
 
+@ProviderFor(productOptions)
+const productOptionsProvider = ProductOptionsFamily._();
+
+final class ProductOptionsProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<List<ProductOption>>,
+          List<ProductOption>,
+          FutureOr<List<ProductOption>>
+        >
+    with
+        $FutureModifier<List<ProductOption>>,
+        $FutureProvider<List<ProductOption>> {
+  const ProductOptionsProvider._({
+    required ProductOptionsFamily super.from,
+    required String super.argument,
+  }) : super(
+         retry: null,
+         name: r'productOptionsProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
+  @override
+  String debugGetCreateSourceHash() => _$productOptionsHash();
+
+  @override
+  String toString() {
+    return r'productOptionsProvider'
+        ''
+        '($argument)';
+  }
+
+  @$internal
+  @override
+  $FutureProviderElement<List<ProductOption>> $createElement(
+    $ProviderPointer pointer,
+  ) => $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<List<ProductOption>> create(Ref ref) {
+    final argument = this.argument as String;
+    return productOptions(ref, argument);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is ProductOptionsProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$productOptionsHash() => r'8f44837c904f2c93deb4be5211beceeb90e62efe';
+
+final class ProductOptionsFamily extends $Family
+    with $FunctionalFamilyOverride<FutureOr<List<ProductOption>>, String> {
+  const ProductOptionsFamily._()
+    : super(
+        retry: null,
+        name: r'productOptionsProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  ProductOptionsProvider call(String productId) =>
+      ProductOptionsProvider._(argument: productId, from: this);
+
+  @override
+  String toString() => r'productOptionsProvider';
+}
+
 @ProviderFor(adminProducts)
 const adminProductsProvider = AdminProductsFamily._();
 

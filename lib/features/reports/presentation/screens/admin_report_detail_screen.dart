@@ -1,6 +1,12 @@
+import 'dart:ui' as ui;
+
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:iconsax_flutter/iconsax_flutter.dart';
+import 'package:share_plus/share_plus.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../../core/widgets/money_text.dart';
 import '../../../../core/widgets/state_views.dart';
@@ -9,50 +15,146 @@ import '../../../technician_account/presentation/providers/technician_account_pr
 import '../providers/reports_providers.dart';
 import 'admin_reports_home_screen.dart' show reportTypes;
 
-/// One screen, body switches on `reportType` — the 6 reports share the same
-/// date-range header and "copy" export action, so a single adaptable screen
-/// avoids six near-identical files. See docs/07-implementation-roadmap.md
-/// Module 11 (Export is copy-to-clipboard for v1, not PDF/Excel — a
-/// deliberate scope cut to avoid pulling in an untested package this late;
-/// swapping in `printing`/`excel` later is a presentation-layer-only change).
-class AdminReportDetailScreen extends ConsumerWidget {
+/// One screen, body switches on `reportType` — the reports share the same
+/// date-range header and export action, so a single adaptable screen avoids
+/// several near-identical files. Export shares a PNG screenshot of the report
+/// (0046) — a copy-to-clipboard fallback is still one tap away in the menu.
+class AdminReportDetailScreen extends ConsumerStatefulWidget {
   final String reportType;
   const AdminReportDetailScreen({super.key, required this.reportType});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final label = reportTypes.firstWhere((t) => t.$1 == reportType).$2;
+  ConsumerState<AdminReportDetailScreen> createState() =>
+      _AdminReportDetailScreenState();
+}
+
+class _AdminReportDetailScreenState
+    extends ConsumerState<AdminReportDetailScreen> {
+  final _boundaryKey = GlobalKey();
+  bool _exporting = false;
+
+  String get reportType => widget.reportType;
+
+  (String, String, IconData, Color) get _meta =>
+      reportTypes.firstWhere((t) => t.$1 == reportType);
+
+  @override
+  Widget build(BuildContext context) {
+    final label = _meta.$2;
+    final color = _meta.$4;
     final range = ref.watch(reportDateRangeProvider);
 
     return Scaffold(
       appBar: AppBar(
         title: Text(label),
         actions: [
-          IconButton(
-            tooltip: 'نسخ التقرير',
-            icon: const Icon(Icons.copy_all_outlined),
-            onPressed: () => _copyReport(context, ref, range),
-          ),
+          if (_exporting)
+            const Padding(
+              padding: EdgeInsets.all(16),
+              child: SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+            )
+          else
+            PopupMenuButton<String>(
+              tooltip: 'تصدير',
+              icon: const Icon(Iconsax.export_1_copy),
+              onSelected: (v) => v == 'image'
+                  ? _shareAsImage(context)
+                  : _copyReport(context, ref, range),
+              itemBuilder: (context) => const [
+                PopupMenuItem(
+                  value: 'image',
+                  child: ListTile(
+                    leading: Icon(Iconsax.gallery_copy),
+                    title: Text('مشاركة/حفظ كصورة'),
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                ),
+                PopupMenuItem(
+                  value: 'text',
+                  child: ListTile(
+                    leading: Icon(Iconsax.copy_copy),
+                    title: Text('نسخ كنص'),
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                ),
+              ],
+            ),
         ],
       ),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Text(
-              '${Formatters.date(range.from)} — ${Formatters.date(range.to.subtract(const Duration(days: 1)))}',
-              style: Theme.of(context).textTheme.bodyMedium,
-              textAlign: TextAlign.center,
+      body: RepaintBoundary(
+        key: _boundaryKey,
+        child: Theme(
+          // The exported image must read the same on paper/WhatsApp no
+          // matter the phone's own theme — forced light regardless of the
+          // app's actual (dark) theme, which used to leak through as a
+          // near-black screenshot with low-contrast text.
+          data: ThemeData.light(),
+          child: Material(
+            color: Colors.white,
+            child: DefaultTextStyle(
+              style: const TextStyle(color: Colors.black87),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 40,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: color,
+                          ),
+                          child: Icon(_meta.$3, color: Colors.white, size: 20),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                label,
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black87,
+                                ),
+                              ),
+                              Text(
+                                '${Formatters.date(range.from)} — ${Formatters.date(range.to.subtract(const Duration(days: 1)))}',
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.black54,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Expanded(child: _buildBody(context, ref, range, color)),
+                ],
+              ),
             ),
           ),
-          Expanded(child: _buildBody(context, ref, range)),
-        ],
+        ),
       ),
     );
   }
 
-  Widget _buildBody(BuildContext context, WidgetRef ref, ReportRange range) {
+  Widget _buildBody(
+    BuildContext context,
+    WidgetRef ref,
+    ReportRange range,
+    Color color,
+  ) {
     switch (reportType) {
       case 'sales':
         final async = ref.watch(salesReportProvider(range.from, range.to));
@@ -74,6 +176,7 @@ class AdminReportDetailScreen extends ConsumerWidget {
                 r.netSales,
                 bold: true,
                 highlight: true,
+                color: color,
               ),
             ],
           ),
@@ -98,6 +201,40 @@ class AdminReportDetailScreen extends ConsumerWidget {
                 r.netProfit,
                 bold: true,
                 highlight: true,
+                color: color,
+              ),
+            ],
+          ),
+        );
+
+      case 'orders_profit':
+        final async = ref.watch(
+          ordersProfitReportProvider(range.from, range.to),
+        );
+        return async.when(
+          loading: () => const LoadingView(),
+          error: (e, _) => const ErrorView(message: 'تعذَّر تحميل التقرير'),
+          data: (r) => ListView(
+            padding: const EdgeInsets.all(16),
+            children: [
+              _row(
+                context,
+                'عدد الطلبات',
+                r.orderCount.toDouble(),
+                isCount: true,
+                bold: true,
+              ),
+              const Divider(height: 32),
+              _row(context, 'إيرادات الطلبات', r.revenue),
+              _row(context, 'تكلفة البضاعة (COGS)', -r.cogs),
+              const Divider(height: 32),
+              _row(
+                context,
+                'أرباح الطلبات',
+                r.grossProfit,
+                bold: true,
+                highlight: true,
+                color: color,
               ),
             ],
           ),
@@ -121,6 +258,7 @@ class AdminReportDetailScreen extends ConsumerWidget {
                   r.total,
                   bold: true,
                   highlight: true,
+                  color: color,
                 ),
                 const SizedBox(height: 16),
                 Text(
@@ -138,6 +276,7 @@ class AdminReportDetailScreen extends ConsumerWidget {
                 ...r.topExpenses.map(
                   (e) => ListTile(
                     contentPadding: EdgeInsets.zero,
+                    leading: const Icon(Iconsax.receipt_minus_copy),
                     title: Text(e.categoryName),
                     subtitle: Text(
                       Formatters.date(e.date) +
@@ -184,6 +323,7 @@ class AdminReportDetailScreen extends ConsumerWidget {
               ...r.movementsByType.map(
                 (m) => ListTile(
                   contentPadding: EdgeInsets.zero,
+                  leading: const Icon(Iconsax.arrow_swap_horizontal_copy),
                   title: Text(_movementTypeLabel(m.movementType)),
                   subtitle: Text('${m.count} حركة'),
                   trailing: MoneyText(m.totalCost),
@@ -223,6 +363,7 @@ class AdminReportDetailScreen extends ConsumerWidget {
                       'المطلوب توريده',
                       t.amountDue,
                       highlight: t.amountDue > 0,
+                      color: color,
                     ),
                   ],
                 );
@@ -258,6 +399,7 @@ class AdminReportDetailScreen extends ConsumerWidget {
                       'المتبقي',
                       c.remainingBalance,
                       highlight: c.remainingBalance > 0,
+                      color: color,
                     ),
                   ],
                 );
@@ -278,10 +420,13 @@ class AdminReportDetailScreen extends ConsumerWidget {
     bool bold = false,
     bool highlight = false,
     bool isCount = false,
+    Color? color,
   }) {
     final style = Theme.of(context).textTheme.bodyLarge?.copyWith(
       fontWeight: bold ? FontWeight.bold : FontWeight.normal,
-      color: highlight ? Theme.of(context).colorScheme.primary : null,
+      color: highlight
+          ? (value < 0 ? AppColors.danger : (color ?? AppColors.primary))
+          : null,
     );
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
@@ -310,13 +455,45 @@ class AdminReportDetailScreen extends ConsumerWidget {
     _ => type,
   };
 
+  Future<void> _shareAsImage(BuildContext context) async {
+    setState(() => _exporting = true);
+    try {
+      final boundary =
+          _boundaryKey.currentContext?.findRenderObject()
+              as RenderRepaintBoundary?;
+      if (boundary == null) return;
+      final image = await boundary.toImage(pixelRatio: 2.5);
+      final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+      final bytes = byteData!.buffer.asUint8List();
+      await SharePlus.instance.share(
+        ShareParams(
+          files: [
+            XFile.fromData(
+              bytes,
+              mimeType: 'image/png',
+              name: '${reportType}_report.png',
+            ),
+          ],
+        ),
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('تعذَّر تصدير التقرير: $e')));
+      }
+    } finally {
+      if (mounted) setState(() => _exporting = false);
+    }
+  }
+
   Future<void> _copyReport(
     BuildContext context,
     WidgetRef ref,
     ReportRange range,
   ) async {
     final buffer = StringBuffer()
-      ..writeln(reportTypes.firstWhere((t) => t.$1 == reportType).$2)
+      ..writeln(_meta.$2)
       ..writeln(
         '${Formatters.date(range.from)} — ${Formatters.date(range.to.subtract(const Duration(days: 1)))}',
       )
@@ -344,6 +521,15 @@ class AdminReportDetailScreen extends ConsumerWidget {
           ..writeln('مجمل الربح: ${Formatters.currency(r.grossProfit)}')
           ..writeln('المصروفات: ${Formatters.currency(r.expenses)}')
           ..writeln('صافي الربح: ${Formatters.currency(r.netProfit)}');
+      case 'orders_profit':
+        final r = await ref.read(
+          ordersProfitReportProvider(range.from, range.to).future,
+        );
+        buffer
+          ..writeln('عدد الطلبات: ${r.orderCount}')
+          ..writeln('إيرادات الطلبات: ${Formatters.currency(r.revenue)}')
+          ..writeln('تكلفة البضاعة: ${Formatters.currency(r.cogs)}')
+          ..writeln('أرباح الطلبات: ${Formatters.currency(r.grossProfit)}');
       case 'expenses':
         final r = await ref.read(
           expensesReportProvider(range.from, range.to).future,

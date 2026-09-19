@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:iconsax_flutter/iconsax_flutter.dart';
 import '../../../../../core/errors/app_exception.dart';
 import '../../../../../core/utils/formatters.dart';
 import '../../../../../core/widgets/state_views.dart';
@@ -31,7 +32,9 @@ class _AdminOfferEditorScreenState
   DateTime? _startsAt;
   DateTime? _endsAt;
   bool _isActive = false;
-  final List<String> _productIds = [];
+  // Key present = product selected for this offer; value = its discounted
+  // price text (empty = featured only, at the normal price).
+  final Map<String, TextEditingController> _selectedProducts = {};
   String _productSearch = '';
   bool _loaded = false;
   bool _saving = false;
@@ -53,7 +56,7 @@ class _AdminOfferEditorScreenState
     try {
       final offers = await ref.read(adminOffersProvider.future);
       final offer = offers.where((o) => o.id == widget.offerId).firstOrNull;
-      final ids = await repo.getOfferProductIds(widget.offerId!);
+      final products = await repo.getOfferProductInputs(widget.offerId!);
       if (!mounted) return;
       setState(() {
         if (offer != null) {
@@ -66,9 +69,11 @@ class _AdminOfferEditorScreenState
           _endsAt = offer.endsAt;
           _isActive = offer.isActive;
         }
-        _productIds
-          ..clear()
-          ..addAll(ids);
+        for (final p in products) {
+          _selectedProducts[p.productId] = TextEditingController(
+            text: p.offerPrice?.toStringAsFixed(2) ?? '',
+          );
+        }
         _loaded = true;
       });
     } catch (e) {
@@ -88,6 +93,7 @@ class _AdminOfferEditorScreenState
       _badgeCtrl,
       _descriptionCtrl,
       _productSearchCtrl,
+      ..._selectedProducts.values,
     ]) {
       c.dispose();
     }
@@ -101,6 +107,15 @@ class _AdminOfferEditorScreenState
     if (scheduleProblem != null) {
       messenger.showSnackBar(SnackBar(content: Text(scheduleProblem)));
       return;
+    }
+    for (final entry in _selectedProducts.entries) {
+      final text = entry.value.text.trim();
+      if (text.isNotEmpty && double.tryParse(text) == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('سعر العرض المكتوب غير صحيح')),
+        );
+        return;
+      }
     }
     setState(() => _saving = true);
     final navigator = Navigator.of(context);
@@ -118,7 +133,13 @@ class _AdminOfferEditorScreenState
               startsAt: _startsAt,
               endsAt: _endsAt,
               isActive: _isActive,
-              productIds: List.of(_productIds),
+              products: [
+                for (final entry in _selectedProducts.entries)
+                  OfferProductInput(
+                    productId: entry.key,
+                    offerPrice: double.tryParse(entry.value.text.trim()),
+                  ),
+              ],
             ),
           );
       ref.invalidate(adminOffersProvider);
@@ -212,11 +233,12 @@ class _AdminOfferEditorScreenState
             ),
             const Divider(),
             Text(
-              'منتجات العرض (${_productIds.length})',
+              'منتجات العرض (${_selectedProducts.length})',
               style: Theme.of(context).textTheme.titleSmall,
             ),
             const Text(
-              'أسعار المنتجات لا تتغير بالعرض.',
+              'اختياري: اكتب سعر مخفَّض لمنتج فيسري طول ما العرض شغال، ويرجع '
+              'السعر العادي تلقائيًا لما العرض يتوقف أو ينتهي.',
               style: TextStyle(fontSize: 12),
             ),
             const SizedBox(height: 8),
@@ -224,7 +246,7 @@ class _AdminOfferEditorScreenState
               controller: _productSearchCtrl,
               decoration: const InputDecoration(
                 hintText: 'ابحث عن منتج...',
-                prefixIcon: Icon(Icons.search),
+                prefixIcon: Icon(Iconsax.search_normal_1_copy),
               ),
               onChanged: (v) => setState(() => _productSearch = v.trim()),
             ),
@@ -249,18 +271,47 @@ class _AdminOfferEditorScreenState
                 return Column(
                   children: [
                     for (final p in candidates)
-                      CheckboxListTile(
-                        contentPadding: EdgeInsets.zero,
-                        value: _productIds.contains(p.id),
-                        title: Text(p.name),
-                        subtitle: Text(Formatters.currency(p.sellingPrice)),
-                        onChanged: (v) => setState(() {
-                          if (v == true) {
-                            _productIds.add(p.id);
-                          } else {
-                            _productIds.remove(p.id);
-                          }
-                        }),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          CheckboxListTile(
+                            contentPadding: EdgeInsets.zero,
+                            value: _selectedProducts.containsKey(p.id),
+                            title: Text(p.name),
+                            subtitle: Text(Formatters.currency(p.sellingPrice)),
+                            onChanged: (v) => setState(() {
+                              if (v == true) {
+                                _selectedProducts[p.id] =
+                                    TextEditingController();
+                              } else {
+                                _selectedProducts.remove(p.id)?.dispose();
+                              }
+                            }),
+                          ),
+                          if (_selectedProducts.containsKey(p.id))
+                            Padding(
+                              padding: const EdgeInsets.only(
+                                right: 32,
+                                bottom: 12,
+                              ),
+                              child: TextField(
+                                controller: _selectedProducts[p.id],
+                                keyboardType:
+                                    const TextInputType.numberWithOptions(
+                                      decimal: true,
+                                    ),
+                                decoration: InputDecoration(
+                                  labelText: 'سعر العرض (اختياري)',
+                                  hintText:
+                                      'اتركه فاضي للعرض بدون تخفيض السعر',
+                                  helperText:
+                                      'السعر العادي: '
+                                      '${Formatters.currency(p.sellingPrice)}',
+                                  isDense: true,
+                                ),
+                              ),
+                            ),
+                        ],
                       ),
                   ],
                 );

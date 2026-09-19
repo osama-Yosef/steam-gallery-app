@@ -14,7 +14,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$CashboxBalance {
 
- String get cashboxId; String get name; double get balance;
+ String get cashboxId; String get name; double get balance; CashboxKind get kind;
 /// Create a copy of CashboxBalance
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -25,16 +25,16 @@ $CashboxBalanceCopyWith<CashboxBalance> get copyWith => _$CashboxBalanceCopyWith
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is CashboxBalance&&(identical(other.cashboxId, cashboxId) || other.cashboxId == cashboxId)&&(identical(other.name, name) || other.name == name)&&(identical(other.balance, balance) || other.balance == balance));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is CashboxBalance&&(identical(other.cashboxId, cashboxId) || other.cashboxId == cashboxId)&&(identical(other.name, name) || other.name == name)&&(identical(other.balance, balance) || other.balance == balance)&&(identical(other.kind, kind) || other.kind == kind));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,cashboxId,name,balance);
+int get hashCode => Object.hash(runtimeType,cashboxId,name,balance,kind);
 
 @override
 String toString() {
-  return 'CashboxBalance(cashboxId: $cashboxId, name: $name, balance: $balance)';
+  return 'CashboxBalance(cashboxId: $cashboxId, name: $name, balance: $balance, kind: $kind)';
 }
 
 
@@ -45,7 +45,7 @@ abstract mixin class $CashboxBalanceCopyWith<$Res>  {
   factory $CashboxBalanceCopyWith(CashboxBalance value, $Res Function(CashboxBalance) _then) = _$CashboxBalanceCopyWithImpl;
 @useResult
 $Res call({
- String cashboxId, String name, double balance
+ String cashboxId, String name, double balance, CashboxKind kind
 });
 
 
@@ -62,12 +62,13 @@ class _$CashboxBalanceCopyWithImpl<$Res>
 
 /// Create a copy of CashboxBalance
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? cashboxId = null,Object? name = null,Object? balance = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? cashboxId = null,Object? name = null,Object? balance = null,Object? kind = null,}) {
   return _then(_self.copyWith(
 cashboxId: null == cashboxId ? _self.cashboxId : cashboxId // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,balance: null == balance ? _self.balance : balance // ignore: cast_nullable_to_non_nullable
-as double,
+as double,kind: null == kind ? _self.kind : kind // ignore: cast_nullable_to_non_nullable
+as CashboxKind,
   ));
 }
 
@@ -152,10 +153,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String cashboxId,  String name,  double balance)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String cashboxId,  String name,  double balance,  CashboxKind kind)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _CashboxBalance() when $default != null:
-return $default(_that.cashboxId,_that.name,_that.balance);case _:
+return $default(_that.cashboxId,_that.name,_that.balance,_that.kind);case _:
   return orElse();
 
 }
@@ -173,10 +174,10 @@ return $default(_that.cashboxId,_that.name,_that.balance);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String cashboxId,  String name,  double balance)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String cashboxId,  String name,  double balance,  CashboxKind kind)  $default,) {final _that = this;
 switch (_that) {
 case _CashboxBalance():
-return $default(_that.cashboxId,_that.name,_that.balance);case _:
+return $default(_that.cashboxId,_that.name,_that.balance,_that.kind);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -193,10 +194,10 @@ return $default(_that.cashboxId,_that.name,_that.balance);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String cashboxId,  String name,  double balance)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String cashboxId,  String name,  double balance,  CashboxKind kind)?  $default,) {final _that = this;
 switch (_that) {
 case _CashboxBalance() when $default != null:
-return $default(_that.cashboxId,_that.name,_that.balance);case _:
+return $default(_that.cashboxId,_that.name,_that.balance,_that.kind);case _:
   return null;
 
 }
@@ -208,12 +209,13 @@ return $default(_that.cashboxId,_that.name,_that.balance);case _:
 
 
 class _CashboxBalance implements CashboxBalance {
-  const _CashboxBalance({required this.cashboxId, required this.name, required this.balance});
+  const _CashboxBalance({required this.cashboxId, required this.name, required this.balance, required this.kind});
   
 
 @override final  String cashboxId;
 @override final  String name;
 @override final  double balance;
+@override final  CashboxKind kind;
 
 /// Create a copy of CashboxBalance
 /// with the given fields replaced by the non-null parameter values.
@@ -225,16 +227,16 @@ _$CashboxBalanceCopyWith<_CashboxBalance> get copyWith => __$CashboxBalanceCopyW
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _CashboxBalance&&(identical(other.cashboxId, cashboxId) || other.cashboxId == cashboxId)&&(identical(other.name, name) || other.name == name)&&(identical(other.balance, balance) || other.balance == balance));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _CashboxBalance&&(identical(other.cashboxId, cashboxId) || other.cashboxId == cashboxId)&&(identical(other.name, name) || other.name == name)&&(identical(other.balance, balance) || other.balance == balance)&&(identical(other.kind, kind) || other.kind == kind));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,cashboxId,name,balance);
+int get hashCode => Object.hash(runtimeType,cashboxId,name,balance,kind);
 
 @override
 String toString() {
-  return 'CashboxBalance(cashboxId: $cashboxId, name: $name, balance: $balance)';
+  return 'CashboxBalance(cashboxId: $cashboxId, name: $name, balance: $balance, kind: $kind)';
 }
 
 
@@ -245,7 +247,7 @@ abstract mixin class _$CashboxBalanceCopyWith<$Res> implements $CashboxBalanceCo
   factory _$CashboxBalanceCopyWith(_CashboxBalance value, $Res Function(_CashboxBalance) _then) = __$CashboxBalanceCopyWithImpl;
 @override @useResult
 $Res call({
- String cashboxId, String name, double balance
+ String cashboxId, String name, double balance, CashboxKind kind
 });
 
 
@@ -262,12 +264,13 @@ class __$CashboxBalanceCopyWithImpl<$Res>
 
 /// Create a copy of CashboxBalance
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? cashboxId = null,Object? name = null,Object? balance = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? cashboxId = null,Object? name = null,Object? balance = null,Object? kind = null,}) {
   return _then(_CashboxBalance(
 cashboxId: null == cashboxId ? _self.cashboxId : cashboxId // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,balance: null == balance ? _self.balance : balance // ignore: cast_nullable_to_non_nullable
-as double,
+as double,kind: null == kind ? _self.kind : kind // ignore: cast_nullable_to_non_nullable
+as CashboxKind,
   ));
 }
 

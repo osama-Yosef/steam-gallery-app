@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:uuid/uuid.dart';
 import '../../../../../core/errors/app_exception.dart';
@@ -105,7 +106,7 @@ class _WalletTopupScreenState extends ConsumerState<WalletTopupScreen> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(
-                      Icons.hourglass_top_rounded,
+                      Iconsax.timer_1_copy,
                       size: 56,
                       color: Theme.of(context).colorScheme.primary,
                     ),
@@ -138,7 +139,7 @@ class _WalletTopupScreenState extends ConsumerState<WalletTopupScreen> {
                 if (!details.configured) {
                   return const EmptyView(
                     message: 'الشحن عبر InstaPay مش متاح دلوقتي.',
-                    icon: Icons.info_outline,
+                    icon: Iconsax.info_circle_copy,
                   );
                 }
                 return ListView(
@@ -196,7 +197,7 @@ class _WalletTopupScreenState extends ConsumerState<WalletTopupScreen> {
                     const SizedBox(height: 8),
                     OutlinedButton.icon(
                       onPressed: _submitting ? null : _pickProof,
-                      icon: const Icon(Icons.image_outlined),
+                      icon: const Icon(Iconsax.image_copy),
                       label: Text(
                         _proofBytes == null
                             ? 'أرفق صورة إثبات التحويل'

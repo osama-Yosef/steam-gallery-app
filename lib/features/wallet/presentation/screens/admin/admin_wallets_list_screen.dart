@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:iconsax_flutter/iconsax_flutter.dart';
 import '../../../../../core/widgets/money_text.dart';
 import '../../../../../core/widgets/state_views.dart';
 import '../../providers/wallet_providers.dart';
@@ -44,7 +45,7 @@ class _AdminWalletsListScreenState
               margin: const EdgeInsets.fromLTRB(16, 16, 16, 0),
               color: Theme.of(context).colorScheme.primaryContainer,
               child: ListTile(
-                leading: const Icon(Icons.account_balance_outlined),
+                leading: const Icon(Iconsax.bank_copy),
                 title: const Text('إجمالي أرصدة المحافظ'),
                 subtitle: Text('${l.walletCount} محفظة نشطة'),
                 trailing: MoneyText(
@@ -60,10 +61,10 @@ class _AdminWalletsListScreenState
               controller: _searchCtrl,
               decoration: InputDecoration(
                 hintText: 'ابحث بالاسم...',
-                prefixIcon: const Icon(Icons.search),
+                prefixIcon: const Icon(Iconsax.search_normal_1_copy),
                 suffixIcon: _search.isNotEmpty
                     ? IconButton(
-                        icon: const Icon(Icons.close),
+                        icon: const Icon(Iconsax.close_circle_copy),
                         onPressed: () {
                           _searchCtrl.clear();
                           setState(() => _search = '');
@@ -85,7 +86,7 @@ class _AdminWalletsListScreenState
                 if (wallets.isEmpty) {
                   return const EmptyView(
                     message: 'لا توجد محافظ بعد',
-                    icon: Icons.account_balance_wallet_outlined,
+                    icon: Iconsax.wallet_copy,
                   );
                 }
                 return ListView.separated(
@@ -95,7 +96,7 @@ class _AdminWalletsListScreenState
                     final w = wallets[i];
                     return ListTile(
                       leading: const CircleAvatar(
-                        child: Icon(Icons.person_outline),
+                        child: Icon(Iconsax.user_copy),
                       ),
                       title: Text(w.customerName),
                       subtitle: w.isActive

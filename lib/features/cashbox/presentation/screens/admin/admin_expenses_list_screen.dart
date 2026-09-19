@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:iconsax_flutter/iconsax_flutter.dart';
 import '../../../../../core/router/route_names.dart';
 import '../../../../../core/utils/formatters.dart';
 import '../../../../../core/widgets/money_text.dart';
 import '../../../../../core/widgets/state_views.dart';
+import '../../../../auth/data/models/app_user.dart';
+import '../../../../auth/presentation/providers/auth_providers.dart';
 import '../../providers/cashbox_providers.dart';
 
 class AdminExpensesListScreen extends ConsumerWidget {
@@ -13,15 +16,19 @@ class AdminExpensesListScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final expensesAsync = ref.watch(expensesProvider);
+    final isSales =
+        ref.watch(currentUserProfileProvider).value?.role == AppRole.sales;
 
     return Scaffold(
       appBar: AppBar(title: const Text('المصروفات')),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {
-          await context.push(Routes.adminExpenseNew);
+          await context.push(
+            isSales ? Routes.salesExpenseNew : Routes.adminExpenseNew,
+          );
           ref.invalidate(expensesProvider);
         },
-        icon: const Icon(Icons.add),
+        icon: const Icon(Iconsax.add_copy),
         label: const Text('مصروف جديد'),
       ),
       body: expensesAsync.when(
@@ -34,7 +41,7 @@ class AdminExpensesListScreen extends ConsumerWidget {
           if (expenses.isEmpty) {
             return const EmptyView(
               message: 'لا توجد مصروفات بعد',
-              icon: Icons.receipt_long_outlined,
+              icon: Iconsax.receipt_text_copy,
             );
           }
           return ListView.separated(

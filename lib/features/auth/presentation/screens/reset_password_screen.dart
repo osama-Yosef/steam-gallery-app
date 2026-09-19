@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:iconsax_flutter/iconsax_flutter.dart';
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/utils/validators.dart';
 import '../providers/auth_providers.dart';
@@ -63,7 +64,7 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
     return AuthPage(
       title: 'كلمة مرور جديدة',
       leading: IconButton(
-        icon: const Icon(Icons.close),
+        icon: const Icon(Iconsax.close_circle_copy),
         tooltip: 'إلغاء',
         onPressed: _saving ? null : _cancel,
       ),
@@ -79,10 +80,10 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
               autofillHints: const [AutofillHints.newPassword],
               decoration: InputDecoration(
                 labelText: 'كلمة المرور الجديدة',
-                prefixIcon: const Icon(Icons.lock_outline),
+                prefixIcon: const Icon(Iconsax.lock_copy),
                 suffixIcon: IconButton(
                   icon: Icon(
-                    _obscure ? Icons.visibility_off : Icons.visibility,
+                    _obscure ? Iconsax.eye_slash_copy : Iconsax.eye_copy,
                   ),
                   onPressed: () => setState(() => _obscure = !_obscure),
                 ),
@@ -96,7 +97,7 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
               autofillHints: const [AutofillHints.newPassword],
               decoration: const InputDecoration(
                 labelText: 'تأكيد كلمة المرور',
-                prefixIcon: Icon(Icons.lock_outline),
+                prefixIcon: Icon(Iconsax.lock_copy),
               ),
               validator: Validators.confirmPassword(() => _passwordCtrl.text),
               onFieldSubmitted: (_) => _save(),

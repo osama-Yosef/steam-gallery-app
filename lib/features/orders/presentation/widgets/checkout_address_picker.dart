@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:iconsax_flutter/iconsax_flutter.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../locations/data/models/location_models.dart';
 import '../../../locations/presentation/widgets/availability_badge.dart';
@@ -24,7 +25,7 @@ class CheckoutAddressCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Icon(
-                Icons.location_on_outlined,
+                Iconsax.location_copy,
                 color: a == null ? AppColors.textSecondary : AppColors.primaryDark,
               ),
               const SizedBox(width: 10),
@@ -70,7 +71,7 @@ class CheckoutAddressCard extends StatelessWidget {
                         ],
                       ),
               ),
-              const Icon(Icons.chevron_left),
+              const Icon(Iconsax.arrow_left_2_copy),
             ],
           ),
         ),
@@ -146,7 +147,7 @@ Future<String?> showAddressPickerSheet(
             ),
             const Divider(height: 1),
             ListTile(
-              leading: const Icon(Icons.add_location_alt_outlined),
+              leading: const Icon(Iconsax.location_add_copy),
               title: const Text('إضافة عنوان جديد'),
               onTap: () => Navigator.of(ctx).pop(addAddressSentinel),
             ),

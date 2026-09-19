@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:iconsax_flutter/iconsax_flutter.dart';
 import '../../../../../core/router/route_names.dart';
 import '../../widgets/bag_stock_body.dart';
 
@@ -14,7 +15,7 @@ class AdminTechnicianBagDetailScreen extends StatelessWidget {
         title: const Text('شنطة الصنايعي'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.account_balance_wallet_outlined),
+            icon: const Icon(Iconsax.wallet_2_copy),
             tooltip: 'الحساب',
             onPressed: () =>
                 context.push(Routes.adminTechnicianAccount(technicianId)),

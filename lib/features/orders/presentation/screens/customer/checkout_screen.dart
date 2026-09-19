@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:iconsax_flutter/iconsax_flutter.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -16,11 +17,12 @@ import '../../../../locations/presentation/providers/locations_providers.dart';
 import '../../../presentation/providers/order_providers.dart';
 import '../../widgets/checkout_address_picker.dart';
 
-/// Order summary, delivery address (a saved, service-checked address —
-/// 0036) and notes. Lines and their prices come from the server cart
-/// (0035); this screen never computes or sends money itself. Payment method
-/// selection (gateway / InstaPay / wallet) arrives with Phases 10–14 — for
-/// now every order is cash on delivery, same as the existing ERP flow.
+/// Order summary, delivery address, and notes. Lines and their prices come
+/// from the server cart (0035); this screen never computes or sends money
+/// itself. Delivery is NOT zone-restricted (0045) — a customer can order to
+/// any saved address; the service-area badge is informational only here
+/// (maintenance is the flow that actually enforces coverage). Payment is a
+/// full InstaPay transfer before shipping, confirmed after order placement.
 class CheckoutScreen extends ConsumerStatefulWidget {
   const CheckoutScreen({super.key});
 
@@ -95,7 +97,11 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
             customerId: profile.id,
             items: [
               for (final line in cart.items)
-                (productId: line.productId, quantity: line.quantity),
+                (
+                  productId: line.productId,
+                  quantity: line.quantity,
+                  optionIds: line.optionIds,
+                ),
             ],
             addressId: addressId,
             notes: _notesCtrl.text.trim().isEmpty
@@ -138,7 +144,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
           if (cart.isEmpty) {
             return const EmptyView(
               message: 'السلة فارغة',
-              icon: Icons.shopping_cart_outlined,
+              icon: Iconsax.shopping_cart_copy,
             );
           }
           return addressesAsync.when(
@@ -156,10 +162,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                   break;
                 }
               }
-              final canSubmit =
-                  cart.canCheckout &&
-                  selected != null &&
-                  selected.isServiceable;
+              final canSubmit = cart.canCheckout && selected != null;
 
               return ListView(
                 padding: const EdgeInsets.all(16),
@@ -173,9 +176,9 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                     Card(
                       margin: EdgeInsets.zero,
                       child: ListTile(
-                        leading: const Icon(Icons.add_location_alt_outlined),
+                        leading: const Icon(Iconsax.location_add_copy),
                         title: const Text('أضف عنوان توصيل أولًا'),
-                        trailing: const Icon(Icons.chevron_left),
+                        trailing: const Icon(Iconsax.arrow_left_2_copy),
                         onTap: () async {
                           await context.push(Routes.customerAddressNew);
                           ref.invalidate(myAddressesProvider);
@@ -187,15 +190,6 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                       selected: selected,
                       onTap: () => _pickAddress(addresses),
                     ),
-                  if (selected != null && !selected.isServiceable) ...[
-                    const SizedBox(height: 8),
-                    Text(
-                      'العنوان ده خارج نطاق التغطية دلوقتي — اختر عنوانًا تانيًا.',
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.error,
-                      ),
-                    ),
-                  ],
                   const SizedBox(height: 16),
                   Card(
                     margin: EdgeInsets.zero,
@@ -257,9 +251,9 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                   const SizedBox(height: 4),
                   const ListTile(
                     contentPadding: EdgeInsets.zero,
-                    leading: Icon(Icons.payments_outlined),
+                    leading: Icon(Iconsax.wallet_money_copy),
                     title: Text('طريقة الدفع'),
-                    subtitle: Text('الدفع عند الاستلام'),
+                    subtitle: Text('تحويل كامل قبل الشحن'),
                   ),
                   const SizedBox(height: 12),
                   FilledButton(

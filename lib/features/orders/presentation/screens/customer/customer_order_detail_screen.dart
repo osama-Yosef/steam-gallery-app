@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:uuid/uuid.dart';
@@ -77,7 +78,14 @@ class CustomerOrderDetailScreen extends ConsumerWidget {
                   ),
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 12),
+              const ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: Icon(Iconsax.wallet_money_copy),
+                title: Text('طريقة الدفع'),
+                subtitle: Text('تحويل كامل قبل الشحن'),
+              ),
+              const SizedBox(height: 4),
               Text('المنتجات', style: Theme.of(context).textTheme.titleMedium),
               const SizedBox(height: 8),
               itemsAsync.when(
@@ -89,7 +97,11 @@ class CustomerOrderDetailScreen extends ConsumerWidget {
                         .map(
                           (it) => ListTile(
                             title: Text(it.productNameSnapshot),
-                            subtitle: Text('الكمية: ${it.quantity}'),
+                            subtitle: Text(
+                              it.selectedOptions.isEmpty
+                                  ? 'الكمية: ${it.quantity}'
+                                  : 'الكمية: ${it.quantity} — ${it.selectedOptions.map((o) => o.name).join('، ')}',
+                            ),
                             trailing: Text(Formatters.currency(it.lineTotal)),
                           ),
                         )
@@ -134,7 +146,7 @@ class CustomerOrderDetailScreen extends ConsumerWidget {
                   onPressed: () => context.push(
                     Routes.customerInstapayPayment(order.id),
                   ),
-                  icon: const Icon(Icons.account_balance_outlined),
+                  icon: const Icon(Iconsax.bank_copy),
                   label: const Text('ادفع عبر InstaPay'),
                 ),
                 const SizedBox(height: 8),
@@ -254,7 +266,7 @@ class _WalletPayButtonState extends ConsumerState<_WalletPayButton> {
               height: 16,
               child: CircularProgressIndicator(strokeWidth: 2),
             )
-          : const Icon(Icons.account_balance_wallet_outlined),
+          : const Icon(Iconsax.wallet_copy),
       label: Text(
         wallet == null
             ? 'ادفع من المحفظة'

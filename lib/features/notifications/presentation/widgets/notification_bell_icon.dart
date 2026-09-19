@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:iconsax_flutter/iconsax_flutter.dart';
 import '../../../../core/router/route_names.dart';
 import '../providers/notification_providers.dart';
 
@@ -19,7 +20,7 @@ class NotificationBellIcon extends ConsumerWidget {
       icon: Badge(
         isLabelVisible: unread > 0,
         label: Text('$unread'),
-        child: const Icon(Icons.notifications_outlined),
+        child: const Icon(Iconsax.notification_copy),
       ),
     );
   }

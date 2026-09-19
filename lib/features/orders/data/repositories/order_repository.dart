@@ -1,5 +1,6 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../core/errors/app_exception.dart';
+import '../../../technician_account/data/models/sale.dart';
 import '../models/order.dart';
 import '../models/order_item.dart';
 
@@ -7,11 +8,14 @@ abstract class OrderRepository {
   /// Snapshot-priced order creation via rpc_create_order. [clientRequestId]
   /// must stay the same across retries of the same checkout attempt so a
   /// flaky connection can't create duplicate orders (see NFR-11).
-  /// [items] is a plain (productId, quantity) list — decoupled from the
-  /// cart feature's own model so this repository does not depend on it.
+  /// [items] is a plain (productId, quantity, optionIds) list — decoupled
+  /// from the cart feature's own model so this repository does not depend
+  /// on it. [optionIds] (0049) are the priced options selected for that
+  /// line; the server re-prices from them, never trusting a client total.
   Future<String> createOrder({
     required String customerId,
-    required List<({String productId, int quantity})> items,
+    required List<({String productId, int quantity, List<String> optionIds})>
+    items,
     required String addressId,
     String? notes,
     required String clientRequestId,
@@ -31,12 +35,16 @@ abstract class OrderRepository {
   /// cash), unlike [cancelOrder] this only applies to a delivered/completed
   /// order.
   Future<void> returnOrder(String orderId, String reason);
+  /// [paymentMethod] (0059) says which till the money lands in — cash or
+  /// transfer/card; 'deferred' is refused server-side. This has nothing to
+  /// do with the order's payment_status, only which cashbox gets credited.
   Future<void> recordPayment({
     required String customerId,
     required double amount,
     String? orderId,
     String? notes,
     required String clientRequestId,
+    required PaymentMethod paymentMethod,
   });
 }
 
@@ -47,7 +55,8 @@ class SupabaseOrderRepository implements OrderRepository {
   @override
   Future<String> createOrder({
     required String customerId,
-    required List<({String productId, int quantity})> items,
+    required List<({String productId, int quantity, List<String> optionIds})>
+    items,
     required String addressId,
     String? notes,
     required String clientRequestId,
@@ -58,7 +67,13 @@ class SupabaseOrderRepository implements OrderRepository {
         params: {
           'p_customer_id': customerId,
           'p_items': items
-              .map((e) => {'product_id': e.productId, 'quantity': e.quantity})
+              .map(
+                (e) => {
+                  'product_id': e.productId,
+                  'quantity': e.quantity,
+                  'option_ids': e.optionIds,
+                },
+              )
               .toList(),
           'p_address_id': addressId,
           'p_notes': notes,
@@ -164,6 +179,7 @@ class SupabaseOrderRepository implements OrderRepository {
     String? orderId,
     String? notes,
     required String clientRequestId,
+    required PaymentMethod paymentMethod,
   }) async {
     try {
       await _client.rpc(
@@ -174,6 +190,7 @@ class SupabaseOrderRepository implements OrderRepository {
           'p_order_id': orderId,
           'p_notes': notes,
           'p_client_request_id': clientRequestId,
+          'p_payment_method': paymentMethodToString(paymentMethod),
         },
       );
     } catch (e) {

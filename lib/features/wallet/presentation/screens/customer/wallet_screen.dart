@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:iconsax_flutter/iconsax_flutter.dart';
 import '../../../../../core/router/route_names.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/utils/formatters.dart';
@@ -64,7 +65,7 @@ class WalletScreen extends ConsumerWidget {
                         ),
                         onPressed: () =>
                             context.push(Routes.customerWalletTopup),
-                        icon: const Icon(Icons.add),
+                        icon: const Icon(Iconsax.add_copy),
                         label: const Text('شحن الرصيد'),
                       ),
                     ],
@@ -114,7 +115,7 @@ class _TxnTile extends StatelessWidget {
     return ListTile(
       contentPadding: EdgeInsets.zero,
       leading: Icon(
-        isCredit ? Icons.add_circle_outline : Icons.remove_circle_outline,
+        isCredit ? Iconsax.add_circle_copy : Iconsax.minus_cirlce_copy,
         color: color,
       ),
       title: Text(walletTxnTypeLabelAr(txn.type)),

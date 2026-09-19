@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:iconsax_flutter/iconsax_flutter.dart';
 import '../../../../../core/router/route_names.dart';
 import '../../../../../core/utils/formatters.dart';
 import '../../../../../core/widgets/money_text.dart';
@@ -75,7 +76,7 @@ class AdminCustomerAccountDetailScreen extends ConsumerWidget {
                             customerAccountTransactionsProvider(customerId),
                           );
                         },
-                  icon: const Icon(Icons.payments_outlined),
+                  icon: const Icon(Iconsax.wallet_copy),
                   label: const Text('تسجيل دفعة'),
                 ),
               ),
@@ -99,7 +100,7 @@ class AdminCustomerAccountDetailScreen extends ConsumerWidget {
                     if (txns.isEmpty) {
                       return const EmptyView(
                         message: 'لا توجد حركات بعد',
-                        icon: Icons.receipt_long_outlined,
+                        icon: Iconsax.receipt_text_copy,
                       );
                     }
                     return ListView.separated(
@@ -110,8 +111,8 @@ class AdminCustomerAccountDetailScreen extends ConsumerWidget {
                         return ListTile(
                           leading: Icon(
                             t.amount > 0
-                                ? Icons.add_circle_outline
-                                : Icons.remove_circle_outline,
+                                ? Iconsax.add_circle_copy
+                                : Iconsax.minus_cirlce_copy,
                             color: t.amount > 0
                                 ? Theme.of(context).colorScheme.error
                                 : Colors.green.shade700,

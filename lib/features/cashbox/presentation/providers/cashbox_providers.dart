@@ -14,13 +14,15 @@ CashboxRepository cashboxRepository(Ref ref) {
 }
 
 @riverpod
-Future<CashboxBalance?> cashboxBalance(Ref ref) {
-  return ref.watch(cashboxRepositoryProvider).getBalance();
+Future<List<CashboxBalance>> cashboxBalances(Ref ref) {
+  return ref.watch(cashboxRepositoryProvider).getBalances();
 }
 
 @riverpod
-Future<List<CashTransaction>> cashTransactions(Ref ref) {
-  return ref.watch(cashboxRepositoryProvider).getCashTransactions();
+Future<List<CashTransaction>> cashTransactions(Ref ref, String? cashboxId) {
+  return ref
+      .watch(cashboxRepositoryProvider)
+      .getCashTransactions(cashboxId: cashboxId);
 }
 
 @riverpod

@@ -1,36 +1,48 @@
 import 'package:flutter/material.dart';
+import 'package:iconsax_flutter/iconsax_flutter.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../../core/errors/app_exception.dart';
 import '../../../../../core/utils/formatters.dart';
 import '../../../../../core/widgets/state_views.dart';
+import '../../../../auth/data/models/app_user.dart';
+import '../../../../auth/presentation/providers/auth_providers.dart';
 import '../../../data/models/payment_models.dart';
 import '../../providers/payment_providers.dart';
 
-/// Admin queue of InstaPay submissions awaiting a human check against the
-/// real bank statement (0039). Approving or rejecting is final — there is no
-/// "undo", matching rpc_admin_verify_instapay's one-way transition out of
-/// pending_verification.
+/// Admin/sales queue of InstaPay submissions awaiting a human check against
+/// the real bank statement (0039). Approving or rejecting is final — there
+/// is no "undo", matching rpc_admin_verify_instapay's one-way transition out
+/// of pending_verification.
+///
+/// Sales may approve/reject (migration 0044) but must never change where
+/// customer transfers are expected to land — the settings gear below is
+/// structurally absent for it rather than merely relying on the
+/// admin-only rpc_admin_set_text_setting to reject the attempt.
 class AdminInstapayReviewScreen extends ConsumerWidget {
   const AdminInstapayReviewScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final pendingAsync = ref.watch(pendingInstapaySubmissionsProvider);
+    final isSales =
+        ref.watch(currentUserProfileProvider).value?.role == AppRole.sales;
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('مراجعة تحويلات InstaPay'),
         actions: [
-          IconButton(
-            tooltip: 'إعدادات InstaPay',
-            icon: const Icon(Icons.settings_outlined),
-            onPressed: () => showModalBottomSheet<void>(
-              context: context,
-              isScrollControlled: true,
-              showDragHandle: true,
-              builder: (_) => const _InstapaySettingsSheet(),
+          if (!isSales)
+            IconButton(
+              tooltip: 'إعدادات InstaPay',
+              icon: const Icon(Iconsax.setting_2_copy),
+              onPressed: () => showModalBottomSheet<void>(
+                context: context,
+                isScrollControlled: true,
+                showDragHandle: true,
+                builder: (_) => const _InstapaySettingsSheet(),
+              ),
             ),
-          ),
         ],
       ),
       body: pendingAsync.when(
@@ -43,7 +55,7 @@ class AdminInstapayReviewScreen extends ConsumerWidget {
           if (payments.isEmpty) {
             return const EmptyView(
               message: 'لا توجد تحويلات بانتظار المراجعة',
-              icon: Icons.task_alt_outlined,
+              icon: Iconsax.task_square_copy,
             );
           }
           return RefreshIndicator(
@@ -138,9 +150,20 @@ class _InstapaySettingsSheetState extends ConsumerState<_InstapaySettingsSheet> 
           TextField(
             controller: _ipaCtrl,
             maxLength: 200,
-            decoration: const InputDecoration(
+            decoration: InputDecoration(
               labelText: 'رقم/عنوان InstaPay (IPA)',
               hintText: 'مثال: mokoji@instapay',
+              suffixIcon: IconButton(
+                tooltip: 'نسخ',
+                icon: const Icon(Iconsax.copy_copy),
+                onPressed: () {
+                  if (_ipaCtrl.text.trim().isEmpty) return;
+                  Clipboard.setData(ClipboardData(text: _ipaCtrl.text.trim()));
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('تم النسخ')),
+                  );
+                },
+              ),
             ),
           ),
           TextField(

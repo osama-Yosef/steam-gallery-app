@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 import '../../../../../core/errors/app_exception.dart';
+import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/utils/formatters.dart';
 import '../../../../../core/widgets/confirm_dialog.dart';
 import '../../../../../core/widgets/state_views.dart';
 import '../../../../auth/presentation/providers/auth_providers.dart';
+import '../../../../technician_account/data/models/sale.dart';
 import '../../../data/models/order.dart';
 import '../../../presentation/providers/order_providers.dart';
 import '../../widgets/order_status_chips.dart';
@@ -124,30 +127,62 @@ class AdminOrderDetailScreen extends ConsumerWidget {
     final amountCtrl = TextEditingController(
       text: remaining > 0 ? remaining.toStringAsFixed(2) : '',
     );
-    final amount = await showDialog<double>(
+    var method = PaymentMethod.cash;
+    final result = await showDialog<(double, PaymentMethod)>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('تسجيل دفعة'),
-        content: TextField(
-          controller: amountCtrl,
-          decoration: const InputDecoration(labelText: 'المبلغ'),
-          keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          autofocus: true,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) => AlertDialog(
+          title: const Text('تسجيل دفعة'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              TextField(
+                controller: amountCtrl,
+                decoration: const InputDecoration(labelText: 'المبلغ'),
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
+                autofocus: true,
+              ),
+              const SizedBox(height: 16),
+              const Text('استُلم الفلوس إزاي؟'),
+              const SizedBox(height: 8),
+              SegmentedButton<PaymentMethod>(
+                segments: const [
+                  ButtonSegment(
+                    value: PaymentMethod.cash,
+                    label: Text('نقدًا'),
+                  ),
+                  ButtonSegment(
+                    value: PaymentMethod.transfer,
+                    label: Text('تحويل'),
+                  ),
+                ],
+                selected: {method},
+                onSelectionChanged: (s) =>
+                    setDialogState(() => method = s.first),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: const Text('إلغاء'),
+            ),
+            FilledButton(
+              onPressed: () {
+                final amount = double.tryParse(amountCtrl.text);
+                if (amount == null) return;
+                Navigator.of(ctx).pop((amount, method));
+              },
+              child: const Text('تسجيل'),
+            ),
+          ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('إلغاء'),
-          ),
-          FilledButton(
-            onPressed: () =>
-                Navigator.of(ctx).pop(double.tryParse(amountCtrl.text)),
-            child: const Text('تسجيل'),
-          ),
-        ],
       ),
     );
-    if (amount == null || amount <= 0 || !context.mounted) return;
+    if (result == null || result.$1 <= 0 || !context.mounted) return;
     // The dialog is already closed, so this call can't be re-triggered by a
     // double tap; the key covers a retried request carrying the same entry.
     final clientRequestId = const Uuid().v4();
@@ -158,9 +193,10 @@ class AdminOrderDetailScreen extends ConsumerWidget {
           .read(orderRepositoryProvider)
           .recordPayment(
             customerId: customerId,
-            amount: amount,
+            amount: result.$1,
             orderId: orderId,
             clientRequestId: clientRequestId,
+            paymentMethod: result.$2,
           ),
     );
   }
@@ -235,7 +271,7 @@ class AdminOrderDetailScreen extends ConsumerWidget {
               customerAsync.when(
                 data: (c) => Card(
                   child: ListTile(
-                    leading: const Icon(Icons.person_outline),
+                    leading: const Icon(Iconsax.profile_circle_copy),
                     title: Text(c?.fullName ?? '—'),
                     subtitle: Text(c?.phone ?? ''),
                   ),
@@ -265,6 +301,8 @@ class AdminOrderDetailScreen extends ConsumerWidget {
                 const SizedBox(height: 8),
                 Text('ملاحظات: ${order.notes}'),
               ],
+              const SizedBox(height: 8),
+              const Text('طريقة الدفع: تحويل كامل قبل الشحن'),
               const SizedBox(height: 16),
               Text('المنتجات', style: Theme.of(context).textTheme.titleMedium),
               const SizedBox(height: 8),
@@ -278,7 +316,9 @@ class AdminOrderDetailScreen extends ConsumerWidget {
                           (it) => ListTile(
                             title: Text(it.productNameSnapshot),
                             subtitle: Text(
-                              '${Formatters.currency(it.unitPriceSnapshot)} × ${it.quantity}',
+                              it.selectedOptions.isEmpty
+                                  ? '${Formatters.currency(it.unitPriceSnapshot)} × ${it.quantity}'
+                                  : '${Formatters.currency(it.unitPriceSnapshot)} × ${it.quantity} — ${it.selectedOptions.map((o) => o.name).join('، ')}',
                             ),
                             trailing: Text(Formatters.currency(it.lineTotal)),
                           ),
@@ -320,29 +360,33 @@ class AdminOrderDetailScreen extends ConsumerWidget {
                 children: [
                   if (order.status == OrderStatus.pending)
                     FilledButton.icon(
+                      style: _actionButtonStyle(),
                       onPressed: () => _confirm(context, ref),
-                      icon: const Icon(Icons.check_circle_outline),
+                      icon: const Icon(Iconsax.tick_circle_copy),
                       label: const Text('تأكيد الطلب'),
                     ),
                   if (order.status == OrderStatus.confirmed)
                     FilledButton.icon(
+                      style: _actionButtonStyle(),
                       onPressed: () =>
                           _updateStatus(context, ref, OrderStatus.preparing),
-                      icon: const Icon(Icons.inventory_2_outlined),
+                      icon: const Icon(Iconsax.box_copy),
                       label: const Text('بدء التجهيز'),
                     ),
                   if (order.status == OrderStatus.preparing)
                     FilledButton.icon(
+                      style: _actionButtonStyle(),
                       onPressed: () =>
                           _updateStatus(context, ref, OrderStatus.delivered),
-                      icon: const Icon(Icons.local_shipping_outlined),
+                      icon: const Icon(Iconsax.truck_copy),
                       label: const Text('تم التسليم'),
                     ),
                   if (order.status == OrderStatus.delivered)
                     FilledButton.icon(
+                      style: _actionButtonStyle(),
                       onPressed: () =>
                           _updateStatus(context, ref, OrderStatus.completed),
-                      icon: const Icon(Icons.done_all),
+                      icon: const Icon(Iconsax.tick_square_copy),
                       label: const Text('إتمام الطلب'),
                     ),
                   if (order.remaining > 0 &&
@@ -351,22 +395,25 @@ class AdminOrderDetailScreen extends ConsumerWidget {
                         OrderStatus.returned,
                       ].contains(order.status))
                     OutlinedButton.icon(
+                      style: _actionButtonStyle(
+                        foregroundColor: AppColors.warning,
+                      ),
                       onPressed: () => _recordPayment(
                         context,
                         ref,
                         order.customerId,
                         order.remaining,
                       ),
-                      icon: const Icon(Icons.payments_outlined),
+                      icon: const Icon(Iconsax.wallet_money_copy),
                       label: const Text('تسجيل دفعة'),
                     ),
                   if (canCancel)
                     OutlinedButton.icon(
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: Theme.of(context).colorScheme.error,
+                      style: _actionButtonStyle(
+                        foregroundColor: AppColors.danger,
                       ),
                       onPressed: () => _cancel(context, ref),
-                      icon: const Icon(Icons.cancel_outlined),
+                      icon: const Icon(Iconsax.close_circle_copy),
                       label: const Text('إلغاء الطلب'),
                     ),
                   if ([
@@ -374,11 +421,11 @@ class AdminOrderDetailScreen extends ConsumerWidget {
                     OrderStatus.completed,
                   ].contains(order.status))
                     OutlinedButton.icon(
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: Theme.of(context).colorScheme.error,
+                      style: _actionButtonStyle(
+                        foregroundColor: AppColors.danger,
                       ),
                       onPressed: () => _returnOrder(context, ref),
-                      icon: const Icon(Icons.assignment_return_outlined),
+                      icon: const Icon(Iconsax.undo_copy),
                       label: const Text('استرجاع الطلب'),
                     ),
                 ],
@@ -387,6 +434,21 @@ class AdminOrderDetailScreen extends ConsumerWidget {
           );
         },
       ),
+    );
+  }
+
+  /// Every action button gets the same minimum size, so the row reads as one
+  /// consistent set of actions instead of each button sizing to its own
+  /// label length.
+  ButtonStyle _actionButtonStyle({Color? foregroundColor}) {
+    return ButtonStyle(
+      minimumSize: const WidgetStatePropertyAll(Size(150, 44)),
+      foregroundColor: foregroundColor == null
+          ? null
+          : WidgetStatePropertyAll(foregroundColor),
+      side: foregroundColor == null
+          ? null
+          : WidgetStatePropertyAll(BorderSide(color: foregroundColor)),
     );
   }
 

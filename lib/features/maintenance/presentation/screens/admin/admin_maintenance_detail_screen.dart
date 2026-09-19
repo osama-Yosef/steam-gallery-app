@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:iconsax_flutter/iconsax_flutter.dart';
 import '../../../../../core/errors/app_exception.dart';
 import '../../../../../core/utils/formatters.dart';
 import '../../../../../core/utils/maps_launcher.dart';
@@ -145,7 +146,7 @@ class AdminMaintenanceDetailScreen extends ConsumerWidget {
               const SizedBox(height: 16),
               Card(
                 child: ListTile(
-                  leading: const Icon(Icons.person_outline),
+                  leading: const Icon(Iconsax.profile_circle_copy),
                   title: Text(req.customerName),
                   subtitle: Text(req.phone),
                 ),
@@ -161,7 +162,7 @@ class AdminMaintenanceDetailScreen extends ConsumerWidget {
                   longitude: req.longitude,
                   address: req.address,
                 ),
-                icon: const Icon(Icons.location_on_outlined),
+                icon: const Icon(Iconsax.location_copy),
                 label: const Text('فتح الموقع'),
               ),
               const SizedBox(height: 16),
@@ -223,7 +224,7 @@ class AdminMaintenanceDetailScreen extends ConsumerWidget {
                   if (req.status == MaintenanceStatus.waiting)
                     FilledButton.icon(
                       onPressed: () => _assign(context, ref),
-                      icon: const Icon(Icons.assignment_ind_outlined),
+                      icon: const Icon(Iconsax.personalcard_copy),
                       label: const Text('إسناد لصنايعي'),
                     ),
                   if (canCancel)
@@ -232,7 +233,7 @@ class AdminMaintenanceDetailScreen extends ConsumerWidget {
                         foregroundColor: Theme.of(context).colorScheme.error,
                       ),
                       onPressed: () => _cancel(context, ref),
-                      icon: const Icon(Icons.cancel_outlined),
+                      icon: const Icon(Iconsax.close_circle_copy),
                       label: const Text('إلغاء الطلب'),
                     ),
                 ],

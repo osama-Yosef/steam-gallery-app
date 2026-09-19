@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -93,7 +94,7 @@ class _MarketingImageFieldState extends ConsumerState<MarketingImageField> {
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   Icon(
-                                    Icons.add_photo_alternate_outlined,
+                                    Iconsax.gallery_add_copy,
                                     size: 36,
                                   ),
                                   Text('اختر صورة'),
@@ -109,7 +110,7 @@ class _MarketingImageFieldState extends ConsumerState<MarketingImageField> {
         if (widget.url != null)
           TextButton.icon(
             onPressed: _uploading ? null : _pick,
-            icon: const Icon(Icons.swap_horiz),
+            icon: const Icon(Iconsax.arrow_swap_horizontal_copy),
             label: const Text('تغيير الصورة'),
           ),
       ],
@@ -158,7 +159,7 @@ class ScheduleFields extends StatelessWidget {
               ? null
               : IconButton(
                   tooltip: 'مسح',
-                  icon: const Icon(Icons.close),
+                  icon: const Icon(Iconsax.close_circle_copy),
                   onPressed: () => onChanged(null),
                 ),
         ),

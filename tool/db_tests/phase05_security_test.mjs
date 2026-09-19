@@ -39,7 +39,7 @@ const P = (await one(`insert into public.products (sku, name, cost_price, sellin
 await q(`select public.rpc_receive_purchase($1, 20, 60, 'seed')`, [P]);
 const SERVICE = (await one(`select id from public.products where sku = 'SERVICE-MAINT'`)).id;
 await q(`select public.rpc_cashbox_deposit(1000, 'float')`);
-const cash = async () => { await asSuper(); const r = await one(`select balance from public.cashbox_balances limit 1`); return Number(r.balance); };
+const cash = async () => { await asSuper(); const r = await one(`select balance from public.cashbox_balances where kind = 'cash' limit 1`); return Number(r.balance); };
 const stock = async () => { await asSuper(); const r = await one(`select quantity from public.warehouse_stock where product_id = $1`, [P]); return r.quantity; };
 const custBalance = async (c) => { await asSuper(); const r = await one(`select remaining_balance from public.customer_account_summary where customer_id = $1`, [c]); return Number(r.remaining_balance); };
 

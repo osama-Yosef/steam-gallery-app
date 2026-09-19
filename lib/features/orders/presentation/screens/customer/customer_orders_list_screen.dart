@@ -54,7 +54,7 @@ class _OrderTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = orderStatusColor(context, order.status);
+    final color = orderStatusColor(order.status);
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
       child: ClipRRect(

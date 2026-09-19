@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:iconsax_flutter/iconsax_flutter.dart';
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/utils/validators.dart';
 import '../../../auth/data/models/app_user.dart';
 import '../providers/users_admin_providers.dart';
 
-/// Creates a technician or admin account via the create-user Edge Function.
-/// No self sign-up for these roles — see docs/04-security-architecture.md §1.
+/// Creates a technician, sales, or admin account via the create-user Edge
+/// Function. No self sign-up for these roles — see
+/// docs/04-security-architecture.md §1.
 class AdminCreateUserScreen extends ConsumerStatefulWidget {
   const AdminCreateUserScreen({super.key});
 
@@ -23,6 +25,7 @@ class _AdminCreateUserScreenState extends ConsumerState<AdminCreateUserScreen> {
   final _employeeCodeCtrl = TextEditingController();
   AppRole _role = AppRole.technician;
   bool _loading = false;
+  bool _obscurePassword = true;
 
   @override
   void dispose() {
@@ -69,7 +72,7 @@ class _AdminCreateUserScreenState extends ConsumerState<AdminCreateUserScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('إضافة صنايعي / أدمن')),
+      appBar: AppBar(title: const Text('إضافة صنايعي / مبيعات / أدمن')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Form(
@@ -82,12 +85,17 @@ class _AdminCreateUserScreenState extends ConsumerState<AdminCreateUserScreen> {
                   ButtonSegment(
                     value: AppRole.technician,
                     label: Text('صنايعي'),
-                    icon: Icon(Icons.build_outlined),
+                    icon: Icon(Iconsax.setting_2_copy),
+                  ),
+                  ButtonSegment(
+                    value: AppRole.sales,
+                    label: Text('مبيعات'),
+                    icon: Icon(Iconsax.card_pos_copy),
                   ),
                   ButtonSegment(
                     value: AppRole.admin,
                     label: Text('أدمن'),
-                    icon: Icon(Icons.admin_panel_settings_outlined),
+                    icon: Icon(Iconsax.shield_tick_copy),
                   ),
                 ],
                 selected: {_role},
@@ -113,9 +121,18 @@ class _AdminCreateUserScreenState extends ConsumerState<AdminCreateUserScreen> {
               const SizedBox(height: 12),
               TextFormField(
                 controller: _passwordCtrl,
-                obscureText: true,
-                decoration: const InputDecoration(
+                obscureText: _obscurePassword,
+                decoration: InputDecoration(
                   labelText: 'كلمة المرور المبدئية',
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      _obscurePassword
+                          ? Iconsax.eye_copy
+                          : Iconsax.eye_slash_copy,
+                    ),
+                    onPressed: () =>
+                        setState(() => _obscurePassword = !_obscurePassword),
+                  ),
                 ),
                 validator: Validators.password,
               ),

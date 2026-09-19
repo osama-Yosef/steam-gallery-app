@@ -56,47 +56,49 @@ final class CashboxRepositoryProvider
 
 String _$cashboxRepositoryHash() => r'27bce8e0f5544a2f992815c34dafa1411ce65bc8';
 
-@ProviderFor(cashboxBalance)
-const cashboxBalanceProvider = CashboxBalanceProvider._();
+@ProviderFor(cashboxBalances)
+const cashboxBalancesProvider = CashboxBalancesProvider._();
 
-final class CashboxBalanceProvider
+final class CashboxBalancesProvider
     extends
         $FunctionalProvider<
-          AsyncValue<CashboxBalance?>,
-          CashboxBalance?,
-          FutureOr<CashboxBalance?>
+          AsyncValue<List<CashboxBalance>>,
+          List<CashboxBalance>,
+          FutureOr<List<CashboxBalance>>
         >
-    with $FutureModifier<CashboxBalance?>, $FutureProvider<CashboxBalance?> {
-  const CashboxBalanceProvider._()
+    with
+        $FutureModifier<List<CashboxBalance>>,
+        $FutureProvider<List<CashboxBalance>> {
+  const CashboxBalancesProvider._()
     : super(
         from: null,
         argument: null,
         retry: null,
-        name: r'cashboxBalanceProvider',
+        name: r'cashboxBalancesProvider',
         isAutoDispose: true,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
 
   @override
-  String debugGetCreateSourceHash() => _$cashboxBalanceHash();
+  String debugGetCreateSourceHash() => _$cashboxBalancesHash();
 
   @$internal
   @override
-  $FutureProviderElement<CashboxBalance?> $createElement(
+  $FutureProviderElement<List<CashboxBalance>> $createElement(
     $ProviderPointer pointer,
   ) => $FutureProviderElement(pointer);
 
   @override
-  FutureOr<CashboxBalance?> create(Ref ref) {
-    return cashboxBalance(ref);
+  FutureOr<List<CashboxBalance>> create(Ref ref) {
+    return cashboxBalances(ref);
   }
 }
 
-String _$cashboxBalanceHash() => r'77aadc9b968dd881282ce6cdc729e7ebd39bbec1';
+String _$cashboxBalancesHash() => r'de31c58e5d9dbfe3df51d92a3c36fc99949e7076';
 
 @ProviderFor(cashTransactions)
-const cashTransactionsProvider = CashTransactionsProvider._();
+const cashTransactionsProvider = CashTransactionsFamily._();
 
 final class CashTransactionsProvider
     extends
@@ -108,19 +110,26 @@ final class CashTransactionsProvider
     with
         $FutureModifier<List<CashTransaction>>,
         $FutureProvider<List<CashTransaction>> {
-  const CashTransactionsProvider._()
-    : super(
-        from: null,
-        argument: null,
-        retry: null,
-        name: r'cashTransactionsProvider',
-        isAutoDispose: true,
-        dependencies: null,
-        $allTransitiveDependencies: null,
-      );
+  const CashTransactionsProvider._({
+    required CashTransactionsFamily super.from,
+    required String? super.argument,
+  }) : super(
+         retry: null,
+         name: r'cashTransactionsProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
 
   @override
   String debugGetCreateSourceHash() => _$cashTransactionsHash();
+
+  @override
+  String toString() {
+    return r'cashTransactionsProvider'
+        ''
+        '($argument)';
+  }
 
   @$internal
   @override
@@ -130,11 +139,40 @@ final class CashTransactionsProvider
 
   @override
   FutureOr<List<CashTransaction>> create(Ref ref) {
-    return cashTransactions(ref);
+    final argument = this.argument as String?;
+    return cashTransactions(ref, argument);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is CashTransactionsProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
   }
 }
 
-String _$cashTransactionsHash() => r'1150335f73fcb680e26533586baa3a597443fe11';
+String _$cashTransactionsHash() => r'9600b6babf27e9574a3e025bd1b1d0bcb6c67e57';
+
+final class CashTransactionsFamily extends $Family
+    with $FunctionalFamilyOverride<FutureOr<List<CashTransaction>>, String?> {
+  const CashTransactionsFamily._()
+    : super(
+        retry: null,
+        name: r'cashTransactionsProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  CashTransactionsProvider call(String? cashboxId) =>
+      CashTransactionsProvider._(argument: cashboxId, from: this);
+
+  @override
+  String toString() => r'cashTransactionsProvider';
+}
 
 @ProviderFor(expenseCategories)
 const expenseCategoriesProvider = ExpenseCategoriesProvider._();

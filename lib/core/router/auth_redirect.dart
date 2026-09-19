@@ -91,6 +91,7 @@ String homeFor(AppRole role) => switch (role) {
   AppRole.admin => Routes.adminHome,
   AppRole.technician => Routes.technicianHome,
   AppRole.customer => Routes.customerHome,
+  AppRole.sales => Routes.salesHome,
 };
 
 AppRole? _areaRole(String location) {
@@ -98,5 +99,6 @@ AppRole? _areaRole(String location) {
   if (inArea(Routes.adminHome)) return AppRole.admin;
   if (inArea(Routes.technicianHome)) return AppRole.technician;
   if (inArea(Routes.customerHome)) return AppRole.customer;
+  if (inArea(Routes.salesHome)) return AppRole.sales;
   return null;
 }

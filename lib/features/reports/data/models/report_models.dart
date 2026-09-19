@@ -35,6 +35,23 @@ class ProfitReport {
   });
 }
 
+/// Profit from orders only (0046) — unlike [ProfitReport], this deliberately
+/// excludes technician walk-in sales, so an admin can see how the storefront
+/// itself is performing in isolation.
+class OrdersProfitReport {
+  final int orderCount;
+  final double revenue;
+  final double cogs;
+  final double grossProfit;
+
+  const OrdersProfitReport({
+    required this.orderCount,
+    required this.revenue,
+    required this.cogs,
+    required this.grossProfit,
+  });
+}
+
 class ExpenseCategoryTotal {
   final String categoryName;
   final double total;

@@ -8,13 +8,15 @@ import '../models/queue_position.dart';
 import '../models/technician_option.dart';
 
 abstract class MaintenanceRepository {
+  /// [addressId] must be one of the customer's own saved, service-area-
+  /// covered addresses (0046) — the server re-validates and refuses
+  /// (ADDRESS_NOT_SERVICEABLE) otherwise, snapshotting the address text and
+  /// coordinates itself rather than trusting anything client-computed.
   Future<String> createRequest({
     required String customerId,
     required String customerName,
     required String phone,
-    String? address,
-    double? latitude,
-    double? longitude,
+    required String addressId,
     String? deviceType,
     required String problemDescription,
     String? notes,
@@ -73,9 +75,7 @@ class SupabaseMaintenanceRepository implements MaintenanceRepository {
     required String customerId,
     required String customerName,
     required String phone,
-    String? address,
-    double? latitude,
-    double? longitude,
+    required String addressId,
     String? deviceType,
     required String problemDescription,
     String? notes,
@@ -87,9 +87,7 @@ class SupabaseMaintenanceRepository implements MaintenanceRepository {
           'p_customer_id': customerId,
           'p_customer_name': customerName,
           'p_phone': phone,
-          'p_address': address,
-          'p_latitude': latitude,
-          'p_longitude': longitude,
+          'p_address_id': addressId,
           'p_device_type': deviceType,
           'p_problem_description': problemDescription,
           'p_notes': notes,

@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../../../core/errors/app_exception.dart';
@@ -204,7 +205,7 @@ class MaintenanceDetailScreen extends ConsumerWidget {
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: const Icon(
-                                  Icons.add_photo_alternate_outlined,
+                                  Iconsax.gallery_add_copy,
                                 ),
                               ),
                             ),
@@ -224,7 +225,7 @@ class MaintenanceDetailScreen extends ConsumerWidget {
                     foregroundColor: Theme.of(context).colorScheme.error,
                   ),
                   onPressed: () => _cancel(context, ref),
-                  icon: const Icon(Icons.cancel_outlined),
+                  icon: const Icon(Iconsax.close_circle_copy),
                   label: const Text('إلغاء الطلب'),
                 ),
               ],

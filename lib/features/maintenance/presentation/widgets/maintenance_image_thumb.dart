@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/maintenance_providers.dart';
 
@@ -33,7 +34,7 @@ class MaintenanceImageThumb extends ConsumerWidget {
           ),
           error: (_, _) => const ColoredBox(
             color: Colors.black12,
-            child: Icon(Icons.broken_image_outlined),
+            child: Icon(Iconsax.gallery_slash_copy),
           ),
           data: (url) => CachedNetworkImage(
             imageUrl: url,
@@ -46,7 +47,7 @@ class MaintenanceImageThumb extends ConsumerWidget {
             ),
             errorWidget: (_, _, _) => const ColoredBox(
               color: Colors.black12,
-              child: Icon(Icons.broken_image_outlined),
+              child: Icon(Iconsax.gallery_slash_copy),
             ),
           ),
         ),

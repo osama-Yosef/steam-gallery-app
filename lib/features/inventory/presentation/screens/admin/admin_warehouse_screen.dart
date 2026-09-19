@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:iconsax_flutter/iconsax_flutter.dart';
 import '../../../../../core/router/route_names.dart';
+import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/widgets/money_text.dart';
 import '../../../../../core/widgets/state_views.dart';
+import '../../../data/models/warehouse_stock_item.dart';
 import '../../providers/inventory_providers.dart';
 
+/// Admin-only (0046) — sales no longer sees the warehouse at all, so this
+/// screen dropped the isSales branching it used to need.
 class AdminWarehouseScreen extends ConsumerStatefulWidget {
   const AdminWarehouseScreen({super.key});
 
@@ -31,12 +36,18 @@ class _AdminWarehouseScreenState extends ConsumerState<AdminWarehouseScreen> {
         child: Wrap(
           children: [
             ListTile(
-              leading: const Icon(Icons.add_box_outlined),
+              leading: const Icon(
+                Iconsax.box_add_copy,
+                color: AppColors.success,
+              ),
               title: const Text('استلام بضاعة'),
               onTap: () => Navigator.of(ctx).pop('receive'),
             ),
             ListTile(
-              leading: const Icon(Icons.outbox_outlined),
+              leading: const Icon(
+                Iconsax.box_remove_copy,
+                color: AppColors.warning,
+              ),
               title: const Text('صرف لصنايعي'),
               onTap: () => Navigator.of(ctx).pop('issue'),
             ),
@@ -67,17 +78,17 @@ class _AdminWarehouseScreenState extends ConsumerState<AdminWarehouseScreen> {
         title: const Text('المخزن الرئيسي'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.history),
+            icon: const Icon(Iconsax.clock_copy),
             tooltip: 'حركات المخزون',
             onPressed: () => context.push(Routes.adminStockMovements),
           ),
           IconButton(
-            icon: const Icon(Icons.badge_outlined),
+            icon: const Icon(Iconsax.personalcard_copy),
             tooltip: 'شنط الصنايعية',
             onPressed: () => context.push(Routes.adminTechnicianBags),
           ),
           IconButton(
-            icon: const Icon(Icons.checklist_outlined),
+            icon: const Icon(Iconsax.task_square_copy),
             tooltip: 'الجرد',
             onPressed: () => context.push(Routes.adminInventoryCounts),
           ),
@@ -105,7 +116,7 @@ class _AdminWarehouseScreenState extends ConsumerState<AdminWarehouseScreen> {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _openActions,
-        icon: const Icon(Icons.swap_horiz),
+        icon: const Icon(Iconsax.arrow_swap_horizontal_copy),
         label: const Text('حركة مخزون'),
       ),
       body: Column(
@@ -116,10 +127,10 @@ class _AdminWarehouseScreenState extends ConsumerState<AdminWarehouseScreen> {
               controller: _searchCtrl,
               decoration: InputDecoration(
                 hintText: 'ابحث بالاسم...',
-                prefixIcon: const Icon(Icons.search),
+                prefixIcon: const Icon(Iconsax.search_normal_1_copy),
                 suffixIcon: _search.isNotEmpty
                     ? IconButton(
-                        icon: const Icon(Icons.close),
+                        icon: const Icon(Iconsax.close_circle_copy),
                         onPressed: () {
                           _searchCtrl.clear();
                           setState(() => _search = '');
@@ -141,34 +152,83 @@ class _AdminWarehouseScreenState extends ConsumerState<AdminWarehouseScreen> {
                 if (items.isEmpty) {
                   return const EmptyView(
                     message: 'لا توجد أصناف بالمخزن',
-                    icon: Icons.warehouse_outlined,
+                    icon: Iconsax.buildings_2_copy,
                   );
                 }
-                return ListView.separated(
-                  padding: const EdgeInsets.only(bottom: 88),
+                return ListView.builder(
+                  padding: const EdgeInsets.only(top: 8, bottom: 88),
                   itemCount: items.length,
-                  separatorBuilder: (_, _) => const Divider(height: 1),
-                  itemBuilder: (context, i) {
-                    final item = items[i];
-                    return ListTile(
-                      leading: item.isLow
-                          ? Icon(
-                              Icons.warning_amber_rounded,
-                              color: Theme.of(context).colorScheme.error,
-                            )
-                          : const Icon(Icons.inventory_2_outlined),
-                      title: Text(item.productName),
-                      subtitle: Text(
-                        'SKU: ${item.sku} · الكمية: ${item.quantity}',
-                      ),
-                      trailing: MoneyText(item.value),
-                    );
-                  },
+                  itemBuilder: (context, i) => _StockTile(item: items[i]),
                 );
               },
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// A full-width, colour-tinted card — same visual language as the redesigned
+/// maintenance/order lists — red-tinted for low stock, neutral otherwise.
+class _StockTile extends StatelessWidget {
+  final WarehouseStockItem item;
+  const _StockTile({required this.item});
+
+  @override
+  Widget build(BuildContext context) {
+    final color = item.isLow ? AppColors.danger : AppColors.primary;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: Material(
+          color: color.withValues(alpha: 0.08),
+          child: Padding(
+            padding: const EdgeInsets.all(14),
+            child: Row(
+              children: [
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(shape: BoxShape.circle, color: color),
+                  child: Icon(
+                    item.isLow ? Iconsax.warning_2_copy : Iconsax.box_copy,
+                    color: Colors.white,
+                    size: 22,
+                  ),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        item.productName,
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(fontWeight: FontWeight.bold),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'SKU: ${item.sku} · الكمية: ${item.quantity}',
+                        style: Theme.of(context).textTheme.bodySmall,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                MoneyText(
+                  item.value,
+                  style: TextStyle(color: color, fontWeight: FontWeight.w700),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:iconsax_flutter/iconsax_flutter.dart';
 import '../../../../../core/errors/app_exception.dart';
 import '../../../../../core/router/route_names.dart';
+import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/utils/formatters.dart';
 import '../../../../../core/widgets/confirm_dialog.dart';
 import '../../../../../core/widgets/state_views.dart';
@@ -63,7 +65,7 @@ class _AdminInventoryCountsListScreenState
                 height: 16,
                 child: CircularProgressIndicator(strokeWidth: 2),
               )
-            : const Icon(Icons.checklist_outlined),
+            : const Icon(Iconsax.task_square_copy),
         label: const Text('بدء جرد جديد'),
       ),
       body: countsAsync.when(
@@ -76,7 +78,7 @@ class _AdminInventoryCountsListScreenState
           if (counts.isEmpty) {
             return const EmptyView(
               message: 'لا توجد عمليات جرد بعد',
-              icon: Icons.checklist_outlined,
+              icon: Iconsax.task_square_copy,
             );
           }
           return ListView.separated(
@@ -92,10 +94,10 @@ class _AdminInventoryCountsListScreenState
                   '${inventoryCountStatusLabelAr(c.status)} · ${Formatters.dateTime(c.startedAt)}',
                 ),
                 trailing: c.status == InventoryCountStatus.draft
-                    ? const Icon(Icons.edit_note_outlined)
+                    ? const Icon(Iconsax.edit_2_copy)
                     : const Icon(
-                        Icons.check_circle_outline,
-                        color: Colors.green,
+                        Iconsax.tick_circle_copy,
+                        color: AppColors.success,
                       ),
                 onTap: () async {
                   await context.push(Routes.adminInventoryCountDetail(c.id));

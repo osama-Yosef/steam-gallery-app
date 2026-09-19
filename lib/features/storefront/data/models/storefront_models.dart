@@ -6,8 +6,10 @@ part 'storefront_models.freezed.dart';
 
 DateTime? _date(Object? v) => v == null ? null : DateTime.parse(v as String);
 
-/// A special offer (0033). Promotional content only — it never changes a
-/// product's price; orders always charge products.selling_price.
+/// A special offer (0033). A product attached to it may optionally carry a
+/// discounted price (0061) that applies everywhere — storefront, cart,
+/// orders, walk-in sale — for as long as the offer is live, and nowhere
+/// once it isn't; products.selling_price itself is never touched.
 @freezed
 abstract class Offer with _$Offer {
   const Offer._();
@@ -125,6 +127,14 @@ class CustomerHomeData {
       newest.isEmpty;
 }
 
+/// One product attached to an offer. [offerPrice] null = featured only, at
+/// its normal price; set = discounted while the offer is live (0061).
+class OfferProductInput {
+  final String productId;
+  final double? offerPrice;
+  const OfferProductInput({required this.productId, this.offerPrice});
+}
+
 /// Admin input for an offer. [id] null = new.
 class OfferInput {
   final String? id;
@@ -137,7 +147,7 @@ class OfferInput {
   final DateTime? endsAt;
   final bool isActive;
   final int sortOrder;
-  final List<String> productIds;
+  final List<OfferProductInput> products;
 
   const OfferInput({
     this.id,
@@ -150,7 +160,7 @@ class OfferInput {
     this.endsAt,
     required this.isActive,
     this.sortOrder = 0,
-    this.productIds = const [],
+    this.products = const [],
   });
 }
 

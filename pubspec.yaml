@@ -60,6 +60,8 @@ dependencies:
   cached_network_image: ^3.4.1
   url_launcher: ^6.3.1
   http: ^1.6.0
+  # Share/save a report screenshot as an image (Module 11 export upgrade).
+  share_plus: ^13.0.0
 
   # Maps & location — only lib/core/maps imports these (see MapWidgetFactory),
   # so swapping OSM for another provider stays a one-folder change.

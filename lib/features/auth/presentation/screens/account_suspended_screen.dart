@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:iconsax_flutter/iconsax_flutter.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../providers/auth_providers.dart';
 import '../widgets/auth_page.dart';
@@ -19,7 +20,7 @@ class AccountSuspendedScreen extends ConsumerWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const Icon(Icons.block, size: 56, color: AppColors.danger),
+          const Icon(Iconsax.lock_slash_copy, size: 56, color: AppColors.danger),
           const SizedBox(height: 16),
           const Text(
             'تم إيقاف هذا الحساب. لو تعتقد إن ده حصل بالغلط تواصل مع الإدارة.',

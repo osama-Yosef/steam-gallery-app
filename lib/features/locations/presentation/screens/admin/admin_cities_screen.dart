@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:iconsax_flutter/iconsax_flutter.dart';
 import '../../../../../core/errors/app_exception.dart';
 import '../../../../../core/router/route_names.dart';
 import '../../../../../core/widgets/confirm_dialog.dart';
@@ -51,7 +52,7 @@ class AdminCitiesScreen extends ConsumerWidget {
       appBar: AppBar(title: const Text('مناطق الخدمة')),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => context.push(Routes.adminCityNew),
-        icon: const Icon(Icons.add_location_alt_outlined),
+        icon: const Icon(Iconsax.location_add_copy),
         label: const Text('إضافة مدينة'),
       ),
       body: citiesAsync.when(
@@ -64,7 +65,7 @@ class AdminCitiesScreen extends ConsumerWidget {
           if (cities.isEmpty) {
             return const EmptyView(
               message: 'لا توجد مدن بعد',
-              icon: Icons.location_city_outlined,
+              icon: Iconsax.buildings_2_copy,
             );
           }
           return ListView.separated(
@@ -74,7 +75,7 @@ class AdminCitiesScreen extends ConsumerWidget {
             itemBuilder: (context, i) {
               final city = cities[i];
               return ListTile(
-                leading: const Icon(Icons.location_city_outlined),
+                leading: const Icon(Iconsax.buildings_2_copy),
                 title: Text(city.nameAr),
                 subtitle: Text(
                   city.isActive ? 'مفعّلة' : 'متوقفة — لا تظهر للعملاء',

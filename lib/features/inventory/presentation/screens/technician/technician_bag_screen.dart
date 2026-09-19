@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:iconsax_flutter/iconsax_flutter.dart';
 import '../../../../../core/router/route_names.dart';
 import '../../../../auth/presentation/providers/auth_providers.dart';
 import '../../../../technician_account/presentation/providers/technician_account_providers.dart';
@@ -19,7 +20,7 @@ class TechnicianBagScreen extends ConsumerWidget {
         title: const Text('شنطتي'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.receipt_long_outlined),
+            icon: const Icon(Iconsax.receipt_text_copy),
             tooltip: 'سجل مبيعاتي',
             onPressed: () => context.push(Routes.technicianSales),
           ),
@@ -36,7 +37,7 @@ class TechnicianBagScreen extends ConsumerWidget {
                 ref.invalidate(technicianBagStockProvider(profile.id));
                 ref.invalidate(technicianAccountSummaryProvider(profile.id));
               },
-              icon: const Icon(Icons.point_of_sale_outlined),
+              icon: const Icon(Iconsax.card_pos_copy),
               label: const Text('بيع'),
             ),
       body: profile == null

@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../../data/models/order.dart';
 
-Color orderStatusColor(BuildContext context, OrderStatus status) => switch (status) {
-  OrderStatus.pending => Colors.orange,
-  OrderStatus.confirmed || OrderStatus.preparing => Colors.blue,
-  OrderStatus.delivered || OrderStatus.completed => Colors.green,
-  OrderStatus.cancelled ||
-  OrderStatus.returned => Theme.of(context).colorScheme.error,
+Color orderStatusColor(OrderStatus status) => switch (status) {
+  OrderStatus.pending => AppColors.warning,
+  OrderStatus.confirmed || OrderStatus.preparing => AppColors.info,
+  OrderStatus.delivered || OrderStatus.completed => AppColors.success,
+  OrderStatus.cancelled || OrderStatus.returned => AppColors.danger,
 };
 
 Color paymentStatusColor(PaymentStatus status) => switch (status) {
-  PaymentStatus.unpaid => Colors.orange,
-  PaymentStatus.partiallyPaid => Colors.blue,
-  PaymentStatus.paid => Colors.green,
-  PaymentStatus.refunded => Colors.grey,
+  PaymentStatus.unpaid => AppColors.warning,
+  PaymentStatus.partiallyPaid => AppColors.info,
+  PaymentStatus.paid => AppColors.success,
+  PaymentStatus.refunded => AppColors.textSecondary,
 };
 
 /// Fulfilment state — pending/confirmed/preparing/delivered/completed, or
@@ -24,7 +24,7 @@ class OrderStatusChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = orderStatusColor(context, status);
+    final color = orderStatusColor(status);
     return Chip(
       label: Text(orderStatusLabelAr(status)),
       backgroundColor: color.withValues(alpha: 0.15),

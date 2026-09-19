@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:iconsax_flutter/iconsax_flutter.dart';
 import '../../../../core/theme/app_colors.dart';
 
 /// "الخدمة متاحة — مدينة نصر" / "المنطقة غير مغطاة حاليًا". Always reflects
@@ -35,7 +36,7 @@ class AvailabilityBadge extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(
-            available ? Icons.check_circle : Icons.info_outline,
+            available ? Iconsax.tick_circle : Iconsax.info_circle_copy,
             size: compact ? 14 : 18,
             color: color,
           ),

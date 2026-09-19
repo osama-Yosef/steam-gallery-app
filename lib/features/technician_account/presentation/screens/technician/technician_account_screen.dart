@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:iconsax_flutter/iconsax_flutter.dart';
 import '../../../../../core/router/route_names.dart';
+import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/widgets/confirm_dialog.dart';
 import '../../../../../core/widgets/state_views.dart';
 import '../../../../auth/presentation/providers/auth_providers.dart';
@@ -35,7 +37,7 @@ class TechnicianAccountScreen extends ConsumerWidget {
         actions: isSelf
             ? [
                 IconButton(
-                  icon: const Icon(Icons.logout),
+                  icon: const Icon(Iconsax.logout_copy),
                   tooltip: 'تسجيل الخروج',
                   onPressed: () async {
                     final confirmed = await showConfirmDialog(
@@ -62,7 +64,7 @@ class TechnicianAccountScreen extends ConsumerWidget {
           if (summary == null) {
             return const EmptyView(
               message: 'لا يوجد حساب بعد',
-              icon: Icons.account_balance_wallet_outlined,
+              icon: Iconsax.wallet_copy,
             );
           }
           return ListView(
@@ -75,34 +77,44 @@ class TechnicianAccountScreen extends ConsumerWidget {
               ),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Column(
+                child: Row(
                   children: [
-                    FilledButton.icon(
-                      onPressed: () async {
-                        final route = isSelf
-                            ? Routes.technicianAccountSupply
-                            : Routes.adminTechnicianAccountSupply(resolvedId);
-                        await context.push(route);
-                        ref.invalidate(
-                          technicianAccountSummaryProvider(resolvedId),
-                        );
-                        ref.invalidate(
-                          pendingTechnicianSuppliesProvider(resolvedId),
-                        );
-                      },
-                      icon: const Icon(Icons.payments_outlined),
-                      label: const Text('تسجيل توريد'),
+                    Expanded(
+                      child: _AccountActionButton(
+                        icon: Iconsax.wallet_add_copy,
+                        label: 'تسجيل توريد',
+                        color: AppColors.success,
+                        onTap: () async {
+                          final route = isSelf
+                              ? Routes.technicianAccountSupply
+                              : Routes.adminTechnicianAccountSupply(
+                                  resolvedId,
+                                );
+                          await context.push(route);
+                          ref.invalidate(
+                            technicianAccountSummaryProvider(resolvedId),
+                          );
+                          ref.invalidate(
+                            pendingTechnicianSuppliesProvider(resolvedId),
+                          );
+                        },
+                      ),
                     ),
-                    const SizedBox(height: 8),
-                    OutlinedButton.icon(
-                      onPressed: () {
-                        final route = isSelf
-                            ? Routes.technicianAccountHistory
-                            : Routes.adminTechnicianAccountHistory(resolvedId);
-                        context.push(route);
-                      },
-                      icon: const Icon(Icons.history),
-                      label: const Text('سجل الحركات'),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: _AccountActionButton(
+                        icon: Iconsax.clock_copy,
+                        label: 'سجل الحركات',
+                        color: AppColors.info,
+                        onTap: () {
+                          final route = isSelf
+                              ? Routes.technicianAccountHistory
+                              : Routes.adminTechnicianAccountHistory(
+                                  resolvedId,
+                                );
+                          context.push(route);
+                        },
+                      ),
                     ),
                   ],
                 ),
@@ -111,6 +123,50 @@ class TechnicianAccountScreen extends ConsumerWidget {
             ],
           );
         },
+      ),
+    );
+  }
+}
+
+/// A colour-tinted card button — same visual language as the redesigned
+/// admin screens' status cards, replacing the plain grey Filled/Outlined
+/// buttons this screen used to have.
+class _AccountActionButton extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final Color color;
+  final VoidCallback onTap;
+  const _AccountActionButton({
+    required this.icon,
+    required this.label,
+    required this.color,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(18),
+      child: Material(
+        color: color.withValues(alpha: 0.1),
+        child: InkWell(
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(icon, color: color),
+                const SizedBox(height: 6),
+                Text(
+                  label,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: color, fontWeight: FontWeight.w700),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }

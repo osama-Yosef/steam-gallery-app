@@ -26,7 +26,10 @@ abstract class StorefrontRepository {
 
   Future<List<Offer>> listOffersAdmin();
 
-  Future<List<String>> getOfferProductIds(String offerId);
+  /// Product ids + their discounted price (if any) for the editor's prefill
+  /// — distinct from [getOfferProducts], which is the customer-facing full
+  /// [ProductPublic] listing.
+  Future<List<OfferProductInput>> getOfferProductInputs(String offerId);
 
   Future<void> saveOffer(OfferInput input);
 
@@ -193,14 +196,23 @@ class SupabaseStorefrontRepository implements StorefrontRepository {
   }
 
   @override
-  Future<List<String>> getOfferProductIds(String offerId) async {
+  Future<List<OfferProductInput>> getOfferProductInputs(
+    String offerId,
+  ) async {
     try {
       final rows = await _client
           .from('offer_products')
-          .select('product_id')
+          .select('product_id, offer_price')
           .eq('offer_id', offerId)
           .order('sort_order');
-      return rows.map((r) => r['product_id'] as String).toList();
+      return rows
+          .map(
+            (r) => OfferProductInput(
+              productId: r['product_id'] as String,
+              offerPrice: (r['offer_price'] as num?)?.toDouble(),
+            ),
+          )
+          .toList();
     } catch (e) {
       throw AppException.from(e);
     }
@@ -239,12 +251,13 @@ class SupabaseStorefrontRepository implements StorefrontRepository {
       // failure only leaves the links as they were or empty — never touches
       // prices or stock — and saving again repairs it.
       await _client.from('offer_products').delete().eq('offer_id', offerId);
-      if (input.productIds.isNotEmpty) {
+      if (input.products.isNotEmpty) {
         await _client.from('offer_products').insert([
-          for (var i = 0; i < input.productIds.length; i++)
+          for (var i = 0; i < input.products.length; i++)
             {
               'offer_id': offerId,
-              'product_id': input.productIds[i],
+              'product_id': input.products[i].productId,
+              'offer_price': input.products[i].offerPrice,
               'sort_order': i,
             },
         ]);

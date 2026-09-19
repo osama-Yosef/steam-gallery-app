@@ -23,8 +23,11 @@ class CartScreen extends ConsumerStatefulWidget {
 }
 
 class _CartScreenState extends ConsumerState<CartScreen> {
-  /// Product ids with a request in flight (their controls are disabled).
+  /// Line keys (productId + option combo) with a request in flight.
   final _busy = <String>{};
+
+  static String _lineKey(String productId, List<String> optionIds) =>
+      '$productId|${optionIds.join(',')}';
 
   Future<void> _run(String key, Future<void> Function() op) async {
     setState(() => _busy.add(key));
@@ -77,7 +80,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
             IconButton(
               tooltip: 'تفريغ السلة',
               onPressed: _busy.isEmpty ? _confirmClear : null,
-              icon: const Icon(Icons.delete_sweep_outlined),
+              icon: const Icon(Iconsax.broom_copy),
             ),
         ],
       ),
@@ -111,7 +114,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                       if (cart.hasPriceChanges)
                         _Notice(
                           key: const Key('cart-price-notice'),
-                          icon: Icons.info_outline,
+                          icon: Iconsax.info_circle_copy,
                           color: AppColors.warning,
                           text:
                               'أسعار بعض المنتجات اتغيرت من وقت ما ضفتها. الإجمالي محسوب بالأسعار الحالية.',
@@ -130,7 +133,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                       if (cart.items.any((l) => l.blocksCheckout))
                         const _Notice(
                           key: Key('cart-blocked-notice'),
-                          icon: Icons.error_outline,
+                          icon: Iconsax.danger_copy,
                           color: AppColors.danger,
                           text:
                               'في منتجات مش متاحة بالكمية دي. عدّل الكمية أو احذفها عشان تكمل.',
@@ -138,19 +141,24 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                       for (final line in cart.items)
                         _LineTile(
                           line: line,
-                          busy: _busy.contains(line.productId) ||
+                          busy:
+                              _busy.contains(_lineKey(line.productId, line.optionIds)) ||
                               _busy.contains('*'),
                           onQuantity: (q) => _run(
-                            line.productId,
+                            _lineKey(line.productId, line.optionIds),
                             () => ref
                                 .read(cartProvider.notifier)
-                                .setQuantity(line.productId, q),
+                                .setQuantity(
+                                  line.productId,
+                                  q,
+                                  optionIds: line.optionIds,
+                                ),
                           ),
                           onRemove: () => _run(
-                            line.productId,
+                            _lineKey(line.productId, line.optionIds),
                             () => ref
                                 .read(cartProvider.notifier)
-                                .remove(line.productId),
+                                .remove(line.productId, optionIds: line.optionIds),
                           ),
                         ),
                     ],
@@ -255,6 +263,18 @@ class _LineTile extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                     style: theme.textTheme.titleSmall,
                   ),
+                  if (line.options.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 2),
+                      child: Text(
+                        line.options.map((o) => o.name).join('، '),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ),
                   const SizedBox(height: 4),
                   Wrap(
                     spacing: 8,
@@ -294,7 +314,7 @@ class _LineTile extends StatelessWidget {
                         IconButton(
                           tooltip: 'حذف',
                           onPressed: onRemove,
-                          icon: const Icon(Icons.delete_outline),
+                          icon: const Icon(Iconsax.trash_copy),
                         ),
                     ],
                   ),

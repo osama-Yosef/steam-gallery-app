@@ -12,6 +12,34 @@ abstract final class Routes {
   static const accountSuspended = '/account-suspended';
 
   static const adminHome = '/admin';
+  static const adminSections = '/admin/sections';
+
+  // Sales role (0046) — a restricted staff area: direct walk-in sale (the
+  // landing tab), orders, marketing, InstaPay review, cashbox withdrawal.
+  // No products, no warehouse, no reports, no cashbox ledger/deposit, no
+  // customers/users/audit-log.
+  static const salesHome = '/sales';
+  static const salesSections = '/sales/sections';
+  static const salesOrders = '/sales/orders';
+  static String salesOrderDetail(String id) => '/sales/orders/$id';
+  static const salesMarketing = '/sales/sections/marketing';
+  static const salesOfferNew = '/sales/sections/marketing/offers/new';
+  static String salesOfferEdit(String id) =>
+      '/sales/sections/marketing/offers/$id';
+  static const salesBannerNew = '/sales/sections/marketing/banners/new';
+  static String salesBannerEdit(String id) =>
+      '/sales/sections/marketing/banners/$id';
+  static const salesInstapayReview = '/sales/sections/instapay';
+  static const salesSalesReturns = '/sales/sections/sales-returns';
+  static String salesSaleReturnDetail(String id) =>
+      '/sales/sections/sales-returns/$id';
+  // Full cashbox parity with admin (0048) — sees the balance/ledger, records
+  // expenses, deposits and withdraws, same as admin.
+  static const salesCashbox = '/sales/sections/cashbox';
+  static const salesExpenses = '/sales/sections/cashbox/expenses';
+  static const salesExpenseNew = '/sales/sections/cashbox/expenses/new';
+  static const salesCashDeposit = '/sales/sections/cashbox/deposit';
+  static const salesCashWithdraw = '/sales/sections/cashbox/withdraw';
   static const technicianHome = '/technician';
   static const customerHome = '/customer';
   static const customerAccount = '/customer/account';
@@ -61,6 +89,8 @@ abstract final class Routes {
   static const adminOrders = '/admin/orders';
   static String adminOrderDetail(String id) => '/admin/orders/$id';
   static const adminInstapayReview = '/admin/instapay';
+  static const adminSalesReturns = '/admin/sales-returns';
+  static String adminSaleReturnDetail(String id) => '/admin/sales-returns/$id';
 
   // Maintenance (Module 4)
   static const customerMaintenance = '/customer/maintenance';

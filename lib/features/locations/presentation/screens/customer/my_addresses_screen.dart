@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:iconsax_flutter/iconsax_flutter.dart';
 import '../../../../../core/errors/app_exception.dart';
 import '../../../../../core/router/route_names.dart';
 import '../../../../../core/theme/app_colors.dart';
@@ -53,7 +54,7 @@ class MyAddressesScreen extends ConsumerWidget {
                       ),
                     )
                   : () => context.push(Routes.customerAddressNew),
-              icon: const Icon(Icons.add_location_alt_outlined),
+              icon: const Icon(Iconsax.location_add_copy),
               label: const Text('إضافة عنوان'),
             )
           : null,
@@ -68,10 +69,10 @@ class MyAddressesScreen extends ConsumerWidget {
             return EmptyView(
               message:
                   'لسه مفيش عناوين محفوظة.\nأضف عنوانك لنعرف لو الخدمة متاحة عندك.',
-              icon: Icons.location_off_outlined,
+              icon: Iconsax.location_slash_copy,
               action: FilledButton.icon(
                 onPressed: () => context.push(Routes.customerAddressNew),
-                icon: const Icon(Icons.add_location_alt_outlined),
+                icon: const Icon(Iconsax.location_add_copy),
                 label: const Text('إضافة عنوان'),
               ),
             );
@@ -146,8 +147,8 @@ class _AddressCard extends StatelessWidget {
                 children: [
                   Icon(
                     address.isDefault
-                        ? Icons.star_rounded
-                        : Icons.place_outlined,
+                        ? Iconsax.star_1
+                        : Iconsax.location_copy,
                     color: address.isDefault
                         ? AppColors.brandGold
                         : AppColors.textSecondary,

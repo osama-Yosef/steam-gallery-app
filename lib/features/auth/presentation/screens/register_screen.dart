@@ -2,6 +2,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../../core/constants/brand.dart';
 import '../../../../core/errors/app_exception.dart';
@@ -123,7 +124,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                                   ? MemoryImage(_avatarBytes!)
                                   : null,
                               child: _avatarBytes == null
-                                  ? const Icon(Icons.person_outline, size: 36)
+                                  ? const Icon(Iconsax.user_copy, size: 36)
                                   : null,
                             ),
                             Positioned(
@@ -132,7 +133,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                               child: CircleAvatar(
                                 radius: 14,
                                 child: Icon(
-                                  Icons.camera_alt_outlined,
+                                  Iconsax.camera_copy,
                                   size: 14,
                                 ),
                               ),
@@ -156,7 +157,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       controller: _nameCtrl,
                       decoration: const InputDecoration(
                         labelText: 'الاسم الكامل',
-                        prefixIcon: Icon(Icons.person_outline),
+                        prefixIcon: Icon(Iconsax.user_copy),
                       ),
                       validator: (v) => Validators.required(v, 'الاسم'),
                     ),
@@ -168,7 +169,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       decoration: const InputDecoration(
                         labelText: 'رقم الهاتف',
                         hintText: '01012345678',
-                        prefixIcon: Icon(Icons.phone_outlined),
+                        prefixIcon: Icon(Iconsax.call_copy),
                       ),
                       validator: Validators.phone,
                     ),
@@ -178,12 +179,12 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       obscureText: _obscurePassword,
                       decoration: InputDecoration(
                         labelText: 'كلمة المرور',
-                        prefixIcon: const Icon(Icons.lock_outline),
+                        prefixIcon: const Icon(Iconsax.lock_copy),
                         suffixIcon: IconButton(
                           icon: Icon(
                             _obscurePassword
-                                ? Icons.visibility_off
-                                : Icons.visibility,
+                                ? Iconsax.eye_slash_copy
+                                : Iconsax.eye_copy,
                           ),
                           onPressed: () => setState(
                             () => _obscurePassword = !_obscurePassword,
@@ -198,12 +199,12 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       obscureText: _obscureConfirmPassword,
                       decoration: InputDecoration(
                         labelText: 'تأكيد كلمة المرور',
-                        prefixIcon: const Icon(Icons.lock_outline),
+                        prefixIcon: const Icon(Iconsax.lock_copy),
                         suffixIcon: IconButton(
                           icon: Icon(
                             _obscureConfirmPassword
-                                ? Icons.visibility_off
-                                : Icons.visibility,
+                                ? Iconsax.eye_slash_copy
+                                : Iconsax.eye_copy,
                           ),
                           onPressed: () => setState(
                             () => _obscureConfirmPassword =

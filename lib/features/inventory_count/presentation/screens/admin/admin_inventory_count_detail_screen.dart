@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:iconsax_flutter/iconsax_flutter.dart';
 import '../../../../../core/errors/app_exception.dart';
 import '../../../../../core/widgets/confirm_dialog.dart';
 import '../../../../../core/widgets/state_views.dart';
@@ -197,7 +198,7 @@ class _AdminInventoryCountDetailScreenState
                                     fontWeight: FontWeight.bold,
                                   ),
                                 )
-                              : const Icon(Icons.radio_button_unchecked),
+                              : const Icon(Iconsax.square_copy),
                           onTap: isDraft ? () => _editItem(item) : null,
                         );
                       },
@@ -216,7 +217,7 @@ class _AdminInventoryCountDetailScreenState
                                   strokeWidth: 2,
                                 ),
                               )
-                            : const Icon(Icons.check_circle_outline),
+                            : const Icon(Iconsax.tick_circle_copy),
                         label: const Text('اعتماد الجرد'),
                       ),
                     ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:iconsax_flutter/iconsax_flutter.dart';
 import '../../../../../core/errors/app_exception.dart';
 import '../../../../auth/presentation/providers/auth_providers.dart';
 import '../../providers/technician_account_providers.dart';
@@ -110,7 +111,7 @@ class _TechnicianSupplyScreenState
                             height: 16,
                             child: CircularProgressIndicator(strokeWidth: 2),
                           )
-                        : const Icon(Icons.check),
+                        : const Icon(Iconsax.tick_circle_copy),
                     label: const Text('تأكيد التوريد'),
                   ),
                 ],

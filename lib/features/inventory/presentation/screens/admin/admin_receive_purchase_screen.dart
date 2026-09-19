@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:iconsax_flutter/iconsax_flutter.dart';
 import '../../../../../core/errors/app_exception.dart';
 import '../../../../../core/widgets/state_views.dart';
 import '../../../../products/data/models/product.dart';
@@ -140,7 +141,7 @@ class _AdminReceivePurchaseScreenState
                           height: 16,
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )
-                      : const Icon(Icons.check),
+                      : const Icon(Iconsax.tick_circle_copy),
                   label: const Text('تسجيل الاستلام'),
                 ),
               ],

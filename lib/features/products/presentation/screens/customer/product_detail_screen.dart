@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:iconsax_flutter/iconsax_flutter.dart';
 import '../../../../../core/errors/app_exception.dart';
 import '../../../../../core/router/route_names.dart';
 import '../../../../../core/theme/app_colors.dart';
@@ -10,20 +11,34 @@ import '../../../../../core/widgets/state_views.dart';
 import '../../../../cart/data/models/cart.dart';
 import '../../../../cart/presentation/providers/cart_provider.dart';
 import '../../../data/models/product_image.dart';
+import '../../../data/models/product_option.dart';
 import '../../../data/models/product_public.dart';
 import '../../../presentation/providers/product_providers.dart';
 import '../../widgets/product_card.dart';
 
 /// Product page: photo gallery, price and availability, the live offers it
-/// belongs to, description, specs, similar products, and a sticky quantity +
-/// «أضف للسلة» bar. Reads products_public only — never a cost column.
-class ProductDetailScreen extends ConsumerWidget {
+/// belongs to, description, priced options, similar products, and a sticky
+/// quantity + «أضف للسلة» bar. Reads products_public only — never a cost
+/// column. Selected option ids (0049) live here, one level above [_Body]'s
+/// checkboxes and [_AddToCartBar]'s price/submit, since both siblings need
+/// them.
+class ProductDetailScreen extends ConsumerStatefulWidget {
   final String productId;
   const ProductDetailScreen({super.key, required this.productId});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final productAsync = ref.watch(customerProductDetailProvider(productId));
+  ConsumerState<ProductDetailScreen> createState() =>
+      _ProductDetailScreenState();
+}
+
+class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
+  final Set<String> _selectedOptionIds = {};
+
+  @override
+  Widget build(BuildContext context) {
+    final productAsync = ref.watch(
+      customerProductDetailProvider(widget.productId),
+    );
 
     return Scaffold(
       appBar: AppBar(title: const Text('تفاصيل المنتج')),
@@ -31,20 +46,36 @@ class ProductDetailScreen extends ConsumerWidget {
         loading: () => const LoadingView(),
         error: (e, _) => ErrorView(
           message: 'تعذَّر تحميل بيانات المنتج',
-          onRetry: () =>
-              ref.invalidate(customerProductDetailProvider(productId)),
+          onRetry: () => ref.invalidate(
+            customerProductDetailProvider(widget.productId),
+          ),
         ),
         data: (product) {
           if (product == null) {
             return const EmptyView(
               message: 'هذا المنتج لم يعد متاحًا في المتجر',
-              icon: Icons.inventory_2_outlined,
+              icon: Iconsax.box_copy,
             );
           }
           return Column(
             children: [
-              Expanded(child: _Body(product: product)),
-              _AddToCartBar(product: product),
+              Expanded(
+                child: _Body(
+                  product: product,
+                  selectedOptionIds: _selectedOptionIds,
+                  onToggleOption: (id, selected) => setState(() {
+                    if (selected) {
+                      _selectedOptionIds.add(id);
+                    } else {
+                      _selectedOptionIds.remove(id);
+                    }
+                  }),
+                ),
+              ),
+              _AddToCartBar(
+                product: product,
+                selectedOptionIds: _selectedOptionIds,
+              ),
             ],
           );
         },
@@ -55,7 +86,13 @@ class ProductDetailScreen extends ConsumerWidget {
 
 class _Body extends ConsumerWidget {
   final ProductPublic product;
-  const _Body({required this.product});
+  final Set<String> selectedOptionIds;
+  final void Function(String optionId, bool selected) onToggleOption;
+  const _Body({
+    required this.product,
+    required this.selectedOptionIds,
+    required this.onToggleOption,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -91,7 +128,7 @@ class _Body extends ConsumerWidget {
           Align(
             alignment: AlignmentDirectional.centerStart,
             child: ActionChip(
-              avatar: const Icon(Icons.category_outlined, size: 18),
+              avatar: const Icon(Iconsax.category_copy, size: 18),
               label: Text(categoryName),
               onPressed: () =>
                   context.go(Routes.customerStoreCategory(product.categoryId!)),
@@ -121,10 +158,10 @@ class _Body extends ConsumerWidget {
             margin: EdgeInsets.zero,
             color: AppColors.brandGold.withValues(alpha: 0.15),
             child: ListTile(
-              leading: const Icon(Icons.local_offer_outlined),
+              leading: const Icon(Iconsax.tag_copy),
               title: Text(o.title),
               subtitle: o.badgeText == null ? null : Text(o.badgeText!),
-              trailing: const Icon(Icons.chevron_left),
+              trailing: const Icon(Iconsax.arrow_left_2_copy),
               onTap: () => context.push(Routes.customerOffer(o.id)),
             ),
           ),
@@ -135,43 +172,61 @@ class _Body extends ConsumerWidget {
           const SizedBox(height: 6),
           Text(product.description!.trim()),
         ],
-        if (product.specs.isNotEmpty) ...[
-          const SizedBox(height: 20),
-          Text('المواصفات', style: theme.textTheme.titleMedium),
-          const SizedBox(height: 6),
-          Card(
-            margin: EdgeInsets.zero,
-            child: Column(
-              children: [
-                for (final (i, e) in product.specs.entries.indexed) ...[
-                  if (i > 0) const Divider(height: 1),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 10,
-                    ),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          flex: 2,
-                          child: Text(
-                            e.key,
-                            style: const TextStyle(fontWeight: FontWeight.w600),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(flex: 3, child: Text(e.value)),
-                      ],
-                    ),
-                  ),
-                ],
-              ],
-            ),
-          ),
-        ],
+        _OptionsSection(
+          productId: product.id,
+          selectedOptionIds: selectedOptionIds,
+          onToggleOption: onToggleOption,
+        ),
         if (product.categoryId != null)
           _Related(productId: product.id, categoryId: product.categoryId!),
+      ],
+    );
+  }
+}
+
+/// Priced, selectable add-ons (0049) — a checkbox per option; ticking one
+/// adds its price on top of the product's base selling price.
+class _OptionsSection extends ConsumerWidget {
+  final String productId;
+  final Set<String> selectedOptionIds;
+  final void Function(String optionId, bool selected) onToggleOption;
+  const _OptionsSection({
+    required this.productId,
+    required this.selectedOptionIds,
+    required this.onToggleOption,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final optionsAsync = ref.watch(productOptionsProvider(productId));
+    final options = optionsAsync.value ?? const <ProductOption>[];
+    if (options.isEmpty) return const SizedBox.shrink();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: 20),
+        Text('خيارات إضافية', style: Theme.of(context).textTheme.titleMedium),
+        const SizedBox(height: 6),
+        Card(
+          margin: EdgeInsets.zero,
+          child: Column(
+            children: [
+              for (final (i, o) in options.indexed) ...[
+                if (i > 0) const Divider(height: 1),
+                CheckboxListTile(
+                  value: selectedOptionIds.contains(o.id),
+                  onChanged: (v) => onToggleOption(o.id, v ?? false),
+                  title: Text(o.name),
+                  secondary: Text(
+                    '+${Formatters.currency(o.extraPrice)}',
+                    style: const TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
       ],
     );
   }
@@ -312,7 +367,8 @@ class _Related extends ConsumerWidget {
 
 class _AddToCartBar extends ConsumerStatefulWidget {
   final ProductPublic product;
-  const _AddToCartBar({required this.product});
+  final Set<String> selectedOptionIds;
+  const _AddToCartBar({required this.product, required this.selectedOptionIds});
 
   @override
   ConsumerState<_AddToCartBar> createState() => _AddToCartBarState();
@@ -324,11 +380,16 @@ class _AddToCartBarState extends ConsumerState<_AddToCartBar> {
 
   Future<void> _add() async {
     final p = widget.product;
+    final optionIds = widget.selectedOptionIds.toList();
     final notifier = ref.read(cartProvider.notifier);
     final before = ref.read(cartProvider).value?.quantityOf(p.id) ?? 0;
     setState(() => _adding = true);
     try {
-      final after = await notifier.add(p.id, quantity: _quantity);
+      final after = await notifier.add(
+        p.id,
+        quantity: _quantity,
+        optionIds: optionIds,
+      );
       final added = after.quantityOf(p.id) - before;
       if (!mounted) return;
       final messenger = ScaffoldMessenger.of(context)..hideCurrentSnackBar();
@@ -365,9 +426,20 @@ class _AddToCartBarState extends ConsumerState<_AddToCartBar> {
     final inCart = ref.watch(
       cartProvider.select((c) => c.value?.quantityOf(p.id) ?? 0),
     );
-    final room = maxCartLineQuantity - inCart;
+    final lineQty = ref.watch(
+      cartProvider.select(
+        (c) => c.value?.quantityOfLine(p.id, widget.selectedOptionIds) ?? 0,
+      ),
+    );
+    final room = maxCartLineQuantity - lineQty;
     final maxPick = room < 1 ? 1 : room;
     if (_quantity > maxPick) _quantity = maxPick;
+
+    final options = ref.watch(productOptionsProvider(p.id)).value ?? const [];
+    final optionsTotal = options
+        .where((o) => widget.selectedOptionIds.contains(o.id))
+        .fold<double>(0, (sum, o) => sum + o.extraPrice);
+    final unitPrice = p.sellingPrice + optionsTotal;
 
     return Material(
       elevation: 8,
@@ -413,7 +485,7 @@ class _AddToCartBarState extends ConsumerState<_AddToCartBar> {
                               height: 18,
                               child: CircularProgressIndicator(strokeWidth: 2),
                             )
-                          : const Icon(Icons.add_shopping_cart_outlined),
+                          : const Icon(Iconsax.shopping_cart_copy),
                       label: FittedBox(
                         fit: BoxFit.scaleDown,
                         child: Text(
@@ -421,7 +493,7 @@ class _AddToCartBarState extends ConsumerState<_AddToCartBar> {
                               ? 'غير متوفر حاليًا'
                               : room < 1
                               ? 'الحد الأقصى في السلة'
-                              : 'أضف للسلة • ${Formatters.currency(p.sellingPrice * _quantity)}',
+                              : 'أضف للسلة • ${Formatters.currency(unitPrice * _quantity)}',
                         ),
                       ),
                     ),
@@ -462,7 +534,7 @@ class QuantityStepper extends StatelessWidget {
           IconButton(
             key: const Key('qty-minus'),
             tooltip: 'إنقاص',
-            icon: const Icon(Icons.remove),
+            icon: const Icon(Iconsax.minus_copy),
             onPressed: value > min ? () => onChanged(value - 1) : null,
           ),
           SizedBox(
@@ -477,7 +549,7 @@ class QuantityStepper extends StatelessWidget {
           IconButton(
             key: const Key('qty-plus'),
             tooltip: 'زيادة',
-            icon: const Icon(Icons.add),
+            icon: const Icon(Iconsax.add_copy),
             onPressed: value < max ? () => onChanged(value + 1) : null,
           ),
         ],

@@ -3,19 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import '../../../../../core/router/route_names.dart';
-import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/utils/formatters.dart';
 import '../../../../../core/widgets/state_views.dart';
 import '../../../../auth/presentation/providers/auth_providers.dart';
 import '../../../data/models/maintenance_request.dart';
 import '../../providers/maintenance_providers.dart';
-
-Color maintenanceStatusColor(MaintenanceStatus s) => switch (s) {
-  MaintenanceStatus.waiting => AppColors.warning,
-  MaintenanceStatus.assigned || MaintenanceStatus.inProgress => AppColors.primary,
-  MaintenanceStatus.completed => AppColors.success,
-  MaintenanceStatus.cancelled => AppColors.danger,
-};
+import '../../widgets/maintenance_status_chips.dart';
 
 class CustomerMaintenanceHomeScreen extends ConsumerWidget {
   const CustomerMaintenanceHomeScreen({super.key});
@@ -28,7 +21,7 @@ class CustomerMaintenanceHomeScreen extends ConsumerWidget {
       appBar: AppBar(title: const Text('الصيانة')),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => context.push(Routes.customerMaintenanceNew),
-        icon: const Icon(Icons.add),
+        icon: const Icon(Iconsax.add_copy),
         label: const Text('طلب صيانة جديد'),
       ),
       body: profile == null
@@ -43,7 +36,7 @@ class CustomerMaintenanceHomeScreen extends ConsumerWidget {
                     if (requests.isEmpty) {
                       return const EmptyView(
                         message: 'لا توجد طلبات صيانة بعد',
-                        icon: Icons.build_outlined,
+                        icon: Iconsax.setting_2_copy,
                       );
                     }
                     final active = requests

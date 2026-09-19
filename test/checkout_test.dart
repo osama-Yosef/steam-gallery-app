@@ -16,6 +16,7 @@ import 'package:steam_gallery_app/features/locations/presentation/providers/loca
 import 'package:steam_gallery_app/features/orders/data/models/order.dart';
 import 'package:steam_gallery_app/features/orders/data/models/order_item.dart';
 import 'package:steam_gallery_app/features/orders/data/repositories/order_repository.dart';
+import 'package:steam_gallery_app/features/technician_account/data/models/sale.dart';
 import 'package:steam_gallery_app/features/orders/presentation/providers/order_providers.dart';
 import 'package:steam_gallery_app/features/orders/presentation/screens/customer/checkout_screen.dart';
 
@@ -51,10 +52,17 @@ class _FixedCartRepo implements CartRepository {
   @override
   Future<CartSummary> getCart() async => summary;
   @override
-  Future<CartSummary> addItem(String productId, int quantity) async => summary;
+  Future<CartSummary> addItem(
+    String productId,
+    int quantity, {
+    List<String> optionIds = const [],
+  }) async => summary;
   @override
-  Future<CartSummary> setQuantity(String productId, int quantity) async =>
-      summary;
+  Future<CartSummary> setQuantity(
+    String productId,
+    int quantity, {
+    List<String> optionIds = const [],
+  }) async => summary;
   @override
   Future<CartSummary> clear() async {
     summary = CartSummary.empty;
@@ -82,6 +90,8 @@ CartLine _cartLine(
   lineTotal: isActive ? unitPrice * quantity : 0,
   isActive: isActive,
   isAvailable: isAvailable,
+  optionIds: const [],
+  options: const [],
 );
 
 CartSummary _cart(List<CartLine> items) => CartSummary(
@@ -96,7 +106,7 @@ CartSummary _cart(List<CartLine> items) => CartSummary(
 class _FakeOrderRepo implements OrderRepository {
   final calls = <({
     String customerId,
-    List<({String productId, int quantity})> items,
+    List<({String productId, int quantity, List<String> optionIds})> items,
     String addressId,
     String? notes,
   })>[];
@@ -105,7 +115,8 @@ class _FakeOrderRepo implements OrderRepository {
   @override
   Future<String> createOrder({
     required String customerId,
-    required List<({String productId, int quantity})> items,
+    required List<({String productId, int quantity, List<String> optionIds})>
+    items,
     required String addressId,
     String? notes,
     required String clientRequestId,
@@ -146,6 +157,7 @@ class _FakeOrderRepo implements OrderRepository {
     String? orderId,
     String? notes,
     required String clientRequestId,
+    required PaymentMethod paymentMethod,
   }) async {}
 }
 
@@ -411,7 +423,7 @@ void main() {
       );
     });
 
-    testWidgets('payment method is shown as cash on delivery (no other methods yet)', (
+    testWidgets('payment method is shown as full transfer before shipping', (
       tester,
     ) async {
       await _pumpCheckout(
@@ -421,7 +433,7 @@ void main() {
         orderRepo: _FakeOrderRepo(),
       );
       expect(find.text('طريقة الدفع'), findsOneWidget);
-      expect(find.text('الدفع عند الاستلام'), findsOneWidget);
+      expect(find.text('تحويل كامل قبل الشحن'), findsOneWidget);
     });
   });
 }

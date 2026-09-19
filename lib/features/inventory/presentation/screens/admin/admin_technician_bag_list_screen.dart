@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:iconsax_flutter/iconsax_flutter.dart';
 import '../../../../../core/router/route_names.dart';
+import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/widgets/state_views.dart';
 import '../../../../maintenance/presentation/providers/maintenance_providers.dart';
 
@@ -24,7 +26,7 @@ class AdminTechnicianBagListScreen extends ConsumerWidget {
           if (technicians.isEmpty) {
             return const EmptyView(
               message: 'لا يوجد صنايعية',
-              icon: Icons.badge_outlined,
+              icon: Iconsax.personalcard_copy,
             );
           }
           return ListView.separated(
@@ -33,10 +35,13 @@ class AdminTechnicianBagListScreen extends ConsumerWidget {
             itemBuilder: (context, i) {
               final t = technicians[i];
               return ListTile(
-                leading: const CircleAvatar(child: Icon(Icons.person_outline)),
+                leading: CircleAvatar(
+                  backgroundColor: AppColors.primary.withValues(alpha: 0.15),
+                  child: const Icon(Iconsax.user_copy, color: AppColors.primary),
+                ),
                 title: Text(t.fullName),
                 subtitle: Text('كود: ${t.employeeCode}'),
-                trailing: const Icon(Icons.chevron_left),
+                trailing: const Icon(Iconsax.arrow_left_2_copy),
                 onTap: () =>
                     context.push(Routes.adminTechnicianBagDetail(t.id)),
               );

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:iconsax_flutter/iconsax_flutter.dart';
 import '../../../../../core/router/route_names.dart';
 import '../../../../../core/utils/formatters.dart';
 import '../../../../../core/widgets/money_text.dart';
@@ -33,7 +34,7 @@ class TechnicianSalesListScreen extends ConsumerWidget {
           if (sales.isEmpty) {
             return const EmptyView(
               message: 'لا توجد مبيعات بعد',
-              icon: Icons.point_of_sale_outlined,
+              icon: Iconsax.shop_copy,
             );
           }
           return ListView.separated(

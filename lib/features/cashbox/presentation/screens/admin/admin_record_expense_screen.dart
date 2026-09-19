@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:iconsax_flutter/iconsax_flutter.dart';
 import '../../../../../core/errors/app_exception.dart';
 import '../../../../../core/utils/formatters.dart';
 import '../../../../../core/widgets/state_views.dart';
+import '../../../data/models/cashbox_balance.dart';
 import '../../../data/models/expense_category.dart';
 import '../../providers/cashbox_providers.dart';
 
@@ -21,6 +23,7 @@ class _AdminRecordExpenseScreenState
   final _notesCtrl = TextEditingController();
   ExpenseCategory? _selectedCategory;
   DateTime _expenseDate = DateTime.now();
+  CashboxKind _cashboxKind = CashboxKind.cash;
   bool _submitting = false;
 
   @override
@@ -57,6 +60,7 @@ class _AdminRecordExpenseScreenState
             categoryId: _selectedCategory!.id,
             amount: double.parse(_amountCtrl.text),
             expenseDate: _expenseDate,
+            kind: _cashboxKind,
             notes: _notesCtrl.text.trim().isEmpty
                 ? null
                 : _notesCtrl.text.trim(),
@@ -88,7 +92,7 @@ class _AdminRecordExpenseScreenState
           if (categories.isEmpty) {
             return const EmptyView(
               message: 'لا توجد تصنيفات مصروفات — أضف تصنيفًا أولًا',
-              icon: Icons.category_outlined,
+              icon: Iconsax.category_copy,
             );
           }
           return Form(
@@ -124,11 +128,24 @@ class _AdminRecordExpenseScreenState
                   },
                 ),
                 const SizedBox(height: 16),
+                SegmentedButton<CashboxKind>(
+                  segments: [
+                    for (final k in CashboxKind.values)
+                      ButtonSegment(
+                        value: k,
+                        label: Text(cashboxKindLabelAr(k)),
+                      ),
+                  ],
+                  selected: {_cashboxKind},
+                  onSelectionChanged: (s) =>
+                      setState(() => _cashboxKind = s.first),
+                ),
+                const SizedBox(height: 16),
                 ListTile(
                   contentPadding: EdgeInsets.zero,
                   title: const Text('تاريخ المصروف'),
                   subtitle: Text(Formatters.date(_expenseDate)),
-                  trailing: const Icon(Icons.calendar_today_outlined),
+                  trailing: const Icon(Iconsax.calendar_copy),
                   onTap: _pickDate,
                 ),
                 const SizedBox(height: 8),
@@ -148,7 +165,7 @@ class _AdminRecordExpenseScreenState
                           height: 16,
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )
-                      : const Icon(Icons.check),
+                      : const Icon(Iconsax.tick_circle_copy),
                   label: const Text('تسجيل المصروف'),
                 ),
               ],

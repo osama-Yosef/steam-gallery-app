@@ -83,7 +83,7 @@ final class CartProvider extends $AsyncNotifierProvider<Cart, CartSummary> {
   Cart create() => Cart();
 }
 
-String _$cartHash() => r'1447ab111fcbb4fd4adcaa8ffab28bbf57050b10';
+String _$cartHash() => r'4843f9296c261a0ab3e06b5987a3cdbdf64f748d';
 
 /// The signed-in customer's cart, stored and priced by the server (0035).
 /// Rebuilds on every sign-in/out, so one account never sees another's cart.

@@ -3,6 +3,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/router/route_names.dart';
@@ -13,6 +14,8 @@ import '../../../auth/data/models/app_user.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../../locations/data/models/location_models.dart';
 import '../../../locations/presentation/providers/locations_providers.dart';
+import '../../../support/presentation/providers/support_providers.dart';
+import '../../../../core/utils/whatsapp_launcher.dart';
 
 /// Customer's "حسابي" tab — home for the logout action now that the old
 /// catalog-screen AppBar icons moved into CustomerShell's bottom nav, plus
@@ -48,7 +51,7 @@ class CustomerAccountScreen extends ConsumerWidget {
                   child: ClipOval(
                     child: profile?.avatarUrl == null
                         ? const Icon(
-                            Icons.person_rounded,
+                            Iconsax.user_copy,
                             color: Colors.white,
                             size: 28,
                           )
@@ -58,7 +61,7 @@ class CustomerAccountScreen extends ConsumerWidget {
                             width: 52,
                             height: 52,
                             errorWidget: (_, _, _) => const Icon(
-                              Icons.person_rounded,
+                              Iconsax.user_copy,
                               color: Colors.white,
                               size: 28,
                             ),
@@ -84,7 +87,7 @@ class CustomerAccountScreen extends ConsumerWidget {
                 ),
                 if (profile != null)
                   IconButton(
-                    icon: const Icon(Icons.edit_outlined),
+                    icon: const Icon(Iconsax.edit_copy),
                     tooltip: 'تعديل الحساب',
                     onPressed: () => _showEditSheet(context, ref, profile),
                   ),
@@ -98,12 +101,12 @@ class CustomerAccountScreen extends ConsumerWidget {
               padding: const EdgeInsets.symmetric(vertical: 4),
               child: ListTile(
                 leading: const Icon(
-                  Icons.verified_user_outlined,
+                  Iconsax.shield_tick_copy,
                   color: AppColors.warning,
                 ),
                 title: const Text('أكِّد رقم هاتفك'),
                 subtitle: const Text('خطوة سريعة بكود في رسالة لحماية حسابك'),
-                trailing: const Icon(Icons.chevron_left),
+                trailing: const Icon(Iconsax.arrow_left_2_copy),
                 onTap: () => context.push(Routes.verifyPhone),
               ),
             ),
@@ -114,14 +117,16 @@ class CustomerAccountScreen extends ConsumerWidget {
             padding: const EdgeInsets.symmetric(vertical: 4),
             child: ListTile(
               leading: const Icon(
-                Icons.account_balance_wallet_outlined,
+                Iconsax.wallet_copy,
                 color: AppColors.primaryDark,
               ),
               title: const Text('المحفظة'),
-              trailing: const Icon(Icons.chevron_left),
+              trailing: const Icon(Iconsax.arrow_left_2_copy),
               onTap: () => context.push(Routes.customerWallet),
             ),
           ),
+          const SizedBox(height: 16),
+          const _SupportSection(),
           const SizedBox(height: 16),
           const _LocationSection(),
           const SizedBox(height: 24),
@@ -134,7 +139,7 @@ class CustomerAccountScreen extends ConsumerWidget {
               );
               if (confirmed) await ref.read(authRepositoryProvider).signOut();
             },
-            icon: const Icon(Icons.logout_rounded, color: AppColors.danger),
+            icon: const Icon(Iconsax.logout_copy, color: AppColors.danger),
             label: const Text(
               'تسجيل الخروج',
               style: TextStyle(color: AppColors.danger),
@@ -241,7 +246,7 @@ class _EditProfileSheetState extends ConsumerState<_EditProfileSheet> {
                             )
                           : null),
                 child: _avatarBytes == null && widget.profile.avatarUrl == null
-                    ? const Icon(Icons.person_outline, size: 36)
+                    ? const Icon(Iconsax.user_copy, size: 36)
                     : null,
               ),
             ),
@@ -274,6 +279,31 @@ class _EditProfileSheetState extends ConsumerState<_EditProfileSheet> {
   }
 }
 
+/// "تواصل معنا" — opens a WhatsApp chat with the business's support number
+/// (0056, admin-editable). Hidden entirely while unconfigured rather than
+/// showing a dead button.
+class _SupportSection extends ConsumerWidget {
+  const _SupportSection();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final whatsapp = ref.watch(supportWhatsappProvider).value;
+    if (whatsapp == null || whatsapp.isEmpty) return const SizedBox.shrink();
+
+    return GlassPanel(
+      borderRadius: BorderRadius.circular(18),
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: ListTile(
+        leading: const Icon(Iconsax.message_question_copy, color: Color(0xFF25D366)),
+        title: const Text('تواصل معنا'),
+        subtitle: const Text('في مشكلة أو استفسار؟ راسلنا على واتساب'),
+        trailing: const Icon(Iconsax.arrow_left_2_copy),
+        onTap: () => WhatsappLauncher.open(whatsapp),
+      ),
+    );
+  }
+}
+
 /// Country, city and saved addresses. Country is shown, not chosen: the
 /// launch is Egypt-only, and the city list already comes from active
 /// countries only.
@@ -299,7 +329,7 @@ class _LocationSection extends ConsumerWidget {
             for (final c in cities)
               ListTile(
                 title: Text(c.nameAr),
-                trailing: c.id == current ? const Icon(Icons.check) : null,
+                trailing: c.id == current ? const Icon(Iconsax.tick_circle_copy) : null,
                 onTap: () => Navigator.of(ctx).pop(c.id),
               ),
           ],
@@ -339,17 +369,17 @@ class _LocationSection extends ConsumerWidget {
       child: Column(
         children: [
           ListTile(
-            leading: const Icon(Icons.flag_outlined),
+            leading: const Icon(Iconsax.flag_copy),
             title: const Text('الدولة'),
             trailing: Text(country?.nameAr ?? '—'),
           ),
           const Divider(height: 1),
           ListTile(
             key: const Key('account-city'),
-            leading: const Icon(Icons.location_city_outlined),
+            leading: const Icon(Iconsax.buildings_copy),
             title: const Text('المدينة'),
             subtitle: Text(city?.nameAr ?? 'لم تُحدَّد'),
-            trailing: const Icon(Icons.chevron_left),
+            trailing: const Icon(Iconsax.arrow_left_2_copy),
             onTap: cities.isEmpty
                 ? null
                 : () => _pickCity(context, ref, cities, myCityId),
@@ -357,7 +387,7 @@ class _LocationSection extends ConsumerWidget {
           const Divider(height: 1),
           ListTile(
             key: const Key('account-addresses'),
-            leading: const Icon(Icons.home_work_outlined),
+            leading: const Icon(Iconsax.building_copy),
             title: Text(
               addressCount == null || addressCount == 0
                   ? 'عناويني'
@@ -370,7 +400,7 @@ class _LocationSection extends ConsumerWidget {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
-            trailing: const Icon(Icons.chevron_left),
+            trailing: const Icon(Iconsax.arrow_left_2_copy),
             onTap: () => context.push(Routes.customerAddresses),
           ),
         ],

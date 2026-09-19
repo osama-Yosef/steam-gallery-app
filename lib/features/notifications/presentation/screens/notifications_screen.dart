@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:iconsax_flutter/iconsax_flutter.dart';
 import '../../../../core/router/route_names.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../../core/widgets/state_views.dart';
@@ -23,7 +24,7 @@ class NotificationsScreen extends ConsumerWidget {
         actions: [
           IconButton(
             tooltip: 'تعليم الكل كمقروء',
-            icon: const Icon(Icons.done_all),
+            icon: const Icon(Iconsax.tick_square_copy),
             onPressed: () async {
               final uid = ref.read(currentUserProfileProvider).value?.id;
               if (uid != null) {
@@ -42,7 +43,7 @@ class NotificationsScreen extends ConsumerWidget {
           if (items.isEmpty) {
             return const EmptyView(
               message: 'لا توجد إشعارات بعد',
-              icon: Icons.notifications_none,
+              icon: Iconsax.notification_copy,
             );
           }
           return ListView.separated(
@@ -86,11 +87,11 @@ class NotificationsScreen extends ConsumerWidget {
   }
 
   IconData _iconFor(String type) => switch (type) {
-    'order_status' => Icons.receipt_long_outlined,
-    'maintenance_new' => Icons.build_outlined,
-    'maintenance_completed' => Icons.check_circle_outline,
-    'low_stock' => Icons.inventory_2_outlined,
-    _ => Icons.notifications_outlined,
+    'order_status' => Iconsax.receipt_text_copy,
+    'maintenance_new' => Iconsax.setting_2_copy,
+    'maintenance_completed' => Iconsax.tick_circle_copy,
+    'low_stock' => Iconsax.box_copy,
+    _ => Iconsax.notification_copy,
   };
 
   void _navigate(BuildContext context, AppNotification n, AppRole? role) {

@@ -5,6 +5,7 @@ import '../models/report_models.dart';
 abstract class ReportsRepository {
   Future<SalesReport> getSalesReport(DateTime from, DateTime to);
   Future<ProfitReport> getProfitReport(DateTime from, DateTime to);
+  Future<OrdersProfitReport> getOrdersProfitReport(DateTime from, DateTime to);
   Future<ExpensesReport> getExpensesReport(DateTime from, DateTime to);
   Future<InventoryReport> getInventoryReport(DateTime from, DateTime to);
 }
@@ -131,6 +132,59 @@ class SupabaseReportsRepository implements ReportsRepository {
         grossProfit: gross,
         expenses: expenses,
         netProfit: gross - expenses,
+      );
+    } catch (e) {
+      throw AppException.from(e);
+    }
+  }
+
+  /// Same revenue/COGS shape as [_revenueAndCogs] but scoped to `orders`
+  /// alone (no technician walk-in `sales`), plus how many orders fell in
+  /// range — for the "أرباح الطلبات" report (0046), which must read in
+  /// isolation from the storefront's technician-sales channel.
+  Future<({double revenue, double cogs, int orderCount})>
+  _ordersRevenueAndCogs(DateTime from, DateTime to) async {
+    final orderRows = await _client
+        .from('orders')
+        .select(
+          'discount, order_items(quantity, unit_price_snapshot, unit_cost_snapshot, discount)',
+        )
+        .inFilter('status', [
+          'confirmed',
+          'preparing',
+          'delivered',
+          'completed',
+        ])
+        .gte('created_at', _iso(from))
+        .lt('created_at', _iso(to));
+
+    double revenue = 0, cogs = 0;
+    for (final row in orderRows) {
+      final items = (row['order_items'] as List?) ?? [];
+      for (final item in items) {
+        final qty = (item['quantity'] as num).toInt();
+        final price = (item['unit_price_snapshot'] as num).toDouble();
+        final cost = (item['unit_cost_snapshot'] as num).toDouble();
+        final itemDiscount = (item['discount'] as num).toDouble();
+        revenue += qty * price - itemDiscount;
+        cogs += qty * cost;
+      }
+    }
+    return (revenue: revenue, cogs: cogs, orderCount: orderRows.length);
+  }
+
+  @override
+  Future<OrdersProfitReport> getOrdersProfitReport(
+    DateTime from,
+    DateTime to,
+  ) async {
+    try {
+      final base = await _ordersRevenueAndCogs(from, to);
+      return OrdersProfitReport(
+        orderCount: base.orderCount,
+        revenue: base.revenue,
+        cogs: base.cogs,
+        grossProfit: base.revenue - base.cogs,
       );
     } catch (e) {
       throw AppException.from(e);

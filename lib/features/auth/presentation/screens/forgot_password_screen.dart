@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:iconsax_flutter/iconsax_flutter.dart';
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/router/route_names.dart';
 import '../../../../core/utils/validators.dart';
@@ -77,7 +78,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
               decoration: const InputDecoration(
                 labelText: 'رقم الهاتف',
                 hintText: '01012345678',
-                prefixIcon: Icon(Icons.phone_outlined),
+                prefixIcon: Icon(Iconsax.call_copy),
               ),
               validator: Validators.phone,
               onFieldSubmitted: (_) => _submit(),

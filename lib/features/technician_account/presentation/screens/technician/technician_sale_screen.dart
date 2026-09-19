@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:uuid/uuid.dart';
 import '../../../../../core/errors/app_exception.dart';
 import '../../../../../core/utils/formatters.dart';
@@ -333,7 +334,7 @@ class _TechnicianSaleScreenState extends ConsumerState<TechnicianSaleScreen> {
                 children: [
                   TextButton.icon(
                     onPressed: _addServiceLine,
-                    icon: const Icon(Icons.handyman_outlined),
+                    icon: const Icon(Iconsax.setting_2_copy),
                     label: const Text('خدمة'),
                   ),
                   bagAsync.when(
@@ -341,7 +342,7 @@ class _TechnicianSaleScreenState extends ConsumerState<TechnicianSaleScreen> {
                     error: (e, _) => const SizedBox.shrink(),
                     data: (bag) => TextButton.icon(
                       onPressed: () => _addLine(bag),
-                      icon: const Icon(Icons.add),
+                      icon: const Icon(Iconsax.add_square_copy),
                       label: const Text('إضافة'),
                     ),
                   ),
@@ -365,7 +366,7 @@ class _TechnicianSaleScreenState extends ConsumerState<TechnicianSaleScreen> {
                 children: [
                   Text(Formatters.currency(line.lineTotal)),
                   IconButton(
-                    icon: const Icon(Icons.delete_outline),
+                    icon: const Icon(Iconsax.trash_copy),
                     onPressed: () => setState(() => _lines.remove(line)),
                   ),
                 ],
@@ -454,7 +455,7 @@ class _TechnicianSaleScreenState extends ConsumerState<TechnicianSaleScreen> {
                     height: 16,
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
-                : const Icon(Icons.check),
+                : const Icon(Iconsax.tick_circle_copy),
             label: const Text('تأكيد البيع'),
           ),
         ],

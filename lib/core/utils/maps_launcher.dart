@@ -1,8 +1,10 @@
 import 'package:url_launcher/url_launcher.dart';
 
 /// Opens Google Maps at the given coordinates, or falls back to a text
-/// search on the address when no coordinates are on file (see the
-/// no-GPS-picker assumption in new_maintenance_request_screen.dart).
+/// search on the address when no coordinates are on file. Maintenance
+/// requests always carry real coordinates now (0046 — the address comes
+/// from a saved, geocoded [CustomerAddress]); the text-search fallback
+/// mainly still matters for old requests created before that change.
 abstract final class MapsLauncher {
   static Future<void> open({
     double? latitude,

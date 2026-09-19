@@ -59,13 +59,21 @@ class DashboardOverview extends ConsumerWidget {
               // Computed explicitly rather than via GridView.extent, whose
               // ceil() can drop a narrow phone to a single column.
               final columns = (c.maxWidth / 210).floor().clamp(2, 6);
-              return GridView.count(
-                crossAxisCount: columns,
+              return GridView(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
-                mainAxisSpacing: 14,
-                crossAxisSpacing: 14,
-                childAspectRatio: 1.15,
+                // A fixed row height (rather than childAspectRatio, which
+                // ties height to width) so a card's 2-line label + value
+                // always has room to fit — otherwise, whenever the sidebar
+                // rail opens and narrows this grid, the shorter cells that
+                // childAspectRatio produced would overflow their card and
+                // spill text into the row above.
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: columns,
+                  mainAxisSpacing: 14,
+                  crossAxisSpacing: 14,
+                  mainAxisExtent: 168,
+                ),
                 children: [
                   _KpiCard(
                     icon: Iconsax.calendar_1_copy,
@@ -363,16 +371,23 @@ class _HighlightCard extends StatelessWidget {
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
                         label,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
                           color: Colors.white70,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
                       const SizedBox(height: 4),
-                      value,
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: AlignmentDirectional.centerStart,
+                        child: value,
+                      ),
                     ],
                   ),
                 ),

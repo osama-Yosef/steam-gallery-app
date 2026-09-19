@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:iconsax_flutter/iconsax_flutter.dart';
 import '../../../../../core/errors/app_exception.dart';
 import '../../../../../core/widgets/state_views.dart';
 import '../../../../maintenance/presentation/providers/maintenance_providers.dart';
@@ -203,7 +204,7 @@ class _AdminIssueStockScreenState extends ConsumerState<AdminIssueStockScreen> {
                   error: (e, _) => const SizedBox.shrink(),
                   data: (stock) => TextButton.icon(
                     onPressed: () => _addLine(stock),
-                    icon: const Icon(Icons.add),
+                    icon: const Icon(Iconsax.add_square_copy),
                     label: const Text('إضافة'),
                   ),
                 ),
@@ -219,7 +220,7 @@ class _AdminIssueStockScreenState extends ConsumerState<AdminIssueStockScreen> {
                 title: Text(line.productName),
                 subtitle: Text('SKU: ${line.sku} · الكمية: ${line.quantity}'),
                 trailing: IconButton(
-                  icon: const Icon(Icons.delete_outline),
+                  icon: const Icon(Iconsax.trash_copy),
                   onPressed: () => setState(() => _lines.remove(line)),
                 ),
               ),
@@ -238,7 +239,7 @@ class _AdminIssueStockScreenState extends ConsumerState<AdminIssueStockScreen> {
                       height: 16,
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
-                  : const Icon(Icons.check),
+                  : const Icon(Iconsax.tick_circle_copy),
               label: const Text('تأكيد الصرف'),
             ),
           ],

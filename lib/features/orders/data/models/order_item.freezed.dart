@@ -14,7 +14,9 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$OrderItem {
 
- String get id; String get orderId; String get productId; String get productNameSnapshot; int get quantity; double get unitPriceSnapshot; double get discount; double get lineTotal;
+ String get id; String get orderId; String get productId; String get productNameSnapshot; int get quantity; double get unitPriceSnapshot; double get discount; double get lineTotal;// Snapshotted at order time (0049) — the exact options and their price
+// at that moment, even if the product's options change/disappear later.
+ List<SelectedOption> get selectedOptions;
 /// Create a copy of OrderItem
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -25,16 +27,16 @@ $OrderItemCopyWith<OrderItem> get copyWith => _$OrderItemCopyWithImpl<OrderItem>
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is OrderItem&&(identical(other.id, id) || other.id == id)&&(identical(other.orderId, orderId) || other.orderId == orderId)&&(identical(other.productId, productId) || other.productId == productId)&&(identical(other.productNameSnapshot, productNameSnapshot) || other.productNameSnapshot == productNameSnapshot)&&(identical(other.quantity, quantity) || other.quantity == quantity)&&(identical(other.unitPriceSnapshot, unitPriceSnapshot) || other.unitPriceSnapshot == unitPriceSnapshot)&&(identical(other.discount, discount) || other.discount == discount)&&(identical(other.lineTotal, lineTotal) || other.lineTotal == lineTotal));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is OrderItem&&(identical(other.id, id) || other.id == id)&&(identical(other.orderId, orderId) || other.orderId == orderId)&&(identical(other.productId, productId) || other.productId == productId)&&(identical(other.productNameSnapshot, productNameSnapshot) || other.productNameSnapshot == productNameSnapshot)&&(identical(other.quantity, quantity) || other.quantity == quantity)&&(identical(other.unitPriceSnapshot, unitPriceSnapshot) || other.unitPriceSnapshot == unitPriceSnapshot)&&(identical(other.discount, discount) || other.discount == discount)&&(identical(other.lineTotal, lineTotal) || other.lineTotal == lineTotal)&&const DeepCollectionEquality().equals(other.selectedOptions, selectedOptions));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,orderId,productId,productNameSnapshot,quantity,unitPriceSnapshot,discount,lineTotal);
+int get hashCode => Object.hash(runtimeType,id,orderId,productId,productNameSnapshot,quantity,unitPriceSnapshot,discount,lineTotal,const DeepCollectionEquality().hash(selectedOptions));
 
 @override
 String toString() {
-  return 'OrderItem(id: $id, orderId: $orderId, productId: $productId, productNameSnapshot: $productNameSnapshot, quantity: $quantity, unitPriceSnapshot: $unitPriceSnapshot, discount: $discount, lineTotal: $lineTotal)';
+  return 'OrderItem(id: $id, orderId: $orderId, productId: $productId, productNameSnapshot: $productNameSnapshot, quantity: $quantity, unitPriceSnapshot: $unitPriceSnapshot, discount: $discount, lineTotal: $lineTotal, selectedOptions: $selectedOptions)';
 }
 
 
@@ -45,7 +47,7 @@ abstract mixin class $OrderItemCopyWith<$Res>  {
   factory $OrderItemCopyWith(OrderItem value, $Res Function(OrderItem) _then) = _$OrderItemCopyWithImpl;
 @useResult
 $Res call({
- String id, String orderId, String productId, String productNameSnapshot, int quantity, double unitPriceSnapshot, double discount, double lineTotal
+ String id, String orderId, String productId, String productNameSnapshot, int quantity, double unitPriceSnapshot, double discount, double lineTotal, List<SelectedOption> selectedOptions
 });
 
 
@@ -62,7 +64,7 @@ class _$OrderItemCopyWithImpl<$Res>
 
 /// Create a copy of OrderItem
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? orderId = null,Object? productId = null,Object? productNameSnapshot = null,Object? quantity = null,Object? unitPriceSnapshot = null,Object? discount = null,Object? lineTotal = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? orderId = null,Object? productId = null,Object? productNameSnapshot = null,Object? quantity = null,Object? unitPriceSnapshot = null,Object? discount = null,Object? lineTotal = null,Object? selectedOptions = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,orderId: null == orderId ? _self.orderId : orderId // ignore: cast_nullable_to_non_nullable
@@ -72,7 +74,8 @@ as String,quantity: null == quantity ? _self.quantity : quantity // ignore: cast
 as int,unitPriceSnapshot: null == unitPriceSnapshot ? _self.unitPriceSnapshot : unitPriceSnapshot // ignore: cast_nullable_to_non_nullable
 as double,discount: null == discount ? _self.discount : discount // ignore: cast_nullable_to_non_nullable
 as double,lineTotal: null == lineTotal ? _self.lineTotal : lineTotal // ignore: cast_nullable_to_non_nullable
-as double,
+as double,selectedOptions: null == selectedOptions ? _self.selectedOptions : selectedOptions // ignore: cast_nullable_to_non_nullable
+as List<SelectedOption>,
   ));
 }
 
@@ -157,10 +160,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String orderId,  String productId,  String productNameSnapshot,  int quantity,  double unitPriceSnapshot,  double discount,  double lineTotal)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String orderId,  String productId,  String productNameSnapshot,  int quantity,  double unitPriceSnapshot,  double discount,  double lineTotal,  List<SelectedOption> selectedOptions)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _OrderItem() when $default != null:
-return $default(_that.id,_that.orderId,_that.productId,_that.productNameSnapshot,_that.quantity,_that.unitPriceSnapshot,_that.discount,_that.lineTotal);case _:
+return $default(_that.id,_that.orderId,_that.productId,_that.productNameSnapshot,_that.quantity,_that.unitPriceSnapshot,_that.discount,_that.lineTotal,_that.selectedOptions);case _:
   return orElse();
 
 }
@@ -178,10 +181,10 @@ return $default(_that.id,_that.orderId,_that.productId,_that.productNameSnapshot
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String orderId,  String productId,  String productNameSnapshot,  int quantity,  double unitPriceSnapshot,  double discount,  double lineTotal)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String orderId,  String productId,  String productNameSnapshot,  int quantity,  double unitPriceSnapshot,  double discount,  double lineTotal,  List<SelectedOption> selectedOptions)  $default,) {final _that = this;
 switch (_that) {
 case _OrderItem():
-return $default(_that.id,_that.orderId,_that.productId,_that.productNameSnapshot,_that.quantity,_that.unitPriceSnapshot,_that.discount,_that.lineTotal);case _:
+return $default(_that.id,_that.orderId,_that.productId,_that.productNameSnapshot,_that.quantity,_that.unitPriceSnapshot,_that.discount,_that.lineTotal,_that.selectedOptions);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -198,10 +201,10 @@ return $default(_that.id,_that.orderId,_that.productId,_that.productNameSnapshot
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String orderId,  String productId,  String productNameSnapshot,  int quantity,  double unitPriceSnapshot,  double discount,  double lineTotal)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String orderId,  String productId,  String productNameSnapshot,  int quantity,  double unitPriceSnapshot,  double discount,  double lineTotal,  List<SelectedOption> selectedOptions)?  $default,) {final _that = this;
 switch (_that) {
 case _OrderItem() when $default != null:
-return $default(_that.id,_that.orderId,_that.productId,_that.productNameSnapshot,_that.quantity,_that.unitPriceSnapshot,_that.discount,_that.lineTotal);case _:
+return $default(_that.id,_that.orderId,_that.productId,_that.productNameSnapshot,_that.quantity,_that.unitPriceSnapshot,_that.discount,_that.lineTotal,_that.selectedOptions);case _:
   return null;
 
 }
@@ -213,7 +216,7 @@ return $default(_that.id,_that.orderId,_that.productId,_that.productNameSnapshot
 
 
 class _OrderItem implements OrderItem {
-  const _OrderItem({required this.id, required this.orderId, required this.productId, required this.productNameSnapshot, required this.quantity, required this.unitPriceSnapshot, required this.discount, required this.lineTotal});
+  const _OrderItem({required this.id, required this.orderId, required this.productId, required this.productNameSnapshot, required this.quantity, required this.unitPriceSnapshot, required this.discount, required this.lineTotal, required final  List<SelectedOption> selectedOptions}): _selectedOptions = selectedOptions;
   
 
 @override final  String id;
@@ -224,6 +227,17 @@ class _OrderItem implements OrderItem {
 @override final  double unitPriceSnapshot;
 @override final  double discount;
 @override final  double lineTotal;
+// Snapshotted at order time (0049) — the exact options and their price
+// at that moment, even if the product's options change/disappear later.
+ final  List<SelectedOption> _selectedOptions;
+// Snapshotted at order time (0049) — the exact options and their price
+// at that moment, even if the product's options change/disappear later.
+@override List<SelectedOption> get selectedOptions {
+  if (_selectedOptions is EqualUnmodifiableListView) return _selectedOptions;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_selectedOptions);
+}
+
 
 /// Create a copy of OrderItem
 /// with the given fields replaced by the non-null parameter values.
@@ -235,16 +249,16 @@ _$OrderItemCopyWith<_OrderItem> get copyWith => __$OrderItemCopyWithImpl<_OrderI
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _OrderItem&&(identical(other.id, id) || other.id == id)&&(identical(other.orderId, orderId) || other.orderId == orderId)&&(identical(other.productId, productId) || other.productId == productId)&&(identical(other.productNameSnapshot, productNameSnapshot) || other.productNameSnapshot == productNameSnapshot)&&(identical(other.quantity, quantity) || other.quantity == quantity)&&(identical(other.unitPriceSnapshot, unitPriceSnapshot) || other.unitPriceSnapshot == unitPriceSnapshot)&&(identical(other.discount, discount) || other.discount == discount)&&(identical(other.lineTotal, lineTotal) || other.lineTotal == lineTotal));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _OrderItem&&(identical(other.id, id) || other.id == id)&&(identical(other.orderId, orderId) || other.orderId == orderId)&&(identical(other.productId, productId) || other.productId == productId)&&(identical(other.productNameSnapshot, productNameSnapshot) || other.productNameSnapshot == productNameSnapshot)&&(identical(other.quantity, quantity) || other.quantity == quantity)&&(identical(other.unitPriceSnapshot, unitPriceSnapshot) || other.unitPriceSnapshot == unitPriceSnapshot)&&(identical(other.discount, discount) || other.discount == discount)&&(identical(other.lineTotal, lineTotal) || other.lineTotal == lineTotal)&&const DeepCollectionEquality().equals(other._selectedOptions, _selectedOptions));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,orderId,productId,productNameSnapshot,quantity,unitPriceSnapshot,discount,lineTotal);
+int get hashCode => Object.hash(runtimeType,id,orderId,productId,productNameSnapshot,quantity,unitPriceSnapshot,discount,lineTotal,const DeepCollectionEquality().hash(_selectedOptions));
 
 @override
 String toString() {
-  return 'OrderItem(id: $id, orderId: $orderId, productId: $productId, productNameSnapshot: $productNameSnapshot, quantity: $quantity, unitPriceSnapshot: $unitPriceSnapshot, discount: $discount, lineTotal: $lineTotal)';
+  return 'OrderItem(id: $id, orderId: $orderId, productId: $productId, productNameSnapshot: $productNameSnapshot, quantity: $quantity, unitPriceSnapshot: $unitPriceSnapshot, discount: $discount, lineTotal: $lineTotal, selectedOptions: $selectedOptions)';
 }
 
 
@@ -255,7 +269,7 @@ abstract mixin class _$OrderItemCopyWith<$Res> implements $OrderItemCopyWith<$Re
   factory _$OrderItemCopyWith(_OrderItem value, $Res Function(_OrderItem) _then) = __$OrderItemCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String orderId, String productId, String productNameSnapshot, int quantity, double unitPriceSnapshot, double discount, double lineTotal
+ String id, String orderId, String productId, String productNameSnapshot, int quantity, double unitPriceSnapshot, double discount, double lineTotal, List<SelectedOption> selectedOptions
 });
 
 
@@ -272,7 +286,7 @@ class __$OrderItemCopyWithImpl<$Res>
 
 /// Create a copy of OrderItem
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? orderId = null,Object? productId = null,Object? productNameSnapshot = null,Object? quantity = null,Object? unitPriceSnapshot = null,Object? discount = null,Object? lineTotal = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? orderId = null,Object? productId = null,Object? productNameSnapshot = null,Object? quantity = null,Object? unitPriceSnapshot = null,Object? discount = null,Object? lineTotal = null,Object? selectedOptions = null,}) {
   return _then(_OrderItem(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,orderId: null == orderId ? _self.orderId : orderId // ignore: cast_nullable_to_non_nullable
@@ -282,7 +296,8 @@ as String,quantity: null == quantity ? _self.quantity : quantity // ignore: cast
 as int,unitPriceSnapshot: null == unitPriceSnapshot ? _self.unitPriceSnapshot : unitPriceSnapshot // ignore: cast_nullable_to_non_nullable
 as double,discount: null == discount ? _self.discount : discount // ignore: cast_nullable_to_non_nullable
 as double,lineTotal: null == lineTotal ? _self.lineTotal : lineTotal // ignore: cast_nullable_to_non_nullable
-as double,
+as double,selectedOptions: null == selectedOptions ? _self._selectedOptions : selectedOptions // ignore: cast_nullable_to_non_nullable
+as List<SelectedOption>,
   ));
 }
 

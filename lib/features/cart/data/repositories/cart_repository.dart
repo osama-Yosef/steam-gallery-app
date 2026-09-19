@@ -3,10 +3,20 @@ import '../../../../core/errors/app_exception.dart';
 import '../models/cart.dart';
 
 /// Server-side cart (0035). Every call returns the freshly priced cart.
+/// [optionIds] (0049) identifies which line: a product with a different
+/// combination of selected options is a different line.
 abstract class CartRepository {
   Future<CartSummary> getCart();
-  Future<CartSummary> addItem(String productId, int quantity);
-  Future<CartSummary> setQuantity(String productId, int quantity);
+  Future<CartSummary> addItem(
+    String productId,
+    int quantity, {
+    List<String> optionIds = const [],
+  });
+  Future<CartSummary> setQuantity(
+    String productId,
+    int quantity, {
+    List<String> optionIds = const [],
+  });
   Future<CartSummary> clear();
   Future<CartSummary> acknowledgePrices();
 }
@@ -28,16 +38,26 @@ class SupabaseCartRepository implements CartRepository {
   Future<CartSummary> getCart() => _call('rpc_get_my_cart');
 
   @override
-  Future<CartSummary> addItem(String productId, int quantity) => _call(
-    'rpc_cart_add_item',
-    {'p_product_id': productId, 'p_quantity': quantity},
-  );
+  Future<CartSummary> addItem(
+    String productId,
+    int quantity, {
+    List<String> optionIds = const [],
+  }) => _call('rpc_cart_add_item', {
+    'p_product_id': productId,
+    'p_quantity': quantity,
+    'p_option_ids': optionIds,
+  });
 
   @override
-  Future<CartSummary> setQuantity(String productId, int quantity) => _call(
-    'rpc_cart_set_item',
-    {'p_product_id': productId, 'p_quantity': quantity},
-  );
+  Future<CartSummary> setQuantity(
+    String productId,
+    int quantity, {
+    List<String> optionIds = const [],
+  }) => _call('rpc_cart_set_item', {
+    'p_product_id': productId,
+    'p_quantity': quantity,
+    'p_option_ids': optionIds,
+  });
 
   @override
   Future<CartSummary> clear() => _call('rpc_cart_clear');

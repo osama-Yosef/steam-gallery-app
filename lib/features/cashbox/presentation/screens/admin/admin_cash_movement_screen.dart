@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../../core/errors/app_exception.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/widgets/money_text.dart';
+import '../../../data/models/cashbox_balance.dart';
 import '../../providers/cashbox_providers.dart';
 
 /// Manual cash in / cash out on the till.
@@ -21,7 +23,7 @@ enum CashMovementKind {
   String get action => isDeposit ? 'تأكيد الإيداع' : 'تأكيد السحب';
 
   IconData get icon =>
-      isDeposit ? Icons.south_west_rounded : Icons.north_east_rounded;
+      isDeposit ? Iconsax.money_recive_copy : Iconsax.money_send_copy;
 }
 
 class AdminCashMovementScreen extends ConsumerStatefulWidget {
@@ -38,6 +40,7 @@ class _AdminCashMovementScreenState
   final _formKey = GlobalKey<FormState>();
   final _amountCtrl = TextEditingController();
   final _notesCtrl = TextEditingController();
+  CashboxKind _cashboxKind = CashboxKind.cash;
   bool _submitting = false;
 
   @override
@@ -57,9 +60,13 @@ class _AdminCashMovementScreenState
           ? null
           : _notesCtrl.text.trim();
       if (widget.kind.isDeposit) {
-        await repo.depositCash(amount: amount, notes: notes);
+        await repo.depositCash(amount: amount, kind: _cashboxKind, notes: notes);
       } else {
-        await repo.withdrawCash(amount: amount, notes: notes);
+        await repo.withdrawCash(
+          amount: amount,
+          kind: _cashboxKind,
+          notes: notes,
+        );
       }
       if (mounted) Navigator.of(context).pop(true);
     } catch (e) {
@@ -75,8 +82,11 @@ class _AdminCashMovementScreenState
 
   @override
   Widget build(BuildContext context) {
-    final balanceAsync = ref.watch(cashboxBalanceProvider);
-    final balance = balanceAsync.value?.balance;
+    final balancesAsync = ref.watch(cashboxBalancesProvider);
+    final balance = balancesAsync.value
+        ?.where((b) => b.kind == _cashboxKind)
+        .firstOrNull
+        ?.balance;
 
     return Scaffold(
       appBar: AppBar(title: Text(widget.kind.title)),
@@ -85,11 +95,21 @@ class _AdminCashMovementScreenState
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
+            SegmentedButton<CashboxKind>(
+              segments: [
+                for (final k in CashboxKind.values)
+                  ButtonSegment(value: k, label: Text(cashboxKindLabelAr(k))),
+              ],
+              selected: {_cashboxKind},
+              onSelectionChanged: (s) =>
+                  setState(() => _cashboxKind = s.first),
+            ),
+            const SizedBox(height: 16),
             if (balance != null)
               Card(
                 child: ListTile(
-                  leading: const Icon(Icons.account_balance_wallet_outlined),
-                  title: const Text('رصيد الخزنة الحالي'),
+                  leading: const Icon(Iconsax.wallet_copy),
+                  title: Text('رصيد ${cashboxKindLabelAr(_cashboxKind)}'),
                   trailing: MoneyText(balance),
                 ),
               ),
@@ -128,7 +148,7 @@ class _AdminCashMovementScreenState
             // profit; say so where the admin can see it, not just in the SQL.
             Row(
               children: [
-                const Icon(Icons.info_outline, size: 18),
+                const Icon(Iconsax.info_circle_copy, size: 18),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(

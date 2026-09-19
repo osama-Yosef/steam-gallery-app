@@ -2,7 +2,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'app_user.freezed.dart';
 
-enum AppRole { admin, technician, customer }
+enum AppRole { admin, technician, customer, sales }
 
 AppRole appRoleFromString(String value) => AppRole.values.firstWhere(
   (r) => r.name == value,

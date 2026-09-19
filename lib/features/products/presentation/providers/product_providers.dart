@@ -6,6 +6,7 @@ import '../../data/models/catalog_query.dart';
 import '../../data/models/product.dart';
 import '../../data/models/product_category.dart';
 import '../../data/models/product_image.dart';
+import '../../data/models/product_option.dart';
 import '../../data/models/product_public.dart';
 import '../../data/repositories/product_repository.dart';
 
@@ -95,6 +96,11 @@ Future<ProductPublic?> customerProductDetail(Ref ref, String productId) {
 @riverpod
 Future<List<ProductImage>> productImages(Ref ref, String productId) {
   return ref.watch(productRepositoryProvider).getProductImages(productId);
+}
+
+@riverpod
+Future<List<ProductOption>> productOptions(Ref ref, String productId) {
+  return ref.watch(productRepositoryProvider).getProductOptions(productId);
 }
 
 @riverpod

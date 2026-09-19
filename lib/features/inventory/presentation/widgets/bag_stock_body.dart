@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:iconsax_flutter/iconsax_flutter.dart';
 import '../../../../core/widgets/money_text.dart';
 import '../../../../core/widgets/state_views.dart';
 import '../providers/inventory_providers.dart';
@@ -24,7 +25,7 @@ class BagStockBody extends ConsumerWidget {
         if (items.isEmpty) {
           return const EmptyView(
             message: 'الشنطة فارغة حاليًا',
-            icon: Icons.work_outline,
+            icon: Iconsax.bag_2_copy,
           );
         }
         return ListView.separated(

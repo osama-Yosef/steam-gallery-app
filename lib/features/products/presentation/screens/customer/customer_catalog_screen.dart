@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:iconsax_flutter/iconsax_flutter.dart';
 import '../../../../../core/widgets/state_views.dart';
 import '../../../../notifications/presentation/widgets/notification_bell_icon.dart';
 import '../../../data/models/catalog_query.dart';
@@ -97,11 +98,11 @@ class _CustomerCatalogScreenState extends ConsumerState<CustomerCatalogScreen> {
               decoration: InputDecoration(
                 hintText: 'ابحث باسم المنتج أو الكود...',
                 counterText: '',
-                prefixIcon: const Icon(Icons.search),
+                prefixIcon: const Icon(Iconsax.search_normal_1_copy),
                 suffixIcon: _searchCtrl.text.isNotEmpty
                     ? IconButton(
                         tooltip: 'مسح البحث',
-                        icon: const Icon(Icons.close),
+                        icon: const Icon(Iconsax.close_circle_copy),
                         onPressed: () {
                           _debounce?.cancel();
                           _searchCtrl.clear();
@@ -150,7 +151,7 @@ class _CustomerCatalogScreenState extends ConsumerState<CustomerCatalogScreen> {
                     message: _query.hasAnyFilter
                         ? 'لا توجد منتجات مطابقة'
                         : 'لا توجد منتجات بعد',
-                    icon: Icons.inventory_2_outlined,
+                    icon: Iconsax.box_copy,
                     action: _query.hasAnyFilter
                         ? OutlinedButton(
                             onPressed: _clearAll,
@@ -319,7 +320,7 @@ class _Toolbar extends StatelessWidget {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.sort, size: 20),
+                  const Icon(Iconsax.sort_copy, size: 20),
                   const SizedBox(width: 4),
                   Text(query.sort.labelAr),
                 ],
@@ -332,7 +333,7 @@ class _Toolbar extends StatelessWidget {
             icon: Badge(
               isLabelVisible: filters > 0,
               label: Text('$filters'),
-              child: const Icon(Icons.tune, size: 20),
+              child: const Icon(Iconsax.filter_copy, size: 20),
             ),
             label: const Text('فلترة'),
           ),
@@ -361,7 +362,7 @@ class _PageFooter extends StatelessWidget {
         child: Center(
           child: TextButton.icon(
             onPressed: onRetry,
-            icon: const Icon(Icons.refresh),
+            icon: const Icon(Iconsax.refresh_copy),
             label: const Text('تعذَّر تحميل المزيد — إعادة المحاولة'),
           ),
         ),

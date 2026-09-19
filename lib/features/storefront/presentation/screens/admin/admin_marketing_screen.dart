@@ -2,19 +2,25 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:iconsax_flutter/iconsax_flutter.dart';
 import '../../../../../core/router/route_names.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/utils/formatters.dart';
 import '../../../../../core/widgets/state_views.dart';
+import '../../../../auth/data/models/app_user.dart';
+import '../../../../auth/presentation/providers/auth_providers.dart';
 import '../../providers/storefront_providers.dart';
 
-/// Admin → العروض والبانرات. Two lists; each row says whether customers see
-/// it right now (on AND within its schedule).
+/// Admin/sales → العروض والبانرات (migration 0044 lets sales create/edit
+/// these too). Two lists; each row says whether customers see it right now
+/// (on AND within its schedule).
 class AdminMarketingScreen extends ConsumerWidget {
   const AdminMarketingScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final isSales =
+        ref.watch(currentUserProfileProvider).value?.role == AppRole.sales;
     return DefaultTabController(
       length: 2,
       child: Builder(
@@ -32,13 +38,19 @@ class AdminMarketingScreen extends ConsumerWidget {
             onPressed: () {
               final isOffers = DefaultTabController.of(context).index == 0;
               context.push(
-                isOffers ? Routes.adminOfferNew : Routes.adminBannerNew,
+                isOffers
+                    ? (isSales ? Routes.salesOfferNew : Routes.adminOfferNew)
+                    : (isSales
+                          ? Routes.salesBannerNew
+                          : Routes.adminBannerNew),
               );
             },
-            icon: const Icon(Icons.add),
+            icon: const Icon(Iconsax.add_copy),
             label: const Text('إضافة'),
           ),
-          body: const TabBarView(children: [_OffersTab(), _BannersTab()]),
+          body: TabBarView(
+            children: [_OffersTab(isSales: isSales), _BannersTab(isSales: isSales)],
+          ),
         ),
       ),
     );
@@ -87,7 +99,8 @@ Widget _thumb(String? url, IconData fallback) => ClipRRect(
 );
 
 class _OffersTab extends ConsumerWidget {
-  const _OffersTab();
+  final bool isSales;
+  const _OffersTab({required this.isSales});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -103,7 +116,7 @@ class _OffersTab extends ConsumerWidget {
           ? const EmptyView(
               message:
                   'لا توجد عروض بعد.\nالعروض للتسويق فقط ولا تغيّر أسعار المنتجات.',
-              icon: Icons.local_offer_outlined,
+              icon: Iconsax.tag_copy,
             )
           : ListView.separated(
               padding: const EdgeInsets.only(bottom: 88),
@@ -112,14 +125,18 @@ class _OffersTab extends ConsumerWidget {
               itemBuilder: (context, i) {
                 final o = offers[i];
                 return ListTile(
-                  leading: _thumb(o.imageUrl, Icons.local_offer_outlined),
+                  leading: _thumb(o.imageUrl, Iconsax.tag_copy),
                   title: Text(o.title),
                   subtitle: Text(_schedule(o.startsAt, o.endsAt)),
                   trailing: _LiveChip(
                     live: o.isLiveAt(now),
                     isActive: o.isActive,
                   ),
-                  onTap: () => context.push(Routes.adminOfferEdit(o.id)),
+                  onTap: () => context.push(
+                    isSales
+                        ? Routes.salesOfferEdit(o.id)
+                        : Routes.adminOfferEdit(o.id),
+                  ),
                 );
               },
             ),
@@ -128,7 +145,8 @@ class _OffersTab extends ConsumerWidget {
 }
 
 class _BannersTab extends ConsumerWidget {
-  const _BannersTab();
+  final bool isSales;
+  const _BannersTab({required this.isSales});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -143,7 +161,7 @@ class _BannersTab extends ConsumerWidget {
       data: (banners) => banners.isEmpty
           ? const EmptyView(
               message: 'لا توجد بانرات بعد',
-              icon: Icons.view_carousel_outlined,
+              icon: Iconsax.gallery_copy,
             )
           : ListView.separated(
               padding: const EdgeInsets.only(bottom: 88),
@@ -152,14 +170,18 @@ class _BannersTab extends ConsumerWidget {
               itemBuilder: (context, i) {
                 final b = banners[i];
                 return ListTile(
-                  leading: _thumb(b.imageUrl, Icons.image_outlined),
+                  leading: _thumb(b.imageUrl, Iconsax.image_copy),
                   title: Text(b.title),
                   subtitle: Text(_schedule(b.startsAt, b.endsAt)),
                   trailing: _LiveChip(
                     live: b.isLiveAt(now),
                     isActive: b.isActive,
                   ),
-                  onTap: () => context.push(Routes.adminBannerEdit(b.id)),
+                  onTap: () => context.push(
+                    isSales
+                        ? Routes.salesBannerEdit(b.id)
+                        : Routes.adminBannerEdit(b.id),
+                  ),
                 );
               },
             ),

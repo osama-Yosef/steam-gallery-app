@@ -33,15 +33,31 @@ class Cart extends _$Cart {
   }
 
   /// Adds [quantity] to the line (the server caps it). Returns the new cart.
-  Future<CartSummary> add(String productId, {int quantity = 1}) =>
-      _apply(() => ref.read(cartRepositoryProvider).addItem(productId, quantity));
-
-  /// Sets the line's quantity; 0 removes it.
-  Future<CartSummary> setQuantity(String productId, int quantity) => _apply(
-    () => ref.read(cartRepositoryProvider).setQuantity(productId, quantity),
+  /// [optionIds] (0049) picks which line — a different combination of
+  /// selected options is a separate line from the same product's default.
+  Future<CartSummary> add(
+    String productId, {
+    int quantity = 1,
+    List<String> optionIds = const [],
+  }) => _apply(
+    () => ref
+        .read(cartRepositoryProvider)
+        .addItem(productId, quantity, optionIds: optionIds),
   );
 
-  Future<CartSummary> remove(String productId) => setQuantity(productId, 0);
+  /// Sets the line's quantity; 0 removes it.
+  Future<CartSummary> setQuantity(
+    String productId,
+    int quantity, {
+    List<String> optionIds = const [],
+  }) => _apply(
+    () => ref
+        .read(cartRepositoryProvider)
+        .setQuantity(productId, quantity, optionIds: optionIds),
+  );
+
+  Future<CartSummary> remove(String productId, {List<String> optionIds = const []}) =>
+      setQuantity(productId, 0, optionIds: optionIds);
 
   Future<CartSummary> clear() =>
       _apply(() => ref.read(cartRepositoryProvider).clear());

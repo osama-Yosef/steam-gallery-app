@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:iconsax_flutter/iconsax_flutter.dart';
 
 import 'package:steam_gallery_app/core/theme/app_theme.dart';
 import 'package:steam_gallery_app/core/utils/formatters.dart';
@@ -39,6 +40,7 @@ CartLine _line(
   double? priceSeen,
   bool isActive = true,
   bool isAvailable = true,
+  List<String> optionIds = const [],
 }) => CartLine(
   productId: id,
   name: name,
@@ -49,6 +51,8 @@ CartLine _line(
   lineTotal: isActive ? unitPrice * quantity : 0,
   isActive: isActive,
   isAvailable: isAvailable,
+  optionIds: optionIds,
+  options: const [],
 );
 
 /// A minimal product catalogue backing [_FakeCartRepo]: enough for the RPCs'
@@ -121,7 +125,11 @@ class _FakeCartRepo implements CartRepository {
   }
 
   @override
-  Future<CartSummary> addItem(String productId, int quantity) async {
+  Future<CartSummary> addItem(
+    String productId,
+    int quantity, {
+    List<String> optionIds = const [],
+  }) async {
     calls.add('add:$productId:$quantity');
     final p = products[productId];
     if (p == null || !p.active) throw Exception('PRODUCT_NOT_FOUND');
@@ -141,7 +149,11 @@ class _FakeCartRepo implements CartRepository {
   }
 
   @override
-  Future<CartSummary> setQuantity(String productId, int quantity) async {
+  Future<CartSummary> setQuantity(
+    String productId,
+    int quantity, {
+    List<String> optionIds = const [],
+  }) async {
     calls.add('set:$productId:$quantity');
     if (quantity <= 0) {
       _lines.remove(productId);
@@ -276,6 +288,32 @@ void main() {
       expect(CartSummary.empty.isEmpty, isTrue);
       expect(CartSummary.empty.canCheckout, isFalse);
     });
+
+    test(
+      'quantityOfLine isolates one option combination from the product total',
+      () {
+        // Same product, two different option combinations — 0049: these are
+        // separate lines server-side, each with its own quantity cap.
+        final s = CartSummary(
+          items: [
+            _line('p', quantity: 20, optionIds: const ['opt-a']),
+            _line('p', quantity: 3, optionIds: const ['opt-b']),
+          ],
+          itemCount: 23,
+          subtotal: 0,
+          currency: 'EGP',
+          hasIssues: false,
+        );
+        // The badge total sums across every combination...
+        expect(s.quantityOf('p'), 23);
+        // ...but the per-line cap must only see its own combination, so a
+        // maxed-out 'opt-a' line must not block room on the 'opt-b' line.
+        expect(s.quantityOfLine('p', const ['opt-a']), 20);
+        expect(s.quantityOfLine('p', const ['opt-b']), 3);
+        expect(s.quantityOfLine('p', const []), 0);
+        expect(s.quantityOfLine('missing', const ['opt-a']), 0);
+      },
+    );
 
     test('fromRpc parses the jsonb the RPC returns, with no cost column', () {
       final s = CartSummary.fromRpc({
@@ -424,7 +462,7 @@ void main() {
       );
       expect(checkoutButton.onPressed, isNull);
 
-      await tester.tap(find.byIcon(Icons.delete_outline).last);
+      await tester.tap(find.byIcon(Iconsax.trash_copy).last);
       await tester.pumpAndSettle();
       expect(find.byKey(const Key('cart-blocked-notice')), findsNothing);
       final enabled = tester.widget<FilledButton>(
@@ -472,7 +510,7 @@ void main() {
         overrides: _cartOverrides(repo),
       );
 
-      await tester.tap(find.byIcon(Icons.delete_sweep_outlined));
+      await tester.tap(find.byIcon(Iconsax.broom_copy));
       await tester.pumpAndSettle();
       expect(find.text('تفريغ السلة؟'), findsOneWidget);
       await tester.tap(find.text('إلغاء'));
@@ -480,7 +518,7 @@ void main() {
       expect(repo.calls, isNot(contains('clear')));
       expect(find.text('منتج'), findsOneWidget);
 
-      await tester.tap(find.byIcon(Icons.delete_sweep_outlined));
+      await tester.tap(find.byIcon(Iconsax.broom_copy));
       await tester.pumpAndSettle();
       await tester.tap(find.text('تفريغ'));
       await tester.pumpAndSettle();
