@@ -20,3 +20,8 @@ Stream<List<Sale>> walkInSales(Ref ref) {
 Future<List<SaleReturnItem>> saleReturnItems(Ref ref, String saleId) {
   return ref.watch(salesRepositoryProvider).getSaleItems(saleId);
 }
+
+@riverpod
+Future<Sale> saleById(Ref ref, String saleId) {
+  return ref.watch(salesRepositoryProvider).getSale(saleId);
+}

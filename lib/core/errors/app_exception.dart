@@ -126,6 +126,7 @@ class AppException implements Exception {
     ),
     ('NO_CASHBOX', 'لا توجد خزنة مُفعَّلة — أنشئ الخزنة أولًا'),
     ('INSUFFICIENT_CASH', 'رصيد الخزنة لا يكفي لهذه العملية'),
+    ('INVALID_REFUND_KIND', 'اختر الخزنة التي سيُخصم منها المبلغ (نقدي أو تحويل)'),
     ('FORBIDDEN_OR_NOT_ASSIGNED', 'هذا الطلب غير مسنَد لك'),
     ('FORBIDDEN_OR_NOT_IN_PROGRESS', 'لا يمكن إنهاء طلب لم يبدأ تنفيذه بعد'),
     ('FORBIDDEN_OR_NOT_CANCELLABLE', 'لا يمكن إلغاء هذا الطلب الآن'),

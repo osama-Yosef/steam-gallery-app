@@ -1,5 +1,6 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../core/errors/app_exception.dart';
+import '../../../cashbox/data/models/cashbox_balance.dart';
 import '../../../technician_account/data/models/sale.dart';
 import '../models/sale_line_input.dart';
 import '../models/sale_return_item.dart';
@@ -25,18 +26,31 @@ abstract class SalesRepository {
   Stream<List<Sale>> watchWalkInSales();
 
   /// Reverses a completed walk-in sale: stock back to the main warehouse,
-  /// the till refunded, status -> returned. See rpc_admin_return_sale (0057).
-  Future<void> returnSale({required String saleId, required String reason});
+  /// the till refunded, status -> returned. [refundKind] picks which till
+  /// (cash/transfer) the refund comes out of; omit to fall back to the
+  /// sale's own payment method. See rpc_admin_return_sale (0057, 0063).
+  Future<void> returnSale({
+    required String saleId,
+    required String reason,
+    CashboxKind? refundKind,
+  });
 
   /// The invoice's lines with how much of each is still returnable (0058).
   Future<List<SaleReturnItem>> getSaleItems(String saleId);
 
+  /// A single sale by id — used by the return screen to default the refund
+  /// till picker to how the sale was originally paid (0063).
+  Future<Sale> getSale(String saleId);
+
   /// Returns [quantity] of one line — any amount up to what's left on it.
-  /// See rpc_return_sale_item (0058).
+  /// [refundKind] picks which till (cash/transfer) the refund comes out of;
+  /// omit to fall back to the sale's own payment method. See
+  /// rpc_return_sale_item (0058, 0063).
   Future<void> returnSaleItem({
     required String saleItemId,
     required int quantity,
     required String reason,
+    CashboxKind? refundKind,
   });
 }
 
@@ -87,11 +101,18 @@ class SupabaseSalesRepository implements SalesRepository {
   Future<void> returnSale({
     required String saleId,
     required String reason,
+    CashboxKind? refundKind,
   }) async {
     try {
       await _client.rpc(
         'rpc_admin_return_sale',
-        params: {'p_sale_id': saleId, 'p_reason': reason},
+        params: {
+          'p_sale_id': saleId,
+          'p_reason': reason,
+          'p_refund_kind': refundKind == null
+              ? null
+              : cashboxKindToString(refundKind),
+        },
       );
     } catch (e) {
       throw AppException.from(e);
@@ -112,10 +133,21 @@ class SupabaseSalesRepository implements SalesRepository {
   }
 
   @override
+  Future<Sale> getSale(String saleId) async {
+    try {
+      final row = await _client.from('sales').select().eq('id', saleId).single();
+      return Sale.fromRow(row);
+    } catch (e) {
+      throw AppException.from(e);
+    }
+  }
+
+  @override
   Future<void> returnSaleItem({
     required String saleItemId,
     required int quantity,
     required String reason,
+    CashboxKind? refundKind,
   }) async {
     try {
       await _client.rpc(
@@ -124,6 +156,9 @@ class SupabaseSalesRepository implements SalesRepository {
           'p_sale_item_id': saleItemId,
           'p_quantity': quantity,
           'p_reason': reason,
+          'p_refund_kind': refundKind == null
+              ? null
+              : cashboxKindToString(refundKind),
         },
       );
     } catch (e) {

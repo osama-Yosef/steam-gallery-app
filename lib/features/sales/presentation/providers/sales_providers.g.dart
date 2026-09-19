@@ -165,3 +165,72 @@ final class SaleReturnItemsFamily extends $Family
   @override
   String toString() => r'saleReturnItemsProvider';
 }
+
+@ProviderFor(saleById)
+const saleByIdProvider = SaleByIdFamily._();
+
+final class SaleByIdProvider
+    extends $FunctionalProvider<AsyncValue<Sale>, Sale, FutureOr<Sale>>
+    with $FutureModifier<Sale>, $FutureProvider<Sale> {
+  const SaleByIdProvider._({
+    required SaleByIdFamily super.from,
+    required String super.argument,
+  }) : super(
+         retry: null,
+         name: r'saleByIdProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
+  @override
+  String debugGetCreateSourceHash() => _$saleByIdHash();
+
+  @override
+  String toString() {
+    return r'saleByIdProvider'
+        ''
+        '($argument)';
+  }
+
+  @$internal
+  @override
+  $FutureProviderElement<Sale> $createElement($ProviderPointer pointer) =>
+      $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<Sale> create(Ref ref) {
+    final argument = this.argument as String;
+    return saleById(ref, argument);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is SaleByIdProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$saleByIdHash() => r'a756c3464a9b10803ae44eeff7b5037c67966389';
+
+final class SaleByIdFamily extends $Family
+    with $FunctionalFamilyOverride<FutureOr<Sale>, String> {
+  const SaleByIdFamily._()
+    : super(
+        retry: null,
+        name: r'saleByIdProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  SaleByIdProvider call(String saleId) =>
+      SaleByIdProvider._(argument: saleId, from: this);
+
+  @override
+  String toString() => r'saleByIdProvider';
+}
