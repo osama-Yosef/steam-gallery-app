@@ -24,9 +24,21 @@ abstract class OrderRepository {
   Stream<List<Order>> watchCustomerOrders(String customerId);
   Stream<Order?> watchOrder(String orderId);
   Future<List<OrderItem>> getOrderItems(String orderId);
+  /// The customer's answer to a proposed shipping fee — [rejectionReason]
+  /// is required when [approve] is false. See
+  /// rpc_customer_respond_shipping_fee (0065).
+  Future<void> respondToShippingFee({
+    required String orderId,
+    required bool approve,
+    String? rejectionReason,
+  });
 
   // Admin
   Stream<List<Order>> watchAllOrders();
+  /// Proposes (or re-proposes, after a rejection) the shipping fee while
+  /// the order is still pending — required before [confirmOrder] will
+  /// succeed. See rpc_admin_set_shipping_fee (0065).
+  Future<void> setShippingFee({required String orderId, required double amount});
   Future<void> confirmOrder(String orderId);
   Future<void> updateOrderStatus(String orderId, OrderStatus status);
   Future<void> cancelOrder(String orderId, String reason);
@@ -125,6 +137,41 @@ class SupabaseOrderRepository implements OrderRepository {
         .stream(primaryKey: ['id'])
         .order('created_at', ascending: false)
         .map((rows) => rows.map(Order.fromRow).toList());
+  }
+
+  @override
+  Future<void> setShippingFee({
+    required String orderId,
+    required double amount,
+  }) async {
+    try {
+      await _client.rpc(
+        'rpc_admin_set_shipping_fee',
+        params: {'p_order_id': orderId, 'p_amount': amount},
+      );
+    } catch (e) {
+      throw AppException.from(e);
+    }
+  }
+
+  @override
+  Future<void> respondToShippingFee({
+    required String orderId,
+    required bool approve,
+    String? rejectionReason,
+  }) async {
+    try {
+      await _client.rpc(
+        'rpc_customer_respond_shipping_fee',
+        params: {
+          'p_order_id': orderId,
+          'p_approve': approve,
+          'p_rejection_reason': rejectionReason,
+        },
+      );
+    } catch (e) {
+      throw AppException.from(e);
+    }
   }
 
   @override

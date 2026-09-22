@@ -132,6 +132,12 @@ ok('customer can still update own name', (await err(`update public.users set ful
 
 // ---------------------------------------------------------------- confirm + order items views
 console.log('\n== Order items views ==');
+// 0065: confirming now requires an approved shipping fee first. Zero, so
+// it doesn't disturb this file's other assertions about the order total.
+await as(ADMIN);
+await q(`select public.rpc_admin_set_shipping_fee($1, 0)`, [O1]);
+await as(CUST_A);
+await q(`select public.rpc_customer_respond_shipping_fee($1, true)`, [O1]);
 await as(ADMIN);
 await q(`select public.rpc_confirm_order($1)`, [O1]);
 ok('confirm deducted stock 20 -> 18', (await stock()) === 18);

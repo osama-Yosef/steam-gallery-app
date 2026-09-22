@@ -180,6 +180,14 @@ class AppException implements Exception {
       'INVALID_STATUS_TRANSITION',
       'لا يمكن نقل الطلب لهذه الحالة من حالته الحالية',
     ),
+    (
+      'SHIPPING_FEE_NOT_APPROVED',
+      'لازم تحديد سعر الشحن وموافقة العميل عليه قبل تأكيد الطلب',
+    ),
+    (
+      'SHIPPING_FEE_NOT_PENDING',
+      'لا يوجد سعر شحن بانتظار ردك حاليًا',
+    ),
     ('ORDER_NOT_FOUND', 'الطلب غير موجود'),
     ('ORDER_NOT_PENDING', 'لا يمكن تنفيذ هذا الإجراء على حالة الطلب الحالية'),
     ('ORDER_NOT_CANCELLABLE', 'لا يمكن إلغاء هذا الطلب في حالته الحالية'),

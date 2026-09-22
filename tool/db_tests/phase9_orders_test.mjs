@@ -65,6 +65,12 @@ ok('an order nobody paid for is not "refunded"', row.payment_status === 'unpaid'
 console.log('\n== Cancelling a paid order marks payment_status refunded ==');
 const o4 = (await createOrder()).id;
 await payOrder(o4, 100);
+// 0065: confirming now requires an approved shipping fee first — zero,
+// so it doesn't disturb this file's payment-total assertions.
+await as(ADMIN);
+await q(`select public.rpc_admin_set_shipping_fee($1, 0)`, [o4]);
+await as(CUST_A);
+await q(`select public.rpc_customer_respond_shipping_fee($1, true)`, [o4]);
 await as(ADMIN);
 await q(`select public.rpc_confirm_order($1)`, [o4]);
 await q(`select public.rpc_cancel_order($1, 'نفاذ المخزون')`, [o4]);

@@ -32,6 +32,27 @@ String orderStatusLabelAr(OrderStatus s) => switch (s) {
 /// time; a delivered order can still be `partiallyPaid` (deferred payment).
 enum PaymentStatus { unpaid, partiallyPaid, paid, refunded }
 
+/// Shipping fee negotiation (0065): admin/sales proposes a fee while the
+/// order is still `pending`, the customer must approve it before the order
+/// can be confirmed at all. [Order.total] only counts the fee once
+/// [ShippingFeeStatus.approved] — a merely-proposed or rejected fee never
+/// changes what the customer is shown as owing.
+enum ShippingFeeStatus { notSet, pendingApproval, approved, rejected }
+
+ShippingFeeStatus shippingFeeStatusFromString(String v) => switch (v) {
+  'pending_approval' => ShippingFeeStatus.pendingApproval,
+  'approved' => ShippingFeeStatus.approved,
+  'rejected' => ShippingFeeStatus.rejected,
+  _ => ShippingFeeStatus.notSet,
+};
+
+String shippingFeeStatusLabelAr(ShippingFeeStatus s) => switch (s) {
+  ShippingFeeStatus.notSet => 'لم يُحدَّد بعد',
+  ShippingFeeStatus.pendingApproval => 'بانتظار موافقة العميل',
+  ShippingFeeStatus.approved => 'وافق العميل',
+  ShippingFeeStatus.rejected => 'رفض العميل',
+};
+
 PaymentStatus paymentStatusFromString(String v) => switch (v) {
   'partially_paid' => PaymentStatus.partiallyPaid,
   'paid' => PaymentStatus.paid,
@@ -68,6 +89,13 @@ abstract class Order with _$Order {
     String? deliveryFloor,
     String? deliveryApartment,
     String? deliveryLandmark,
+    double? deliveryLatitude,
+    double? deliveryLongitude,
+    String? deliveryCityId,
+    String? deliveryServiceAreaId,
+    double? shippingFee,
+    required ShippingFeeStatus shippingFeeStatus,
+    String? shippingFeeRejectionReason,
     String? notes,
     String? cancelledReason,
     required DateTime createdAt,
@@ -102,6 +130,15 @@ abstract class Order with _$Order {
     deliveryFloor: row['delivery_floor'] as String?,
     deliveryApartment: row['delivery_apartment'] as String?,
     deliveryLandmark: row['delivery_landmark'] as String?,
+    deliveryLatitude: (row['delivery_latitude'] as num?)?.toDouble(),
+    deliveryLongitude: (row['delivery_longitude'] as num?)?.toDouble(),
+    deliveryCityId: row['delivery_city_id'] as String?,
+    deliveryServiceAreaId: row['delivery_service_area_id'] as String?,
+    shippingFee: (row['shipping_fee'] as num?)?.toDouble(),
+    shippingFeeStatus: shippingFeeStatusFromString(
+      row['shipping_fee_status'] as String? ?? 'not_set',
+    ),
+    shippingFeeRejectionReason: row['shipping_fee_rejection_reason'] as String?,
     notes: row['notes'] as String?,
     cancelledReason: row['cancelled_reason'] as String?,
     createdAt: DateTime.parse(row['created_at'] as String),

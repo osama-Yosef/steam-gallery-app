@@ -141,7 +141,18 @@ class _FakeOrderRepo implements OrderRepository {
   @override
   Future<List<OrderItem>> getOrderItems(String orderId) async => [];
   @override
+  Future<void> respondToShippingFee({
+    required String orderId,
+    required bool approve,
+    String? rejectionReason,
+  }) async {}
+  @override
   Stream<List<Order>> watchAllOrders() => const Stream.empty();
+  @override
+  Future<void> setShippingFee({
+    required String orderId,
+    required double amount,
+  }) async {}
   @override
   Future<void> confirmOrder(String orderId) async {}
   @override

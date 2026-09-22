@@ -88,6 +88,7 @@ class NotificationsScreen extends ConsumerWidget {
 
   IconData _iconFor(String type) => switch (type) {
     'order_status' => Iconsax.receipt_text_copy,
+    'shipping_fee' => Iconsax.truck_copy,
     'maintenance_new' => Iconsax.setting_2_copy,
     'maintenance_completed' => Iconsax.tick_circle_copy,
     'low_stock' => Iconsax.box_copy,
@@ -100,6 +101,7 @@ class NotificationsScreen extends ConsumerWidget {
 
     switch (n.type) {
       case 'order_status':
+      case 'shipping_fee':
         if (orderId == null) return;
         if (role == AppRole.customer) {
           context.push(Routes.customerOrderDetail(orderId));

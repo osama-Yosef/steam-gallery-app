@@ -60,9 +60,20 @@ const cancelOrder = (orderId, reason = 'اختبار') => as(ADMIN).then(() => q
   `select public.rpc_cancel_order($1, $2)`, [orderId, reason]));
 const returnOrder = (orderId, reason = 'اختبار استرجاع') => as(ADMIN).then(() => q(
   `select public.rpc_admin_return_order($1, $2)`, [orderId, reason]));
-const advanceToDelivered = async (orderId) => {
+// 0065: confirming now requires an approved shipping fee first — zero here
+// throughout, since this file's assertions are about refund channels, not
+// shipping pricing.
+const approveShippingFeeAndConfirm = async (orderId, customerId) => {
+  await as(ADMIN);
+  await q(`select public.rpc_admin_set_shipping_fee($1, 0)`, [orderId]);
+  await as(customerId);
+  await q(`select public.rpc_customer_respond_shipping_fee($1, true)`, [orderId]);
   await as(ADMIN);
   await q(`select public.rpc_confirm_order($1)`, [orderId]);
+};
+const advanceToDelivered = async (orderId, customerId) => {
+  await approveShippingFeeAndConfirm(orderId, customerId);
+  await as(ADMIN);
   await q(`select public.rpc_update_order_status($1, 'preparing')`, [orderId]);
   await q(`select public.rpc_update_order_status($1, 'delivered')`, [orderId]);
 };
@@ -71,8 +82,7 @@ const advanceToDelivered = async (orderId) => {
 console.log('\n== Cancelling a wallet-paid order refunds the wallet, not the cashbox ==');
 await topupAndVerify(CUST_A, 500, 'REF-A-1');
 const o1 = (await createOrder(CUST_A, addrA)).id;
-await as(ADMIN);
-await q(`select public.rpc_confirm_order($1)`, [o1]);
+await approveShippingFeeAndConfirm(o1, CUST_A);
 await payFromWallet(CUST_A, o1, 100);
 let w = await wallet(CUST_A);
 ok('wallet debited by the order amount', Number(w.balance) === 400);
@@ -95,8 +105,7 @@ ok('a refund_credit ledger row explains the credit', Number(refundTxn.amount) ==
 // ---------------------------------------------------------------- InstaPay-paid cancellation
 console.log('\n== Cancelling an InstaPay-paid order credits the wallet as store credit ==');
 const o2 = (await createOrder(CUST_B, addrB)).id;
-await as(ADMIN);
-await q(`select public.rpc_confirm_order($1)`, [o2]);
+await approveShippingFeeAndConfirm(o2, CUST_B);
 const cashBeforeInstapay2 = await cashboxBalance();
 const instapayPaymentId = await payViaInstapayAndVerify(CUST_B, o2, 100, 'REF-B-1');
 // 0064: a confirmed InstaPay transfer now credits the transfer cashbox
@@ -119,8 +128,7 @@ ok('the InstaPay payment row is marked refunded', instapayPayRow.status === 'ref
 // ---------------------------------------------------------------- cash-paid cancellation unaffected
 console.log('\n== A manually-recorded cash payment still refunds through the physical cashbox ==');
 const o3 = (await createOrder(CUST_A, addrA)).id;
-await as(ADMIN);
-await q(`select public.rpc_confirm_order($1)`, [o3]);
+await approveShippingFeeAndConfirm(o3, CUST_A);
 await q(`select public.rpc_record_customer_payment($1, $2, $3, 'كاش')`, [CUST_A, 100, o3]);
 const cashBefore3 = await cashboxBalance();
 await cancelOrder(o3, 'إلغاء');
@@ -132,8 +140,7 @@ ok('a cash refund row references the order',
 // ---------------------------------------------------------------- mixed-channel cancellation
 console.log('\n== A partly-wallet, partly-cash order splits the refund correctly ==');
 const o4 = (await createOrder(CUST_A, addrA)).id;
-await as(ADMIN);
-await q(`select public.rpc_confirm_order($1)`, [o4]);
+await approveShippingFeeAndConfirm(o4, CUST_A);
 await payFromWallet(CUST_A, o4, 40);
 await as(ADMIN);
 await q(`select public.rpc_record_customer_payment($1, $2, $3, 'كاش')`, [CUST_A, 60, o4]);
@@ -152,8 +159,7 @@ ok('the cash portion (60) comes back out of the cashbox',
 console.log('\n== Returning a delivered order (rpc_admin_return_order) ==');
 await topupAndVerify(CUST_A, 300, 'REF-A-2');
 const o5 = (await createOrder(CUST_A, addrA, 2)).id;
-await as(ADMIN);
-await q(`select public.rpc_confirm_order($1)`, [o5]);
+await approveShippingFeeAndConfirm(o5, CUST_A);
 await payFromWallet(CUST_A, o5, 200);
 
 ok('cannot return an order that has not been delivered yet',
@@ -188,7 +194,7 @@ ok('returning a cancelled order is refused',
 
 console.log('\n== A customer cannot return their own order ==');
 const o6 = (await createOrder(CUST_A, addrA)).id;
-await advanceToDelivered(o6);
+await advanceToDelivered(o6, CUST_A);
 ok('only an admin can call rpc_admin_return_order',
   (await as(CUST_A).then(() => err(`select public.rpc_admin_return_order($1, 'أنا أرجعت')`, [o6])))?.includes('FORBIDDEN'));
 
