@@ -89,8 +89,17 @@ let o = await orderRow(o1);
 ok('order reflects the payment (paid in full)', Number(o.paid_amount) === 100 && o.payment_status === 'paid');
 
 await asSuper();
-const cashBefore = (await one(`select coalesce(sum(amount),0)::numeric as n from public.cash_transactions`)).n;
-ok('InstaPay money never touches the physical cashbox ledger', Number(cashBefore) === 0);
+// 0064: a confirmed InstaPay transfer is real money received by transfer,
+// so it credits خزنة التحويلات (the transfer cashbox) — not the physical
+// cash till, which must stay untouched.
+const cashTillTotal = (await one(
+  `select coalesce(sum(ct.amount),0)::numeric as n from public.cash_transactions ct
+   join public.cashboxes cb on cb.id = ct.cashbox_id where cb.kind = 'cash'`)).n;
+ok('InstaPay money never touches the physical cash till', Number(cashTillTotal) === 0);
+const transferTillTotal = (await one(
+  `select coalesce(sum(ct.amount),0)::numeric as n from public.cash_transactions ct
+   join public.cashboxes cb on cb.id = ct.cashbox_id where cb.kind = 'transfer'`)).n;
+ok('InstaPay money credits the transfer cashbox instead', Number(transferTillTotal) === 100);
 
 console.log('\n== Verifying twice must not double-apply (Test 9) ==');
 await as(ADMIN);

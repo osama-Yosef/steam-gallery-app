@@ -97,15 +97,20 @@ console.log('\n== Cancelling an InstaPay-paid order credits the wallet as store 
 const o2 = (await createOrder(CUST_B, addrB)).id;
 await as(ADMIN);
 await q(`select public.rpc_confirm_order($1)`, [o2]);
+const cashBeforeInstapay2 = await cashboxBalance();
 const instapayPaymentId = await payViaInstapayAndVerify(CUST_B, o2, 100, 'REF-B-1');
-const cashBefore2 = await cashboxBalance();
+// 0064: a confirmed InstaPay transfer now credits the transfer cashbox
+// (real money received by transfer) — the reverse of this file's original
+// assumption. The wallet-credit compensation to the customer below is a
+// separate mechanism; both happen.
+ok('confirming the InstaPay payment credits the transfer cashbox', await cashboxBalance() === cashBeforeInstapay2 + 100);
 
 await cancelOrder(o2, 'العميل غيّر رأيه');
 row = await orderRow(o2);
 ok('order is cancelled and payment_status is refunded', row.status === 'cancelled' && row.payment_status === 'refunded');
 const wB = await wallet(CUST_B);
 ok('a customer with no prior wallet gets one, credited with the InstaPay amount', Number(wB.balance) === 100);
-ok('the cashbox is untouched — the money never physically arrived there', await cashboxBalance() === cashBefore2);
+ok('cancelling reverses the cashbox credit back out', await cashboxBalance() === cashBeforeInstapay2);
 
 await asSuper();
 const instapayPayRow = await one(`select * from public.payments where id = $1`, [instapayPaymentId]);
