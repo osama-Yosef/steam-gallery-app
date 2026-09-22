@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:uuid/uuid.dart';
 import '../../../../../core/errors/app_exception.dart';
+import '../../../../technician_account/data/models/sale.dart';
 import '../../providers/customer_account_providers.dart';
 
 class AdminCustomerPaymentScreen extends ConsumerStatefulWidget {
@@ -22,6 +23,10 @@ class _AdminCustomerPaymentScreenState
   // One key per payment entry, reused on retry, so a lost response followed
   // by a second tap can't record the same payment twice.
   final String _clientRequestId = const Uuid().v4();
+  // Which till this payment lands in — used to silently default to cash
+  // server-side with no way to say otherwise, so a transfer payment never
+  // showed up in خزنة التحويلات. See rpc_record_customer_payment (0059).
+  var _paymentMethod = PaymentMethod.cash;
   bool _submitting = false;
 
   @override
@@ -44,6 +49,7 @@ class _AdminCustomerPaymentScreenState
                 ? null
                 : _notesCtrl.text.trim(),
             clientRequestId: _clientRequestId,
+            paymentMethod: _paymentMethod,
           );
       if (mounted) Navigator.of(context).pop(true);
     } catch (e) {
@@ -77,6 +83,21 @@ class _AdminCustomerPaymentScreenState
                 if (n == null || n <= 0) return 'أدخل مبلغًا صحيحًا';
                 return null;
               },
+            ),
+            const SizedBox(height: 16),
+            const Text('استُلم الفلوس إزاي؟'),
+            const SizedBox(height: 8),
+            SegmentedButton<PaymentMethod>(
+              segments: const [
+                ButtonSegment(value: PaymentMethod.cash, label: Text('نقدًا')),
+                ButtonSegment(
+                  value: PaymentMethod.transfer,
+                  label: Text('تحويل'),
+                ),
+              ],
+              selected: {_paymentMethod},
+              onSelectionChanged: (s) =>
+                  setState(() => _paymentMethod = s.first),
             ),
             const SizedBox(height: 16),
             TextFormField(
