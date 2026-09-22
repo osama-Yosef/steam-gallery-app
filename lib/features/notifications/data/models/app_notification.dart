@@ -29,6 +29,7 @@ abstract class AppNotification with _$AppNotification {
 /// in 0010_functions_triggers.sql) to an icon for the list UI.
 const Map<String, String> notificationTypeIcons = {
   'order_status': 'receipt_long',
+  'shipping_fee': 'local_shipping',
   'maintenance_new': 'build',
   'maintenance_completed': 'check_circle',
   'low_stock': 'inventory_2',

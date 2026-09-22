@@ -6,24 +6,37 @@ import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/utils/formatters.dart';
 import '../../../../../core/widgets/confirm_dialog.dart';
 import '../../../../../core/widgets/state_views.dart';
+import '../../../../cashbox/data/models/cashbox_balance.dart';
+import '../../../../technician_account/data/models/sale.dart';
 import '../../../data/models/sale_return_item.dart';
 import '../../providers/sales_providers.dart';
 
 /// A walk-in sale's invoice, line by line, each with its own "إرجاع" —
 /// return any quantity up to what's left on that line — plus a top action
 /// to return everything still outstanding at once. See 0058.
+///
+/// Every return asks explicitly which till (نقدي/تحويل) the refund comes
+/// out of, defaulting to how the sale was originally paid but overridable —
+/// see 0063: leaving this to be silently inferred server-side meant a
+/// return could succeed while the refund landed in a till nobody at the
+/// counter was looking at, looking exactly like "no money was deducted".
 class AdminSaleReturnDetailScreen extends ConsumerWidget {
   final String saleId;
   const AdminSaleReturnDetailScreen({super.key, required this.saleId});
+
+  CashboxKind _defaultKind(PaymentMethod saleMethod) =>
+      saleMethod == PaymentMethod.cash ? CashboxKind.cash : CashboxKind.transfer;
 
   Future<void> _returnItem(
     BuildContext context,
     WidgetRef ref,
     SaleReturnItem item,
+    PaymentMethod saleMethod,
   ) async {
     var qty = 1;
+    var refundKind = _defaultKind(saleMethod);
     final reasonCtrl = TextEditingController();
-    final result = await showDialog<(int, String)>(
+    final result = await showDialog<(int, String, CashboxKind)>(
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setDialogState) => AlertDialog(
@@ -54,6 +67,21 @@ class AdminSaleReturnDetailScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 8),
               ],
+              Text(
+                'الفلوس هترجع من',
+                style: Theme.of(ctx).textTheme.bodySmall,
+              ),
+              const SizedBox(height: 6),
+              SegmentedButton<CashboxKind>(
+                segments: [
+                  for (final k in CashboxKind.values)
+                    ButtonSegment(value: k, label: Text(cashboxKindLabelAr(k))),
+                ],
+                selected: {refundKind},
+                onSelectionChanged: (s) =>
+                    setDialogState(() => refundKind = s.first),
+              ),
+              const SizedBox(height: 12),
               TextField(
                 controller: reasonCtrl,
                 decoration: const InputDecoration(labelText: 'سبب الإرجاع'),
@@ -68,8 +96,9 @@ class AdminSaleReturnDetailScreen extends ConsumerWidget {
             ),
             FilledButton(
               style: FilledButton.styleFrom(backgroundColor: AppColors.danger),
-              onPressed: () =>
-                  Navigator.of(ctx).pop((qty, reasonCtrl.text.trim())),
+              onPressed: () => Navigator.of(
+                ctx,
+              ).pop((qty, reasonCtrl.text.trim(), refundKind)),
               child: const Text('تأكيد الإرجاع'),
             ),
           ],
@@ -85,6 +114,7 @@ class AdminSaleReturnDetailScreen extends ConsumerWidget {
             saleItemId: item.id,
             quantity: result.$1,
             reason: result.$2,
+            refundKind: result.$3,
           );
       ref.invalidate(saleReturnItemsProvider(saleId));
       if (context.mounted) {
@@ -101,31 +131,61 @@ class AdminSaleReturnDetailScreen extends ConsumerWidget {
     }
   }
 
-  Future<void> _returnWholeSale(BuildContext context, WidgetRef ref) async {
+  Future<void> _returnWholeSale(
+    BuildContext context,
+    WidgetRef ref,
+    PaymentMethod saleMethod,
+  ) async {
     final reasonCtrl = TextEditingController();
-    final reason = await showDialog<String>(
+    var refundKind = _defaultKind(saleMethod);
+    final result = await showDialog<(String, CashboxKind)>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('إرجاع باقي الفاتورة'),
-        content: TextField(
-          controller: reasonCtrl,
-          decoration: const InputDecoration(labelText: 'سبب الإرجاع'),
-          autofocus: true,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) => AlertDialog(
+          title: const Text('إرجاع باقي الفاتورة'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'الفلوس هترجع من',
+                style: Theme.of(ctx).textTheme.bodySmall,
+              ),
+              const SizedBox(height: 6),
+              SegmentedButton<CashboxKind>(
+                segments: [
+                  for (final k in CashboxKind.values)
+                    ButtonSegment(value: k, label: Text(cashboxKindLabelAr(k))),
+                ],
+                selected: {refundKind},
+                onSelectionChanged: (s) =>
+                    setDialogState(() => refundKind = s.first),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: reasonCtrl,
+                decoration: const InputDecoration(labelText: 'سبب الإرجاع'),
+                autofocus: true,
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: const Text('تراجع'),
+            ),
+            FilledButton(
+              style: FilledButton.styleFrom(backgroundColor: AppColors.danger),
+              onPressed: () => Navigator.of(
+                ctx,
+              ).pop((reasonCtrl.text.trim(), refundKind)),
+              child: const Text('تأكيد الإرجاع'),
+            ),
+          ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('تراجع'),
-          ),
-          FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: AppColors.danger),
-            onPressed: () => Navigator.of(ctx).pop(reasonCtrl.text.trim()),
-            child: const Text('تأكيد الإرجاع'),
-          ),
-        ],
       ),
     );
-    if (reason == null || reason.isEmpty || !context.mounted) return;
+    if (result == null || result.$1.isEmpty || !context.mounted) return;
     final confirmed = await showConfirmDialog(
       context,
       title: 'تأكيد نهائي',
@@ -137,7 +197,11 @@ class AdminSaleReturnDetailScreen extends ConsumerWidget {
     try {
       await ref
           .read(salesRepositoryProvider)
-          .returnSale(saleId: saleId, reason: reason);
+          .returnSale(
+            saleId: saleId,
+            reason: result.$1,
+            refundKind: result.$2,
+          );
       ref.invalidate(saleReturnItemsProvider(saleId));
       if (context.mounted) {
         ScaffoldMessenger.of(
@@ -156,6 +220,8 @@ class AdminSaleReturnDetailScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final itemsAsync = ref.watch(saleReturnItemsProvider(saleId));
+    final saleAsync = ref.watch(saleByIdProvider(saleId));
+    final saleMethod = saleAsync.value?.paymentMethod ?? PaymentMethod.cash;
 
     return Scaffold(
       appBar: AppBar(title: const Text('تفاصيل الفاتورة')),
@@ -200,7 +266,7 @@ class AdminSaleReturnDetailScreen extends ConsumerWidget {
                                   ),
                                 ),
                                 onPressed: () =>
-                                    _returnItem(context, ref, item),
+                                    _returnItem(context, ref, item, saleMethod),
                                 child: const Text('إرجاع'),
                               ),
                       ),
@@ -218,7 +284,8 @@ class AdminSaleReturnDetailScreen extends ConsumerWidget {
                         foregroundColor: AppColors.danger,
                         side: const BorderSide(color: AppColors.danger),
                       ),
-                      onPressed: () => _returnWholeSale(context, ref),
+                      onPressed: () =>
+                          _returnWholeSale(context, ref, saleMethod),
                       icon: const Icon(Iconsax.undo_copy),
                       label: const Text('إرجاع باقي الفاتورة'),
                     ),

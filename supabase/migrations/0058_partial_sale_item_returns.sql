@@ -22,7 +22,12 @@
 -- callers of it (one item, or every remaining item on the invoice).
 -- ============================================================================
 
-create table public.sale_item_returns (
+-- Guarded (if not exists / drop-then-create) throughout this section: same
+-- live drift as 0049/0059 (found 2026-09-19) — confirmed this table
+-- already existed out-of-band while later parts of the migration set
+-- (0059-0063's function bodies) did not, so this file must be able to
+-- replay safely regardless of exactly how far a prior ad hoc apply got.
+create table if not exists public.sale_item_returns (
   id uuid primary key default gen_random_uuid(),
   sale_item_id uuid not null references public.sale_items(id),
   quantity int not null check (quantity > 0),
@@ -31,15 +36,17 @@ create table public.sale_item_returns (
   created_by uuid references public.users(id),
   created_at timestamptz not null default now()
 );
-create index idx_sale_item_returns_item on public.sale_item_returns (sale_item_id);
+create index if not exists idx_sale_item_returns_item on public.sale_item_returns (sale_item_id);
 
 alter table public.sale_item_returns enable row level security;
+drop trigger if exists trg_sale_item_returns_no_update on public.sale_item_returns;
 create trigger trg_sale_item_returns_no_update
   before update or delete on public.sale_item_returns
   for each row execute function public.prevent_mutation();
 
 -- Same audience as sale_items_select below (admin/sales) — return history
 -- is a staff concern, not exposed to the technician/customer views.
+drop policy if exists sale_item_returns_select on public.sale_item_returns;
 create policy sale_item_returns_select on public.sale_item_returns for select to authenticated
   using (public.is_admin() or public.is_sales());
 
@@ -54,7 +61,7 @@ alter policy sale_items_select on public.sale_items
 
 -- "Remaining" is always current_quantity minus every return on record —
 -- exposed here so the app never has to compute the aggregate itself.
-create view public.sale_items_with_returns
+create or replace view public.sale_items_with_returns
   with (security_invoker = true) as
 select si.*, coalesce(sr.total_returned, 0)::int as returned_quantity
 from public.sale_items si

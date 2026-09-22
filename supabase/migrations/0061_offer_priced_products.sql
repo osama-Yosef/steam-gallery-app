@@ -21,8 +21,13 @@
 -- discounted offer at once, the lowest offer price wins.
 -- ============================================================================
 
+-- Guarded (if not exists): same live drift as 0049/0058/0059 (found
+-- 2026-09-19) — this column, and private.fn_effective_price() below, had
+-- already been applied out-of-band while rpc_create_order further down in
+-- this same file had not, leaving orders charge raw selling_price with no
+-- offer awareness despite the cart already showing the discounted price.
 alter table public.offer_products
-  add column offer_price numeric(12,2) check (offer_price is null or offer_price >= 0);
+  add column if not exists offer_price numeric(12,2) check (offer_price is null or offer_price >= 0);
 
 create or replace function private.fn_effective_price(p_product_id uuid) returns numeric
 language sql stable security definer set search_path = public as $$

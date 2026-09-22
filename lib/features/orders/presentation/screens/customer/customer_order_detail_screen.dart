@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:uuid/uuid.dart';
 import '../../../../../core/errors/app_exception.dart';
 import '../../../../../core/router/route_names.dart';
+import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/utils/formatters.dart';
 import '../../../../../core/widgets/confirm_dialog.dart';
 import '../../../../../core/widgets/state_views.dart';
@@ -16,6 +17,66 @@ import '../../widgets/order_status_chips.dart';
 class CustomerOrderDetailScreen extends ConsumerWidget {
   final String orderId;
   const CustomerOrderDetailScreen({super.key, required this.orderId});
+
+  Future<void> _respondShippingFee(
+    BuildContext context,
+    WidgetRef ref,
+    bool approve,
+  ) async {
+    String? reason;
+    if (!approve) {
+      final reasonCtrl = TextEditingController();
+      reason = await showDialog<String>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: const Text('رفض سعر الشحن'),
+          content: TextField(
+            controller: reasonCtrl,
+            decoration: const InputDecoration(labelText: 'السبب'),
+            autofocus: true,
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: const Text('تراجع'),
+            ),
+            FilledButton(
+              style: FilledButton.styleFrom(
+                backgroundColor: Theme.of(ctx).colorScheme.error,
+              ),
+              onPressed: () => Navigator.of(ctx).pop(reasonCtrl.text.trim()),
+              child: const Text('تأكيد الرفض'),
+            ),
+          ],
+        ),
+      );
+      if (reason == null || reason.isEmpty || !context.mounted) return;
+    } else {
+      final confirmed = await showConfirmDialog(
+        context,
+        title: 'الموافقة على سعر الشحن',
+        message: 'هيتم إضافة سعر الشحن لإجمالي طلبك والمتابعة في التجهيز.',
+        confirmLabel: 'موافق',
+      );
+      if (!confirmed || !context.mounted) return;
+    }
+
+    try {
+      await ref
+          .read(orderRepositoryProvider)
+          .respondToShippingFee(
+            orderId: orderId,
+            approve: approve,
+            rejectionReason: reason,
+          );
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(AppException.from(e).messageAr)));
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -78,6 +139,15 @@ class CustomerOrderDetailScreen extends ConsumerWidget {
                   ),
                 ),
               ),
+              if (order.shippingFeeStatus == ShippingFeeStatus.pendingApproval ||
+                  order.shippingFeeStatus == ShippingFeeStatus.rejected) ...[
+                const SizedBox(height: 12),
+                _ShippingFeeApprovalCard(
+                  order: order,
+                  onRespond: (approve) =>
+                      _respondShippingFee(context, ref, approve),
+                ),
+              ],
               const SizedBox(height: 12),
               const ListTile(
                 contentPadding: EdgeInsets.zero,
@@ -115,6 +185,13 @@ class CustomerOrderDetailScreen extends ConsumerWidget {
                   padding: const EdgeInsets.all(16),
                   child: Column(
                     children: [
+                      if (order.shippingFeeStatus == ShippingFeeStatus.approved &&
+                          order.shippingFee != null)
+                        _row(
+                          context,
+                          'رسوم الشحن',
+                          Formatters.currency(order.shippingFee!),
+                        ),
                       _row(
                         context,
                         'الإجمالي',
@@ -203,6 +280,76 @@ class CustomerOrderDetailScreen extends ConsumerWidget {
           Text(label, style: style),
           Text(value, style: style),
         ],
+      ),
+    );
+  }
+}
+
+/// The customer's answer to a proposed shipping fee (0065) — the order
+/// can't be confirmed until they approve one. Shown while pending, and
+/// again (informationally) if they already rejected one, since the same
+/// screen is where they'll see the next proposal too.
+class _ShippingFeeApprovalCard extends StatelessWidget {
+  final Order order;
+  final void Function(bool approve) onRespond;
+  const _ShippingFeeApprovalCard({required this.order, required this.onRespond});
+
+  @override
+  Widget build(BuildContext context) {
+    final rejected = order.shippingFeeStatus == ShippingFeeStatus.rejected;
+    return Card(
+      color: AppColors.warning.withValues(alpha: 0.08),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Icon(Iconsax.truck_copy, size: 18),
+                const SizedBox(width: 6),
+                Text(
+                  rejected ? 'في انتظار سعر شحن جديد' : 'تكلفة شحن طلبك',
+                  style: Theme.of(context).textTheme.titleSmall,
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            if (rejected)
+              Text(
+                'رفضت سعر الشحن السابق (${Formatters.currency(order.shippingFee ?? 0)})'
+                '، وفي انتظار المعرض يحدد سعر جديد.',
+              )
+            else ...[
+              Text(
+                'المعرض حدد سعر الشحن بـ ${Formatters.currency(order.shippingFee ?? 0)}. '
+                'يجب الموافقة عليه لإتمام الطلب.',
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: FilledButton(
+                      onPressed: () => onRespond(true),
+                      child: const Text('موافق'),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: OutlinedButton(
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppColors.danger,
+                        side: const BorderSide(color: AppColors.danger),
+                      ),
+                      onPressed: () => onRespond(false),
+                      child: const Text('رفض'),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ],
+        ),
       ),
     );
   }

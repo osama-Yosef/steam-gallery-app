@@ -17,7 +17,7 @@ mixin _$Order {
  String get id; int get orderNumber; String get customerId; OrderStatus get status; double get subtotal; double get discount; double get total; double get paidAmount; PaymentStatus get paymentStatus; String? get deliveryAddress;// Snapshotted from customer_addresses at order time (0036) — never the
 // live address row, so editing/deleting a saved address never rewrites
 // a past order's delivery details.
- String? get deliveryRecipientName; String? get deliveryPhone; String? get deliveryBuilding; String? get deliveryFloor; String? get deliveryApartment; String? get deliveryLandmark; String? get notes; String? get cancelledReason; DateTime get createdAt;
+ String? get deliveryRecipientName; String? get deliveryPhone; String? get deliveryBuilding; String? get deliveryFloor; String? get deliveryApartment; String? get deliveryLandmark; double? get deliveryLatitude; double? get deliveryLongitude; String? get deliveryCityId; String? get deliveryServiceAreaId; double? get shippingFee; ShippingFeeStatus get shippingFeeStatus; String? get shippingFeeRejectionReason; String? get notes; String? get cancelledReason; DateTime get createdAt;
 /// Create a copy of Order
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $OrderCopyWith<Order> get copyWith => _$OrderCopyWithImpl<Order>(this as Order, 
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Order&&(identical(other.id, id) || other.id == id)&&(identical(other.orderNumber, orderNumber) || other.orderNumber == orderNumber)&&(identical(other.customerId, customerId) || other.customerId == customerId)&&(identical(other.status, status) || other.status == status)&&(identical(other.subtotal, subtotal) || other.subtotal == subtotal)&&(identical(other.discount, discount) || other.discount == discount)&&(identical(other.total, total) || other.total == total)&&(identical(other.paidAmount, paidAmount) || other.paidAmount == paidAmount)&&(identical(other.paymentStatus, paymentStatus) || other.paymentStatus == paymentStatus)&&(identical(other.deliveryAddress, deliveryAddress) || other.deliveryAddress == deliveryAddress)&&(identical(other.deliveryRecipientName, deliveryRecipientName) || other.deliveryRecipientName == deliveryRecipientName)&&(identical(other.deliveryPhone, deliveryPhone) || other.deliveryPhone == deliveryPhone)&&(identical(other.deliveryBuilding, deliveryBuilding) || other.deliveryBuilding == deliveryBuilding)&&(identical(other.deliveryFloor, deliveryFloor) || other.deliveryFloor == deliveryFloor)&&(identical(other.deliveryApartment, deliveryApartment) || other.deliveryApartment == deliveryApartment)&&(identical(other.deliveryLandmark, deliveryLandmark) || other.deliveryLandmark == deliveryLandmark)&&(identical(other.notes, notes) || other.notes == notes)&&(identical(other.cancelledReason, cancelledReason) || other.cancelledReason == cancelledReason)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Order&&(identical(other.id, id) || other.id == id)&&(identical(other.orderNumber, orderNumber) || other.orderNumber == orderNumber)&&(identical(other.customerId, customerId) || other.customerId == customerId)&&(identical(other.status, status) || other.status == status)&&(identical(other.subtotal, subtotal) || other.subtotal == subtotal)&&(identical(other.discount, discount) || other.discount == discount)&&(identical(other.total, total) || other.total == total)&&(identical(other.paidAmount, paidAmount) || other.paidAmount == paidAmount)&&(identical(other.paymentStatus, paymentStatus) || other.paymentStatus == paymentStatus)&&(identical(other.deliveryAddress, deliveryAddress) || other.deliveryAddress == deliveryAddress)&&(identical(other.deliveryRecipientName, deliveryRecipientName) || other.deliveryRecipientName == deliveryRecipientName)&&(identical(other.deliveryPhone, deliveryPhone) || other.deliveryPhone == deliveryPhone)&&(identical(other.deliveryBuilding, deliveryBuilding) || other.deliveryBuilding == deliveryBuilding)&&(identical(other.deliveryFloor, deliveryFloor) || other.deliveryFloor == deliveryFloor)&&(identical(other.deliveryApartment, deliveryApartment) || other.deliveryApartment == deliveryApartment)&&(identical(other.deliveryLandmark, deliveryLandmark) || other.deliveryLandmark == deliveryLandmark)&&(identical(other.deliveryLatitude, deliveryLatitude) || other.deliveryLatitude == deliveryLatitude)&&(identical(other.deliveryLongitude, deliveryLongitude) || other.deliveryLongitude == deliveryLongitude)&&(identical(other.deliveryCityId, deliveryCityId) || other.deliveryCityId == deliveryCityId)&&(identical(other.deliveryServiceAreaId, deliveryServiceAreaId) || other.deliveryServiceAreaId == deliveryServiceAreaId)&&(identical(other.shippingFee, shippingFee) || other.shippingFee == shippingFee)&&(identical(other.shippingFeeStatus, shippingFeeStatus) || other.shippingFeeStatus == shippingFeeStatus)&&(identical(other.shippingFeeRejectionReason, shippingFeeRejectionReason) || other.shippingFeeRejectionReason == shippingFeeRejectionReason)&&(identical(other.notes, notes) || other.notes == notes)&&(identical(other.cancelledReason, cancelledReason) || other.cancelledReason == cancelledReason)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
 }
 
 
 @override
-int get hashCode => Object.hashAll([runtimeType,id,orderNumber,customerId,status,subtotal,discount,total,paidAmount,paymentStatus,deliveryAddress,deliveryRecipientName,deliveryPhone,deliveryBuilding,deliveryFloor,deliveryApartment,deliveryLandmark,notes,cancelledReason,createdAt]);
+int get hashCode => Object.hashAll([runtimeType,id,orderNumber,customerId,status,subtotal,discount,total,paidAmount,paymentStatus,deliveryAddress,deliveryRecipientName,deliveryPhone,deliveryBuilding,deliveryFloor,deliveryApartment,deliveryLandmark,deliveryLatitude,deliveryLongitude,deliveryCityId,deliveryServiceAreaId,shippingFee,shippingFeeStatus,shippingFeeRejectionReason,notes,cancelledReason,createdAt]);
 
 @override
 String toString() {
-  return 'Order(id: $id, orderNumber: $orderNumber, customerId: $customerId, status: $status, subtotal: $subtotal, discount: $discount, total: $total, paidAmount: $paidAmount, paymentStatus: $paymentStatus, deliveryAddress: $deliveryAddress, deliveryRecipientName: $deliveryRecipientName, deliveryPhone: $deliveryPhone, deliveryBuilding: $deliveryBuilding, deliveryFloor: $deliveryFloor, deliveryApartment: $deliveryApartment, deliveryLandmark: $deliveryLandmark, notes: $notes, cancelledReason: $cancelledReason, createdAt: $createdAt)';
+  return 'Order(id: $id, orderNumber: $orderNumber, customerId: $customerId, status: $status, subtotal: $subtotal, discount: $discount, total: $total, paidAmount: $paidAmount, paymentStatus: $paymentStatus, deliveryAddress: $deliveryAddress, deliveryRecipientName: $deliveryRecipientName, deliveryPhone: $deliveryPhone, deliveryBuilding: $deliveryBuilding, deliveryFloor: $deliveryFloor, deliveryApartment: $deliveryApartment, deliveryLandmark: $deliveryLandmark, deliveryLatitude: $deliveryLatitude, deliveryLongitude: $deliveryLongitude, deliveryCityId: $deliveryCityId, deliveryServiceAreaId: $deliveryServiceAreaId, shippingFee: $shippingFee, shippingFeeStatus: $shippingFeeStatus, shippingFeeRejectionReason: $shippingFeeRejectionReason, notes: $notes, cancelledReason: $cancelledReason, createdAt: $createdAt)';
 }
 
 
@@ -48,7 +48,7 @@ abstract mixin class $OrderCopyWith<$Res>  {
   factory $OrderCopyWith(Order value, $Res Function(Order) _then) = _$OrderCopyWithImpl;
 @useResult
 $Res call({
- String id, int orderNumber, String customerId, OrderStatus status, double subtotal, double discount, double total, double paidAmount, PaymentStatus paymentStatus, String? deliveryAddress, String? deliveryRecipientName, String? deliveryPhone, String? deliveryBuilding, String? deliveryFloor, String? deliveryApartment, String? deliveryLandmark, String? notes, String? cancelledReason, DateTime createdAt
+ String id, int orderNumber, String customerId, OrderStatus status, double subtotal, double discount, double total, double paidAmount, PaymentStatus paymentStatus, String? deliveryAddress, String? deliveryRecipientName, String? deliveryPhone, String? deliveryBuilding, String? deliveryFloor, String? deliveryApartment, String? deliveryLandmark, double? deliveryLatitude, double? deliveryLongitude, String? deliveryCityId, String? deliveryServiceAreaId, double? shippingFee, ShippingFeeStatus shippingFeeStatus, String? shippingFeeRejectionReason, String? notes, String? cancelledReason, DateTime createdAt
 });
 
 
@@ -65,7 +65,7 @@ class _$OrderCopyWithImpl<$Res>
 
 /// Create a copy of Order
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? orderNumber = null,Object? customerId = null,Object? status = null,Object? subtotal = null,Object? discount = null,Object? total = null,Object? paidAmount = null,Object? paymentStatus = null,Object? deliveryAddress = freezed,Object? deliveryRecipientName = freezed,Object? deliveryPhone = freezed,Object? deliveryBuilding = freezed,Object? deliveryFloor = freezed,Object? deliveryApartment = freezed,Object? deliveryLandmark = freezed,Object? notes = freezed,Object? cancelledReason = freezed,Object? createdAt = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? orderNumber = null,Object? customerId = null,Object? status = null,Object? subtotal = null,Object? discount = null,Object? total = null,Object? paidAmount = null,Object? paymentStatus = null,Object? deliveryAddress = freezed,Object? deliveryRecipientName = freezed,Object? deliveryPhone = freezed,Object? deliveryBuilding = freezed,Object? deliveryFloor = freezed,Object? deliveryApartment = freezed,Object? deliveryLandmark = freezed,Object? deliveryLatitude = freezed,Object? deliveryLongitude = freezed,Object? deliveryCityId = freezed,Object? deliveryServiceAreaId = freezed,Object? shippingFee = freezed,Object? shippingFeeStatus = null,Object? shippingFeeRejectionReason = freezed,Object? notes = freezed,Object? cancelledReason = freezed,Object? createdAt = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,orderNumber: null == orderNumber ? _self.orderNumber : orderNumber // ignore: cast_nullable_to_non_nullable
@@ -83,6 +83,13 @@ as String?,deliveryBuilding: freezed == deliveryBuilding ? _self.deliveryBuildin
 as String?,deliveryFloor: freezed == deliveryFloor ? _self.deliveryFloor : deliveryFloor // ignore: cast_nullable_to_non_nullable
 as String?,deliveryApartment: freezed == deliveryApartment ? _self.deliveryApartment : deliveryApartment // ignore: cast_nullable_to_non_nullable
 as String?,deliveryLandmark: freezed == deliveryLandmark ? _self.deliveryLandmark : deliveryLandmark // ignore: cast_nullable_to_non_nullable
+as String?,deliveryLatitude: freezed == deliveryLatitude ? _self.deliveryLatitude : deliveryLatitude // ignore: cast_nullable_to_non_nullable
+as double?,deliveryLongitude: freezed == deliveryLongitude ? _self.deliveryLongitude : deliveryLongitude // ignore: cast_nullable_to_non_nullable
+as double?,deliveryCityId: freezed == deliveryCityId ? _self.deliveryCityId : deliveryCityId // ignore: cast_nullable_to_non_nullable
+as String?,deliveryServiceAreaId: freezed == deliveryServiceAreaId ? _self.deliveryServiceAreaId : deliveryServiceAreaId // ignore: cast_nullable_to_non_nullable
+as String?,shippingFee: freezed == shippingFee ? _self.shippingFee : shippingFee // ignore: cast_nullable_to_non_nullable
+as double?,shippingFeeStatus: null == shippingFeeStatus ? _self.shippingFeeStatus : shippingFeeStatus // ignore: cast_nullable_to_non_nullable
+as ShippingFeeStatus,shippingFeeRejectionReason: freezed == shippingFeeRejectionReason ? _self.shippingFeeRejectionReason : shippingFeeRejectionReason // ignore: cast_nullable_to_non_nullable
 as String?,notes: freezed == notes ? _self.notes : notes // ignore: cast_nullable_to_non_nullable
 as String?,cancelledReason: freezed == cancelledReason ? _self.cancelledReason : cancelledReason // ignore: cast_nullable_to_non_nullable
 as String?,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
@@ -171,10 +178,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  int orderNumber,  String customerId,  OrderStatus status,  double subtotal,  double discount,  double total,  double paidAmount,  PaymentStatus paymentStatus,  String? deliveryAddress,  String? deliveryRecipientName,  String? deliveryPhone,  String? deliveryBuilding,  String? deliveryFloor,  String? deliveryApartment,  String? deliveryLandmark,  String? notes,  String? cancelledReason,  DateTime createdAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  int orderNumber,  String customerId,  OrderStatus status,  double subtotal,  double discount,  double total,  double paidAmount,  PaymentStatus paymentStatus,  String? deliveryAddress,  String? deliveryRecipientName,  String? deliveryPhone,  String? deliveryBuilding,  String? deliveryFloor,  String? deliveryApartment,  String? deliveryLandmark,  double? deliveryLatitude,  double? deliveryLongitude,  String? deliveryCityId,  String? deliveryServiceAreaId,  double? shippingFee,  ShippingFeeStatus shippingFeeStatus,  String? shippingFeeRejectionReason,  String? notes,  String? cancelledReason,  DateTime createdAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Order() when $default != null:
-return $default(_that.id,_that.orderNumber,_that.customerId,_that.status,_that.subtotal,_that.discount,_that.total,_that.paidAmount,_that.paymentStatus,_that.deliveryAddress,_that.deliveryRecipientName,_that.deliveryPhone,_that.deliveryBuilding,_that.deliveryFloor,_that.deliveryApartment,_that.deliveryLandmark,_that.notes,_that.cancelledReason,_that.createdAt);case _:
+return $default(_that.id,_that.orderNumber,_that.customerId,_that.status,_that.subtotal,_that.discount,_that.total,_that.paidAmount,_that.paymentStatus,_that.deliveryAddress,_that.deliveryRecipientName,_that.deliveryPhone,_that.deliveryBuilding,_that.deliveryFloor,_that.deliveryApartment,_that.deliveryLandmark,_that.deliveryLatitude,_that.deliveryLongitude,_that.deliveryCityId,_that.deliveryServiceAreaId,_that.shippingFee,_that.shippingFeeStatus,_that.shippingFeeRejectionReason,_that.notes,_that.cancelledReason,_that.createdAt);case _:
   return orElse();
 
 }
@@ -192,10 +199,10 @@ return $default(_that.id,_that.orderNumber,_that.customerId,_that.status,_that.s
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  int orderNumber,  String customerId,  OrderStatus status,  double subtotal,  double discount,  double total,  double paidAmount,  PaymentStatus paymentStatus,  String? deliveryAddress,  String? deliveryRecipientName,  String? deliveryPhone,  String? deliveryBuilding,  String? deliveryFloor,  String? deliveryApartment,  String? deliveryLandmark,  String? notes,  String? cancelledReason,  DateTime createdAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  int orderNumber,  String customerId,  OrderStatus status,  double subtotal,  double discount,  double total,  double paidAmount,  PaymentStatus paymentStatus,  String? deliveryAddress,  String? deliveryRecipientName,  String? deliveryPhone,  String? deliveryBuilding,  String? deliveryFloor,  String? deliveryApartment,  String? deliveryLandmark,  double? deliveryLatitude,  double? deliveryLongitude,  String? deliveryCityId,  String? deliveryServiceAreaId,  double? shippingFee,  ShippingFeeStatus shippingFeeStatus,  String? shippingFeeRejectionReason,  String? notes,  String? cancelledReason,  DateTime createdAt)  $default,) {final _that = this;
 switch (_that) {
 case _Order():
-return $default(_that.id,_that.orderNumber,_that.customerId,_that.status,_that.subtotal,_that.discount,_that.total,_that.paidAmount,_that.paymentStatus,_that.deliveryAddress,_that.deliveryRecipientName,_that.deliveryPhone,_that.deliveryBuilding,_that.deliveryFloor,_that.deliveryApartment,_that.deliveryLandmark,_that.notes,_that.cancelledReason,_that.createdAt);case _:
+return $default(_that.id,_that.orderNumber,_that.customerId,_that.status,_that.subtotal,_that.discount,_that.total,_that.paidAmount,_that.paymentStatus,_that.deliveryAddress,_that.deliveryRecipientName,_that.deliveryPhone,_that.deliveryBuilding,_that.deliveryFloor,_that.deliveryApartment,_that.deliveryLandmark,_that.deliveryLatitude,_that.deliveryLongitude,_that.deliveryCityId,_that.deliveryServiceAreaId,_that.shippingFee,_that.shippingFeeStatus,_that.shippingFeeRejectionReason,_that.notes,_that.cancelledReason,_that.createdAt);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -212,10 +219,10 @@ return $default(_that.id,_that.orderNumber,_that.customerId,_that.status,_that.s
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  int orderNumber,  String customerId,  OrderStatus status,  double subtotal,  double discount,  double total,  double paidAmount,  PaymentStatus paymentStatus,  String? deliveryAddress,  String? deliveryRecipientName,  String? deliveryPhone,  String? deliveryBuilding,  String? deliveryFloor,  String? deliveryApartment,  String? deliveryLandmark,  String? notes,  String? cancelledReason,  DateTime createdAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  int orderNumber,  String customerId,  OrderStatus status,  double subtotal,  double discount,  double total,  double paidAmount,  PaymentStatus paymentStatus,  String? deliveryAddress,  String? deliveryRecipientName,  String? deliveryPhone,  String? deliveryBuilding,  String? deliveryFloor,  String? deliveryApartment,  String? deliveryLandmark,  double? deliveryLatitude,  double? deliveryLongitude,  String? deliveryCityId,  String? deliveryServiceAreaId,  double? shippingFee,  ShippingFeeStatus shippingFeeStatus,  String? shippingFeeRejectionReason,  String? notes,  String? cancelledReason,  DateTime createdAt)?  $default,) {final _that = this;
 switch (_that) {
 case _Order() when $default != null:
-return $default(_that.id,_that.orderNumber,_that.customerId,_that.status,_that.subtotal,_that.discount,_that.total,_that.paidAmount,_that.paymentStatus,_that.deliveryAddress,_that.deliveryRecipientName,_that.deliveryPhone,_that.deliveryBuilding,_that.deliveryFloor,_that.deliveryApartment,_that.deliveryLandmark,_that.notes,_that.cancelledReason,_that.createdAt);case _:
+return $default(_that.id,_that.orderNumber,_that.customerId,_that.status,_that.subtotal,_that.discount,_that.total,_that.paidAmount,_that.paymentStatus,_that.deliveryAddress,_that.deliveryRecipientName,_that.deliveryPhone,_that.deliveryBuilding,_that.deliveryFloor,_that.deliveryApartment,_that.deliveryLandmark,_that.deliveryLatitude,_that.deliveryLongitude,_that.deliveryCityId,_that.deliveryServiceAreaId,_that.shippingFee,_that.shippingFeeStatus,_that.shippingFeeRejectionReason,_that.notes,_that.cancelledReason,_that.createdAt);case _:
   return null;
 
 }
@@ -227,7 +234,7 @@ return $default(_that.id,_that.orderNumber,_that.customerId,_that.status,_that.s
 
 
 class _Order extends Order {
-  const _Order({required this.id, required this.orderNumber, required this.customerId, required this.status, required this.subtotal, required this.discount, required this.total, required this.paidAmount, required this.paymentStatus, this.deliveryAddress, this.deliveryRecipientName, this.deliveryPhone, this.deliveryBuilding, this.deliveryFloor, this.deliveryApartment, this.deliveryLandmark, this.notes, this.cancelledReason, required this.createdAt}): super._();
+  const _Order({required this.id, required this.orderNumber, required this.customerId, required this.status, required this.subtotal, required this.discount, required this.total, required this.paidAmount, required this.paymentStatus, this.deliveryAddress, this.deliveryRecipientName, this.deliveryPhone, this.deliveryBuilding, this.deliveryFloor, this.deliveryApartment, this.deliveryLandmark, this.deliveryLatitude, this.deliveryLongitude, this.deliveryCityId, this.deliveryServiceAreaId, this.shippingFee, required this.shippingFeeStatus, this.shippingFeeRejectionReason, this.notes, this.cancelledReason, required this.createdAt}): super._();
   
 
 @override final  String id;
@@ -249,6 +256,13 @@ class _Order extends Order {
 @override final  String? deliveryFloor;
 @override final  String? deliveryApartment;
 @override final  String? deliveryLandmark;
+@override final  double? deliveryLatitude;
+@override final  double? deliveryLongitude;
+@override final  String? deliveryCityId;
+@override final  String? deliveryServiceAreaId;
+@override final  double? shippingFee;
+@override final  ShippingFeeStatus shippingFeeStatus;
+@override final  String? shippingFeeRejectionReason;
 @override final  String? notes;
 @override final  String? cancelledReason;
 @override final  DateTime createdAt;
@@ -263,16 +277,16 @@ _$OrderCopyWith<_Order> get copyWith => __$OrderCopyWithImpl<_Order>(this, _$ide
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Order&&(identical(other.id, id) || other.id == id)&&(identical(other.orderNumber, orderNumber) || other.orderNumber == orderNumber)&&(identical(other.customerId, customerId) || other.customerId == customerId)&&(identical(other.status, status) || other.status == status)&&(identical(other.subtotal, subtotal) || other.subtotal == subtotal)&&(identical(other.discount, discount) || other.discount == discount)&&(identical(other.total, total) || other.total == total)&&(identical(other.paidAmount, paidAmount) || other.paidAmount == paidAmount)&&(identical(other.paymentStatus, paymentStatus) || other.paymentStatus == paymentStatus)&&(identical(other.deliveryAddress, deliveryAddress) || other.deliveryAddress == deliveryAddress)&&(identical(other.deliveryRecipientName, deliveryRecipientName) || other.deliveryRecipientName == deliveryRecipientName)&&(identical(other.deliveryPhone, deliveryPhone) || other.deliveryPhone == deliveryPhone)&&(identical(other.deliveryBuilding, deliveryBuilding) || other.deliveryBuilding == deliveryBuilding)&&(identical(other.deliveryFloor, deliveryFloor) || other.deliveryFloor == deliveryFloor)&&(identical(other.deliveryApartment, deliveryApartment) || other.deliveryApartment == deliveryApartment)&&(identical(other.deliveryLandmark, deliveryLandmark) || other.deliveryLandmark == deliveryLandmark)&&(identical(other.notes, notes) || other.notes == notes)&&(identical(other.cancelledReason, cancelledReason) || other.cancelledReason == cancelledReason)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Order&&(identical(other.id, id) || other.id == id)&&(identical(other.orderNumber, orderNumber) || other.orderNumber == orderNumber)&&(identical(other.customerId, customerId) || other.customerId == customerId)&&(identical(other.status, status) || other.status == status)&&(identical(other.subtotal, subtotal) || other.subtotal == subtotal)&&(identical(other.discount, discount) || other.discount == discount)&&(identical(other.total, total) || other.total == total)&&(identical(other.paidAmount, paidAmount) || other.paidAmount == paidAmount)&&(identical(other.paymentStatus, paymentStatus) || other.paymentStatus == paymentStatus)&&(identical(other.deliveryAddress, deliveryAddress) || other.deliveryAddress == deliveryAddress)&&(identical(other.deliveryRecipientName, deliveryRecipientName) || other.deliveryRecipientName == deliveryRecipientName)&&(identical(other.deliveryPhone, deliveryPhone) || other.deliveryPhone == deliveryPhone)&&(identical(other.deliveryBuilding, deliveryBuilding) || other.deliveryBuilding == deliveryBuilding)&&(identical(other.deliveryFloor, deliveryFloor) || other.deliveryFloor == deliveryFloor)&&(identical(other.deliveryApartment, deliveryApartment) || other.deliveryApartment == deliveryApartment)&&(identical(other.deliveryLandmark, deliveryLandmark) || other.deliveryLandmark == deliveryLandmark)&&(identical(other.deliveryLatitude, deliveryLatitude) || other.deliveryLatitude == deliveryLatitude)&&(identical(other.deliveryLongitude, deliveryLongitude) || other.deliveryLongitude == deliveryLongitude)&&(identical(other.deliveryCityId, deliveryCityId) || other.deliveryCityId == deliveryCityId)&&(identical(other.deliveryServiceAreaId, deliveryServiceAreaId) || other.deliveryServiceAreaId == deliveryServiceAreaId)&&(identical(other.shippingFee, shippingFee) || other.shippingFee == shippingFee)&&(identical(other.shippingFeeStatus, shippingFeeStatus) || other.shippingFeeStatus == shippingFeeStatus)&&(identical(other.shippingFeeRejectionReason, shippingFeeRejectionReason) || other.shippingFeeRejectionReason == shippingFeeRejectionReason)&&(identical(other.notes, notes) || other.notes == notes)&&(identical(other.cancelledReason, cancelledReason) || other.cancelledReason == cancelledReason)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
 }
 
 
 @override
-int get hashCode => Object.hashAll([runtimeType,id,orderNumber,customerId,status,subtotal,discount,total,paidAmount,paymentStatus,deliveryAddress,deliveryRecipientName,deliveryPhone,deliveryBuilding,deliveryFloor,deliveryApartment,deliveryLandmark,notes,cancelledReason,createdAt]);
+int get hashCode => Object.hashAll([runtimeType,id,orderNumber,customerId,status,subtotal,discount,total,paidAmount,paymentStatus,deliveryAddress,deliveryRecipientName,deliveryPhone,deliveryBuilding,deliveryFloor,deliveryApartment,deliveryLandmark,deliveryLatitude,deliveryLongitude,deliveryCityId,deliveryServiceAreaId,shippingFee,shippingFeeStatus,shippingFeeRejectionReason,notes,cancelledReason,createdAt]);
 
 @override
 String toString() {
-  return 'Order(id: $id, orderNumber: $orderNumber, customerId: $customerId, status: $status, subtotal: $subtotal, discount: $discount, total: $total, paidAmount: $paidAmount, paymentStatus: $paymentStatus, deliveryAddress: $deliveryAddress, deliveryRecipientName: $deliveryRecipientName, deliveryPhone: $deliveryPhone, deliveryBuilding: $deliveryBuilding, deliveryFloor: $deliveryFloor, deliveryApartment: $deliveryApartment, deliveryLandmark: $deliveryLandmark, notes: $notes, cancelledReason: $cancelledReason, createdAt: $createdAt)';
+  return 'Order(id: $id, orderNumber: $orderNumber, customerId: $customerId, status: $status, subtotal: $subtotal, discount: $discount, total: $total, paidAmount: $paidAmount, paymentStatus: $paymentStatus, deliveryAddress: $deliveryAddress, deliveryRecipientName: $deliveryRecipientName, deliveryPhone: $deliveryPhone, deliveryBuilding: $deliveryBuilding, deliveryFloor: $deliveryFloor, deliveryApartment: $deliveryApartment, deliveryLandmark: $deliveryLandmark, deliveryLatitude: $deliveryLatitude, deliveryLongitude: $deliveryLongitude, deliveryCityId: $deliveryCityId, deliveryServiceAreaId: $deliveryServiceAreaId, shippingFee: $shippingFee, shippingFeeStatus: $shippingFeeStatus, shippingFeeRejectionReason: $shippingFeeRejectionReason, notes: $notes, cancelledReason: $cancelledReason, createdAt: $createdAt)';
 }
 
 
@@ -283,7 +297,7 @@ abstract mixin class _$OrderCopyWith<$Res> implements $OrderCopyWith<$Res> {
   factory _$OrderCopyWith(_Order value, $Res Function(_Order) _then) = __$OrderCopyWithImpl;
 @override @useResult
 $Res call({
- String id, int orderNumber, String customerId, OrderStatus status, double subtotal, double discount, double total, double paidAmount, PaymentStatus paymentStatus, String? deliveryAddress, String? deliveryRecipientName, String? deliveryPhone, String? deliveryBuilding, String? deliveryFloor, String? deliveryApartment, String? deliveryLandmark, String? notes, String? cancelledReason, DateTime createdAt
+ String id, int orderNumber, String customerId, OrderStatus status, double subtotal, double discount, double total, double paidAmount, PaymentStatus paymentStatus, String? deliveryAddress, String? deliveryRecipientName, String? deliveryPhone, String? deliveryBuilding, String? deliveryFloor, String? deliveryApartment, String? deliveryLandmark, double? deliveryLatitude, double? deliveryLongitude, String? deliveryCityId, String? deliveryServiceAreaId, double? shippingFee, ShippingFeeStatus shippingFeeStatus, String? shippingFeeRejectionReason, String? notes, String? cancelledReason, DateTime createdAt
 });
 
 
@@ -300,7 +314,7 @@ class __$OrderCopyWithImpl<$Res>
 
 /// Create a copy of Order
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? orderNumber = null,Object? customerId = null,Object? status = null,Object? subtotal = null,Object? discount = null,Object? total = null,Object? paidAmount = null,Object? paymentStatus = null,Object? deliveryAddress = freezed,Object? deliveryRecipientName = freezed,Object? deliveryPhone = freezed,Object? deliveryBuilding = freezed,Object? deliveryFloor = freezed,Object? deliveryApartment = freezed,Object? deliveryLandmark = freezed,Object? notes = freezed,Object? cancelledReason = freezed,Object? createdAt = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? orderNumber = null,Object? customerId = null,Object? status = null,Object? subtotal = null,Object? discount = null,Object? total = null,Object? paidAmount = null,Object? paymentStatus = null,Object? deliveryAddress = freezed,Object? deliveryRecipientName = freezed,Object? deliveryPhone = freezed,Object? deliveryBuilding = freezed,Object? deliveryFloor = freezed,Object? deliveryApartment = freezed,Object? deliveryLandmark = freezed,Object? deliveryLatitude = freezed,Object? deliveryLongitude = freezed,Object? deliveryCityId = freezed,Object? deliveryServiceAreaId = freezed,Object? shippingFee = freezed,Object? shippingFeeStatus = null,Object? shippingFeeRejectionReason = freezed,Object? notes = freezed,Object? cancelledReason = freezed,Object? createdAt = null,}) {
   return _then(_Order(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,orderNumber: null == orderNumber ? _self.orderNumber : orderNumber // ignore: cast_nullable_to_non_nullable
@@ -318,6 +332,13 @@ as String?,deliveryBuilding: freezed == deliveryBuilding ? _self.deliveryBuildin
 as String?,deliveryFloor: freezed == deliveryFloor ? _self.deliveryFloor : deliveryFloor // ignore: cast_nullable_to_non_nullable
 as String?,deliveryApartment: freezed == deliveryApartment ? _self.deliveryApartment : deliveryApartment // ignore: cast_nullable_to_non_nullable
 as String?,deliveryLandmark: freezed == deliveryLandmark ? _self.deliveryLandmark : deliveryLandmark // ignore: cast_nullable_to_non_nullable
+as String?,deliveryLatitude: freezed == deliveryLatitude ? _self.deliveryLatitude : deliveryLatitude // ignore: cast_nullable_to_non_nullable
+as double?,deliveryLongitude: freezed == deliveryLongitude ? _self.deliveryLongitude : deliveryLongitude // ignore: cast_nullable_to_non_nullable
+as double?,deliveryCityId: freezed == deliveryCityId ? _self.deliveryCityId : deliveryCityId // ignore: cast_nullable_to_non_nullable
+as String?,deliveryServiceAreaId: freezed == deliveryServiceAreaId ? _self.deliveryServiceAreaId : deliveryServiceAreaId // ignore: cast_nullable_to_non_nullable
+as String?,shippingFee: freezed == shippingFee ? _self.shippingFee : shippingFee // ignore: cast_nullable_to_non_nullable
+as double?,shippingFeeStatus: null == shippingFeeStatus ? _self.shippingFeeStatus : shippingFeeStatus // ignore: cast_nullable_to_non_nullable
+as ShippingFeeStatus,shippingFeeRejectionReason: freezed == shippingFeeRejectionReason ? _self.shippingFeeRejectionReason : shippingFeeRejectionReason // ignore: cast_nullable_to_non_nullable
 as String?,notes: freezed == notes ? _self.notes : notes // ignore: cast_nullable_to_non_nullable
 as String?,cancelledReason: freezed == cancelledReason ? _self.cancelledReason : cancelledReason // ignore: cast_nullable_to_non_nullable
 as String?,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable

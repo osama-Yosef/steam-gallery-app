@@ -126,6 +126,7 @@ class AppException implements Exception {
     ),
     ('NO_CASHBOX', 'لا توجد خزنة مُفعَّلة — أنشئ الخزنة أولًا'),
     ('INSUFFICIENT_CASH', 'رصيد الخزنة لا يكفي لهذه العملية'),
+    ('INVALID_REFUND_KIND', 'اختر الخزنة التي سيُخصم منها المبلغ (نقدي أو تحويل)'),
     ('FORBIDDEN_OR_NOT_ASSIGNED', 'هذا الطلب غير مسنَد لك'),
     ('FORBIDDEN_OR_NOT_IN_PROGRESS', 'لا يمكن إنهاء طلب لم يبدأ تنفيذه بعد'),
     ('FORBIDDEN_OR_NOT_CANCELLABLE', 'لا يمكن إلغاء هذا الطلب الآن'),
@@ -178,6 +179,14 @@ class AppException implements Exception {
     (
       'INVALID_STATUS_TRANSITION',
       'لا يمكن نقل الطلب لهذه الحالة من حالته الحالية',
+    ),
+    (
+      'SHIPPING_FEE_NOT_APPROVED',
+      'لازم تحديد سعر الشحن وموافقة العميل عليه قبل تأكيد الطلب',
+    ),
+    (
+      'SHIPPING_FEE_NOT_PENDING',
+      'لا يوجد سعر شحن بانتظار ردك حاليًا',
     ),
     ('ORDER_NOT_FOUND', 'الطلب غير موجود'),
     ('ORDER_NOT_PENDING', 'لا يمكن تنفيذ هذا الإجراء على حالة الطلب الحالية'),

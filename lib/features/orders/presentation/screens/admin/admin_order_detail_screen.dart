@@ -5,9 +5,11 @@ import 'package:uuid/uuid.dart';
 import '../../../../../core/errors/app_exception.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/utils/formatters.dart';
+import '../../../../../core/utils/maps_launcher.dart';
 import '../../../../../core/widgets/confirm_dialog.dart';
 import '../../../../../core/widgets/state_views.dart';
 import '../../../../auth/presentation/providers/auth_providers.dart';
+import '../../../../locations/presentation/providers/locations_providers.dart';
 import '../../../../technician_account/data/models/sale.dart';
 import '../../../data/models/order.dart';
 import '../../../presentation/providers/order_providers.dart';
@@ -28,6 +30,50 @@ class AdminOrderDetailScreen extends ConsumerWidget {
       context,
       ref,
       () => ref.read(orderRepositoryProvider).confirmOrder(orderId),
+    );
+  }
+
+  Future<void> _setShippingFee(
+    BuildContext context,
+    WidgetRef ref,
+    double? currentFee,
+  ) async {
+    final amountCtrl = TextEditingController(
+      text: currentFee == null ? '' : currentFee.toStringAsFixed(2),
+    );
+    final amount = await showDialog<double>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('تحديد سعر الشحن'),
+        content: TextField(
+          controller: amountCtrl,
+          decoration: const InputDecoration(labelText: 'سعر الشحن'),
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          autofocus: true,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('إلغاء'),
+          ),
+          FilledButton(
+            onPressed: () {
+              final a = double.tryParse(amountCtrl.text);
+              if (a == null || a < 0) return;
+              Navigator.of(ctx).pop(a);
+            },
+            child: const Text('إرسال للعميل'),
+          ),
+        ],
+      ),
+    );
+    if (amount == null || !context.mounted) return;
+    await _run(
+      context,
+      ref,
+      () => ref
+          .read(orderRepositoryProvider)
+          .setShippingFee(orderId: orderId, amount: amount),
     );
   }
 
@@ -280,22 +326,8 @@ class AdminOrderDetailScreen extends ConsumerWidget {
                 error: (_, _) => const SizedBox.shrink(),
               ),
               if (order.deliveryAddress != null) ...[
-                const SizedBox(height: 8),
-                if (order.deliveryRecipientName != null ||
-                    order.deliveryPhone != null)
-                  Text(
-                    [
-                      if (order.deliveryRecipientName != null)
-                        order.deliveryRecipientName!,
-                      if (order.deliveryPhone != null) order.deliveryPhone!,
-                    ].join(' — '),
-                    style: const TextStyle(fontWeight: FontWeight.w600),
-                  ),
-                Text('عنوان التوصيل: ${order.deliveryAddress}'),
-                if (order.deliveryDetailsLine.isNotEmpty)
-                  Text(order.deliveryDetailsLine),
-                if (order.deliveryLandmark != null)
-                  Text('علامة مميزة: ${order.deliveryLandmark}'),
+                const SizedBox(height: 12),
+                _AddressCard(order: order),
               ],
               if (order.notes != null) ...[
                 const SizedBox(height: 8),
@@ -303,6 +335,11 @@ class AdminOrderDetailScreen extends ConsumerWidget {
               ],
               const SizedBox(height: 8),
               const Text('طريقة الدفع: تحويل كامل قبل الشحن'),
+              const SizedBox(height: 16),
+              _ShippingFeeCard(
+                order: order,
+                onSet: () => _setShippingFee(context, ref, order.shippingFee),
+              ),
               const SizedBox(height: 16),
               Text('المنتجات', style: Theme.of(context).textTheme.titleMedium),
               const SizedBox(height: 8),
@@ -361,7 +398,12 @@ class AdminOrderDetailScreen extends ConsumerWidget {
                   if (order.status == OrderStatus.pending)
                     FilledButton.icon(
                       style: _actionButtonStyle(),
-                      onPressed: () => _confirm(context, ref),
+                      // 0065: confirming is blocked server-side until the
+                      // customer has approved a shipping fee — disabled
+                      // here too so the button doesn't invite a doomed tap.
+                      onPressed: order.shippingFeeStatus == ShippingFeeStatus.approved
+                          ? () => _confirm(context, ref)
+                          : null,
                       icon: const Icon(Iconsax.tick_circle_copy),
                       label: const Text('تأكيد الطلب'),
                     ),
@@ -471,6 +513,163 @@ class AdminOrderDetailScreen extends ConsumerWidget {
           Text(label, style: style),
           Text(value, style: style),
         ],
+      ),
+    );
+  }
+}
+
+/// Everything about where the order goes, laid out clearly in one place —
+/// city/area (looked up client-side, since the realtime `orders` stream
+/// can't embed a join), the full snapshotted address, and a direct link to
+/// the pin on the map when coordinates are on file.
+class _AddressCard extends ConsumerWidget {
+  final Order order;
+  const _AddressCard({required this.order});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final citiesAsync = ref.watch(citiesProvider(activeOnly: false));
+    final cityId = order.deliveryCityId;
+    final cityName = citiesAsync.value
+        ?.where((c) => c.id == cityId)
+        .firstOrNull
+        ?.nameAr;
+    final serviceAreasAsync = cityId == null
+        ? null
+        : ref.watch(serviceAreasProvider(cityId, activeOnly: false));
+    final areaName = serviceAreasAsync?.value
+        ?.where((a) => a.id == order.deliveryServiceAreaId)
+        .firstOrNull
+        ?.nameAr;
+    final hasCoordinates =
+        order.deliveryLatitude != null && order.deliveryLongitude != null;
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Icon(Iconsax.location_copy, size: 18),
+                const SizedBox(width: 6),
+                Text(
+                  'عنوان التوصيل',
+                  style: Theme.of(context).textTheme.titleSmall,
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            if (order.deliveryRecipientName != null ||
+                order.deliveryPhone != null)
+              Text(
+                [
+                  if (order.deliveryRecipientName != null)
+                    order.deliveryRecipientName!,
+                  if (order.deliveryPhone != null) order.deliveryPhone!,
+                ].join(' — '),
+                style: const TextStyle(fontWeight: FontWeight.w600),
+              ),
+            if (cityName != null || areaName != null)
+              Text(
+                [?cityName, ?areaName].join(' — '),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodySmall?.copyWith(color: AppColors.textSecondary),
+              ),
+            const SizedBox(height: 4),
+            Text(order.deliveryAddress!),
+            if (order.deliveryDetailsLine.isNotEmpty)
+              Text(order.deliveryDetailsLine),
+            if (order.deliveryLandmark != null)
+              Text('علامة مميزة: ${order.deliveryLandmark}'),
+            if (hasCoordinates) ...[
+              const SizedBox(height: 8),
+              OutlinedButton.icon(
+                onPressed: () => MapsLauncher.open(
+                  latitude: order.deliveryLatitude,
+                  longitude: order.deliveryLongitude,
+                ),
+                icon: const Icon(Iconsax.map_1_copy, size: 18),
+                label: const Text('افتح في الخرائط'),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Shipping-fee negotiation status (0065) — set/re-set while pending, and
+/// what the customer answered once they have.
+class _ShippingFeeCard extends StatelessWidget {
+  final Order order;
+  final VoidCallback onSet;
+  const _ShippingFeeCard({required this.order, required this.onSet});
+
+  @override
+  Widget build(BuildContext context) {
+    final canSet = order.status == OrderStatus.pending;
+    final color = switch (order.shippingFeeStatus) {
+      ShippingFeeStatus.approved => AppColors.success,
+      ShippingFeeStatus.rejected => AppColors.danger,
+      ShippingFeeStatus.pendingApproval => AppColors.warning,
+      ShippingFeeStatus.notSet => AppColors.textSecondary,
+    };
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Icon(Iconsax.truck_copy, size: 18),
+                const SizedBox(width: 6),
+                Text('سعر الشحن', style: Theme.of(context).textTheme.titleSmall),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  order.shippingFee == null
+                      ? 'لم يُحدَّد بعد'
+                      : Formatters.currency(order.shippingFee!),
+                  style: const TextStyle(fontWeight: FontWeight.w600),
+                ),
+                Text(
+                  shippingFeeStatusLabelAr(order.shippingFeeStatus),
+                  style: TextStyle(color: color, fontWeight: FontWeight.w600),
+                ),
+              ],
+            ),
+            if (order.shippingFeeStatus == ShippingFeeStatus.rejected &&
+                order.shippingFeeRejectionReason != null) ...[
+              const SizedBox(height: 4),
+              Text(
+                'سبب الرفض: ${order.shippingFeeRejectionReason}',
+                style: TextStyle(color: AppColors.danger),
+              ),
+            ],
+            if (canSet) ...[
+              const SizedBox(height: 12),
+              OutlinedButton.icon(
+                onPressed: onSet,
+                icon: const Icon(Iconsax.edit_2_copy, size: 18),
+                label: Text(
+                  order.shippingFeeStatus == ShippingFeeStatus.notSet
+                      ? 'تحديد سعر الشحن'
+                      : 'تعديل سعر الشحن',
+                ),
+              ),
+            ],
+          ],
+        ),
       ),
     );
   }
