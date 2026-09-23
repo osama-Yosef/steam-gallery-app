@@ -20,11 +20,18 @@ class SplashScreen extends ConsumerStatefulWidget {
 }
 
 class _SplashScreenState extends ConsumerState<SplashScreen> {
+  static const _maxChecks = 4; // 4 * 8s = 32s total before giving up anyway
+
   Timer? _timeout;
+  int _checks = 0;
 
   @override
   void initState() {
     super.initState();
+    _scheduleCheck();
+  }
+
+  void _scheduleCheck() {
     _timeout = Timer(const Duration(seconds: 8), _giveUpIfStillStuck);
   }
 
@@ -37,10 +44,16 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
   Future<void> _giveUpIfStillStuck() async {
     if (!mounted) return;
     final profileAsync = ref.read(currentUserProfileProvider);
-    if (profileAsync.isLoading) {
-      return; // still legitimately in flight — not stuck
-    }
     if (profileAsync.value != null) return; // resolved fine — not stuck
+    _checks++;
+    if (profileAsync.isLoading && _checks < _maxChecks) {
+      // Still legitimately in flight (e.g. a slow connection) — check again
+      // rather than declaring it stuck after a single 8s window, but don't
+      // wait forever either: a one-shot timer that never reschedules while
+      // still loading would leave the user stuck here with no way back.
+      _scheduleCheck();
+      return;
+    }
     await ref.read(authRepositoryProvider).signOut();
   }
 

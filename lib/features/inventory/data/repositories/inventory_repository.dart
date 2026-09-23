@@ -46,8 +46,30 @@ class SupabaseInventoryRepository implements InventoryRepository {
         query = query.ilike('products.name', '%${search.trim()}%');
       }
       final rows = await query;
-      final items = rows.map(WarehouseStockItem.fromRow).toList()
+      var items = rows.map(WarehouseStockItem.fromRow).toList()
         ..sort((a, b) => a.productName.compareTo(b.productName));
+      if (items.isNotEmpty) {
+        try {
+          final prices = await _client.rpc(
+            'rpc_effective_prices',
+            params: {
+              'p_product_ids': items.map((i) => i.productId).toList(),
+            },
+          );
+          final byProduct = {
+            for (final row in prices as List)
+              row['product_id'] as String: (row['effective_price'] as num)
+                  .toDouble(),
+          };
+          items = items
+              .map((i) => i.copyWith(effectivePrice: byProduct[i.productId]))
+              .toList();
+        } catch (_) {
+          // Falls back to the catalogue price (WarehouseStockItem.displayPrice)
+          // if the RPC is missing or fails -- offer-aware pricing at the
+          // register is a nice-to-have, never worth breaking stock loading.
+        }
+      }
       return items;
     } catch (e) {
       throw AppException.from(e);

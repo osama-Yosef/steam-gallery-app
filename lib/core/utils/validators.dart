@@ -28,6 +28,36 @@ abstract final class Validators {
     return null;
   }
 
+  /// Supabase Auth's email OTP defaults to 8 digits (mailer_otp_length),
+  /// separately configurable from the SMS length above.
+  static const emailOtpLength = 8;
+  static final _emailOtp = RegExp('^[0-9]{$emailOtpLength}\$');
+
+  static String? emailOtpCode(String? value) {
+    if (value == null || value.trim().isEmpty) return 'اكتب الكود';
+    if (!_emailOtp.hasMatch(value.trim())) return 'الكود $emailOtpLength أرقام';
+    return null;
+  }
+
+  static final _email = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
+
+  static String? email(String? value) {
+    if (value == null || value.trim().isEmpty) return 'البريد الإلكتروني مطلوب';
+    if (!_email.hasMatch(value.trim())) return 'بريد إلكتروني غير صحيح';
+    return null;
+  }
+
+  /// Login only: customers sign in by email, staff (admin/technician/sales)
+  /// still by phone — one field accepts either.
+  static String? emailOrPhone(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return 'البريد الإلكتروني أو رقم الهاتف مطلوب';
+    }
+    final v = value.trim();
+    if (v.contains('@')) return email(v);
+    return phone(v);
+  }
+
   static String? Function(String?) confirmPassword(
     String Function() original,
   ) => (value) {
@@ -47,6 +77,14 @@ abstract final class Validators {
     final n = num.tryParse(value.trim());
     if (n == null) return '$label غير صحيحة';
     if (n <= 0) return '$label يجب أن تكون أكبر من صفر';
+    return null;
+  }
+
+  static String? nonNegativeInteger(String? value, [String label = 'القيمة']) {
+    if (value == null || value.trim().isEmpty) return '$label مطلوبة';
+    final n = int.tryParse(value.trim());
+    if (n == null) return '$label يجب أن تكون رقمًا صحيحًا';
+    if (n < 0) return '$label لا يمكن أن تكون بالسالب';
     return null;
   }
 

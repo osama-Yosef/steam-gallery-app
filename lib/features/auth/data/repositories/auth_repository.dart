@@ -5,16 +5,38 @@ import '../../../../core/utils/validators.dart';
 import '../models/app_user.dart';
 import '../models/auth_settings.dart';
 
-/// Every OTP here is generated, delivered (through the SMS provider configured
-/// in Supabase Auth), expired, rate-limited and checked by Supabase Auth
-/// itself — this app never sees or stores a code beyond passing the user's
-/// input straight to verifyOTP. See docs/09-phase-2-authentication.md.
+/// Customer sign-up/sign-in is by email+password (0070): Supabase's own
+/// email OTP (confirmation + password recovery) is free and, unlike phone,
+/// actually requires and checks a real code (mailer_autoconfirm is off).
+/// Phone is still collected and required at sign-up but only as contact
+/// info now — never an Auth identifier, never SMS-verified. Staff
+/// (admin/technician/sales) are unaffected: created by an admin via the
+/// create-user Edge Function, still phone+password. The older
+/// phone-OTP-at-signup and Firebase-phone-recovery paths below are kept for
+/// any account created before 0070 that's still mid-flow on them, but are
+/// no longer how anyone signs up. See docs/09-phase-2-authentication.md.
 abstract class AuthRepository {
   Session? get currentSession;
 
   Future<void> signInWithPhone({
     required String localPhone,
     required String password,
+  });
+
+  /// Marks the signed-in user's phone verified from a Firebase-issued
+  /// verification (see core/firebase/firebase_phone_auth_service.dart),
+  /// bypassing Supabase's own (paid) SMS delivery. Calls the
+  /// verify-phone-firebase Edge Function, which checks the token's signature
+  /// server-side before trusting it.
+  Future<void> markPhoneVerifiedWithFirebaseToken(String firebaseIdToken);
+
+  /// Resets the password of the account owning the phone [firebaseIdToken]
+  /// just proved, with no Supabase session required — this IS the
+  /// forgot-password flow once Firebase has replaced Supabase's SMS OTP for
+  /// it. Throws if the token is invalid/expired or no account has that phone.
+  Future<void> resetPasswordWithFirebaseToken({
+    required String firebaseIdToken,
+    required String newPassword,
   });
 
   /// role is always 'customer' here — technician/admin accounts are only
@@ -45,22 +67,70 @@ abstract class AuthRepository {
     String? avatarExt,
   });
 
-  /// Sends a one-time sign-in code to an EXISTING account (never creates
-  /// one). Used by forgot-password and by existing accounts proving their
-  /// number. Deliberately silent when the number isn't registered, so the
-  /// screen can't be used to discover which numbers have accounts.
-  Future<void> sendSignInOtp(String phoneE164);
+  // --------------------------------------------------------------------
+  // Email auth (0070) — the customer sign-up path from here on. Phone is
+  // still collected and required, but only as contact/delivery info now:
+  // never an Auth identifier, never SMS-verified (see 0067–0069, the paid
+  // and non-functional dead end that was). Email confirmation and password
+  // recovery are both native Supabase Auth features — free, and (unlike
+  // sms_autoconfirm) a real code that's actually checked.
+  // --------------------------------------------------------------------
 
-  /// Signs in with a code from [sendSignInOtp] and records the phone as
-  /// verified.
-  Future<void> verifySignInOtp({
-    required String phoneE164,
+  Future<void> signInWithEmail({
+    required String email,
+    required String password,
+  });
+
+  /// Always requires verification — mailer_autoconfirm is off — so unlike
+  /// [signUpCustomer] this has no session-created-immediately case.
+  /// [localPhone] is stored as contact info only (see class doc).
+  Future<void> signUpCustomerWithEmail({
+    required String email,
+    required String localPhone,
+    required String password,
+    required String fullName,
+    Uint8List? avatarBytes,
+    String? avatarExt,
+  });
+
+  Future<void> resendSignupEmailOtp(String email);
+
+  Future<void> verifySignupEmailOtp({
+    required String email,
+    required String code,
+    Uint8List? avatarBytes,
+    String? avatarExt,
+  });
+
+  /// Existing phone-only account (created before 0070) adding the email it
+  /// never had. Supabase mails a code to confirm; nothing changes until
+  /// [verifyEmailChangeOtp] checks it.
+  Future<void> addEmailToAccount(String email);
+
+  Future<void> verifyEmailChangeOtp({
+    required String email,
+    required String code,
+  });
+
+  /// Sends a recovery code to an EXISTING account's email. Deliberately
+  /// silent when the address isn't registered, so the screen can't be used
+  /// to discover which addresses have accounts.
+  Future<void> sendPasswordRecoveryEmail(String email);
+
+  /// Signs in with a code from [sendPasswordRecoveryEmail].
+  Future<void> verifyRecoveryEmailOtp({
+    required String email,
     required String code,
   });
 
   /// Sets a new password for the signed-in user and ends every other session
   /// (a reset usually means someone else might know the old one).
   Future<void> updatePassword(String newPassword);
+
+  /// Registers (or clears, with null) this device's push token against the
+  /// signed-in user — see core/firebase/push_notification_service.dart. Best
+  /// effort: a failure here must never block sign-in.
+  Future<void> updateFcmToken(String? token);
 
   Future<AuthSettings> getAuthSettings();
 
@@ -162,15 +232,99 @@ class SupabaseAuthRepository implements AuthRepository {
   }
 
   @override
-  Future<void> sendSignInOtp(String phoneE164) async {
+  Future<void> signInWithEmail({
+    required String email,
+    required String password,
+  }) async {
     try {
-      await _client.auth.signInWithOtp(
-        phone: phoneE164,
-        shouldCreateUser: false,
+      await _client.auth.signInWithPassword(email: email, password: password);
+    } catch (e) {
+      throw AppException.from(e);
+    }
+  }
+
+  @override
+  Future<void> signUpCustomerWithEmail({
+    required String email,
+    required String localPhone,
+    required String password,
+    required String fullName,
+    Uint8List? avatarBytes,
+    String? avatarExt,
+  }) async {
+    try {
+      await _client.auth.signUp(
+        email: email,
+        password: password,
+        data: {
+          'full_name': fullName,
+          'phone': Validators.toE164Egypt(localPhone),
+        },
       );
+      // mailer_autoconfirm is off: this never returns a session — the
+      // caller always continues to the email-OTP screen with avatarBytes.
+    } catch (e) {
+      throw AppException.from(e);
+    }
+  }
+
+  @override
+  Future<void> resendSignupEmailOtp(String email) async {
+    try {
+      await _client.auth.resend(type: OtpType.signup, email: email);
+    } catch (e) {
+      throw AppException.from(e);
+    }
+  }
+
+  @override
+  Future<void> verifySignupEmailOtp({
+    required String email,
+    required String code,
+    Uint8List? avatarBytes,
+    String? avatarExt,
+  }) async {
+    try {
+      await _client.auth.verifyOTP(email: email, token: code, type: OtpType.signup);
+    } catch (e) {
+      throw AppException.from(e);
+    }
+    try {
+      await _uploadAvatarIfAny(avatarBytes, avatarExt);
+    } catch (_) {}
+  }
+
+  @override
+  Future<void> addEmailToAccount(String email) async {
+    try {
+      await _client.auth.updateUser(UserAttributes(email: email));
+    } catch (e) {
+      throw AppException.from(e);
+    }
+  }
+
+  @override
+  Future<void> verifyEmailChangeOtp({
+    required String email,
+    required String code,
+  }) async {
+    try {
+      await _client.auth.verifyOTP(
+        email: email,
+        token: code,
+        type: OtpType.emailChange,
+      );
+    } catch (e) {
+      throw AppException.from(e);
+    }
+  }
+
+  @override
+  Future<void> sendPasswordRecoveryEmail(String email) async {
+    try {
+      await _client.auth.resetPasswordForEmail(email);
     } on AuthException catch (e) {
-      // Rate limits and delivery failures are real and must be shown. "No
-      // such user" must look exactly like success.
+      // "No such user" must look exactly like success — see class doc.
       if (_isUnknownAccount(e)) return;
       throw AppException.from(e);
     } catch (e) {
@@ -179,20 +333,15 @@ class SupabaseAuthRepository implements AuthRepository {
   }
 
   @override
-  Future<void> verifySignInOtp({
-    required String phoneE164,
+  Future<void> verifyRecoveryEmailOtp({
+    required String email,
     required String code,
   }) async {
     try {
-      await _client.auth.verifyOTP(
-        phone: phoneE164,
-        token: code,
-        type: OtpType.sms,
-      );
+      await _client.auth.verifyOTP(email: email, token: code, type: OtpType.recovery);
     } catch (e) {
       throw AppException.from(e);
     }
-    await _markPhoneVerified();
   }
 
   @override
@@ -207,6 +356,54 @@ class SupabaseAuthRepository implements AuthRepository {
     try {
       await _client.auth.signOut(scope: SignOutScope.others);
     } catch (_) {}
+  }
+
+  static bool _isUnknownAccount(AuthException e) {
+    final code = e.code;
+    if (code == 'user_not_found') return true;
+    return e.message.toLowerCase().contains('user not found');
+  }
+
+  @override
+  Future<void> markPhoneVerifiedWithFirebaseToken(String firebaseIdToken) async {
+    try {
+      await _client.functions.invoke(
+        'verify-phone-firebase',
+        body: {'firebase_id_token': firebaseIdToken, 'intent': 'mark_verified'},
+      );
+    } catch (e) {
+      throw AppException.from(e);
+    }
+  }
+
+  @override
+  Future<void> resetPasswordWithFirebaseToken({
+    required String firebaseIdToken,
+    required String newPassword,
+  }) async {
+    try {
+      await _client.functions.invoke(
+        'verify-phone-firebase',
+        body: {
+          'firebase_id_token': firebaseIdToken,
+          'intent': 'reset_password',
+          'new_password': newPassword,
+        },
+      );
+    } catch (e) {
+      throw AppException.from(e);
+    }
+  }
+
+  @override
+  Future<void> updateFcmToken(String? token) async {
+    final uid = _client.auth.currentUser?.id;
+    if (uid == null) return;
+    try {
+      await _client.from('users').update({'fcm_token': token}).eq('id', uid);
+    } catch (e) {
+      throw AppException.from(e);
+    }
   }
 
   @override
@@ -226,13 +423,6 @@ class SupabaseAuthRepository implements AuthRepository {
     try {
       await _client.rpc('rpc_mark_phone_verified');
     } catch (_) {}
-  }
-
-  static bool _isUnknownAccount(AuthException e) {
-    final code = e.code;
-    if (code == 'user_not_found' || code == 'otp_disabled') return true;
-    final m = e.message.toLowerCase();
-    return m.contains('signups not allowed') || m.contains('user not found');
   }
 
   Future<void> _uploadAvatarIfAny(Uint8List? bytes, String? ext) async {
@@ -283,6 +473,12 @@ class SupabaseAuthRepository implements AuthRepository {
 
   @override
   Future<void> signOut() async {
+    // Best-effort, and must happen before the session ends (RLS needs
+    // auth.uid()) — otherwise this device keeps whoever signs in next on
+    // this account's old push registration indefinitely.
+    try {
+      await updateFcmToken(null);
+    } catch (_) {}
     try {
       await _client.auth.signOut();
     } catch (e) {

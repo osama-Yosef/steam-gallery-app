@@ -2,17 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/router/route_names.dart';
+import '../../../../core/utils/validators.dart';
 import '../providers/auth_providers.dart';
 import '../widgets/auth_page.dart';
 import '../widgets/otp_code_form.dart';
 
-/// Code entry for a user who is NOT signed in yet: confirming a new account,
-/// or proving the number to reset a password. What's being verified comes from
-/// [pendingOtpProvider], not the URL.
+/// Code entry for a user who is NOT signed in yet: confirming a new account
+/// by email (0070), or an emailed recovery code. What's being verified comes
+/// from [pendingOtpProvider], not the URL.
 ///
-/// Success needs no navigation here: verifying signs the user in, and the
-/// router takes it from there (home, or the new-password screen during
-/// recovery).
+/// Signup verifies (and signs in) with Supabase directly, so the router
+/// takes it from there. Recovery also creates a session (verifyOTP with
+/// type: recovery) — [passwordRecoveryProvider] holds the router on the
+/// new-password screen until it's set, same as the old phone-OTP design.
+/// The legacy phone-signup purpose still works for any account created
+/// before 0070 that's mid-flow on it.
 class OtpVerifyScreen extends ConsumerWidget {
   const OtpVerifyScreen({super.key});
 
@@ -24,7 +28,7 @@ class OtpVerifyScreen extends ConsumerWidget {
       // Reached without starting a flow (e.g. a web page refresh drops the
       // in-memory request): nothing to verify, start over.
       return AuthPage(
-        title: 'تأكيد رقم الهاتف',
+        title: 'تأكيد الحساب',
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -44,39 +48,57 @@ class OtpVerifyScreen extends ConsumerWidget {
     }
 
     final repo = ref.read(authRepositoryProvider);
-    final isRecovery = request.purpose == OtpPurpose.passwordRecovery;
+    final purpose = request.purpose;
 
     Future<void> verify(String code) async {
-      if (isRecovery) {
-        // Must be set before the session appears, or the router would route
-        // the freshly signed-in user home instead of to the new password.
-        ref.read(passwordRecoveryProvider.notifier).begin();
-        try {
-          await repo.verifySignInOtp(phoneE164: request.phoneE164, code: code);
-        } catch (_) {
-          ref.read(passwordRecoveryProvider.notifier).end();
-          rethrow;
-        }
-      } else {
-        await repo.verifySignupOtp(
-          phoneE164: request.phoneE164,
-          code: code,
-          avatarBytes: request.avatarBytes,
-          avatarExt: request.avatarExt,
-        );
+      switch (purpose) {
+        case OtpPurpose.passwordRecovery:
+          // Must be set before the session appears, or the router would
+          // route the freshly signed-in user home instead of to the new
+          // password.
+          ref.read(passwordRecoveryProvider.notifier).begin();
+          try {
+            await repo.verifyRecoveryEmailOtp(email: request.destination, code: code);
+          } catch (_) {
+            ref.read(passwordRecoveryProvider.notifier).end();
+            rethrow;
+          }
+        case OtpPurpose.emailSignup:
+          await repo.verifySignupEmailOtp(
+            email: request.destination,
+            code: code,
+            avatarBytes: request.avatarBytes,
+            avatarExt: request.avatarExt,
+          );
+        case OtpPurpose.signup:
+          await repo.verifySignupOtp(
+            phoneE164: request.destination,
+            code: code,
+            avatarBytes: request.avatarBytes,
+            avatarExt: request.avatarExt,
+          );
+        case OtpPurpose.emailChange:
+          await repo.verifyEmailChangeOtp(email: request.destination, code: code);
       }
       ref.read(pendingOtpProvider.notifier).clear();
       ref.invalidate(currentUserProfileProvider);
     }
 
-    Future<void> resend() => isRecovery
-        ? repo.sendSignInOtp(request.phoneE164)
-        : repo.resendSignupOtp(request.phoneE164);
+    Future<void> resend() => switch (purpose) {
+      OtpPurpose.passwordRecovery => repo.sendPasswordRecoveryEmail(request.destination),
+      OtpPurpose.emailSignup => repo.resendSignupEmailOtp(request.destination),
+      OtpPurpose.signup => repo.resendSignupOtp(request.destination),
+      OtpPurpose.emailChange => repo.addEmailToAccount(request.destination),
+    };
+
+    final isEmail = purpose != OtpPurpose.signup;
 
     return AuthPage(
-      title: isRecovery ? 'استعادة الحساب' : 'تأكيد رقم الهاتف',
+      title: purpose == OtpPurpose.passwordRecovery ? 'استعادة الحساب' : 'تأكيد الحساب',
       child: OtpCodeForm(
-        phoneE164: request.phoneE164,
+        destination: request.destination,
+        codeLength: isEmail ? Validators.emailOtpLength : Validators.otpLength,
+        validator: isEmail ? Validators.emailOtpCode : Validators.otpCode,
         onVerify: verify,
         onResend: resend,
       ),

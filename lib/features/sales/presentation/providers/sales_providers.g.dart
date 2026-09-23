@@ -68,7 +68,7 @@ final class WalkInSalesProvider
         argument: null,
         retry: null,
         name: r'walkInSalesProvider',
-        isAutoDispose: true,
+        isAutoDispose: false,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
@@ -87,7 +87,7 @@ final class WalkInSalesProvider
   }
 }
 
-String _$walkInSalesHash() => r'4f5ae84113bdaab866773cf12a78112dbae44d05';
+String _$walkInSalesHash() => r'c3d5c0b30c11f82c48a0ea379b0161ba250d181a';
 
 @ProviderFor(saleReturnItems)
 const saleReturnItemsProvider = SaleReturnItemsFamily._();
@@ -108,7 +108,7 @@ final class SaleReturnItemsProvider
   }) : super(
          retry: null,
          name: r'saleReturnItemsProvider',
-         isAutoDispose: true,
+         isAutoDispose: false,
          dependencies: null,
          $allTransitiveDependencies: null,
        );
@@ -146,7 +146,7 @@ final class SaleReturnItemsProvider
   }
 }
 
-String _$saleReturnItemsHash() => r'2da9bb41889946f8219c33f96c286111bcd45a7a';
+String _$saleReturnItemsHash() => r'638f9da0e76f7fe8e1f4a04a4db73afccb9798c6';
 
 final class SaleReturnItemsFamily extends $Family
     with $FunctionalFamilyOverride<FutureOr<List<SaleReturnItem>>, String> {
@@ -156,7 +156,7 @@ final class SaleReturnItemsFamily extends $Family
         name: r'saleReturnItemsProvider',
         dependencies: null,
         $allTransitiveDependencies: null,
-        isAutoDispose: true,
+        isAutoDispose: false,
       );
 
   SaleReturnItemsProvider call(String saleId) =>
@@ -178,7 +178,7 @@ final class SaleByIdProvider
   }) : super(
          retry: null,
          name: r'saleByIdProvider',
-         isAutoDispose: true,
+         isAutoDispose: false,
          dependencies: null,
          $allTransitiveDependencies: null,
        );
@@ -215,7 +215,7 @@ final class SaleByIdProvider
   }
 }
 
-String _$saleByIdHash() => r'a756c3464a9b10803ae44eeff7b5037c67966389';
+String _$saleByIdHash() => r'9b33a4dbe94f0059ddf03e181dccf475717c230e';
 
 final class SaleByIdFamily extends $Family
     with $FunctionalFamilyOverride<FutureOr<Sale>, String> {
@@ -225,7 +225,7 @@ final class SaleByIdFamily extends $Family
         name: r'saleByIdProvider',
         dependencies: null,
         $allTransitiveDependencies: null,
-        isAutoDispose: true,
+        isAutoDispose: false,
       );
 
   SaleByIdProvider call(String saleId) =>

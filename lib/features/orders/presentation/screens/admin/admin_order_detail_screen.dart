@@ -252,15 +252,24 @@ class AdminOrderDetailScreen extends ConsumerWidget {
     WidgetRef ref,
     Future<void> Function() action,
   ) async {
+    // A non-dismissible barrier while the RPC is in flight, mainly to stop a
+    // double-tap firing the same action twice before the first reply lands.
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const Center(child: CircularProgressIndicator()),
+    );
     try {
       await action();
       if (context.mounted) {
+        Navigator.of(context, rootNavigator: true).pop();
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(const SnackBar(content: Text('تم التنفيذ بنجاح')));
       }
     } catch (e) {
       if (context.mounted) {
+        Navigator.of(context, rootNavigator: true).pop();
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text(AppException.from(e).messageAr)));
@@ -586,13 +595,20 @@ class _AddressCard extends ConsumerWidget {
               Text('علامة مميزة: ${order.deliveryLandmark}'),
             if (hasCoordinates) ...[
               const SizedBox(height: 8),
-              OutlinedButton.icon(
-                onPressed: () => MapsLauncher.open(
-                  latitude: order.deliveryLatitude,
-                  longitude: order.deliveryLongitude,
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton.tonalIcon(
+                  onPressed: () => MapsLauncher.open(
+                    latitude: order.deliveryLatitude,
+                    longitude: order.deliveryLongitude,
+                  ),
+                  style: FilledButton.styleFrom(
+                    foregroundColor: AppColors.info,
+                    backgroundColor: AppColors.info.withValues(alpha: 0.12),
+                  ),
+                  icon: const Icon(Iconsax.location_copy, size: 18),
+                  label: const Text('افتح في الخرائط'),
                 ),
-                icon: const Icon(Iconsax.map_1_copy, size: 18),
-                label: const Text('افتح في الخرائط'),
               ),
             ],
           ],
@@ -658,13 +674,20 @@ class _ShippingFeeCard extends StatelessWidget {
             ],
             if (canSet) ...[
               const SizedBox(height: 12),
-              OutlinedButton.icon(
-                onPressed: onSet,
-                icon: const Icon(Iconsax.edit_2_copy, size: 18),
-                label: Text(
-                  order.shippingFeeStatus == ShippingFeeStatus.notSet
-                      ? 'تحديد سعر الشحن'
-                      : 'تعديل سعر الشحن',
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton.tonalIcon(
+                  onPressed: onSet,
+                  style: FilledButton.styleFrom(
+                    foregroundColor: AppColors.warning,
+                    backgroundColor: AppColors.warning.withValues(alpha: 0.12),
+                  ),
+                  icon: const Icon(Iconsax.dollar_circle_copy, size: 18),
+                  label: Text(
+                    order.shippingFeeStatus == ShippingFeeStatus.notSet
+                        ? 'تحديد سعر الشحن'
+                        : 'تعديل سعر الشحن',
+                  ),
                 ),
               ),
             ],

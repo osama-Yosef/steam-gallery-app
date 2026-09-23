@@ -31,6 +31,7 @@ const _transitRoutes = {
   Routes.splash,
   Routes.resetPassword,
   Routes.verifyPhone,
+  Routes.addEmail,
   Routes.accountSuspended,
 };
 
@@ -53,8 +54,8 @@ String? resolveAuthRedirect({
     return _publicRoutes.contains(location) ? null : Routes.login;
   }
 
-  // Signed in by a recovery code: the only place to be is the new-password
-  // screen, whatever the profile says.
+  // Signed in by an email recovery code: the only place to be is the
+  // new-password screen, whatever the profile says.
   if (passwordRecoveryInProgress) {
     return location == Routes.resetPassword ? null : Routes.resetPassword;
   }
@@ -74,6 +75,12 @@ String? resolveAuthRedirect({
       user.role == AppRole.customer &&
       !user.isPhoneVerified) {
     return location == Routes.verifyPhone ? null : Routes.verifyPhone;
+  }
+
+  // Every customer needs an email now (0070) — old phone-only accounts are
+  // asked for one the first time they sign back in.
+  if (user.role == AppRole.customer && (user.email == null || user.email!.isEmpty)) {
+    return location == Routes.addEmail ? null : Routes.addEmail;
   }
 
   final home = homeFor(user.role);

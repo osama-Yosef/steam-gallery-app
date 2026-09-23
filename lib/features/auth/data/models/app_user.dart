@@ -31,6 +31,10 @@ abstract class AppUser with _$AppUser {
     /// When this account proved it holds [phone] by OTP (0031). Set only
     /// server-side; null for accounts that haven't verified yet.
     DateTime? phoneVerifiedAt,
+
+    /// When this account proved it holds [email] by the code Supabase
+    /// mailed to it (0070). Set only server-side.
+    DateTime? emailVerifiedAt,
   }) = _AppUser;
 
   const AppUser._();
@@ -46,9 +50,13 @@ abstract class AppUser with _$AppUser {
     phoneVerifiedAt: json['phone_verified_at'] == null
         ? null
         : DateTime.parse(json['phone_verified_at'] as String),
+    emailVerifiedAt: json['email_verified_at'] == null
+        ? null
+        : DateTime.parse(json['email_verified_at'] as String),
   );
 
   bool get isPhoneVerified => phoneVerifiedAt != null;
+  bool get isEmailVerified => emailVerifiedAt != null;
 
   /// [phone] in the E.164 form Supabase Auth expects. Auth stores numbers
   /// without the leading "+", and the profile copies that as-is.

@@ -10,8 +10,9 @@ import '../../../../core/utils/validators.dart';
 /// minimum interval between texts (and answers over_sms_send_rate_limit if
 /// it's hit anyway, which is shown like any other error).
 class OtpCodeForm extends StatefulWidget {
-  /// Shown in the explanation, e.g. "+201012345678".
-  final String phoneE164;
+  /// Shown in the explanation — a phone number ("+201012345678") or an
+  /// email address, whichever the code was sent to.
+  final String destination;
   final Future<void> Function(String code) onVerify;
   final Future<void> Function() onResend;
 
@@ -19,12 +20,19 @@ class OtpCodeForm extends StatefulWidget {
   /// this form appears, so it starts locked.
   final int resendCooldownSeconds;
 
+  /// Digits expected — 6 for SMS, 8 for Supabase's email OTP
+  /// (mailer_otp_length) — and the matching validator.
+  final int codeLength;
+  final String? Function(String?) validator;
+
   const OtpCodeForm({
     super.key,
-    required this.phoneE164,
+    required this.destination,
     required this.onVerify,
     required this.onResend,
     this.resendCooldownSeconds = 60,
+    this.codeLength = Validators.otpLength,
+    this.validator = Validators.otpCode,
   });
 
   @override
@@ -111,13 +119,13 @@ class _OtpCodeFormState extends State<OtpCodeForm> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Text(
-            'أرسلنا كود من ${Validators.otpLength} أرقام في رسالة إلى',
+            'أرسلنا كود من ${widget.codeLength} أرقام إلى',
             textAlign: TextAlign.center,
             style: theme.textTheme.bodyMedium,
           ),
           const SizedBox(height: 4),
           Text(
-            widget.phoneE164,
+            widget.destination,
             textAlign: TextAlign.center,
             textDirection: TextDirection.ltr,
             style: theme.textTheme.titleMedium,
@@ -130,7 +138,7 @@ class _OtpCodeFormState extends State<OtpCodeForm> {
             keyboardType: TextInputType.number,
             textDirection: TextDirection.ltr,
             textAlign: TextAlign.center,
-            maxLength: Validators.otpLength,
+            maxLength: widget.codeLength,
             autofillHints: const [AutofillHints.oneTimeCode],
             inputFormatters: [FilteringTextInputFormatter.digitsOnly],
             style: theme.textTheme.headlineSmall?.copyWith(letterSpacing: 12),
@@ -138,11 +146,11 @@ class _OtpCodeFormState extends State<OtpCodeForm> {
               counterText: '',
               hintText: '••••••',
             ),
-            validator: Validators.otpCode,
+            validator: widget.validator,
             onFieldSubmitted: (_) => _verify(),
             onChanged: (v) {
               // Most people paste or autofill the whole code: go straight on.
-              if (v.length == Validators.otpLength) _verify();
+              if (v.length == widget.codeLength) _verify();
             },
           ),
           const SizedBox(height: 20),

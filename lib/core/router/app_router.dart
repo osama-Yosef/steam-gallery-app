@@ -5,6 +5,7 @@ import '../../features/audit_log/presentation/screens/admin_audit_log_screen.dar
 import '../../features/auth/data/models/auth_settings.dart';
 import '../../features/auth/presentation/providers/auth_providers.dart';
 import '../../features/auth/presentation/screens/account_suspended_screen.dart';
+import '../../features/auth/presentation/screens/add_email_screen.dart';
 import '../../features/auth/presentation/screens/forgot_password_screen.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/auth/presentation/screens/otp_verify_screen.dart';
@@ -125,6 +126,9 @@ GoRouter appRouter(Ref ref) {
   ref.listen(currentUserProfileProvider, (_, _) => refreshStream.ping());
   ref.listen(authSettingsProvider, (_, _) => refreshStream.ping());
   ref.listen(passwordRecoveryProvider, (_, _) => refreshStream.ping());
+  // Keeps this device's push token registered for as long as the app runs —
+  // see PushTokenSync's own doc comment.
+  ref.watch(pushTokenSyncProvider);
 
   return GoRouter(
     initialLocation: Routes.splash,
@@ -188,6 +192,10 @@ GoRouter appRouter(Ref ref) {
       GoRoute(
         path: Routes.verifyPhone,
         builder: (_, _) => const VerifyPhoneScreen(),
+      ),
+      GoRoute(
+        path: Routes.addEmail,
+        builder: (_, _) => const AddEmailScreen(),
       ),
       GoRoute(
         path: Routes.accountSuspended,

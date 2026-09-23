@@ -61,6 +61,11 @@ class CustomerOrderDetailScreen extends ConsumerWidget {
       if (!confirmed || !context.mounted) return;
     }
 
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const Center(child: CircularProgressIndicator()),
+    );
     try {
       await ref
           .read(orderRepositoryProvider)
@@ -69,8 +74,10 @@ class CustomerOrderDetailScreen extends ConsumerWidget {
             approve: approve,
             rejectionReason: reason,
           );
+      if (context.mounted) Navigator.of(context, rootNavigator: true).pop();
     } catch (e) {
       if (context.mounted) {
+        Navigator.of(context, rootNavigator: true).pop();
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text(AppException.from(e).messageAr)));

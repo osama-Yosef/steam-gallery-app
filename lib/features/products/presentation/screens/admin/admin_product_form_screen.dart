@@ -305,6 +305,8 @@ class _AdminProductFormScreenState
             controller: _minStockCtrl,
             decoration: const InputDecoration(labelText: 'الحد الأدنى للمخزون'),
             keyboardType: TextInputType.number,
+            validator: (v) =>
+                Validators.nonNegativeInteger(v, 'الحد الأدنى للمخزون'),
           ),
           if (_isEdit) ...[
             const SizedBox(height: 8),

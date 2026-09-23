@@ -19,14 +19,14 @@ class LoginScreen extends ConsumerStatefulWidget {
 
 class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _phoneCtrl = TextEditingController();
+  final _identifierCtrl = TextEditingController();
   final _passwordCtrl = TextEditingController();
   bool _loading = false;
   bool _obscure = true;
 
   @override
   void dispose() {
-    _phoneCtrl.dispose();
+    _identifierCtrl.dispose();
     _passwordCtrl.dispose();
     super.dispose();
   }
@@ -39,14 +39,20 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     if (_loading) return;
     if (!_formKey.currentState!.validate()) return;
     setState(() => _loading = true);
-    final localPhone = _phoneCtrl.text.trim();
+    final input = _identifierCtrl.text.trim();
+    // Customers sign in by email (0070); staff (admin/technician/sales)
+    // still by phone — a single field auto-detects which this is.
+    final isEmail = input.contains('@');
     try {
-      await ref
-          .read(authRepositoryProvider)
-          .signInWithPhone(
-            localPhone: localPhone,
-            password: _passwordCtrl.text,
-          );
+      final repo = ref.read(authRepositoryProvider);
+      if (isEmail) {
+        await repo.signInWithEmail(email: input, password: _passwordCtrl.text);
+      } else {
+        await repo.signInWithPhone(
+          localPhone: input,
+          password: _passwordCtrl.text,
+        );
+      }
       ref.invalidate(currentUserProfileProvider);
       // GoRouterRefreshStream reacts to the auth event and redirects
       // automatically once the profile loads.
@@ -55,10 +61,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       // The password was right but the sign-up code was never entered:
       // offer a fresh code instead of a dead end. (Auth only reports this
       // after checking the password, so it reveals nothing to a guesser.)
-      if (AppException.from(e).cause case AuthException(
-        code: 'phone_not_confirmed',
-      )) {
-        await _continueSignupVerification(localPhone);
+      final cause = AppException.from(e).cause;
+      if (!isEmail &&
+          cause is AuthException &&
+          cause.code == 'phone_not_confirmed') {
+        await _continueSignupVerification(input);
+        return;
+      }
+      if (isEmail &&
+          cause is AuthException &&
+          cause.code == 'email_not_confirmed') {
+        await _continueEmailSignupVerification(input);
         return;
       }
       final message = AppException.from(e).messageAr;
@@ -84,7 +97,22 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     }
     ref
         .read(pendingOtpProvider.notifier)
-        .start(OtpRequest(phoneE164: phone, purpose: OtpPurpose.signup));
+        .start(OtpRequest(destination: phone, purpose: OtpPurpose.signup));
+    if (mounted) context.push(Routes.verifyOtp);
+  }
+
+  Future<void> _continueEmailSignupVerification(String email) async {
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      await ref.read(authRepositoryProvider).resendSignupEmailOtp(email);
+    } catch (e) {
+      messenger.showSnackBar(
+        SnackBar(content: Text(AppException.from(e).messageAr)),
+      );
+    }
+    ref
+        .read(pendingOtpProvider.notifier)
+        .start(OtpRequest(destination: email, purpose: OtpPurpose.emailSignup));
     if (mounted) context.push(Routes.verifyOtp);
   }
 
@@ -118,15 +146,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     ),
                     const SizedBox(height: 24),
                     TextFormField(
-                      controller: _phoneCtrl,
-                      keyboardType: TextInputType.phone,
+                      controller: _identifierCtrl,
+                      keyboardType: TextInputType.emailAddress,
                       textDirection: TextDirection.ltr,
                       decoration: const InputDecoration(
-                        labelText: 'رقم الهاتف',
-                        hintText: '01012345678',
-                        prefixIcon: Icon(Iconsax.call_copy),
+                        labelText: 'البريد الإلكتروني أو رقم الهاتف',
+                        hintText: 'example@mail.com',
+                        prefixIcon: Icon(Iconsax.user_copy),
                       ),
-                      validator: Validators.phone,
+                      validator: Validators.emailOrPhone,
                     ),
                     const SizedBox(height: 12),
                     TextFormField(

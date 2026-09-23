@@ -8,9 +8,10 @@ import '../../../../core/utils/validators.dart';
 import '../providers/auth_providers.dart';
 import '../widgets/auth_page.dart';
 
-/// Step 1 of password recovery: the number to send a code to. The same
-/// next screen appears whether or not the number has an account, so this
-/// can't be used to find out who is registered.
+/// Step 1 of password recovery: the email to send a code to (0070 — free,
+/// native Supabase email OTP; the same next screen appears whether or not
+/// the address has an account, so this can't be used to find out who is
+/// registered).
 class ForgotPasswordScreen extends ConsumerStatefulWidget {
   const ForgotPasswordScreen({super.key});
 
@@ -21,12 +22,12 @@ class ForgotPasswordScreen extends ConsumerStatefulWidget {
 
 class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _phoneCtrl = TextEditingController();
+  final _emailCtrl = TextEditingController();
   bool _loading = false;
 
   @override
   void dispose() {
-    _phoneCtrl.dispose();
+    _emailCtrl.dispose();
     super.dispose();
   }
 
@@ -34,13 +35,13 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
     if (_loading) return;
     if (!_formKey.currentState!.validate()) return;
     setState(() => _loading = true);
-    final phone = Validators.toE164Egypt(_phoneCtrl.text.trim());
+    final email = _emailCtrl.text.trim();
     try {
-      await ref.read(authRepositoryProvider).sendSignInOtp(phone);
+      await ref.read(authRepositoryProvider).sendPasswordRecoveryEmail(email);
       ref
           .read(pendingOtpProvider.notifier)
           .start(
-            OtpRequest(phoneE164: phone, purpose: OtpPurpose.passwordRecovery),
+            OtpRequest(destination: email, purpose: OtpPurpose.passwordRecovery),
           );
       if (mounted) context.push(Routes.verifyOtp);
     } catch (e) {
@@ -65,22 +66,21 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             const Text(
-              'اكتب رقم هاتف حسابك. لو الرقم مسجَّل هيوصلك كود في رسالة '
-              'تقدر بيه تعمل كلمة مرور جديدة.',
+              'اكتب البريد الإلكتروني بتاع حسابك. لو مسجَّل هيوصلك كود في '
+              'رسالة تقدر بيه تعمل كلمة مرور جديدة.',
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),
             TextFormField(
-              controller: _phoneCtrl,
-              keyboardType: TextInputType.phone,
+              controller: _emailCtrl,
+              keyboardType: TextInputType.emailAddress,
               textDirection: TextDirection.ltr,
-              autofillHints: const [AutofillHints.telephoneNumber],
+              autofillHints: const [AutofillHints.email],
               decoration: const InputDecoration(
-                labelText: 'رقم الهاتف',
-                hintText: '01012345678',
-                prefixIcon: Icon(Iconsax.call_copy),
+                labelText: 'البريد الإلكتروني',
+                prefixIcon: Icon(Iconsax.sms_copy),
               ),
-              validator: Validators.phone,
+              validator: Validators.email,
               onFieldSubmitted: (_) => _submit(),
             ),
             const SizedBox(height: 20),

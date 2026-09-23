@@ -27,8 +27,21 @@ class _VerifyPhoneScreenState extends ConsumerState<VerifyPhoneScreen> {
   Future<void> _send(String phoneE164) async {
     setState(() => _sending = true);
     try {
-      await ref.read(authRepositoryProvider).sendSignInOtp(phoneE164);
-      if (mounted) setState(() => _sent = true);
+      await ref
+          .read(firebasePhoneAuthServiceProvider)
+          .sendCode(
+            phoneE164: phoneE164,
+            onCodeSent: () {
+              if (mounted) setState(() => _sent = true);
+            },
+            onError: (message) {
+              if (mounted) {
+                ScaffoldMessenger.of(
+                  context,
+                ).showSnackBar(SnackBar(content: Text(message)));
+              }
+            },
+          );
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(
@@ -101,9 +114,12 @@ class _VerifyPhoneScreenState extends ConsumerState<VerifyPhoneScreen> {
               ],
             )
           : OtpCodeForm(
-              phoneE164: phone,
+              destination: phone,
               onVerify: (code) async {
-                await repo.verifySignInOtp(phoneE164: phone, code: code);
+                final token = await ref
+                    .read(firebasePhoneAuthServiceProvider)
+                    .verifyCode(code);
+                await repo.markPhoneVerifiedWithFirebaseToken(token);
                 ref.invalidate(currentUserProfileProvider);
                 final verified =
                     (await ref.read(
@@ -126,7 +142,26 @@ class _VerifyPhoneScreenState extends ConsumerState<VerifyPhoneScreen> {
                   );
                 }
               },
-              onResend: () => repo.sendSignInOtp(phone),
+              onResend: () => ref
+                  .read(firebasePhoneAuthServiceProvider)
+                  .sendCode(
+                    phoneE164: phone,
+                    onCodeSent: () {},
+                    // verificationFailed fires from its own async callback,
+                    // independent of the Future sendCode() returns -- by
+                    // the time it fires, OtpCodeForm's own try/catch around
+                    // `await onResend()` has usually already moved on, so a
+                    // throw here would escape as an unhandled error instead
+                    // of reaching it. Show the message directly instead,
+                    // same as _send() above.
+                    onError: (message) {
+                      if (mounted) {
+                        ScaffoldMessenger.of(
+                          context,
+                        ).showSnackBar(SnackBar(content: Text(message)));
+                      }
+                    },
+                  ),
             ),
     );
   }

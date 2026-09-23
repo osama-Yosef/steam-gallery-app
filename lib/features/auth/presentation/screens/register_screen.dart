@@ -23,6 +23,7 @@ class RegisterScreen extends ConsumerStatefulWidget {
 class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameCtrl = TextEditingController();
+  final _emailCtrl = TextEditingController();
   final _phoneCtrl = TextEditingController();
   final _passwordCtrl = TextEditingController();
   final _confirmPasswordCtrl = TextEditingController();
@@ -35,6 +36,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   @override
   void dispose() {
     _nameCtrl.dispose();
+    _emailCtrl.dispose();
     _phoneCtrl.dispose();
     _passwordCtrl.dispose();
     _confirmPasswordCtrl.dispose();
@@ -58,34 +60,32 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     if (!_formKey.currentState!.validate()) return;
     if (_loading) return;
     setState(() => _loading = true);
+    final email = _emailCtrl.text.trim();
     try {
-      final localPhone = _phoneCtrl.text.trim();
-      final needsVerification = await ref
+      await ref
           .read(authRepositoryProvider)
-          .signUpCustomer(
-            localPhone: localPhone,
+          .signUpCustomerWithEmail(
+            email: email,
+            localPhone: _phoneCtrl.text.trim(),
             password: _passwordCtrl.text,
             fullName: _nameCtrl.text.trim(),
             avatarBytes: _avatarBytes,
             avatarExt: _avatarExt,
           );
-      if (needsVerification) {
-        // Auth has texted a code; the account only becomes usable once it's
-        // entered. The photo waits for that session too.
-        ref
-            .read(pendingOtpProvider.notifier)
-            .start(
-              OtpRequest(
-                phoneE164: Validators.toE164Egypt(localPhone),
-                purpose: OtpPurpose.signup,
-                avatarBytes: _avatarBytes,
-                avatarExt: _avatarExt,
-              ),
-            );
-        if (mounted) context.push(Routes.verifyOtp);
-      } else {
-        ref.invalidate(currentUserProfileProvider);
-      }
+      // Email confirmation is always required (mailer_autoconfirm off) — the
+      // account only becomes usable once the mailed code is entered. The
+      // photo waits for that session too.
+      ref
+          .read(pendingOtpProvider.notifier)
+          .start(
+            OtpRequest(
+              destination: email,
+              purpose: OtpPurpose.emailSignup,
+              avatarBytes: _avatarBytes,
+              avatarExt: _avatarExt,
+            ),
+          );
+      if (mounted) context.push(Routes.verifyOtp);
     } catch (e) {
       if (!mounted) return;
       final message = AppException.from(e).messageAr;
@@ -163,6 +163,17 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     ),
                     const SizedBox(height: 12),
                     TextFormField(
+                      controller: _emailCtrl,
+                      keyboardType: TextInputType.emailAddress,
+                      textDirection: TextDirection.ltr,
+                      decoration: const InputDecoration(
+                        labelText: 'البريد الإلكتروني',
+                        prefixIcon: Icon(Iconsax.sms_copy),
+                      ),
+                      validator: Validators.email,
+                    ),
+                    const SizedBox(height: 12),
+                    TextFormField(
                       controller: _phoneCtrl,
                       keyboardType: TextInputType.phone,
                       textDirection: TextDirection.ltr,
@@ -212,9 +223,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                           ),
                         ),
                       ),
-                      validator: (v) => v != _passwordCtrl.text
-                          ? 'كلمة المرور غير متطابقة'
-                          : null,
+                      validator: Validators.confirmPassword(
+                        () => _passwordCtrl.text,
+                      ),
                     ),
                     const SizedBox(height: 20),
                     FilledButton(

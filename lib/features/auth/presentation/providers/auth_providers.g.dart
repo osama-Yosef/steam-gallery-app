@@ -50,6 +50,183 @@ final class AuthRepositoryProvider
 
 String _$authRepositoryHash() => r'157dd73bdf6ec0879936e7c10d1b03f5bf9bed55';
 
+/// One instance per app run: it only holds the in-flight verification ID
+/// between "send code" and "confirm code", which is meaningless to keep
+/// beyond a single verification attempt anyway.
+
+@ProviderFor(firebasePhoneAuthService)
+const firebasePhoneAuthServiceProvider = FirebasePhoneAuthServiceProvider._();
+
+/// One instance per app run: it only holds the in-flight verification ID
+/// between "send code" and "confirm code", which is meaningless to keep
+/// beyond a single verification attempt anyway.
+
+final class FirebasePhoneAuthServiceProvider
+    extends
+        $FunctionalProvider<
+          PhoneAuthService,
+          PhoneAuthService,
+          PhoneAuthService
+        >
+    with $Provider<PhoneAuthService> {
+  /// One instance per app run: it only holds the in-flight verification ID
+  /// between "send code" and "confirm code", which is meaningless to keep
+  /// beyond a single verification attempt anyway.
+  const FirebasePhoneAuthServiceProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'firebasePhoneAuthServiceProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$firebasePhoneAuthServiceHash();
+
+  @$internal
+  @override
+  $ProviderElement<PhoneAuthService> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  PhoneAuthService create(Ref ref) {
+    return firebasePhoneAuthService(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(PhoneAuthService value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<PhoneAuthService>(value),
+    );
+  }
+}
+
+String _$firebasePhoneAuthServiceHash() =>
+    r'f88f6415bca4f9ef07e767e0c4b36a434367e07a';
+
+@ProviderFor(pushNotificationService)
+const pushNotificationServiceProvider = PushNotificationServiceProvider._();
+
+final class PushNotificationServiceProvider
+    extends
+        $FunctionalProvider<
+          PushNotificationService,
+          PushNotificationService,
+          PushNotificationService
+        >
+    with $Provider<PushNotificationService> {
+  const PushNotificationServiceProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'pushNotificationServiceProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$pushNotificationServiceHash();
+
+  @$internal
+  @override
+  $ProviderElement<PushNotificationService> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  PushNotificationService create(Ref ref) {
+    return pushNotificationService(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(PushNotificationService value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<PushNotificationService>(value),
+    );
+  }
+}
+
+String _$pushNotificationServiceHash() =>
+    r'4730a581cc937f488ee2a274c8d66de537d18103';
+
+/// Keeps this device's push token registered against whichever account is
+/// signed in. Watched once, for its whole lifetime, from appRouterProvider
+/// (see core/router/app_router.dart) — registering is fire-and-forget, a
+/// failure here must never block navigation or sign-in.
+
+@ProviderFor(PushTokenSync)
+const pushTokenSyncProvider = PushTokenSyncProvider._();
+
+/// Keeps this device's push token registered against whichever account is
+/// signed in. Watched once, for its whole lifetime, from appRouterProvider
+/// (see core/router/app_router.dart) — registering is fire-and-forget, a
+/// failure here must never block navigation or sign-in.
+final class PushTokenSyncProvider
+    extends $NotifierProvider<PushTokenSync, void> {
+  /// Keeps this device's push token registered against whichever account is
+  /// signed in. Watched once, for its whole lifetime, from appRouterProvider
+  /// (see core/router/app_router.dart) — registering is fire-and-forget, a
+  /// failure here must never block navigation or sign-in.
+  const PushTokenSyncProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'pushTokenSyncProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$pushTokenSyncHash();
+
+  @$internal
+  @override
+  PushTokenSync create() => PushTokenSync();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(void value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<void>(value),
+    );
+  }
+}
+
+String _$pushTokenSyncHash() => r'b768ebea01ab322e602ffe8f243b01c0186979da';
+
+/// Keeps this device's push token registered against whichever account is
+/// signed in. Watched once, for its whole lifetime, from appRouterProvider
+/// (see core/router/app_router.dart) — registering is fire-and-forget, a
+/// failure here must never block navigation or sign-in.
+
+abstract class _$PushTokenSync extends $Notifier<void> {
+  void build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    build();
+    final ref = this.ref as $Ref<void, void>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<void, void>,
+              void,
+              Object?,
+              Object?
+            >;
+    element.handleValue(ref, null);
+  }
+}
+
 /// Re-fetches the profile row whenever the Supabase auth session changes
 /// (sign in / sign out / token refresh). The router watches this to decide
 /// which shell (admin/technician/customer/login) to show.

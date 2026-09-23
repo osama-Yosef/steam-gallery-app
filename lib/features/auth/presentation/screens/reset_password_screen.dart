@@ -6,9 +6,9 @@ import '../../../../core/utils/validators.dart';
 import '../providers/auth_providers.dart';
 import '../widgets/auth_page.dart';
 
-/// Step 3 of password recovery. The user is signed in by the recovery code
-/// at this point; the router keeps them here until the new password is saved
-/// or they cancel (which signs them out again).
+/// Step 3 of password recovery. The user is signed in by the emailed
+/// recovery code at this point (0070); the router keeps them here until the
+/// new password is saved or they cancel (which signs them out again).
 class ResetPasswordScreen extends ConsumerStatefulWidget {
   const ResetPasswordScreen({super.key});
 

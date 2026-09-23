@@ -9,6 +9,7 @@ abstract final class Routes {
   static const verifyOtp = '/verify-otp';
   static const resetPassword = '/reset-password';
   static const verifyPhone = '/verify-phone';
+  static const addEmail = '/add-email';
   static const accountSuspended = '/account-suspended';
 
   static const adminHome = '/admin';

@@ -7,11 +7,13 @@ AppUser _user({
   AppRole role = AppRole.customer,
   bool active = true,
   bool verified = true,
+  String? email = 'test@example.com',
 }) => AppUser(
   id: 'u1',
   role: role,
   fullName: 'Test',
   phone: '201012345678',
+  email: email,
   isActive: active,
   phoneVerifiedAt: verified ? DateTime(2026) : null,
 );
@@ -52,6 +54,7 @@ void main() {
         Routes.adminHome,
         Routes.resetPassword,
         Routes.verifyPhone,
+        Routes.addEmail,
       ]) {
         expect(_redirect(loc, hasSession: false), Routes.login, reason: loc);
       }
@@ -173,6 +176,26 @@ void main() {
         ),
         Routes.customerHome,
       );
+    });
+
+    test('a customer with no email (pre-0070 account) is held on add-email', () {
+      final noEmail = _user(email: null);
+      expect(_redirect(Routes.customerCart, user: noEmail), Routes.addEmail);
+      expect(_redirect(Routes.addEmail, user: noEmail), isNull);
+    });
+
+    test('adding the email sends the customer home', () {
+      expect(_redirect(Routes.addEmail, user: _user()), Routes.customerHome);
+    });
+
+    test('staff are never held for missing email', () {
+      for (final role in [AppRole.admin, AppRole.technician, AppRole.sales]) {
+        expect(
+          _redirect(homeFor(role), user: _user(role: role, email: null)),
+          isNull,
+          reason: role.name,
+        );
+      }
     });
   });
 

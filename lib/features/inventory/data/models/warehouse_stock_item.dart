@@ -15,12 +15,21 @@ abstract class WarehouseStockItem with _$WarehouseStockItem {
     required double sellingPrice,
     required int minStock,
     String? imageUrl,
+    /// The price a sale actually charges right now (offer price while a
+    /// live offer applies, same as private.fn_effective_price() server-side)
+    /// — null until the repository resolves it via rpc_effective_prices, in
+    /// which case [displayPrice] falls back to the catalogue [sellingPrice].
+    double? effectivePrice,
   }) = _WarehouseStockItem;
 
   const WarehouseStockItem._();
 
   double get value => quantity * costPrice;
   bool get isLow => quantity <= minStock;
+
+  /// What to charge/show at the register — the live offer price when there
+  /// is one, otherwise the catalogue price.
+  double get displayPrice => effectivePrice ?? sellingPrice;
 
   factory WarehouseStockItem.fromRow(Map<String, dynamic> row) {
     final product = row['products'] as Map<String, dynamic>;

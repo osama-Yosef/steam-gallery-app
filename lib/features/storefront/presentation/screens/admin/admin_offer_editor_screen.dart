@@ -108,11 +108,29 @@ class _AdminOfferEditorScreenState
       messenger.showSnackBar(SnackBar(content: Text(scheduleProblem)));
       return;
     }
+    final productsById = {
+      for (final p in ref.read(adminProductsProvider()).value ?? const [])
+        p.id: p,
+    };
     for (final entry in _selectedProducts.entries) {
       final text = entry.value.text.trim();
-      if (text.isNotEmpty && double.tryParse(text) == null) {
+      if (text.isEmpty) continue;
+      final offerPrice = double.tryParse(text);
+      if (offerPrice == null) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('سعر العرض المكتوب غير صحيح')),
+        );
+        return;
+      }
+      final product = productsById[entry.key];
+      if (product != null && offerPrice >= product.sellingPrice) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'سعر عرض "${product.name}" لازم يكون أقل من السعر العادي '
+              '(${Formatters.currency(product.sellingPrice)})',
+            ),
+          ),
         );
         return;
       }

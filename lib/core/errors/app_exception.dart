@@ -20,7 +20,26 @@ class AppException implements Exception {
       return AppException(_mapPostgrestMessage(error), error);
     }
 
+    if (error is FunctionException) {
+      return AppException(_mapFunctionMessage(error), error);
+    }
+
     return AppException('حدث خطأ غير متوقع. حاول مرة أخرى.', error);
+  }
+
+  /// Edge Functions (create-user, verify-phone-firebase) answer with a JSON
+  /// body `{"error": "some_code"}` on failure — see their source for the
+  /// exact codes each one can return.
+  static String _mapFunctionMessage(FunctionException error) {
+    final code = error.details is Map ? error.details['error']?.toString() : null;
+    return switch (code) {
+      'invalid_or_expired_token' => 'انتهت صلاحية كود التأكيد، اطلب كودًا جديدًا',
+      'account_not_found' || 'user_not_found' =>
+        'هذا الرقم غير مسجَّل، تحقق منه أو أنشئ حسابًا جديدًا',
+      'unauthorized' || 'forbidden' => 'انتهت الجلسة، سجِّل الدخول مرة أخرى',
+      _ when error.status == 429 => 'محاولات كثيرة جدًا، انتظر شوية وحاول تاني',
+      _ => 'تعذَّرت العملية. حاول مرة أخرى.',
+    };
   }
 
   /// Prefer Supabase's own `code` (a fixed, documented enum — see
@@ -47,12 +66,25 @@ class AppException implements Exception {
         return 'الكود غير صحيح أو انتهت صلاحيته';
       case 'phone_not_confirmed':
         return 'رقم الهاتف لم يتم تأكيده بعد';
+      case 'email_not_confirmed':
+        return 'البريد الإلكتروني لم يتم تأكيده بعد';
       case 'user_banned':
         return 'هذا الحساب موقوف. تواصل مع الإدارة.';
-      case 'phone_exists' || 'user_already_exists':
+      case 'phone_exists':
         return 'هذا الرقم مسجَّل بالفعل';
+      case 'email_exists':
+        return 'هذا البريد الإلكتروني مسجَّل بالفعل';
+      // Supabase's generic fallback for either identifier already existing
+      // -- signUpCustomerWithEmail (email is the auth identifier there,
+      // phone only metadata) was seen returning this for a duplicate EMAIL,
+      // which the old 'phone_exists' grouping wrongly told the user was
+      // their phone number, sending them to fix the wrong field.
+      case 'user_already_exists':
+        return 'الحساب ده مسجَّل بالفعل';
       case 'sms_send_failed':
         return 'تعذَّر إرسال الرسالة. تأكد من الرقم وحاول بعد قليل.';
+      case 'email_address_invalid':
+        return 'بريد إلكتروني غير صحيح';
       case 'signup_disabled':
         return 'التسجيل مغلق حاليًا';
       case 'phone_provider_disabled' || 'otp_disabled':
@@ -89,6 +121,10 @@ class AppException implements Exception {
   /// them all.
   static const List<(String, String)> _rpcErrorMessages = [
     ('INSUFFICIENT_STOCK', 'الكمية المطلوبة غير متوفرة'),
+    (
+      'OFFER_PRICE_NOT_BELOW_SELLING_PRICE',
+      'سعر العرض لازم يكون أقل من السعر العادي للمنتج',
+    ),
     // Catalogue browsing (0034).
     ('INVALID_PRICE_RANGE', 'نطاق السعر غير صحيح'),
     ('INVALID_SORT', 'طريقة الترتيب غير مدعومة'),

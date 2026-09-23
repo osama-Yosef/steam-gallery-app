@@ -107,7 +107,7 @@ class _AdminWalkInSaleScreenState extends ConsumerState<AdminWalkInSaleScreen> {
           _SaleLine(
             productId: item.productId,
             productName: item.productName,
-            sellingPrice: item.sellingPrice,
+            sellingPrice: item.displayPrice,
             available: item.quantity,
             quantity: 1,
           ),
@@ -519,7 +519,7 @@ class _ProductCard extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            Formatters.currency(item.sellingPrice),
+                            Formatters.currency(item.displayPrice),
                             style: theme.textTheme.bodySmall,
                           ),
                           Text(

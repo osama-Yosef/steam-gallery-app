@@ -31,21 +31,50 @@ class _FakeAuthRepository implements AuthRepository {
   }
 
   @override
-  Future<void> verifySignInOtp({
-    required String phoneE164,
-    required String code,
-  }) async {
-    calls.add('verifySignIn:$phoneE164:$code');
-    if (verifyError != null) throw verifyError!;
-  }
-
-  @override
   Future<void> resendSignupOtp(String phoneE164) async =>
       calls.add('resendSignup:$phoneE164');
 
   @override
-  Future<void> sendSignInOtp(String phoneE164) async =>
-      calls.add('sendSignIn:$phoneE164');
+  Future<void> verifySignupEmailOtp({
+    required String email,
+    required String code,
+    Uint8List? avatarBytes,
+    String? avatarExt,
+  }) async {
+    calls.add('verifySignupEmail:$email:$code');
+    avatarPassed = avatarBytes;
+    if (verifyError != null) throw verifyError!;
+  }
+
+  @override
+  Future<void> resendSignupEmailOtp(String email) async =>
+      calls.add('resendSignupEmail:$email');
+
+  @override
+  Future<void> verifyRecoveryEmailOtp({
+    required String email,
+    required String code,
+  }) async {
+    calls.add('verifyRecoveryEmail:$email:$code');
+    if (verifyError != null) throw verifyError!;
+  }
+
+  @override
+  Future<void> sendPasswordRecoveryEmail(String email) async =>
+      calls.add('sendRecoveryEmail:$email');
+
+  @override
+  Future<void> verifyEmailChangeOtp({
+    required String email,
+    required String code,
+  }) async {
+    calls.add('verifyEmailChange:$email:$code');
+    if (verifyError != null) throw verifyError!;
+  }
+
+  @override
+  Future<void> addEmailToAccount(String email) async =>
+      calls.add('addEmail:$email');
 
   @override
   dynamic noSuchMethod(Invocation invocation) =>
@@ -53,6 +82,7 @@ class _FakeAuthRepository implements AuthRepository {
 }
 
 const _phone = '+201012345678';
+const _email = 'user@example.com';
 
 Future<(ProviderContainer, _FakeAuthRepository)> _pumpOtpScreen(
   WidgetTester tester,
@@ -86,6 +116,12 @@ void main() {
       expect(Validators.otpCode('12345'), isNotNull);
       expect(Validators.otpCode('1234567'), isNotNull);
       expect(Validators.otpCode('12a456'), isNotNull);
+    });
+
+    test('emailOtpCode accepts exactly eight digits', () {
+      expect(Validators.emailOtpCode('12345678'), isNull);
+      expect(Validators.emailOtpCode('1234567'), isNotNull);
+      expect(Validators.emailOtpCode('123456789'), isNotNull);
     });
 
     test('confirmPassword requires a valid, matching password', () {
@@ -136,13 +172,13 @@ void main() {
     });
 
     testWidgets(
-      'signup: a full code verifies with the photo and clears state',
+      'legacy phone signup: a full code verifies with the photo and clears state',
       (tester) async {
         final avatar = Uint8List.fromList([1, 2, 3]);
         final (container, repo) = await _pumpOtpScreen(
           tester,
           OtpRequest(
-            phoneE164: _phone,
+            destination: _phone,
             purpose: OtpPurpose.signup,
             avatarBytes: avatar,
             avatarExt: 'jpg',
@@ -155,14 +191,13 @@ void main() {
         expect(repo.calls, ['verifySignup:$_phone:123456']);
         expect(repo.avatarPassed, avatar);
         expect(container.read(pendingOtpProvider), isNull);
-        expect(container.read(passwordRecoveryProvider), isFalse);
       },
     );
 
     testWidgets('an incomplete code is not sent', (tester) async {
       final (_, repo) = await _pumpOtpScreen(
         tester,
-        const OtpRequest(phoneE164: _phone, purpose: OtpPurpose.signup),
+        const OtpRequest(destination: _phone, purpose: OtpPurpose.signup),
       );
       await tester.enterText(_codeField, '123');
       await tester.tap(find.byKey(const Key('otp-verify-button')));
@@ -171,30 +206,53 @@ void main() {
       expect(find.text('الكود 6 أرقام'), findsOneWidget);
     });
 
-    testWidgets('recovery: success keeps the router on the new-password step', (
+    testWidgets(
+      'email signup: an 8-digit code verifies with the photo and clears state',
+      (tester) async {
+        final avatar = Uint8List.fromList([1, 2, 3]);
+        final (container, repo) = await _pumpOtpScreen(
+          tester,
+          OtpRequest(
+            destination: _email,
+            purpose: OtpPurpose.emailSignup,
+            avatarBytes: avatar,
+            avatarExt: 'jpg',
+          ),
+        );
+
+        await tester.enterText(_codeField, '12345678');
+        await tester.pump();
+
+        expect(repo.calls, ['verifySignupEmail:$_email:12345678']);
+        expect(repo.avatarPassed, avatar);
+        expect(container.read(pendingOtpProvider), isNull);
+      },
+    );
+
+    testWidgets('email recovery: success holds the router on the new-password step', (
       tester,
     ) async {
       final (container, repo) = await _pumpOtpScreen(
         tester,
         const OtpRequest(
-          phoneE164: _phone,
+          destination: _email,
           purpose: OtpPurpose.passwordRecovery,
         ),
       );
-      await tester.enterText(_codeField, '654321');
+      await tester.enterText(_codeField, '12345678');
       await tester.pump();
 
-      expect(repo.calls, ['verifySignIn:$_phone:654321']);
+      expect(repo.calls, ['verifyRecoveryEmail:$_email:12345678']);
       expect(container.read(passwordRecoveryProvider), isTrue);
     });
 
-    testWidgets('recovery: a wrong code releases the hold and shows why', (
+    testWidgets('email recovery: a wrong code releases the hold and shows why', (
       tester,
     ) async {
       final (container, repo) = await _pumpOtpScreen(
         tester,
         const OtpRequest(
-          phoneE164: _phone,
+          destination: _email,
           purpose: OtpPurpose.passwordRecovery,
         ),
       );
@@ -202,7 +260,7 @@ void main() {
         AuthException('Token has expired or is invalid', code: 'otp_expired'),
       );
 
-      await tester.enterText(_codeField, '000000');
+      await tester.enterText(_codeField, '00000000');
       await tester.pump();
 
       expect(container.read(passwordRecoveryProvider), isFalse);
@@ -216,7 +274,7 @@ void main() {
       final (_, repo) = await _pumpOtpScreen(
         tester,
         const OtpRequest(
-          phoneE164: _phone,
+          destination: _email,
           purpose: OtpPurpose.passwordRecovery,
         ),
       );
@@ -228,7 +286,7 @@ void main() {
 
       await tester.tap(_resend);
       await tester.pump();
-      expect(repo.calls, ['sendSignIn:$_phone']);
+      expect(repo.calls, ['sendRecoveryEmail:$_email']);
       // Locked again right after sending.
       expect(tester.widget<TextButton>(_resend).onPressed, isNull);
 
