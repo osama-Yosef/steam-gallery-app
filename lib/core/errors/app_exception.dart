@@ -1,4 +1,5 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../offline/network_status.dart';
 
 /// Every repository throws this instead of leaking raw
 /// PostgrestException/AuthException to the UI. Screens only ever need to
@@ -22,6 +23,10 @@ class AppException implements Exception {
 
     if (error is FunctionException) {
       return AppException(_mapFunctionMessage(error), error);
+    }
+
+    if (isNetworkError(error)) {
+      return AppException('لا يوجد اتصال بالإنترنت', error);
     }
 
     return AppException('حدث خطأ غير متوقع. حاول مرة أخرى.', error);
@@ -121,6 +126,22 @@ class AppException implements Exception {
   /// them all.
   static const List<(String, String)> _rpcErrorMessages = [
     ('INSUFFICIENT_STOCK', 'الكمية المطلوبة غير متوفرة'),
+    // Invoice editing, assembly products, purchase invoices (0075).
+    ('SALE_NOT_EDITABLE', 'الفاتورة دي اترجعت أو اتلغت ومش ممكن تتعدل'),
+    ('SALE_NOT_RETURNABLE', 'الفاتورة دي اترجعت أو اتلغت بالفعل'),
+    ('SALE_NOT_FOUND', 'الفاتورة غير موجودة'),
+    ('NOT_A_WALK_IN_SALE', 'دي فاتورة صنايعي ومش ممكن تتعدل من هنا'),
+    ('ASSEMBLY_HAS_NO_COMPONENTS', 'صنف التجميع ده مالوش مكونات — حدد مكوناته الأول'),
+    ('ASSEMBLY_NEEDS_COMPONENTS', 'صنف التجميع لازم يكون له مكون واحد على الأقل'),
+    ('ASSEMBLY_HAS_STOCK', 'المنتج ده له رصيد في المخزن — صنف التجميع مالوش رصيد خاص بيه'),
+    ('SERVICE_CANNOT_BE_ASSEMBLY', 'الخدمة مينفعش تكون صنف تجميع'),
+    ('COMPONENT_CANNOT_BE_ASSEMBLY', 'المنتج ده مكون في صنف تجميع تاني'),
+    ('INVALID_COMPONENT', 'المكونات لازم تكون منتجات مخزنية (مش خدمة ولا صنف تجميع)'),
+    ('NOT_A_STOCK_PRODUCT', 'الخدمات وأصناف التجميع مالهاش شراء — اشترِ مكوناتها'),
+    ('SUPPLIER_REQUIRED', 'اكتب اسم المورد'),
+    ('SUPPLIER_NOT_FOUND', 'المورد غير موجود'),
+    ('PAID_EXCEEDS_TOTAL', 'المدفوع أكبر من إجمالي الفاتورة'),
+    ('AMOUNT_EXCEEDS_BALANCE', 'المبلغ أكبر من المستحق للمورد'),
     (
       'OFFER_PRICE_NOT_BELOW_SELLING_PRICE',
       'سعر العرض لازم يكون أقل من السعر العادي للمنتج',
@@ -257,6 +278,11 @@ class AppException implements Exception {
 
   static String _mapPostgrestMessage(PostgrestException e) {
     final msg = e.message;
+    // Names the short component, so the counter knows what to restock.
+    final component = RegExp(r'INSUFFICIENT_COMPONENT: (.+)').firstMatch(msg);
+    if (component != null) {
+      return 'المكون "${component.group(1)!.trim()}" غير متوفر بالمخزن';
+    }
     for (final (code, messageAr) in _rpcErrorMessages) {
       if (msg.contains(code)) return messageAr;
     }

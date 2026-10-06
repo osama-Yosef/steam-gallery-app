@@ -8,6 +8,7 @@ import '../models/product_category.dart';
 import '../models/product_image.dart';
 import '../models/product_option.dart';
 import '../models/product_public.dart';
+import '../models/assembly_component.dart';
 
 abstract class ProductRepository {
   // Categories (shared by admin + customer)
@@ -47,6 +48,17 @@ abstract class ProductRepository {
   Future<List<Product>> listServices();
 
   Future<Product?> getProductByIdAdmin(String id);
+
+  /// The recipe of an assembly product (0075).
+  Future<List<AssemblyComponent>> getAssemblyComponents(String productId);
+
+  /// Makes [productId] an assembly of [components], or a normal product
+  /// again when [isAssembly] is false. See rpc_admin_set_assembly.
+  Future<void> setAssembly(
+    String productId, {
+    required bool isAssembly,
+    required List<AssemblyComponent> components,
+  });
   Future<String> createProduct({
     required String sku,
     String? barcode,
@@ -273,6 +285,44 @@ class SupabaseProductRepository implements ProductRepository {
           .eq('id', id)
           .maybeSingle();
       return row == null ? null : Product.fromRow(row);
+    } catch (e) {
+      throw AppException.from(e);
+    }
+  }
+
+  @override
+  Future<List<AssemblyComponent>> getAssemblyComponents(
+    String productId,
+  ) async {
+    try {
+      final rows = await _client
+          .from('product_components')
+          .select(
+            'component_id, quantity, products!product_components_component_id_fkey(name, cost_price)',
+          )
+          .eq('assembly_id', productId);
+      return rows.map(AssemblyComponent.fromRow).toList()
+        ..sort((a, b) => a.productName.compareTo(b.productName));
+    } catch (e) {
+      throw AppException.from(e);
+    }
+  }
+
+  @override
+  Future<void> setAssembly(
+    String productId, {
+    required bool isAssembly,
+    required List<AssemblyComponent> components,
+  }) async {
+    try {
+      await _client.rpc(
+        'rpc_admin_set_assembly',
+        params: {
+          'p_product_id': productId,
+          'p_is_assembly': isAssembly,
+          'p_components': components.map((c) => c.toJson()).toList(),
+        },
+      );
     } catch (e) {
       throw AppException.from(e);
     }

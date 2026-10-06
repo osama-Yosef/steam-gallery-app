@@ -25,7 +25,6 @@ import '../../features/dashboard/presentation/screens/admin_dashboard_screen.dar
 import '../../features/home/presentation/screens/admin_home_screen.dart';
 import '../../features/home/presentation/screens/customer_account_screen.dart';
 import '../../features/inventory/presentation/screens/admin/admin_issue_stock_screen.dart';
-import '../../features/inventory/presentation/screens/admin/admin_receive_purchase_screen.dart';
 import '../../features/inventory/presentation/screens/admin/admin_stock_movements_screen.dart';
 import '../../features/inventory/presentation/screens/admin/admin_technician_bag_detail_screen.dart';
 import '../../features/inventory/presentation/screens/admin/admin_technician_bag_list_screen.dart';
@@ -81,6 +80,11 @@ import '../../features/wallet/presentation/screens/admin/admin_wallets_list_scre
 import '../../features/wallet/presentation/screens/customer/wallet_screen.dart';
 import '../../features/wallet/presentation/screens/customer/wallet_topup_screen.dart';
 import '../config/env.dart';
+import '../../features/purchases/presentation/screens/admin/admin_purchase_invoice_detail_screen.dart';
+import '../../features/purchases/presentation/screens/admin/admin_purchase_invoice_form_screen.dart';
+import '../../features/purchases/presentation/screens/admin/admin_purchase_invoices_screen.dart';
+import '../../features/purchases/presentation/screens/admin/admin_suppliers_screen.dart';
+import '../offline/offline_widgets.dart';
 import '../navigation/admin_sections_screen.dart';
 import '../navigation/admin_shell.dart';
 import '../navigation/sales_sections_screen.dart';
@@ -218,7 +222,14 @@ GoRouter appRouter(Ref ref) {
                   ),
                   GoRoute(
                     path: 'walk-in-sale',
-                    builder: (_, _) => const AdminWalkInSaleScreen(),
+                    builder: (_, state) => AdminWalkInSaleScreen(
+                      showInvoices:
+                          state.uri.queryParameters['tab'] == 'invoices',
+                    ),
+                  ),
+                  GoRoute(
+                    path: 'sync',
+                    builder: (_, _) => const OfflineSyncScreen(),
                   ),
                   GoRoute(
                     path: 'instapay',
@@ -416,8 +427,27 @@ GoRouter appRouter(Ref ref) {
                 builder: (_, _) => const AdminWarehouseScreen(),
               ),
               GoRoute(
-                path: Routes.adminReceivePurchase,
-                builder: (_, _) => const AdminReceivePurchaseScreen(),
+                path: Routes.adminPurchaseInvoices,
+                builder: (_, state) => AdminPurchaseInvoicesScreen(
+                  supplierId: state.uri.queryParameters['supplier'],
+                  supplierName: state.uri.queryParameters['name'],
+                ),
+                routes: [
+                  GoRoute(
+                    path: 'new',
+                    builder: (_, _) => const AdminPurchaseInvoiceFormScreen(),
+                  ),
+                  GoRoute(
+                    path: ':id',
+                    builder: (_, state) => AdminPurchaseInvoiceDetailScreen(
+                      invoiceId: state.pathParameters['id']!,
+                    ),
+                  ),
+                ],
+              ),
+              GoRoute(
+                path: Routes.adminSuppliers,
+                builder: (_, _) => const AdminSuppliersScreen(),
               ),
               GoRoute(
                 path: Routes.adminIssueStock,
@@ -518,6 +548,12 @@ GoRouter appRouter(Ref ref) {
               GoRoute(
                 path: Routes.salesHome,
                 builder: (_, _) => const AdminWalkInSaleScreen(),
+                routes: [
+                  GoRoute(
+                    path: 'sync',
+                    builder: (_, _) => const OfflineSyncScreen(),
+                  ),
+                ],
               ),
             ],
           ),

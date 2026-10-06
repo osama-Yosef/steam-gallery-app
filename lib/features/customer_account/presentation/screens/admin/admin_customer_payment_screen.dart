@@ -5,6 +5,7 @@ import 'package:uuid/uuid.dart';
 import '../../../../../core/errors/app_exception.dart';
 import '../../../../technician_account/data/models/sale.dart';
 import '../../providers/customer_account_providers.dart';
+import '../../../../../core/offline/offline_widgets.dart';
 
 class AdminCustomerPaymentScreen extends ConsumerStatefulWidget {
   final String customerId;
@@ -40,7 +41,7 @@ class _AdminCustomerPaymentScreenState
     if (!_formKey.currentState!.validate()) return;
     setState(() => _submitting = true);
     try {
-      await ref
+      final result = await ref
           .read(customerAccountRepositoryProvider)
           .recordPayment(
             customerId: widget.customerId,
@@ -51,7 +52,10 @@ class _AdminCustomerPaymentScreenState
             clientRequestId: _clientRequestId,
             paymentMethod: _paymentMethod,
           );
-      if (mounted) Navigator.of(context).pop(true);
+      if (mounted) {
+        if (result.queued) showSavedOfflineSnack(context, 'الدفعة اتسجلت');
+        Navigator.of(context).pop(true);
+      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(

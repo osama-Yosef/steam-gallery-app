@@ -1,6 +1,7 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../../../core/supabase/supabase_client_provider.dart';
 import '../../../technician_account/data/models/sale.dart';
+import '../../data/models/invoice_line.dart';
 import '../../data/models/sale_return_item.dart';
 import '../../data/repositories/sales_repository.dart';
 
@@ -30,4 +31,9 @@ Future<List<SaleReturnItem>> saleReturnItems(Ref ref, String saleId) {
 @Riverpod(keepAlive: true)
 Future<Sale> saleById(Ref ref, String saleId) {
   return ref.watch(salesRepositoryProvider).getSale(saleId);
+}
+
+@riverpod
+Future<List<InvoiceLine>> invoiceLines(Ref ref, String saleId) {
+  return ref.watch(salesRepositoryProvider).getInvoiceLines(saleId);
 }

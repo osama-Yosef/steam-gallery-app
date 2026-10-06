@@ -9,18 +9,15 @@ abstract class InventoryRepository {
   /// so no warehouse_id is needed here or in the RPC calls below.
   Future<List<WarehouseStockItem>> getWarehouseStock({String? search});
 
+  /// Active assembly products (0075) with how many the warehouse can build
+  /// right now from their components, priced like [getWarehouseStock].
+  Future<List<WarehouseStockItem>> getAssemblyStock();
+
   Future<List<TechnicianBagStockItem>> getBagStock(String technicianId);
 
   Future<List<StockMovement>> getStockMovements({
     String? productId,
     int limit = 200,
-  });
-
-  Future<void> receivePurchase({
-    required String productId,
-    required int quantity,
-    required double unitCost,
-    String? notes,
   });
 
   Future<void> issueStock({
@@ -46,33 +43,69 @@ class SupabaseInventoryRepository implements InventoryRepository {
         query = query.ilike('products.name', '%${search.trim()}%');
       }
       final rows = await query;
-      var items = rows.map(WarehouseStockItem.fromRow).toList()
+      final items = rows.map(WarehouseStockItem.fromRow).toList()
         ..sort((a, b) => a.productName.compareTo(b.productName));
-      if (items.isNotEmpty) {
-        try {
-          final prices = await _client.rpc(
-            'rpc_effective_prices',
-            params: {
-              'p_product_ids': items.map((i) => i.productId).toList(),
-            },
-          );
-          final byProduct = {
-            for (final row in prices as List)
-              row['product_id'] as String: (row['effective_price'] as num)
-                  .toDouble(),
-          };
-          items = items
-              .map((i) => i.copyWith(effectivePrice: byProduct[i.productId]))
-              .toList();
-        } catch (_) {
-          // Falls back to the catalogue price (WarehouseStockItem.displayPrice)
-          // if the RPC is missing or fails -- offer-aware pricing at the
-          // register is a nice-to-have, never worth breaking stock loading.
-        }
-      }
-      return items;
+      return await _withEffectivePrices(items);
     } catch (e) {
       throw AppException.from(e);
+    }
+  }
+
+  @override
+  Future<List<WarehouseStockItem>> getAssemblyStock() async {
+    try {
+      final results = await Future.wait<List<Map<String, dynamic>>>([
+        _client
+            .from('products')
+            .select(
+              'id, name, sku, cost_price, selling_price, min_stock, product_images(image_url, is_primary)',
+            )
+            .eq('is_assembly', true)
+            .eq('is_active', true),
+        _client.from('assembly_availability').select(),
+      ]);
+      final available = {
+        for (final r in results[1])
+          r['product_id'] as String: (r['available'] as num).toInt(),
+      };
+      final items =
+          results[0]
+              .map(
+                (p) => WarehouseStockItem.fromRow({
+                  'quantity': available[p['id']] ?? 0,
+                  'products': p,
+                }).copyWith(isAssembly: true),
+              )
+              .toList()
+            ..sort((a, b) => a.productName.compareTo(b.productName));
+      return await _withEffectivePrices(items);
+    } catch (e) {
+      throw AppException.from(e);
+    }
+  }
+
+  Future<List<WarehouseStockItem>> _withEffectivePrices(
+    List<WarehouseStockItem> items,
+  ) async {
+    if (items.isEmpty) return items;
+    try {
+      final prices = await _client.rpc(
+        'rpc_effective_prices',
+        params: {'p_product_ids': items.map((i) => i.productId).toList()},
+      );
+      final byProduct = {
+        for (final row in prices as List)
+          row['product_id'] as String: (row['effective_price'] as num)
+              .toDouble(),
+      };
+      return items
+          .map((i) => i.copyWith(effectivePrice: byProduct[i.productId]))
+          .toList();
+    } catch (_) {
+      // Falls back to the catalogue price (WarehouseStockItem.displayPrice)
+      // if the RPC is missing or fails -- offer-aware pricing at the
+      // register is a nice-to-have, never worth breaking stock loading.
+      return items;
     }
   }
 
@@ -117,28 +150,6 @@ class SupabaseInventoryRepository implements InventoryRepository {
           .order('created_at', ascending: false)
           .limit(limit);
       return rows.map(StockMovement.fromRow).toList();
-    } catch (e) {
-      throw AppException.from(e);
-    }
-  }
-
-  @override
-  Future<void> receivePurchase({
-    required String productId,
-    required int quantity,
-    required double unitCost,
-    String? notes,
-  }) async {
-    try {
-      await _client.rpc(
-        'rpc_receive_purchase',
-        params: {
-          'p_product_id': productId,
-          'p_quantity': quantity,
-          'p_unit_cost': unitCost,
-          'p_notes': notes,
-        },
-      );
     } catch (e) {
       throw AppException.from(e);
     }

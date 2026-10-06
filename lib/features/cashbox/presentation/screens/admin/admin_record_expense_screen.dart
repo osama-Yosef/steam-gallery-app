@@ -7,6 +7,7 @@ import '../../../../../core/widgets/state_views.dart';
 import '../../../data/models/cashbox_balance.dart';
 import '../../../data/models/expense_category.dart';
 import '../../providers/cashbox_providers.dart';
+import '../../../../../core/offline/offline_widgets.dart';
 
 class AdminRecordExpenseScreen extends ConsumerStatefulWidget {
   const AdminRecordExpenseScreen({super.key});
@@ -54,7 +55,7 @@ class _AdminRecordExpenseScreenState
     }
     setState(() => _submitting = true);
     try {
-      await ref
+      final result = await ref
           .read(cashboxRepositoryProvider)
           .recordExpense(
             categoryId: _selectedCategory!.id,
@@ -65,7 +66,10 @@ class _AdminRecordExpenseScreenState
                 ? null
                 : _notesCtrl.text.trim(),
           );
-      if (mounted) Navigator.of(context).pop(true);
+      if (mounted) {
+        if (result.queued) showSavedOfflineSnack(context, 'المصروف اتسجل');
+        Navigator.of(context).pop(true);
+      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(

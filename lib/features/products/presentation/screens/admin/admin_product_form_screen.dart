@@ -5,9 +5,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../../../core/errors/app_exception.dart';
+import '../../../../../core/utils/formatters.dart';
 import '../../../../../core/utils/validators.dart';
 import '../../../../../core/widgets/confirm_dialog.dart';
+import '../../../../../core/widgets/search_picker_sheet.dart';
 import '../../../../../core/widgets/state_views.dart';
+import '../../../data/models/assembly_component.dart';
 import '../../../data/models/product.dart';
 import '../../../data/models/product_category.dart';
 import '../../../data/models/product_image.dart';
@@ -59,6 +62,12 @@ class _AdminProductFormScreenState
   String? _categoryId;
   bool _isActive = true;
   final List<_OptionRow> _options = [];
+
+  /// "صنف تجميع" (0075): sold as one item, made of [_components].
+  bool _isAssembly = false;
+  bool _wasAssembly = false;
+  final List<AssemblyComponent> _components = [];
+  bool _componentsPrefilled = false;
   bool _prefilled = false;
   bool _optionsPrefilled = false;
   bool _saving = false;
@@ -90,6 +99,83 @@ class _AdminProductFormScreenState
     _minStockCtrl.text = p.minStock.toString();
     _categoryId = p.categoryId;
     _isActive = p.isActive;
+    _isAssembly = p.isAssembly;
+    _wasAssembly = p.isAssembly;
+  }
+
+  void _prefillComponents(List<AssemblyComponent> components) {
+    if (_componentsPrefilled) return;
+    _componentsPrefilled = true;
+    _components.addAll(components);
+  }
+
+  double get _componentsCost =>
+      _components.fold<double>(0, (s, c) => s + c.quantity * c.costPrice);
+
+  Future<void> _addComponent() async {
+    final products = await ref.read(adminProductsProvider().future);
+    if (!mounted) return;
+    final candidates =
+        products
+            .where(
+              (p) =>
+                  p.isActive &&
+                  !p.isService &&
+                  !p.isAssembly &&
+                  p.id != _currentProductId &&
+                  !_components.any((c) => c.productId == p.id),
+            )
+            .toList()
+          ..sort((a, b) => a.name.compareTo(b.name));
+    final picked = await showSearchPickerSheet<Product>(
+      context,
+      title: 'اختر المكون',
+      items: candidates,
+      label: (p) => p.name,
+      subtitle: (p) => '${p.sku} · تكلفة ${Formatters.currency(p.costPrice)}',
+      searchText: (p) => '${p.name} ${p.sku}',
+    );
+    if (picked == null) return;
+    setState(() {
+      _components.add(
+        AssemblyComponent(
+          productId: picked.id,
+          productName: picked.name,
+          quantity: 1,
+          costPrice: picked.costPrice,
+        ),
+      );
+    });
+  }
+
+  void _setComponentQty(int index, int qty) {
+    setState(() {
+      if (qty <= 0) {
+        _components.removeAt(index);
+      } else {
+        final c = _components[index];
+        _components[index] = AssemblyComponent(
+          productId: c.productId,
+          productName: c.productName,
+          quantity: qty,
+          costPrice: c.costPrice,
+        );
+      }
+    });
+  }
+
+  /// After the product row itself is saved: write (or clear) its recipe.
+  Future<void> _saveAssembly(String productId) async {
+    if (!_isAssembly && !_wasAssembly) return;
+    await ref
+        .read(productRepositoryProvider)
+        .setAssembly(
+          productId,
+          isAssembly: _isAssembly,
+          components: _components,
+        );
+    _wasAssembly = _isAssembly;
+    ref.invalidate(assemblyComponentsProvider(productId));
   }
 
   void _prefillOptions(List<ProductOption> options) {
@@ -102,6 +188,19 @@ class _AdminProductFormScreenState
   }
 
   Future<void> _submit() async {
+    if (_isAssembly) {
+      if (_components.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('صنف التجميع لازم يكون له مكون واحد على الأقل'),
+          ),
+        );
+        return;
+      }
+      // An assembly's cost is its components' — kept in sync here so the
+      // cost validator (must be > 0) has a real number to check.
+      _costCtrl.text = _componentsCost.toStringAsFixed(2);
+    }
     if (!_formKey.currentState!.validate()) return;
     setState(() => _saving = true);
     final repo = ref.read(productRepositoryProvider);
@@ -134,6 +233,7 @@ class _AdminProductFormScreenState
         );
         await repo.setProductActive(_currentProductId!, _isActive);
         await repo.saveProductOptions(_currentProductId!, optionInputs);
+        await _saveAssembly(_currentProductId!);
         ref.invalidate(adminProductDetailProvider(_currentProductId!));
         ref.invalidate(productOptionsProvider(_currentProductId!));
         if (mounted) {
@@ -158,6 +258,7 @@ class _AdminProductFormScreenState
           minStock: int.parse(_minStockCtrl.text),
         );
         await repo.saveProductOptions(id, optionInputs);
+        await _saveAssembly(id);
         if (mounted) {
           setState(() => _currentProductId = id);
           ScaffoldMessenger.of(context).showSnackBar(
@@ -191,6 +292,10 @@ class _AdminProductFormScreenState
       final options = ref.watch(productOptionsProvider(_currentProductId!));
       final list = options.value;
       if (list != null) _prefillOptions(list);
+      final components = ref
+          .watch(assemblyComponentsProvider(_currentProductId!))
+          .value;
+      if (components != null) _prefillComponents(components);
     }
 
     return Scaffold(
@@ -280,7 +385,13 @@ class _AdminProductFormScreenState
               Expanded(
                 child: TextFormField(
                   controller: _costCtrl,
-                  decoration: const InputDecoration(labelText: 'سعر التكلفة'),
+                  enabled: !_isAssembly,
+                  decoration: InputDecoration(
+                    labelText: 'سعر التكلفة',
+                    helperText: _isAssembly
+                        ? 'تكلفة المكونات: ${Formatters.currency(_componentsCost)}'
+                        : null,
+                  ),
                   keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
@@ -317,6 +428,49 @@ class _AdminProductFormScreenState
               onChanged: (v) => setState(() => _isActive = v),
             ),
           ],
+          const SizedBox(height: 8),
+          SwitchListTile(
+            contentPadding: EdgeInsets.zero,
+            title: const Text('صنف تجميع'),
+            subtitle: const Text(
+              'بيتصنع من أصناف تانية — لما يتباع بيخصم مكوناته من المخزن، '
+              'وممنوع يتباع لو أي مكون ناقص.',
+            ),
+            value: _isAssembly,
+            onChanged: (v) => setState(() => _isAssembly = v),
+          ),
+          if (_isAssembly) ...[
+            for (var i = 0; i < _components.length; i++)
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: const Icon(Iconsax.box_1_copy),
+                title: Text(_components[i].productName),
+                subtitle: Text(
+                  'تكلفة ${Formatters.currency(_components[i].costPrice)} للوحدة',
+                ),
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      icon: const Icon(Iconsax.minus_cirlce_copy),
+                      onPressed: () =>
+                          _setComponentQty(i, _components[i].quantity - 1),
+                    ),
+                    Text('${_components[i].quantity}'),
+                    IconButton(
+                      icon: const Icon(Iconsax.add_circle_copy),
+                      onPressed: () =>
+                          _setComponentQty(i, _components[i].quantity + 1),
+                    ),
+                  ],
+                ),
+              ),
+            TextButton.icon(
+              onPressed: _addComponent,
+              icon: const Icon(Iconsax.add_copy),
+              label: const Text('إضافة مكون'),
+            ),
+          ],
           const SizedBox(height: 16),
           Text(
             'الخيارات الإضافية',
@@ -346,9 +500,7 @@ class _AdminProductFormScreenState
                   Expanded(
                     child: TextFormField(
                       initialValue: row.priceText,
-                      decoration: const InputDecoration(
-                        labelText: 'سعر إضافي',
-                      ),
+                      decoration: const InputDecoration(labelText: 'سعر إضافي'),
                       keyboardType: const TextInputType.numberWithOptions(
                         decimal: true,
                       ),

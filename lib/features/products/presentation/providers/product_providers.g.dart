@@ -782,6 +782,84 @@ final class ServiceProductsProvider
 
 String _$serviceProductsHash() => r'7e290ccd4612816fbeed5b119e0446e436175ca1';
 
+@ProviderFor(assemblyComponents)
+const assemblyComponentsProvider = AssemblyComponentsFamily._();
+
+final class AssemblyComponentsProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<List<AssemblyComponent>>,
+          List<AssemblyComponent>,
+          FutureOr<List<AssemblyComponent>>
+        >
+    with
+        $FutureModifier<List<AssemblyComponent>>,
+        $FutureProvider<List<AssemblyComponent>> {
+  const AssemblyComponentsProvider._({
+    required AssemblyComponentsFamily super.from,
+    required String super.argument,
+  }) : super(
+         retry: null,
+         name: r'assemblyComponentsProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
+  @override
+  String debugGetCreateSourceHash() => _$assemblyComponentsHash();
+
+  @override
+  String toString() {
+    return r'assemblyComponentsProvider'
+        ''
+        '($argument)';
+  }
+
+  @$internal
+  @override
+  $FutureProviderElement<List<AssemblyComponent>> $createElement(
+    $ProviderPointer pointer,
+  ) => $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<List<AssemblyComponent>> create(Ref ref) {
+    final argument = this.argument as String;
+    return assemblyComponents(ref, argument);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is AssemblyComponentsProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$assemblyComponentsHash() =>
+    r'0b2cb94528b316e30118b990569b09583c959158';
+
+final class AssemblyComponentsFamily extends $Family
+    with $FunctionalFamilyOverride<FutureOr<List<AssemblyComponent>>, String> {
+  const AssemblyComponentsFamily._()
+    : super(
+        retry: null,
+        name: r'assemblyComponentsProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  AssemblyComponentsProvider call(String productId) =>
+      AssemblyComponentsProvider._(argument: productId, from: this);
+
+  @override
+  String toString() => r'assemblyComponentsProvider';
+}
+
 @ProviderFor(adminProductDetail)
 const adminProductDetailProvider = AdminProductDetailFamily._();
 

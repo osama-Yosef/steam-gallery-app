@@ -1,5 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../core/errors/app_exception.dart';
+import '../../../../core/offline/outbox.dart';
+import '../../../../core/utils/formatters.dart';
 import '../../../technician_account/data/models/sale.dart';
 import '../models/customer_account_summary.dart';
 import '../models/customer_account_transaction.dart';
@@ -17,7 +19,8 @@ abstract class CustomerAccountRepository {
   /// transfer/card; omitting it used to silently default to cash on the
   /// server regardless of how the money actually came in, which is why
   /// this is now required rather than optional.
-  Future<void> recordPayment({
+  /// Offline-capable ([clientRequestId] makes a resend safe).
+  Future<OutboxResult> recordPayment({
     required String customerId,
     required double amount,
     String? notes,
@@ -77,27 +80,25 @@ class SupabaseCustomerAccountRepository implements CustomerAccountRepository {
   }
 
   @override
-  Future<void> recordPayment({
+  Future<OutboxResult> recordPayment({
     required String customerId,
     required double amount,
     String? notes,
     required String clientRequestId,
     required PaymentMethod paymentMethod,
-  }) async {
-    try {
-      await _client.rpc(
-        'rpc_record_customer_payment',
-        params: {
-          'p_customer_id': customerId,
-          'p_amount': amount,
-          'p_order_id': null,
-          'p_notes': notes,
-          'p_client_request_id': clientRequestId,
-          'p_payment_method': paymentMethodToString(paymentMethod),
-        },
-      );
-    } catch (e) {
-      throw AppException.from(e);
-    }
-  }
+  }) => Outbox.instance.submit(
+    rpc: 'rpc_record_customer_payment',
+    params: {
+      'p_customer_id': customerId,
+      'p_amount': amount,
+      'p_order_id': null,
+      'p_notes': notes,
+      'p_client_request_id': clientRequestId,
+      'p_payment_method': paymentMethodToString(paymentMethod),
+    },
+    label: 'تحصيل ${Formatters.currency(amount)} من عميل',
+    kind: 'customer_payment',
+    refId: customerId,
+    requestId: clientRequestId,
+  );
 }

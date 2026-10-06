@@ -11,6 +11,7 @@ import 'package:steam_gallery_app/features/orders/data/models/order_item.dart';
 import 'package:steam_gallery_app/features/orders/data/repositories/order_repository.dart';
 import 'package:steam_gallery_app/features/orders/presentation/providers/order_providers.dart';
 import 'package:steam_gallery_app/features/orders/presentation/screens/admin/admin_order_detail_screen.dart';
+import 'package:steam_gallery_app/core/offline/outbox.dart';
 
 Order _order(OrderStatus status, {double paidAmount = 0}) => Order.fromRow({
   'id': 'o1',
@@ -29,8 +30,9 @@ class _FakeOrderRepo implements OrderRepository {
   final returnCalls = <({String orderId, String reason})>[];
 
   @override
-  Future<void> returnOrder(String orderId, String reason) async {
+  Future<OutboxResult> returnOrder(String orderId, String reason) async {
     returnCalls.add((orderId: orderId, reason: reason));
+    return const OutboxResult.done(null);
   }
 
   @override

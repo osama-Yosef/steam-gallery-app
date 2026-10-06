@@ -135,6 +135,47 @@ final class WarehouseStockFamily extends $Family
   String toString() => r'warehouseStockProvider';
 }
 
+@ProviderFor(assemblyStock)
+const assemblyStockProvider = AssemblyStockProvider._();
+
+final class AssemblyStockProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<List<WarehouseStockItem>>,
+          List<WarehouseStockItem>,
+          FutureOr<List<WarehouseStockItem>>
+        >
+    with
+        $FutureModifier<List<WarehouseStockItem>>,
+        $FutureProvider<List<WarehouseStockItem>> {
+  const AssemblyStockProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'assemblyStockProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$assemblyStockHash();
+
+  @$internal
+  @override
+  $FutureProviderElement<List<WarehouseStockItem>> $createElement(
+    $ProviderPointer pointer,
+  ) => $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<List<WarehouseStockItem>> create(Ref ref) {
+    return assemblyStock(ref);
+  }
+}
+
+String _$assemblyStockHash() => r'b303826930ffa71edde4ceb1ebdb7dc0e088eaac';
+
 @ProviderFor(technicianBagStock)
 const technicianBagStockProvider = TechnicianBagStockFamily._();
 

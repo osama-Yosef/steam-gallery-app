@@ -19,6 +19,7 @@ import 'package:steam_gallery_app/features/orders/data/repositories/order_reposi
 import 'package:steam_gallery_app/features/technician_account/data/models/sale.dart';
 import 'package:steam_gallery_app/features/orders/presentation/providers/order_providers.dart';
 import 'package:steam_gallery_app/features/orders/presentation/screens/customer/checkout_screen.dart';
+import 'package:steam_gallery_app/core/offline/outbox.dart';
 
 final _customer = const AppUser(
   id: 'cust-1',
@@ -149,27 +150,33 @@ class _FakeOrderRepo implements OrderRepository {
   @override
   Stream<List<Order>> watchAllOrders() => const Stream.empty();
   @override
-  Future<void> setShippingFee({
+  Future<OutboxResult> setShippingFee({
     required String orderId,
     required double amount,
-  }) async {}
+  }) async => const OutboxResult.done(null);
   @override
-  Future<void> confirmOrder(String orderId) async {}
+  Future<OutboxResult> confirmOrder(String orderId) async =>
+      const OutboxResult.done(null);
   @override
-  Future<void> updateOrderStatus(String orderId, OrderStatus status) async {}
+  Future<OutboxResult> updateOrderStatus(
+    String orderId,
+    OrderStatus status,
+  ) async => const OutboxResult.done(null);
   @override
-  Future<void> cancelOrder(String orderId, String reason) async {}
+  Future<OutboxResult> cancelOrder(String orderId, String reason) async =>
+      const OutboxResult.done(null);
   @override
-  Future<void> returnOrder(String orderId, String reason) async {}
+  Future<OutboxResult> returnOrder(String orderId, String reason) async =>
+      const OutboxResult.done(null);
   @override
-  Future<void> recordPayment({
+  Future<OutboxResult> recordPayment({
     required String customerId,
     required double amount,
     String? orderId,
     String? notes,
     required String clientRequestId,
     required PaymentMethod paymentMethod,
-  }) async {}
+  }) async => const OutboxResult.done(null);
 }
 
 Future<ProviderContainer> _pumpCheckout(

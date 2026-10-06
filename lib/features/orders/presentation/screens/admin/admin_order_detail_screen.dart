@@ -14,6 +14,8 @@ import '../../../../technician_account/data/models/sale.dart';
 import '../../../data/models/order.dart';
 import '../../../presentation/providers/order_providers.dart';
 import '../../widgets/order_status_chips.dart';
+import '../../../../../core/offline/outbox.dart';
+import '../../../../../core/offline/offline_widgets.dart';
 
 class AdminOrderDetailScreen extends ConsumerWidget {
   final String orderId;
@@ -250,7 +252,7 @@ class AdminOrderDetailScreen extends ConsumerWidget {
   Future<void> _run(
     BuildContext context,
     WidgetRef ref,
-    Future<void> Function() action,
+    Future<Object?> Function() action,
   ) async {
     // A non-dismissible barrier while the RPC is in flight, mainly to stop a
     // double-tap firing the same action twice before the first reply lands.
@@ -260,12 +262,16 @@ class AdminOrderDetailScreen extends ConsumerWidget {
       builder: (_) => const Center(child: CircularProgressIndicator()),
     );
     try {
-      await action();
+      final result = await action();
       if (context.mounted) {
         Navigator.of(context, rootNavigator: true).pop();
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('تم التنفيذ بنجاح')));
+        if (result is OutboxResult && result.queued) {
+          showSavedOfflineSnack(context);
+        } else {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text('تم التنفيذ بنجاح')));
+        }
       }
     } catch (e) {
       if (context.mounted) {
@@ -315,6 +321,31 @@ class AdminOrderDetailScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 4),
               Text(Formatters.dateTime(order.createdAt)),
+              // Actions taken offline on this order, not sent yet — the
+              // status above is still the server's until they are.
+              ListenableBuilder(
+                listenable: Outbox.instance,
+                builder: (context, _) {
+                  final pending = Outbox.instance.pendingOf(
+                    'order',
+                    refId: orderId,
+                  );
+                  if (pending.isEmpty) return const SizedBox.shrink();
+                  return Card(
+                    color: AppColors.warning.withValues(alpha: 0.1),
+                    child: ListTile(
+                      leading: const Icon(
+                        Icons.cloud_upload_outlined,
+                        color: AppColors.warning,
+                      ),
+                      title: const Text('مستني المزامنة'),
+                      subtitle: Text(
+                        pending.map((e) => e.label).join('\n'),
+                      ),
+                    ),
+                  );
+                },
+              ),
               const SizedBox(height: 8),
               // Independent of order status on purpose (0037) — an admin
               // needs to see both facts at once.

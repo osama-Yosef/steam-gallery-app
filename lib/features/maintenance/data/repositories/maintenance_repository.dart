@@ -6,6 +6,7 @@ import '../models/maintenance_image.dart';
 import '../models/maintenance_request.dart';
 import '../models/queue_position.dart';
 import '../models/technician_option.dart';
+import '../../../../core/offline/offline_stream.dart';
 
 abstract class MaintenanceRepository {
   /// [addressId] must be one of the customer's own saved, service-area-
@@ -106,6 +107,7 @@ class SupabaseMaintenanceRepository implements MaintenanceRepository {
         .stream(primaryKey: ['id'])
         .eq('customer_id', customerId)
         .order('created_at', ascending: false)
+        .offlineTolerant()
         .map((rows) => rows.map(MaintenanceRequest.fromRow).toList());
   }
 
@@ -115,6 +117,7 @@ class SupabaseMaintenanceRepository implements MaintenanceRepository {
         .from('maintenance_requests')
         .stream(primaryKey: ['id'])
         .eq('id', requestId)
+        .offlineTolerant()
         .map(
           (rows) =>
               rows.isEmpty ? null : MaintenanceRequest.fromRow(rows.first),
@@ -127,6 +130,7 @@ class SupabaseMaintenanceRepository implements MaintenanceRepository {
         .from('maintenance_requests')
         .stream(primaryKey: ['id'])
         .order('created_at', ascending: true)
+        .offlineTolerant()
         .map((rows) => rows.map(MaintenanceRequest.fromRow).toList());
   }
 

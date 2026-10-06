@@ -20,6 +20,9 @@ abstract class WarehouseStockItem with _$WarehouseStockItem {
     /// — null until the repository resolves it via rpc_effective_prices, in
     /// which case [displayPrice] falls back to the catalogue [sellingPrice].
     double? effectivePrice,
+    /// An assembly product (0075): [quantity] is how many the warehouse can
+    /// build from its components right now, not stock of its own.
+    @Default(false) bool isAssembly,
   }) = _WarehouseStockItem;
 
   const WarehouseStockItem._();

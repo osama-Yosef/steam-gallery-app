@@ -18,7 +18,9 @@ mixin _$WarehouseStockItem {
 /// live offer applies, same as private.fn_effective_price() server-side)
 /// — null until the repository resolves it via rpc_effective_prices, in
 /// which case [displayPrice] falls back to the catalogue [sellingPrice].
- double? get effectivePrice;
+ double? get effectivePrice;/// An assembly product (0075): [quantity] is how many the warehouse can
+/// build from its components right now, not stock of its own.
+ bool get isAssembly;
 /// Create a copy of WarehouseStockItem
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -29,16 +31,16 @@ $WarehouseStockItemCopyWith<WarehouseStockItem> get copyWith => _$WarehouseStock
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is WarehouseStockItem&&(identical(other.productId, productId) || other.productId == productId)&&(identical(other.productName, productName) || other.productName == productName)&&(identical(other.sku, sku) || other.sku == sku)&&(identical(other.quantity, quantity) || other.quantity == quantity)&&(identical(other.costPrice, costPrice) || other.costPrice == costPrice)&&(identical(other.sellingPrice, sellingPrice) || other.sellingPrice == sellingPrice)&&(identical(other.minStock, minStock) || other.minStock == minStock)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl)&&(identical(other.effectivePrice, effectivePrice) || other.effectivePrice == effectivePrice));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is WarehouseStockItem&&(identical(other.productId, productId) || other.productId == productId)&&(identical(other.productName, productName) || other.productName == productName)&&(identical(other.sku, sku) || other.sku == sku)&&(identical(other.quantity, quantity) || other.quantity == quantity)&&(identical(other.costPrice, costPrice) || other.costPrice == costPrice)&&(identical(other.sellingPrice, sellingPrice) || other.sellingPrice == sellingPrice)&&(identical(other.minStock, minStock) || other.minStock == minStock)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl)&&(identical(other.effectivePrice, effectivePrice) || other.effectivePrice == effectivePrice)&&(identical(other.isAssembly, isAssembly) || other.isAssembly == isAssembly));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,productId,productName,sku,quantity,costPrice,sellingPrice,minStock,imageUrl,effectivePrice);
+int get hashCode => Object.hash(runtimeType,productId,productName,sku,quantity,costPrice,sellingPrice,minStock,imageUrl,effectivePrice,isAssembly);
 
 @override
 String toString() {
-  return 'WarehouseStockItem(productId: $productId, productName: $productName, sku: $sku, quantity: $quantity, costPrice: $costPrice, sellingPrice: $sellingPrice, minStock: $minStock, imageUrl: $imageUrl, effectivePrice: $effectivePrice)';
+  return 'WarehouseStockItem(productId: $productId, productName: $productName, sku: $sku, quantity: $quantity, costPrice: $costPrice, sellingPrice: $sellingPrice, minStock: $minStock, imageUrl: $imageUrl, effectivePrice: $effectivePrice, isAssembly: $isAssembly)';
 }
 
 
@@ -49,7 +51,7 @@ abstract mixin class $WarehouseStockItemCopyWith<$Res>  {
   factory $WarehouseStockItemCopyWith(WarehouseStockItem value, $Res Function(WarehouseStockItem) _then) = _$WarehouseStockItemCopyWithImpl;
 @useResult
 $Res call({
- String productId, String productName, String sku, int quantity, double costPrice, double sellingPrice, int minStock, String? imageUrl, double? effectivePrice
+ String productId, String productName, String sku, int quantity, double costPrice, double sellingPrice, int minStock, String? imageUrl, double? effectivePrice, bool isAssembly
 });
 
 
@@ -66,7 +68,7 @@ class _$WarehouseStockItemCopyWithImpl<$Res>
 
 /// Create a copy of WarehouseStockItem
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? productId = null,Object? productName = null,Object? sku = null,Object? quantity = null,Object? costPrice = null,Object? sellingPrice = null,Object? minStock = null,Object? imageUrl = freezed,Object? effectivePrice = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? productId = null,Object? productName = null,Object? sku = null,Object? quantity = null,Object? costPrice = null,Object? sellingPrice = null,Object? minStock = null,Object? imageUrl = freezed,Object? effectivePrice = freezed,Object? isAssembly = null,}) {
   return _then(_self.copyWith(
 productId: null == productId ? _self.productId : productId // ignore: cast_nullable_to_non_nullable
 as String,productName: null == productName ? _self.productName : productName // ignore: cast_nullable_to_non_nullable
@@ -77,7 +79,8 @@ as double,sellingPrice: null == sellingPrice ? _self.sellingPrice : sellingPrice
 as double,minStock: null == minStock ? _self.minStock : minStock // ignore: cast_nullable_to_non_nullable
 as int,imageUrl: freezed == imageUrl ? _self.imageUrl : imageUrl // ignore: cast_nullable_to_non_nullable
 as String?,effectivePrice: freezed == effectivePrice ? _self.effectivePrice : effectivePrice // ignore: cast_nullable_to_non_nullable
-as double?,
+as double?,isAssembly: null == isAssembly ? _self.isAssembly : isAssembly // ignore: cast_nullable_to_non_nullable
+as bool,
   ));
 }
 
@@ -162,10 +165,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String productId,  String productName,  String sku,  int quantity,  double costPrice,  double sellingPrice,  int minStock,  String? imageUrl,  double? effectivePrice)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String productId,  String productName,  String sku,  int quantity,  double costPrice,  double sellingPrice,  int minStock,  String? imageUrl,  double? effectivePrice,  bool isAssembly)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _WarehouseStockItem() when $default != null:
-return $default(_that.productId,_that.productName,_that.sku,_that.quantity,_that.costPrice,_that.sellingPrice,_that.minStock,_that.imageUrl,_that.effectivePrice);case _:
+return $default(_that.productId,_that.productName,_that.sku,_that.quantity,_that.costPrice,_that.sellingPrice,_that.minStock,_that.imageUrl,_that.effectivePrice,_that.isAssembly);case _:
   return orElse();
 
 }
@@ -183,10 +186,10 @@ return $default(_that.productId,_that.productName,_that.sku,_that.quantity,_that
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String productId,  String productName,  String sku,  int quantity,  double costPrice,  double sellingPrice,  int minStock,  String? imageUrl,  double? effectivePrice)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String productId,  String productName,  String sku,  int quantity,  double costPrice,  double sellingPrice,  int minStock,  String? imageUrl,  double? effectivePrice,  bool isAssembly)  $default,) {final _that = this;
 switch (_that) {
 case _WarehouseStockItem():
-return $default(_that.productId,_that.productName,_that.sku,_that.quantity,_that.costPrice,_that.sellingPrice,_that.minStock,_that.imageUrl,_that.effectivePrice);case _:
+return $default(_that.productId,_that.productName,_that.sku,_that.quantity,_that.costPrice,_that.sellingPrice,_that.minStock,_that.imageUrl,_that.effectivePrice,_that.isAssembly);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -203,10 +206,10 @@ return $default(_that.productId,_that.productName,_that.sku,_that.quantity,_that
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String productId,  String productName,  String sku,  int quantity,  double costPrice,  double sellingPrice,  int minStock,  String? imageUrl,  double? effectivePrice)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String productId,  String productName,  String sku,  int quantity,  double costPrice,  double sellingPrice,  int minStock,  String? imageUrl,  double? effectivePrice,  bool isAssembly)?  $default,) {final _that = this;
 switch (_that) {
 case _WarehouseStockItem() when $default != null:
-return $default(_that.productId,_that.productName,_that.sku,_that.quantity,_that.costPrice,_that.sellingPrice,_that.minStock,_that.imageUrl,_that.effectivePrice);case _:
+return $default(_that.productId,_that.productName,_that.sku,_that.quantity,_that.costPrice,_that.sellingPrice,_that.minStock,_that.imageUrl,_that.effectivePrice,_that.isAssembly);case _:
   return null;
 
 }
@@ -218,7 +221,7 @@ return $default(_that.productId,_that.productName,_that.sku,_that.quantity,_that
 
 
 class _WarehouseStockItem extends WarehouseStockItem {
-  const _WarehouseStockItem({required this.productId, required this.productName, required this.sku, required this.quantity, required this.costPrice, required this.sellingPrice, required this.minStock, this.imageUrl, this.effectivePrice}): super._();
+  const _WarehouseStockItem({required this.productId, required this.productName, required this.sku, required this.quantity, required this.costPrice, required this.sellingPrice, required this.minStock, this.imageUrl, this.effectivePrice, this.isAssembly = false}): super._();
   
 
 @override final  String productId;
@@ -234,6 +237,9 @@ class _WarehouseStockItem extends WarehouseStockItem {
 /// — null until the repository resolves it via rpc_effective_prices, in
 /// which case [displayPrice] falls back to the catalogue [sellingPrice].
 @override final  double? effectivePrice;
+/// An assembly product (0075): [quantity] is how many the warehouse can
+/// build from its components right now, not stock of its own.
+@override@JsonKey() final  bool isAssembly;
 
 /// Create a copy of WarehouseStockItem
 /// with the given fields replaced by the non-null parameter values.
@@ -245,16 +251,16 @@ _$WarehouseStockItemCopyWith<_WarehouseStockItem> get copyWith => __$WarehouseSt
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _WarehouseStockItem&&(identical(other.productId, productId) || other.productId == productId)&&(identical(other.productName, productName) || other.productName == productName)&&(identical(other.sku, sku) || other.sku == sku)&&(identical(other.quantity, quantity) || other.quantity == quantity)&&(identical(other.costPrice, costPrice) || other.costPrice == costPrice)&&(identical(other.sellingPrice, sellingPrice) || other.sellingPrice == sellingPrice)&&(identical(other.minStock, minStock) || other.minStock == minStock)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl)&&(identical(other.effectivePrice, effectivePrice) || other.effectivePrice == effectivePrice));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _WarehouseStockItem&&(identical(other.productId, productId) || other.productId == productId)&&(identical(other.productName, productName) || other.productName == productName)&&(identical(other.sku, sku) || other.sku == sku)&&(identical(other.quantity, quantity) || other.quantity == quantity)&&(identical(other.costPrice, costPrice) || other.costPrice == costPrice)&&(identical(other.sellingPrice, sellingPrice) || other.sellingPrice == sellingPrice)&&(identical(other.minStock, minStock) || other.minStock == minStock)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl)&&(identical(other.effectivePrice, effectivePrice) || other.effectivePrice == effectivePrice)&&(identical(other.isAssembly, isAssembly) || other.isAssembly == isAssembly));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,productId,productName,sku,quantity,costPrice,sellingPrice,minStock,imageUrl,effectivePrice);
+int get hashCode => Object.hash(runtimeType,productId,productName,sku,quantity,costPrice,sellingPrice,minStock,imageUrl,effectivePrice,isAssembly);
 
 @override
 String toString() {
-  return 'WarehouseStockItem(productId: $productId, productName: $productName, sku: $sku, quantity: $quantity, costPrice: $costPrice, sellingPrice: $sellingPrice, minStock: $minStock, imageUrl: $imageUrl, effectivePrice: $effectivePrice)';
+  return 'WarehouseStockItem(productId: $productId, productName: $productName, sku: $sku, quantity: $quantity, costPrice: $costPrice, sellingPrice: $sellingPrice, minStock: $minStock, imageUrl: $imageUrl, effectivePrice: $effectivePrice, isAssembly: $isAssembly)';
 }
 
 
@@ -265,7 +271,7 @@ abstract mixin class _$WarehouseStockItemCopyWith<$Res> implements $WarehouseSto
   factory _$WarehouseStockItemCopyWith(_WarehouseStockItem value, $Res Function(_WarehouseStockItem) _then) = __$WarehouseStockItemCopyWithImpl;
 @override @useResult
 $Res call({
- String productId, String productName, String sku, int quantity, double costPrice, double sellingPrice, int minStock, String? imageUrl, double? effectivePrice
+ String productId, String productName, String sku, int quantity, double costPrice, double sellingPrice, int minStock, String? imageUrl, double? effectivePrice, bool isAssembly
 });
 
 
@@ -282,7 +288,7 @@ class __$WarehouseStockItemCopyWithImpl<$Res>
 
 /// Create a copy of WarehouseStockItem
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? productId = null,Object? productName = null,Object? sku = null,Object? quantity = null,Object? costPrice = null,Object? sellingPrice = null,Object? minStock = null,Object? imageUrl = freezed,Object? effectivePrice = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? productId = null,Object? productName = null,Object? sku = null,Object? quantity = null,Object? costPrice = null,Object? sellingPrice = null,Object? minStock = null,Object? imageUrl = freezed,Object? effectivePrice = freezed,Object? isAssembly = null,}) {
   return _then(_WarehouseStockItem(
 productId: null == productId ? _self.productId : productId // ignore: cast_nullable_to_non_nullable
 as String,productName: null == productName ? _self.productName : productName // ignore: cast_nullable_to_non_nullable
@@ -293,7 +299,8 @@ as double,sellingPrice: null == sellingPrice ? _self.sellingPrice : sellingPrice
 as double,minStock: null == minStock ? _self.minStock : minStock // ignore: cast_nullable_to_non_nullable
 as int,imageUrl: freezed == imageUrl ? _self.imageUrl : imageUrl // ignore: cast_nullable_to_non_nullable
 as String?,effectivePrice: freezed == effectivePrice ? _self.effectivePrice : effectivePrice // ignore: cast_nullable_to_non_nullable
-as double?,
+as double?,isAssembly: null == isAssembly ? _self.isAssembly : isAssembly // ignore: cast_nullable_to_non_nullable
+as bool,
   ));
 }
 

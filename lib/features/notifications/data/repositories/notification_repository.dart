@@ -1,6 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../core/errors/app_exception.dart';
 import '../models/app_notification.dart';
+import '../../../../core/offline/offline_stream.dart';
 
 abstract class NotificationRepository {
   /// RLS already scopes this to `user_id = auth.uid()` — see
@@ -23,6 +24,7 @@ class SupabaseNotificationRepository implements NotificationRepository {
         .from('notifications')
         .stream(primaryKey: ['id'])
         .order('created_at', ascending: false)
+        .offlineTolerant()
         .map((rows) => rows.map(AppNotification.fromRow).toList());
   }
 

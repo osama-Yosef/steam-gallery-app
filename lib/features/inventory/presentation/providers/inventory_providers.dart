@@ -20,6 +20,11 @@ Future<List<WarehouseStockItem>> warehouseStock(Ref ref, {String? search}) {
 }
 
 @riverpod
+Future<List<WarehouseStockItem>> assemblyStock(Ref ref) {
+  return ref.watch(inventoryRepositoryProvider).getAssemblyStock();
+}
+
+@riverpod
 Future<List<TechnicianBagStockItem>> technicianBagStock(
   Ref ref,
   String technicianId,

@@ -6,6 +6,7 @@ import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/widgets/money_text.dart';
 import '../../../data/models/cashbox_balance.dart';
 import '../../providers/cashbox_providers.dart';
+import '../../../../../core/offline/offline_widgets.dart';
 
 /// Manual cash in / cash out on the till.
 ///
@@ -59,16 +60,21 @@ class _AdminCashMovementScreenState
       final notes = _notesCtrl.text.trim().isEmpty
           ? null
           : _notesCtrl.text.trim();
-      if (widget.kind.isDeposit) {
-        await repo.depositCash(amount: amount, kind: _cashboxKind, notes: notes);
-      } else {
-        await repo.withdrawCash(
-          amount: amount,
-          kind: _cashboxKind,
-          notes: notes,
-        );
+      final result = widget.kind.isDeposit
+          ? await repo.depositCash(
+              amount: amount,
+              kind: _cashboxKind,
+              notes: notes,
+            )
+          : await repo.withdrawCash(
+              amount: amount,
+              kind: _cashboxKind,
+              notes: notes,
+            );
+      if (mounted) {
+        if (result.queued) showSavedOfflineSnack(context);
+        Navigator.of(context).pop(true);
       }
-      if (mounted) Navigator.of(context).pop(true);
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(

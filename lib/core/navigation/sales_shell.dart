@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../offline/offline_widgets.dart';
+import '../router/route_names.dart';
 import '../theme/app_colors.dart';
 import '../widgets/glass_panel.dart';
+import 'offline_refresh.dart';
 
 /// Floating glass pill bottom nav for the sales role (0046) — same shape as
 /// [CustomerShell], replacing the old collapsible sidebar. Sales only gets
@@ -21,35 +24,48 @@ class SalesShell extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return PopScope(
-      canPop: navigationShell.currentIndex == 0,
-      onPopInvokedWithResult: (didPop, _) {
-        if (!didPop) navigationShell.goBranch(0);
-      },
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-        body: navigationShell,
-        bottomNavigationBar: SafeArea(
-          minimum: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-          child: GlassPanel(
-            borderRadius: BorderRadius.circular(28),
-            blurSigma: 30,
-            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 6),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                for (var i = 0; i < _items.length; i++)
-                  _TabItem(
-                    icon: _items[i].icon,
-                    label: _items[i].label,
-                    selected: navigationShell.currentIndex == i,
-                    onTap: () => navigationShell.goBranch(
-                      i,
-                      initialLocation: i == navigationShell.currentIndex,
-                    ),
+    return OfflineRefresh(
+      child: PopScope(
+        canPop: navigationShell.currentIndex == 0,
+        onPopInvokedWithResult: (didPop, _) {
+          if (!didPop) navigationShell.goBranch(0);
+        },
+        child: Scaffold(
+          backgroundColor: Colors.transparent,
+          body: navigationShell,
+          // The offline/sync strip sits just above the tab pill — at the top
+          // it would fight each screen's own AppBar for the status-bar inset.
+          bottomNavigationBar: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const OfflineStatusBar(syncRoute: Routes.salesSync),
+              SafeArea(
+                minimum: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                child: GlassPanel(
+                  borderRadius: BorderRadius.circular(28),
+                  blurSigma: 30,
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 8,
+                    horizontal: 6,
                   ),
-              ],
-            ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      for (var i = 0; i < _items.length; i++)
+                        _TabItem(
+                          icon: _items[i].icon,
+                          label: _items[i].label,
+                          selected: navigationShell.currentIndex == i,
+                          onTap: () => navigationShell.goBranch(
+                            i,
+                            initialLocation: i == navigationShell.currentIndex,
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),

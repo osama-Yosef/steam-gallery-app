@@ -8,6 +8,9 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'app.dart';
 import 'core/config/env.dart';
 import 'core/firebase/push_notification_service.dart';
+import 'core/offline/offline_http_client.dart';
+import 'core/offline/offline_store.dart';
+import 'core/offline/outbox.dart';
 import 'features/auth/presentation/providers/auth_providers.dart';
 
 Future<void> main() async {
@@ -26,10 +29,15 @@ Future<void> main() async {
   }
 
   if (Env.isConfigured) {
+    // Reads are cached and served from the device when the server can't be
+    // reached; admin writes queue in the Outbox until it can (offline mode).
+    final offlineStore = await OfflineStore.open();
     await Supabase.initialize(
       url: Env.supabaseUrl,
       publishableKey: Env.supabasePublishableKey,
+      httpClient: OfflineHttpClient(offlineStore),
     );
+    await Outbox.instance.init(Supabase.instance.client, offlineStore);
   }
 
   runApp(

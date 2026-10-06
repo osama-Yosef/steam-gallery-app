@@ -234,3 +234,80 @@ final class SaleByIdFamily extends $Family
   @override
   String toString() => r'saleByIdProvider';
 }
+
+@ProviderFor(invoiceLines)
+const invoiceLinesProvider = InvoiceLinesFamily._();
+
+final class InvoiceLinesProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<List<InvoiceLine>>,
+          List<InvoiceLine>,
+          FutureOr<List<InvoiceLine>>
+        >
+    with
+        $FutureModifier<List<InvoiceLine>>,
+        $FutureProvider<List<InvoiceLine>> {
+  const InvoiceLinesProvider._({
+    required InvoiceLinesFamily super.from,
+    required String super.argument,
+  }) : super(
+         retry: null,
+         name: r'invoiceLinesProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
+  @override
+  String debugGetCreateSourceHash() => _$invoiceLinesHash();
+
+  @override
+  String toString() {
+    return r'invoiceLinesProvider'
+        ''
+        '($argument)';
+  }
+
+  @$internal
+  @override
+  $FutureProviderElement<List<InvoiceLine>> $createElement(
+    $ProviderPointer pointer,
+  ) => $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<List<InvoiceLine>> create(Ref ref) {
+    final argument = this.argument as String;
+    return invoiceLines(ref, argument);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is InvoiceLinesProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$invoiceLinesHash() => r'58219b883b631668a645f4b783e260b0f5fde8e0';
+
+final class InvoiceLinesFamily extends $Family
+    with $FunctionalFamilyOverride<FutureOr<List<InvoiceLine>>, String> {
+  const InvoiceLinesFamily._()
+    : super(
+        retry: null,
+        name: r'invoiceLinesProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  InvoiceLinesProvider call(String saleId) =>
+      InvoiceLinesProvider._(argument: saleId, from: this);
+
+  @override
+  String toString() => r'invoiceLinesProvider';
+}

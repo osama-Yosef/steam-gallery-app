@@ -43,7 +43,7 @@ export async function setup(repo) {
     create role anon nologin; create role authenticated nologin; create role service_role nologin;
     create schema auth;
     create table auth.users (id uuid primary key, phone text, email text,
-      encrypted_password text, phone_confirmed_at timestamptz,
+      encrypted_password text, phone_confirmed_at timestamptz, email_confirmed_at timestamptz,
       raw_app_meta_data jsonb default '{}'::jsonb, raw_user_meta_data jsonb default '{}'::jsonb,
       banned_until timestamptz);
     create table auth.sessions (id uuid primary key default gen_random_uuid(), user_id uuid);
@@ -64,13 +64,23 @@ export async function setup(repo) {
     alter table storage.objects enable row level security;
     create function storage.foldername(name text) returns text[] language sql as $$ select string_to_array(name, '/') $$;
     create publication supabase_realtime;
+    -- pg_net (0066) has no PGlite build: a no-op net.http_post stands in,
+    -- and the migration's CREATE EXTENSION line is skipped below.
+    create schema extensions;
+    create schema net;
+    create function net.http_post(url text, body jsonb default '{}'::jsonb, params jsonb default '{}'::jsonb,
+      headers jsonb default '{}'::jsonb, timeout_milliseconds int default 5000)
+      returns bigint language sql as $$ select 0::bigint $$;
+    grant usage on schema net, extensions to anon, authenticated, service_role;
   `);
 
   console.log('== Applying migrations ==');
   const files = fs.readdirSync(migDir).filter(f => f.endsWith('.sql')).sort();
   for (const f of files) {
     try {
-      await db.exec(fs.readFileSync(path.join(migDir, f), 'utf8'));
+      const sql = fs.readFileSync(path.join(migDir, f), 'utf8')
+        .replace(/create extension if not exists pg_net[^;]*;/gi, '');
+      await db.exec(sql);
     } catch (e) {
       ok(`applied ${f}`, false, e.message);
       console.log('Aborting: later migrations depend on this one.');

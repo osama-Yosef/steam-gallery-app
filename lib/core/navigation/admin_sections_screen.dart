@@ -59,6 +59,24 @@ const _sections = [
     route: Routes.adminWalkInSale,
   ),
   _SectionItem(
+    icon: Iconsax.receipt_2_copy,
+    label: 'فواتير الشراء',
+    colors: [Color(0xFF4DD0E1), Color(0xFF0097A7)],
+    route: Routes.adminPurchaseInvoices,
+  ),
+  _SectionItem(
+    icon: Iconsax.profile_2user_copy,
+    label: 'الموردين',
+    colors: [Color(0xFFAED581), Color(0xFF689F38)],
+    route: Routes.adminSuppliers,
+  ),
+  _SectionItem(
+    icon: Iconsax.refresh_circle_copy,
+    label: 'المزامنة',
+    colors: [Color(0xFF90A4AE), Color(0xFF546E7A)],
+    route: Routes.adminSync,
+  ),
+  _SectionItem(
     icon: Iconsax.chart_2_copy,
     label: 'التقارير',
     colors: [Color(0xFFA78BFA), Color(0xFF7C3AED)],
@@ -228,7 +246,9 @@ class _SupportSettingsSheetState extends ConsumerState<_SupportSettingsSheet> {
         children: [
           Text('إعدادات الدعم', style: Theme.of(context).textTheme.titleLarge),
           const SizedBox(height: 4),
-          const Text('العميل هيشوف زرار "تواصل معنا" في حسابه يفتح واتساب على الرقم ده.'),
+          const Text(
+            'العميل هيشوف زرار "تواصل معنا" في حسابه يفتح واتساب على الرقم ده.',
+          ),
           const SizedBox(height: 16),
           TextField(
             controller: _whatsappCtrl,

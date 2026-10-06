@@ -80,6 +80,9 @@ class DashboardOverview extends ConsumerWidget {
                     colors: const [Color(0xFF6D8CFF), Color(0xFF3B5BFF)],
                     label: 'مبيعات اليوم',
                     value: MoneyText(s.todayRevenue),
+                    // Opens the walk-in register on its invoice history,
+                    // where each of today's invoices can be edited.
+                    onTap: () => context.push(Routes.adminWalkInInvoices),
                   ),
                   _KpiCard(
                     icon: Iconsax.trend_up_copy,

@@ -105,7 +105,16 @@ abstract final class Routes {
 
   // Warehouse & Technician Bag (Module 5)
   static const adminWarehouse = '/admin/warehouse';
-  static const adminReceivePurchase = '/admin/warehouse/receive';
+  // Purchase invoices & suppliers (0075) — replaced the bare "receive stock".
+  static const adminPurchaseInvoices = '/admin/warehouse/purchases';
+  static const adminPurchaseInvoiceNew = '/admin/warehouse/purchases/new';
+  static String adminPurchaseInvoiceDetail(String id) =>
+      '/admin/warehouse/purchases/$id';
+  static const adminSuppliers = '/admin/warehouse/suppliers';
+  static String adminSupplierInvoices(String supplierId, String name) => Uri(
+    path: adminPurchaseInvoices,
+    queryParameters: {'supplier': supplierId, 'name': name},
+  ).toString();
   static const adminIssueStock = '/admin/warehouse/issue';
   static const adminStockMovements = '/admin/warehouse/movements';
   static const adminTechnicianBags = '/admin/warehouse/bags';
@@ -151,8 +160,14 @@ abstract final class Routes {
   static const adminCashDeposit = '/admin/cashbox/deposit';
   static const adminCashWithdraw = '/admin/cashbox/withdraw';
 
-  // Walk-in sales
+  // Walk-in sales — `?tab=invoices` opens on the invoice history (the
+  // dashboard's "مبيعات اليوم" tile).
   static const adminWalkInSale = '/admin/walk-in-sale';
+  static const adminWalkInInvoices = '/admin/walk-in-sale?tab=invoices';
+
+  // Offline sync queue (admin and sales shells).
+  static const adminSync = '/admin/sync';
+  static const salesSync = '/sales/sync';
 
   // Wallets (Phase 15 — admin financial visibility)
   static const adminWallets = '/admin/wallets';

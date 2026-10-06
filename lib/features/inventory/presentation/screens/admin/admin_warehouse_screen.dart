@@ -40,8 +40,9 @@ class _AdminWarehouseScreenState extends ConsumerState<AdminWarehouseScreen> {
                 Iconsax.box_add_copy,
                 color: AppColors.success,
               ),
-              title: const Text('استلام بضاعة'),
-              onTap: () => Navigator.of(ctx).pop('receive'),
+              title: const Text('فاتورة شراء'),
+              subtitle: const Text('بضاعة من مورد — نقدي أو آجل'),
+              onTap: () => Navigator.of(ctx).pop('purchase'),
             ),
             ListTile(
               leading: const Icon(
@@ -56,8 +57,8 @@ class _AdminWarehouseScreenState extends ConsumerState<AdminWarehouseScreen> {
       ),
     );
     if (!mounted || action == null) return;
-    final route = action == 'receive'
-        ? Routes.adminReceivePurchase
+    final route = action == 'purchase'
+        ? Routes.adminPurchaseInvoiceNew
         : Routes.adminIssueStock;
     await context.push(route);
     ref.invalidate(warehouseStockProvider);
@@ -77,6 +78,11 @@ class _AdminWarehouseScreenState extends ConsumerState<AdminWarehouseScreen> {
       appBar: AppBar(
         title: const Text('المخزن الرئيسي'),
         actions: [
+          IconButton(
+            icon: const Icon(Iconsax.receipt_2_copy),
+            tooltip: 'فواتير الشراء والموردين',
+            onPressed: () => context.push(Routes.adminPurchaseInvoices),
+          ),
           IconButton(
             icon: const Icon(Iconsax.clock_copy),
             tooltip: 'حركات المخزون',

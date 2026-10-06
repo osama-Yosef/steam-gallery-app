@@ -5,9 +5,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:uuid/uuid.dart';
 import '../../../../../core/errors/app_exception.dart';
+import '../../../../../core/offline/offline_widgets.dart';
+import '../../../../../core/offline/outbox.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/utils/formatters.dart';
 import '../../../../../core/widgets/state_views.dart';
+import '../../../../dashboard/presentation/providers/dashboard_providers.dart';
 import '../../../../inventory/data/models/warehouse_stock_item.dart';
 import '../../../../inventory/presentation/providers/inventory_providers.dart';
 import '../../../../products/data/models/product.dart';
@@ -15,6 +18,8 @@ import '../../../../products/presentation/providers/product_providers.dart';
 import '../../../data/models/sale_line_input.dart';
 import '../../../../technician_account/data/models/sale.dart';
 import '../../providers/sales_providers.dart';
+import '../../register_stock.dart';
+import '../../widgets/walk_in_invoices_list.dart';
 
 /// Digits and at most one decimal point — everything the money fields on this
 /// screen accept.
@@ -58,15 +63,27 @@ class _SaleLine {
 /// bottom bar that shows what to charge and confirms. The old version made
 /// every line a modal dialog with a dropdown, which was several taps per item
 /// and hid the running total behind a scroll.
+///
+/// A second tab lists every invoice (today's by default) for editing or
+/// deleting; the dashboard's "مبيعات اليوم" tile opens straight onto it
+/// ([showInvoices]). Works offline: a sale is queued and the stock shown
+/// already accounts for queued sales.
 class AdminWalkInSaleScreen extends ConsumerStatefulWidget {
-  const AdminWalkInSaleScreen({super.key});
+  final bool showInvoices;
+  const AdminWalkInSaleScreen({super.key, this.showInvoices = false});
 
   @override
   ConsumerState<AdminWalkInSaleScreen> createState() =>
       _AdminWalkInSaleScreenState();
 }
 
-class _AdminWalkInSaleScreenState extends ConsumerState<AdminWalkInSaleScreen> {
+class _AdminWalkInSaleScreenState extends ConsumerState<AdminWalkInSaleScreen>
+    with SingleTickerProviderStateMixin {
+  late final TabController _tabs = TabController(
+    length: 2,
+    vsync: this,
+    initialIndex: widget.showInvoices ? 1 : 0,
+  )..addListener(() => setState(() {}));
   // Not final: reached two ways — pushed from the admin dashboard (a fresh
   // screen, and so a fresh key, per sale) and as the sales role's bottom-nav
   // home tab, where IndexedStack keeps this same State alive across many
@@ -85,6 +102,7 @@ class _AdminWalkInSaleScreenState extends ConsumerState<AdminWalkInSaleScreen> {
 
   @override
   void dispose() {
+    _tabs.dispose();
     _customerNameCtrl.dispose();
     _customerPhoneCtrl.dispose();
     _searchCtrl.dispose();
@@ -240,7 +258,7 @@ class _AdminWalkInSaleScreenState extends ConsumerState<AdminWalkInSaleScreen> {
     }
     setState(() => _submitting = true);
     try {
-      await ref
+      final result = await ref
           .read(salesRepositoryProvider)
           .recordWalkInSale(
             customerName: _customerNameCtrl.text.trim().isEmpty
@@ -266,10 +284,16 @@ class _AdminWalkInSaleScreenState extends ConsumerState<AdminWalkInSaleScreen> {
                 : _notesCtrl.text.trim(),
           );
       ref.invalidate(warehouseStockProvider);
+      ref.invalidate(assemblyStockProvider);
+      ref.invalidate(dashboardSummaryProvider);
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('تم تسجيل البيع بنجاح')));
+        if (result.queued) {
+          showSavedOfflineSnack(context, 'البيع اتسجل');
+        } else {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text('تم تسجيل البيع بنجاح')));
+        }
         // Pushed from the admin dashboard, this screen sits on top of it and
         // should pop back. Reached as the sales role's home tab, it IS the
         // screen — there's nothing above it to pop to, and forcing a pop
@@ -306,53 +330,96 @@ class _AdminWalkInSaleScreenState extends ConsumerState<AdminWalkInSaleScreen> {
     // Filtering happens on the already-loaded list rather than re-querying per
     // keystroke: the warehouse is small and this keeps typing instant.
     final stockAsync = ref.watch(warehouseStockProvider());
+    // Assembly products are optional extras on the grid — a failure there
+    // (e.g. an older database without 0075) mustn't block selling stock.
+    final assemblies = ref.watch(assemblyStockProvider).value ?? const [];
+    final onSaleTab = _tabs.index == 0;
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('بيع مباشر'),
         actions: [
-          TextButton.icon(
-            onPressed: _addServiceLine,
-            icon: const Icon(Iconsax.setting_2_copy),
-            label: const Text('خدمة'),
-          ),
+          if (onSaleTab)
+            TextButton.icon(
+              onPressed: _addServiceLine,
+              icon: const Icon(Iconsax.setting_2_copy),
+              label: const Text('خدمة'),
+            ),
+        ],
+        bottom: TabBar(
+          controller: _tabs,
+          tabs: const [
+            Tab(icon: Icon(Iconsax.shopping_cart_copy), text: 'بيع جديد'),
+            Tab(icon: Icon(Iconsax.receipt_text_copy), text: 'الفواتير'),
+          ],
+        ),
+      ),
+      body: TabBarView(
+        controller: _tabs,
+        children: [
+          _saleTab(stockAsync, assemblies),
+          const WalkInInvoicesList(),
         ],
       ),
-      body: Column(
-        children: [
-          _CustomerHeader(
-            nameCtrl: _customerNameCtrl,
-            phoneCtrl: _customerPhoneCtrl,
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
-            child: TextField(
-              controller: _searchCtrl,
-              decoration: InputDecoration(
-                hintText: 'ابحث عن منتج...',
-                prefixIcon: const Icon(Iconsax.search_normal_1_copy),
-                suffixIcon: _search.isEmpty
-                    ? null
-                    : IconButton(
-                        icon: const Icon(Iconsax.close_circle_copy),
-                        onPressed: () {
-                          _searchCtrl.clear();
-                          setState(() => _search = '');
-                        },
-                      ),
-              ),
-              onChanged: (v) => setState(() => _search = v.trim()),
+      bottomNavigationBar: !onSaleTab
+          ? null
+          : _CheckoutBar(
+              lines: _lines,
+              subtotal: _subtotal,
+              total: _total,
+              discountCtrl: _discountCtrl,
+              notesCtrl: _notesCtrl,
+              paymentMethod: _paymentMethod,
+              submitting: _submitting,
+              onDiscountChanged: () => setState(() {}),
+              onPaymentMethodChanged: (m) => setState(() => _paymentMethod = m),
+              onChangeQuantity: _changeQuantity,
+              onSubmit: _submit,
             ),
+    );
+  }
+
+  Widget _saleTab(
+    AsyncValue<List<WarehouseStockItem>> stockAsync,
+    List<WarehouseStockItem> assemblies,
+  ) {
+    return Column(
+      children: [
+        _CustomerHeader(
+          nameCtrl: _customerNameCtrl,
+          phoneCtrl: _customerPhoneCtrl,
+        ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+          child: TextField(
+            controller: _searchCtrl,
+            decoration: InputDecoration(
+              hintText: 'ابحث عن منتج...',
+              prefixIcon: const Icon(Iconsax.search_normal_1_copy),
+              suffixIcon: _search.isEmpty
+                  ? null
+                  : IconButton(
+                      icon: const Icon(Iconsax.close_circle_copy),
+                      onPressed: () {
+                        _searchCtrl.clear();
+                        setState(() => _search = '');
+                      },
+                    ),
+            ),
+            onChanged: (v) => setState(() => _search = v.trim()),
           ),
-          Expanded(
-            child: stockAsync.when(
-              loading: () => const LoadingView(),
-              error: (e, _) => ErrorView(
-                message: 'تعذَّر تحميل المخزن',
-                onRetry: () => ref.invalidate(warehouseStockProvider),
-              ),
-              data: (stock) {
-                final available = stock
+        ),
+        Expanded(
+          child: stockAsync.when(
+            loading: () => const LoadingView(),
+            error: (e, _) => ErrorView(
+              message: 'تعذَّر تحميل المخزن',
+              onRetry: () => ref.invalidate(warehouseStockProvider),
+            ),
+            data: (warehouse) => ListenableBuilder(
+              listenable: Outbox.instance,
+              builder: (context, _) {
+                final available = registerStock(warehouse, assemblies)
                     .where((s) => s.quantity > 0)
                     .where(
                       (s) =>
@@ -400,21 +467,8 @@ class _AdminWalkInSaleScreenState extends ConsumerState<AdminWalkInSaleScreen> {
               },
             ),
           ),
-        ],
-      ),
-      bottomNavigationBar: _CheckoutBar(
-        lines: _lines,
-        subtotal: _subtotal,
-        total: _total,
-        discountCtrl: _discountCtrl,
-        notesCtrl: _notesCtrl,
-        paymentMethod: _paymentMethod,
-        submitting: _submitting,
-        onDiscountChanged: () => setState(() {}),
-        onPaymentMethodChanged: (m) => setState(() => _paymentMethod = m),
-        onChangeQuantity: _changeQuantity,
-        onSubmit: _submit,
-      ),
+        ),
+      ],
     );
   }
 }
@@ -490,10 +544,7 @@ class _ProductCard extends StatelessWidget {
                   child: item.imageUrl == null
                       ? ColoredBox(
                           color: theme.colorScheme.surfaceContainerHighest,
-                          child: const Icon(
-                            Iconsax.box_copy,
-                            size: 32,
-                          ),
+                          child: const Icon(Iconsax.box_copy, size: 32),
                         )
                       : CachedNetworkImage(
                           imageUrl: item.imageUrl!,
@@ -507,7 +558,9 @@ class _ProductCard extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        item.productName,
+                        item.isAssembly
+                            ? '${item.productName} (تجميع)'
+                            : item.productName,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: theme.textTheme.bodyMedium?.copyWith(

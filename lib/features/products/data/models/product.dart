@@ -21,6 +21,10 @@ abstract class Product with _$Product {
     required bool isActive,
     @Default(false) bool isService,
     @Default(false) bool isFeatured,
+
+    /// Made of other products (0075): no stock of its own; selling it takes
+    /// its components out of the warehouse.
+    @Default(false) bool isAssembly,
     required DateTime createdAt,
     String? primaryImageUrl,
   }) = _Product;
@@ -44,6 +48,7 @@ abstract class Product with _$Product {
     isActive: row['is_active'] as bool? ?? true,
     isService: row['is_service'] as bool? ?? false,
     isFeatured: row['is_featured'] as bool? ?? false,
+    isAssembly: row['is_assembly'] as bool? ?? false,
     createdAt: DateTime.parse(row['created_at'] as String),
     primaryImageUrl: _primaryImageFrom(row['product_images']),
   );

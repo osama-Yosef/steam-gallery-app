@@ -9,6 +9,7 @@ import '../../data/models/product_image.dart';
 import '../../data/models/product_option.dart';
 import '../../data/models/product_public.dart';
 import '../../data/repositories/product_repository.dart';
+import '../../data/models/assembly_component.dart';
 
 part 'product_providers.g.dart';
 
@@ -118,6 +119,11 @@ Future<List<Product>> adminProducts(
 @riverpod
 Future<List<Product>> serviceProducts(Ref ref) {
   return ref.watch(productRepositoryProvider).listServices();
+}
+
+@riverpod
+Future<List<AssemblyComponent>> assemblyComponents(Ref ref, String productId) {
+  return ref.watch(productRepositoryProvider).getAssemblyComponents(productId);
 }
 
 @riverpod
