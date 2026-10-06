@@ -5,7 +5,7 @@ import '../offline/offline_widgets.dart';
 import '../router/route_names.dart';
 import '../theme/app_colors.dart';
 import '../widgets/glass_panel.dart';
-import 'offline_refresh.dart';
+import 'data_refresh_scope.dart';
 
 /// Floating glass pill bottom nav for the sales role (0046) — same shape as
 /// [CustomerShell], replacing the old collapsible sidebar. Sales only gets
@@ -24,7 +24,7 @@ class SalesShell extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return OfflineRefresh(
+    return DataRefreshScope(
       child: PopScope(
         canPop: navigationShell.currentIndex == 0,
         onPopInvokedWithResult: (didPop, _) {

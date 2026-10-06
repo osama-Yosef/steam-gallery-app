@@ -1,5 +1,6 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../core/errors/app_exception.dart';
+import '../../../../core/offline/outbox.dart';
 import '../models/stock_movement.dart';
 import '../models/technician_bag_stock_item.dart';
 import '../models/warehouse_stock_item.dart';
@@ -172,6 +173,7 @@ class SupabaseInventoryRepository implements InventoryRepository {
           'p_notes': notes,
         },
       );
+      Outbox.instance.markServerChanged();
     } catch (e) {
       throw AppException.from(e);
     }

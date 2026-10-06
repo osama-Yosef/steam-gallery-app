@@ -59,16 +59,16 @@ final class WalkInSalesProvider
         $FunctionalProvider<
           AsyncValue<List<Sale>>,
           List<Sale>,
-          Stream<List<Sale>>
+          FutureOr<List<Sale>>
         >
-    with $FutureModifier<List<Sale>>, $StreamProvider<List<Sale>> {
+    with $FutureModifier<List<Sale>>, $FutureProvider<List<Sale>> {
   const WalkInSalesProvider._()
     : super(
         from: null,
         argument: null,
         retry: null,
         name: r'walkInSalesProvider',
-        isAutoDispose: false,
+        isAutoDispose: true,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
@@ -78,16 +78,16 @@ final class WalkInSalesProvider
 
   @$internal
   @override
-  $StreamProviderElement<List<Sale>> $createElement($ProviderPointer pointer) =>
-      $StreamProviderElement(pointer);
+  $FutureProviderElement<List<Sale>> $createElement($ProviderPointer pointer) =>
+      $FutureProviderElement(pointer);
 
   @override
-  Stream<List<Sale>> create(Ref ref) {
+  FutureOr<List<Sale>> create(Ref ref) {
     return walkInSales(ref);
   }
 }
 
-String _$walkInSalesHash() => r'c3d5c0b30c11f82c48a0ea379b0161ba250d181a';
+String _$walkInSalesHash() => r'a437e2e4ea4d3abb73ae576cdd6f8bee69aecadc';
 
 @ProviderFor(saleReturnItems)
 const saleReturnItemsProvider = SaleReturnItemsFamily._();

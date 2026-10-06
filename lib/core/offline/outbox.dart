@@ -128,10 +128,17 @@ class Outbox extends ChangeNotifier {
   List<OutboxEntry> _all = [];
   bool _syncing = false;
   Timer? _timer;
-  final _synced = StreamController<void>.broadcast();
+  final _serverChanged = StreamController<void>.broadcast();
 
-  /// Fires after a sync sent at least one entry — screens refresh then.
-  Stream<void> get onSynced => _synced.stream;
+  /// Fires whenever a write from this device reached the server — sent
+  /// directly or later by a sync. Screens built on one-shot fetches refetch
+  /// on it (OfflineRefresh), so a sale shows up at once in the invoice list,
+  /// the cashbox and the dashboard.
+  Stream<void> get onServerChanged => _serverChanged.stream;
+
+  /// For the few writes that don't go through [submit] (online-only
+  /// actions): tells [onServerChanged] listeners the server data moved.
+  void markServerChanged() => _serverChanged.add(null);
 
   bool get isSyncing => _syncing;
 
@@ -220,7 +227,9 @@ class Outbox extends ChangeNotifier {
       return const OutboxResult.queued();
     }
     try {
-      return OutboxResult.done(await _send(entry));
+      final data = await _send(entry);
+      _serverChanged.add(null);
+      return OutboxResult.done(data);
     } catch (e) {
       if (isNetworkError(e)) {
         await _add(entry);
@@ -265,7 +274,7 @@ class Outbox extends ChangeNotifier {
     } finally {
       _syncing = false;
       notifyListeners();
-      if (sent > 0) _synced.add(null);
+      if (sent > 0) _serverChanged.add(null);
     }
   }
 
@@ -303,7 +312,7 @@ class Outbox extends ChangeNotifier {
   @override
   void dispose() {
     _timer?.cancel();
-    _synced.close();
+    _serverChanged.close();
     super.dispose();
   }
 }

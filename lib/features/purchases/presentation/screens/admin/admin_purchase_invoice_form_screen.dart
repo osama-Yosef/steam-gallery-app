@@ -8,15 +8,13 @@ import '../../../../../core/offline/offline_widgets.dart';
 import '../../../../../core/utils/formatters.dart';
 import '../../../../../core/widgets/search_picker_sheet.dart';
 import '../../../../cashbox/data/models/cashbox_balance.dart';
-import '../../../../inventory/presentation/providers/inventory_providers.dart';
 import '../../../../products/data/models/product.dart';
 import '../../../../products/presentation/providers/product_providers.dart';
 import '../../../data/models/purchase_models.dart';
 import '../../providers/purchases_providers.dart';
-
-final _moneyFormatter = FilteringTextInputFormatter.allow(
-  RegExp(r'^\d*\.?\d*'),
-);
+import '../../../../../features/cashbox/presentation/widgets/cashbox_kind_selector.dart';
+import '../../../../../core/widgets/amount_row.dart';
+import '../../../../../core/utils/input_formatters.dart';
 
 /// How the invoice is settled at entry time.
 enum _PayMode { cash, partial, deferred }
@@ -144,7 +142,7 @@ class _AdminPurchaseInvoiceFormScreenState
               keyboardType: const TextInputType.numberWithOptions(
                 decimal: true,
               ),
-              inputFormatters: [_moneyFormatter],
+              inputFormatters: [moneyInputFormatter],
               decoration: const InputDecoration(labelText: 'سعر الشراء للوحدة'),
             ),
           ],
@@ -242,9 +240,7 @@ class _AdminPurchaseInvoiceFormScreenState
                 : _notesCtrl.text.trim(),
             clientRequestId: _requestId,
           );
-      ref.invalidate(purchaseInvoicesProvider);
-      ref.invalidate(suppliersProvider);
-      ref.invalidate(warehouseStockProvider);
+      // New cost prices show in the product list next time it's opened.
       ref.invalidate(adminProductsProvider);
       if (!mounted) return;
       if (result.queued) {
@@ -374,19 +370,19 @@ class _AdminPurchaseInvoiceFormScreenState
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                _TotalRow('الإجمالي قبل الخصم', _subtotal),
+                AmountRow('الإجمالي قبل الخصم', _subtotal),
                 const SizedBox(height: 8),
                 TextField(
                   controller: _discountCtrl,
                   keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
-                  inputFormatters: [_moneyFormatter],
+                  inputFormatters: [moneyInputFormatter],
                   decoration: const InputDecoration(labelText: 'الخصم'),
                   onChanged: (_) => setState(() {}),
                 ),
                 const SizedBox(height: 8),
-                _TotalRow('صافي الفاتورة', _total, bold: true),
+                AmountRow('صافي الفاتورة', _total, bold: true),
                 const SizedBox(height: 16),
                 Text('طريقة الدفع', style: theme.textTheme.titleSmall),
                 const SizedBox(height: 8),
@@ -395,7 +391,7 @@ class _AdminPurchaseInvoiceFormScreenState
                     ButtonSegment(value: _PayMode.cash, label: Text('نقدي')),
                     ButtonSegment(
                       value: _PayMode.partial,
-                      label: Text('جزء والباقي آجل'),
+                      label: Text('جزئي'),
                     ),
                     ButtonSegment(value: _PayMode.deferred, label: Text('آجل')),
                   ],
@@ -404,21 +400,9 @@ class _AdminPurchaseInvoiceFormScreenState
                 ),
                 if (_payMode != _PayMode.deferred) ...[
                   const SizedBox(height: 12),
-                  SegmentedButton<CashboxKind>(
-                    segments: const [
-                      ButtonSegment(
-                        value: CashboxKind.cash,
-                        icon: Icon(Iconsax.money_copy),
-                        label: Text('كاش'),
-                      ),
-                      ButtonSegment(
-                        value: CashboxKind.transfer,
-                        icon: Icon(Iconsax.card_copy),
-                        label: Text('تحويل'),
-                      ),
-                    ],
-                    selected: {_kind},
-                    onSelectionChanged: (s) => setState(() => _kind = s.first),
+                  CashboxKindSelector(
+                    value: _kind,
+                    onChanged: (k) => setState(() => _kind = k),
                   ),
                 ],
                 if (_payMode == _PayMode.partial) ...[
@@ -428,7 +412,7 @@ class _AdminPurchaseInvoiceFormScreenState
                     keyboardType: const TextInputType.numberWithOptions(
                       decimal: true,
                     ),
-                    inputFormatters: [_moneyFormatter],
+                    inputFormatters: [moneyInputFormatter],
                     decoration: const InputDecoration(
                       labelText: 'المبلغ المدفوع الآن',
                     ),
@@ -436,8 +420,8 @@ class _AdminPurchaseInvoiceFormScreenState
                   ),
                 ],
                 const SizedBox(height: 12),
-                _TotalRow('المدفوع', _paid),
-                _TotalRow('المتبقي على الحساب (آجل)', _total - _paid),
+                AmountRow('المدفوع', _paid),
+                AmountRow('المتبقي على الحساب (آجل)', _total - _paid),
               ],
             ),
           ),
@@ -497,31 +481,6 @@ class _Section extends StatelessWidget {
             child,
           ],
         ),
-      ),
-    );
-  }
-}
-
-class _TotalRow extends StatelessWidget {
-  final String label;
-  final double amount;
-  final bool bold;
-  const _TotalRow(this.label, this.amount, {this.bold = false});
-
-  @override
-  Widget build(BuildContext context) {
-    final style = bold
-        ? Theme.of(
-            context,
-          ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)
-        : Theme.of(context).textTheme.bodyMedium;
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 2),
-      child: Row(
-        children: [
-          Expanded(child: Text(label, style: style)),
-          Text(Formatters.currency(amount), style: style),
-        ],
       ),
     );
   }

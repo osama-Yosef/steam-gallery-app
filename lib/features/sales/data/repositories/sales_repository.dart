@@ -7,7 +7,6 @@ import '../../../technician_account/data/models/sale.dart';
 import '../models/invoice_line.dart';
 import '../models/sale_line_input.dart';
 import '../models/sale_return_item.dart';
-import '../../../../core/offline/offline_stream.dart';
 
 abstract class SalesRepository {
   /// Counter sale straight from the main warehouse to a walk-in customer
@@ -50,10 +49,15 @@ abstract class SalesRepository {
     CashboxKind? refundKind,
   });
 
-  /// Walk-in sales only (technician_id is null) — a technician's own field
-  /// sale never shows up here; see 0057 for why returning one is out of
-  /// scope for this screen.
-  Stream<List<Sale>> watchWalkInSales();
+  /// Walk-in sales only (technician_id is null), newest first — a
+  /// technician's own field sale never shows up here; see 0057 for why
+  /// returning one is out of scope for this screen.
+  ///
+  /// A plain fetch, not a realtime stream: `sales` isn't in the realtime
+  /// publication, so a stream only ever delivered its first snapshot and new
+  /// invoices never appeared. The list is refetched after every write
+  /// instead (OfflineRefresh).
+  Future<List<Sale>> getWalkInSales();
 
   /// Reverses a completed walk-in sale: stock back to the main warehouse,
   /// the till refunded, status -> returned. [refundKind] picks which till
@@ -221,14 +225,18 @@ class SupabaseSalesRepository implements SalesRepository {
   }
 
   @override
-  Stream<List<Sale>> watchWalkInSales() {
-    return _client
-        .from('sales')
-        .stream(primaryKey: ['id'])
-        .isFilter('technician_id', null)
-        .order('created_at', ascending: false)
-        .offlineTolerant()
-        .map((rows) => rows.map(Sale.fromRow).toList());
+  Future<List<Sale>> getWalkInSales() async {
+    try {
+      final rows = await _client
+          .from('sales')
+          .select()
+          .isFilter('technician_id', null)
+          .order('created_at', ascending: false)
+          .limit(1000);
+      return rows.map(Sale.fromRow).toList();
+    } catch (e) {
+      throw AppException.from(e);
+    }
   }
 
   @override
@@ -248,6 +256,7 @@ class SupabaseSalesRepository implements SalesRepository {
               : cashboxKindToString(refundKind),
         },
       );
+      Outbox.instance.markServerChanged();
     } catch (e) {
       throw AppException.from(e);
     }
@@ -299,6 +308,7 @@ class SupabaseSalesRepository implements SalesRepository {
               : cashboxKindToString(refundKind),
         },
       );
+      Outbox.instance.markServerChanged();
     } catch (e) {
       throw AppException.from(e);
     }

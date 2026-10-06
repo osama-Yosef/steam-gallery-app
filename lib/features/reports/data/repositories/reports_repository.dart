@@ -14,7 +14,9 @@ class SupabaseReportsRepository implements ReportsRepository {
   final SupabaseClient _client;
   SupabaseReportsRepository(this._client);
 
-  String _iso(DateTime d) => d.toIso8601String();
+  /// UTC with an explicit offset: a bare local timestamp is read by the
+  /// server as UTC, which shifted every report range by Cairo's 3 hours.
+  String _iso(DateTime d) => d.toUtc().toIso8601String();
 
   /// Shared building block for both the Sales and Profit reports: revenue,
   /// COGS and item-level discounts from confirmed orders + completed

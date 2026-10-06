@@ -2,6 +2,7 @@ import 'dart:typed_data';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
 import '../../../../core/errors/app_exception.dart';
+import '../../../../core/offline/outbox.dart';
 import '../models/catalog_query.dart';
 import '../models/product.dart';
 import '../models/product_category.dart';
@@ -323,6 +324,7 @@ class SupabaseProductRepository implements ProductRepository {
           'p_components': components.map((c) => c.toJson()).toList(),
         },
       );
+      Outbox.instance.markServerChanged();
     } catch (e) {
       throw AppException.from(e);
     }
@@ -357,6 +359,7 @@ class SupabaseProductRepository implements ProductRepository {
           })
           .select('id')
           .single();
+      Outbox.instance.markServerChanged();
       return row['id'] as String;
     } catch (e) {
       throw AppException.from(e);
@@ -391,6 +394,7 @@ class SupabaseProductRepository implements ProductRepository {
             'min_stock': minStock,
           })
           .eq('id', id);
+      Outbox.instance.markServerChanged();
     } catch (e) {
       throw AppException.from(e);
     }
@@ -415,6 +419,7 @@ class SupabaseProductRepository implements ProductRepository {
           .from('products')
           .update({'is_active': isActive})
           .eq('id', id);
+      Outbox.instance.markServerChanged();
     } catch (e) {
       throw AppException.from(e);
     }

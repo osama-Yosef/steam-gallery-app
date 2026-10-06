@@ -7,7 +7,7 @@ import '../router/route_names.dart';
 import '../theme/app_colors.dart';
 import '../widgets/confirm_dialog.dart';
 import '../widgets/glass_panel.dart';
-import 'offline_refresh.dart';
+import 'data_refresh_scope.dart';
 
 /// Collapsible glass sidebar for the admin role, wrapping a
 /// [StatefulShellRoute.indexedStack] — replaces the old GridView home menu:
@@ -56,7 +56,7 @@ class _AdminShellState extends ConsumerState<AdminShell> {
         final isWide = constraints.maxWidth >= _wideBreakpoint;
         final railWidth = isWide ? _wideRailWidth : _compactRailWidth;
 
-        return OfflineRefresh(
+        return DataRefreshScope(
           child: PopScope(
             // Otherwise the Android back button/gesture from any non-"الرئيسية"
             // section does nothing useful (StatefulShellRoute branches aren't a

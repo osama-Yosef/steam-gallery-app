@@ -30,8 +30,8 @@ class SupabaseAuditLogRepository implements AuditLogRepository {
     try {
       var query = _client.from('audit_logs').select('*, users(full_name)');
       if (tableName != null) query = query.eq('table_name', tableName);
-      if (from != null) query = query.gte('created_at', from.toIso8601String());
-      if (to != null) query = query.lte('created_at', to.toIso8601String());
+      if (from != null) query = query.gte('created_at', from.toUtc().toIso8601String());
+      if (to != null) query = query.lte('created_at', to.toUtc().toIso8601String());
       final rows = await query
           .order('created_at', ascending: false)
           .limit(limit);

@@ -6,17 +6,11 @@ import '../../../../../core/widgets/state_views.dart';
 import '../../../data/models/purchase_models.dart';
 import '../../providers/purchases_providers.dart';
 import '../../widgets/pay_supplier_dialog.dart';
+import '../../../../../core/widgets/amount_row.dart';
 
 class AdminPurchaseInvoiceDetailScreen extends ConsumerWidget {
   final String invoiceId;
   const AdminPurchaseInvoiceDetailScreen({super.key, required this.invoiceId});
-
-  void _refresh(WidgetRef ref) {
-    ref.invalidate(purchaseInvoiceProvider(invoiceId));
-    ref.invalidate(purchaseInvoicePaymentsProvider(invoiceId));
-    ref.invalidate(purchaseInvoicesProvider);
-    ref.invalidate(suppliersProvider);
-  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -31,7 +25,7 @@ class AdminPurchaseInvoiceDetailScreen extends ConsumerWidget {
         loading: () => const LoadingView(),
         error: (e, _) => ErrorView(
           message: 'تعذَّر تحميل الفاتورة',
-          onRetry: () => _refresh(ref),
+          onRetry: () => ref.invalidate(purchaseInvoiceProvider(invoiceId)),
         ),
         data: (inv) => ListView(
           padding: const EdgeInsets.all(16),
@@ -55,16 +49,16 @@ class AdminPurchaseInvoiceDetailScreen extends ConsumerWidget {
                       Text('رقم فاتورة المورد: ${inv.supplierInvoiceRef}'),
                     if (inv.notes != null) Text('ملاحظات: ${inv.notes}'),
                     const Divider(height: 24),
-                    _Row('الإجمالي قبل الخصم', inv.subtotal),
-                    _Row('الخصم', inv.discount),
-                    _Row('صافي الفاتورة', inv.total, bold: true),
-                    _Row('المدفوع', inv.paidAmount),
-                    _Row('المتبقي (آجل)', inv.remainingAmount, bold: true),
+                    AmountRow('الإجمالي قبل الخصم', inv.subtotal),
+                    AmountRow('الخصم', inv.discount),
+                    AmountRow('صافي الفاتورة', inv.total, bold: true),
+                    AmountRow('المدفوع', inv.paidAmount),
+                    AmountRow('المتبقي (آجل)', inv.remainingAmount, bold: true),
                     if (inv.remainingAmount > 0) ...[
                       const SizedBox(height: 12),
                       FilledButton.icon(
                         onPressed: () async {
-                          final paid = await showPaySupplierDialog(
+                          await showPaySupplierDialog(
                             context,
                             ref,
                             supplierId: inv.supplierId,
@@ -72,7 +66,6 @@ class AdminPurchaseInvoiceDetailScreen extends ConsumerWidget {
                             maxAmount: inv.remainingAmount,
                             invoiceId: inv.id,
                           );
-                          if (paid) _refresh(ref);
                         },
                         icon: const Icon(Iconsax.money_send_copy),
                         label: const Text('سداد'),
@@ -137,29 +130,6 @@ class AdminPurchaseInvoiceDetailScreen extends ConsumerWidget {
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class _Row extends StatelessWidget {
-  final String label;
-  final double amount;
-  final bool bold;
-  const _Row(this.label, this.amount, {this.bold = false});
-
-  @override
-  Widget build(BuildContext context) {
-    final style = bold
-        ? const TextStyle(fontWeight: FontWeight.bold)
-        : const TextStyle();
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 2),
-      child: Row(
-        children: [
-          Expanded(child: Text(label, style: style)),
-          Text(Formatters.currency(amount), style: style),
-        ],
       ),
     );
   }

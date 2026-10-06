@@ -7,12 +7,12 @@ import '../../../../core/offline/offline_widgets.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../cashbox/data/models/cashbox_balance.dart';
 import '../providers/purchases_providers.dart';
+import '../../../../features/cashbox/presentation/widgets/cashbox_kind_selector.dart';
 
 /// Pays [maxAmount] or less to a supplier, out of the cash or transfer till.
 /// With [invoiceId] the payment goes against that invoice; without it, the
-/// server settles the supplier's oldest unpaid invoices first. Returns true
-/// once recorded (or queued offline).
-Future<bool> showPaySupplierDialog(
+/// server settles the supplier's oldest unpaid invoices first.
+Future<void> showPaySupplierDialog(
   BuildContext context,
   WidgetRef ref, {
   required String supplierId,
@@ -51,16 +51,9 @@ Future<bool> showPaySupplierDialog(
                 decoration: const InputDecoration(labelText: 'المبلغ'),
               ),
               const SizedBox(height: 12),
-              SegmentedButton<CashboxKind>(
-                segments: const [
-                  ButtonSegment(value: CashboxKind.cash, label: Text('كاش')),
-                  ButtonSegment(
-                    value: CashboxKind.transfer,
-                    label: Text('تحويل'),
-                  ),
-                ],
-                selected: {kind},
-                onSelectionChanged: (s) => setState(() => kind = s.first),
+              CashboxKindSelector(
+                value: kind,
+                onChanged: (k) => setState(() => kind = k),
               ),
               const SizedBox(height: 12),
               TextField(
@@ -85,7 +78,7 @@ Future<bool> showPaySupplierDialog(
       ),
     ),
   );
-  if (confirmed != true || !context.mounted) return false;
+  if (confirmed != true || !context.mounted) return;
 
   final amount = double.tryParse(amountCtrl.text) ?? 0;
   if (amount <= 0 || amount > maxAmount + 0.001) {
@@ -94,7 +87,7 @@ Future<bool> showPaySupplierDialog(
         content: Text('المبلغ لازم يكون أكبر من صفر ومش أكبر من المستحق'),
       ),
     );
-    return false;
+    return;
   }
   try {
     final result = await ref
@@ -108,7 +101,7 @@ Future<bool> showPaySupplierDialog(
           notes: notesCtrl.text.trim().isEmpty ? null : notesCtrl.text.trim(),
           clientRequestId: requestId,
         );
-    if (!context.mounted) return true;
+    if (!context.mounted) return;
     if (result.queued) {
       showSavedOfflineSnack(context, 'السداد اتسجل');
     } else {
@@ -116,13 +109,11 @@ Future<bool> showPaySupplierDialog(
         context,
       ).showSnackBar(const SnackBar(content: Text('تم تسجيل السداد')));
     }
-    return true;
   } catch (e) {
     if (context.mounted) {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text(AppException.from(e).messageAr)));
     }
-    return false;
   }
 }

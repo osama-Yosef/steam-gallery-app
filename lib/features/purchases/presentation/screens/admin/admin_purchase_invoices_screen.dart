@@ -42,10 +42,7 @@ class AdminPurchaseInvoicesScreen extends ConsumerWidget {
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () async {
-          await context.push(Routes.adminPurchaseInvoiceNew);
-          ref.invalidate(purchaseInvoicesProvider);
-        },
+        onPressed: () => context.push(Routes.adminPurchaseInvoiceNew),
         icon: const Icon(Iconsax.receipt_add_copy),
         label: const Text('فاتورة شراء'),
       ),

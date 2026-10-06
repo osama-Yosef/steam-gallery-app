@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import '../../../../../core/errors/app_exception.dart';
@@ -10,7 +9,6 @@ import '../../../../../core/utils/formatters.dart';
 import '../../../../../core/widgets/search_picker_sheet.dart';
 import '../../../../../core/widgets/state_views.dart';
 import '../../../../cashbox/data/models/cashbox_balance.dart';
-import '../../../../dashboard/presentation/providers/dashboard_providers.dart';
 import '../../../../inventory/data/models/warehouse_stock_item.dart';
 import '../../../../inventory/presentation/providers/inventory_providers.dart';
 import '../../../../products/data/models/product.dart';
@@ -19,10 +17,9 @@ import '../../../../technician_account/data/models/sale.dart';
 import '../../../data/models/invoice_line.dart';
 import '../../providers/sales_providers.dart';
 import '../../register_stock.dart';
-
-final _moneyFormatter = FilteringTextInputFormatter.allow(
-  RegExp(r'^\d*\.?\d*'),
-);
+import '../../../../../features/cashbox/presentation/widgets/cashbox_kind_selector.dart';
+import '../../../../../core/widgets/amount_row.dart';
+import '../../../../../core/utils/input_formatters.dart';
 
 /// A walk-in invoice opened from the history: add a product, remove one,
 /// change quantities or the discount, or delete the whole invoice. Saving
@@ -171,7 +168,7 @@ class _AdminSaleInvoiceScreenState
             controller: ctrl,
             autofocus: true,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            inputFormatters: [_moneyFormatter],
+            inputFormatters: [moneyInputFormatter],
             decoration: const InputDecoration(labelText: 'سعر الخدمة'),
           ),
           actions: [
@@ -255,16 +252,9 @@ class _AdminSaleInvoiceScreenState
               ),
               if (diff.abs() >= 0.005) ...[
                 const SizedBox(height: 12),
-                SegmentedButton<CashboxKind>(
-                  segments: const [
-                    ButtonSegment(value: CashboxKind.cash, label: Text('كاش')),
-                    ButtonSegment(
-                      value: CashboxKind.transfer,
-                      label: Text('تحويل'),
-                    ),
-                  ],
-                  selected: {kind},
-                  onSelectionChanged: (s) => setDialog(() => kind = s.first),
+                CashboxKindSelector(
+                  value: kind,
+                  onChanged: (k) => setDialog(() => kind = k),
                 ),
               ],
             ],
@@ -320,16 +310,9 @@ class _AdminSaleInvoiceScreenState
               ),
               const SizedBox(height: 12),
               if (sale.total > 0)
-                SegmentedButton<CashboxKind>(
-                  segments: const [
-                    ButtonSegment(value: CashboxKind.cash, label: Text('كاش')),
-                    ButtonSegment(
-                      value: CashboxKind.transfer,
-                      label: Text('تحويل'),
-                    ),
-                  ],
-                  selected: {kind},
-                  onSelectionChanged: (s) => setDialog(() => kind = s.first),
+                CashboxKindSelector(
+                  value: kind,
+                  onChanged: (k) => setDialog(() => kind = k),
                 ),
               const SizedBox(height: 12),
               TextField(
@@ -346,7 +329,7 @@ class _AdminSaleInvoiceScreenState
             FilledButton(
               style: FilledButton.styleFrom(backgroundColor: AppColors.danger),
               onPressed: () => Navigator.of(ctx).pop(true),
-              child: const Text('حذف الفاتورة'),
+              child: const Text('حذف'),
             ),
           ],
         ),
@@ -373,10 +356,6 @@ class _AdminSaleInvoiceScreenState
   }
 
   void _afterWrite(OutboxResult result, String queuedMsg, String doneMsg) {
-    ref.invalidate(invoiceLinesProvider(widget.saleId));
-    ref.invalidate(warehouseStockProvider);
-    ref.invalidate(assemblyStockProvider);
-    ref.invalidate(dashboardSummaryProvider);
     if (!mounted) return;
     if (result.queued) {
       showSavedOfflineSnack(context, queuedMsg);
@@ -553,7 +532,7 @@ class _AdminSaleInvoiceScreenState
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      _Row('المجموع', _subtotal),
+                      AmountRow('المجموع', _subtotal),
                       if (editable)
                         Padding(
                           padding: const EdgeInsets.symmetric(vertical: 8),
@@ -562,7 +541,7 @@ class _AdminSaleInvoiceScreenState
                             keyboardType: const TextInputType.numberWithOptions(
                               decimal: true,
                             ),
-                            inputFormatters: [_moneyFormatter],
+                            inputFormatters: [moneyInputFormatter],
                             decoration: const InputDecoration(
                               labelText: 'الخصم',
                               isDense: true,
@@ -571,8 +550,8 @@ class _AdminSaleInvoiceScreenState
                           ),
                         )
                       else
-                        _Row('الخصم', _discount),
-                      _Row('الإجمالي', _total, bold: true),
+                        AmountRow('الخصم', _discount),
+                      AmountRow('الإجمالي', _total, bold: true),
                       if (editable && (_total - sale.total).abs() >= 0.005)
                         Text(
                           (_total - sale.total) > 0
@@ -616,31 +595,6 @@ class _AdminSaleInvoiceScreenState
               : null,
         );
       },
-    );
-  }
-}
-
-class _Row extends StatelessWidget {
-  final String label;
-  final double amount;
-  final bool bold;
-  const _Row(this.label, this.amount, {this.bold = false});
-
-  @override
-  Widget build(BuildContext context) {
-    final style = bold
-        ? Theme.of(
-            context,
-          ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)
-        : Theme.of(context).textTheme.bodyMedium;
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 2),
-      child: Row(
-        children: [
-          Expanded(child: Text(label, style: style)),
-          Text(Formatters.currency(amount), style: style),
-        ],
-      ),
     );
   }
 }

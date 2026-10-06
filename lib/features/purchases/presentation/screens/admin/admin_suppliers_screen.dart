@@ -107,17 +107,13 @@ class AdminSuppliersScreen extends ConsumerWidget {
                             if (s.balance > 0)
                               FilledButton.tonal(
                                 onPressed: () async {
-                                  final paid = await showPaySupplierDialog(
+                                  await showPaySupplierDialog(
                                     context,
                                     ref,
                                     supplierId: s.id,
                                     supplierName: s.name,
                                     maxAmount: s.balance,
                                   );
-                                  if (paid) {
-                                    ref.invalidate(suppliersProvider);
-                                    ref.invalidate(purchaseInvoicesProvider);
-                                  }
                                 },
                                 child: const Text('سداد'),
                               ),

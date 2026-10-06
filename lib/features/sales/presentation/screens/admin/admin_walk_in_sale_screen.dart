@@ -1,6 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:uuid/uuid.dart';
@@ -10,7 +9,6 @@ import '../../../../../core/offline/outbox.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/utils/formatters.dart';
 import '../../../../../core/widgets/state_views.dart';
-import '../../../../dashboard/presentation/providers/dashboard_providers.dart';
 import '../../../../inventory/data/models/warehouse_stock_item.dart';
 import '../../../../inventory/presentation/providers/inventory_providers.dart';
 import '../../../../products/data/models/product.dart';
@@ -20,12 +18,7 @@ import '../../../../technician_account/data/models/sale.dart';
 import '../../providers/sales_providers.dart';
 import '../../register_stock.dart';
 import '../../widgets/walk_in_invoices_list.dart';
-
-/// Digits and at most one decimal point — everything the money fields on this
-/// screen accept.
-final _moneyInputFormatter = FilteringTextInputFormatter.allow(
-  RegExp(r'^\d*\.?\d*'),
-);
+import '../../../../../core/utils/input_formatters.dart';
 
 class _SaleLine {
   final String productId;
@@ -83,7 +76,16 @@ class _AdminWalkInSaleScreenState extends ConsumerState<AdminWalkInSaleScreen>
     length: 2,
     vsync: this,
     initialIndex: widget.showInvoices ? 1 : 0,
-  )..addListener(() => setState(() {}));
+  )..addListener(_onTabChanged);
+  late int _tabIndex = _tabs.index;
+
+  /// The controller also notifies on every frame of the swipe animation;
+  /// rebuilding the whole register (grid included) for each of those made
+  /// switching tabs stutter. Only an actual tab change matters here.
+  void _onTabChanged() {
+    if (_tabs.index != _tabIndex) setState(() => _tabIndex = _tabs.index);
+  }
+
   // Not final: reached two ways — pushed from the admin dashboard (a fresh
   // screen, and so a fresh key, per sale) and as the sales role's bottom-nav
   // home tab, where IndexedStack keeps this same State alive across many
@@ -200,7 +202,7 @@ class _AdminWalkInSaleScreenState extends ConsumerState<AdminWalkInSaleScreen>
                 keyboardType: const TextInputType.numberWithOptions(
                   decimal: true,
                 ),
-                inputFormatters: [_moneyInputFormatter],
+                inputFormatters: [moneyInputFormatter],
                 decoration: const InputDecoration(labelText: 'سعر الخدمة'),
               ),
             ],
@@ -283,9 +285,6 @@ class _AdminWalkInSaleScreenState extends ConsumerState<AdminWalkInSaleScreen>
                 ? null
                 : _notesCtrl.text.trim(),
           );
-      ref.invalidate(warehouseStockProvider);
-      ref.invalidate(assemblyStockProvider);
-      ref.invalidate(dashboardSummaryProvider);
       if (mounted) {
         if (result.queued) {
           showSavedOfflineSnack(context, 'البيع اتسجل');
@@ -333,7 +332,7 @@ class _AdminWalkInSaleScreenState extends ConsumerState<AdminWalkInSaleScreen>
     // Assembly products are optional extras on the grid — a failure there
     // (e.g. an older database without 0075) mustn't block selling stock.
     final assemblies = ref.watch(assemblyStockProvider).value ?? const [];
-    final onSaleTab = _tabs.index == 0;
+    final onSaleTab = _tabIndex == 0;
 
     return Scaffold(
       appBar: AppBar(
@@ -712,7 +711,7 @@ class _CheckoutBar extends StatelessWidget {
                       // A hardware keyboard ignores keyboardType, so on
                       // desktop a stray letter used to sit in here silently
                       // parsing as 0 — found while testing the Windows build.
-                      inputFormatters: [_moneyInputFormatter],
+                      inputFormatters: [moneyInputFormatter],
                       decoration: const InputDecoration(
                         labelText: 'الخصم',
                         isDense: true,
