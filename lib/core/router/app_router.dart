@@ -55,6 +55,7 @@ import '../../features/payments/presentation/screens/admin/admin_instapay_review
 import '../../features/payments/presentation/screens/customer/instapay_payment_screen.dart';
 import '../../features/products/presentation/screens/admin/admin_category_list_screen.dart';
 import '../../features/products/presentation/screens/admin/admin_product_form_screen.dart';
+import '../../features/products/presentation/screens/admin/admin_price_list_screen.dart';
 import '../../features/products/presentation/screens/admin/admin_product_list_screen.dart';
 import '../../features/products/presentation/screens/customer/customer_catalog_screen.dart';
 import '../../features/products/presentation/screens/customer/product_detail_screen.dart';
@@ -373,6 +374,10 @@ GoRouter appRouter(Ref ref) {
                   GoRoute(
                     path: 'new',
                     builder: (_, _) => const AdminProductFormScreen(),
+                  ),
+                  GoRoute(
+                    path: 'price-list',
+                    builder: (_, _) => const AdminPriceListScreen(),
                   ),
                   GoRoute(
                     path: ':id/edit',

@@ -59,6 +59,12 @@ const _sections = [
     route: Routes.adminWalkInSale,
   ),
   _SectionItem(
+    icon: Iconsax.tag_copy,
+    label: 'عرض السعر',
+    colors: [Color(0xFFFFB74D), Color(0xFFF57C00)],
+    route: Routes.adminPriceList,
+  ),
+  _SectionItem(
     icon: Iconsax.receipt_2_copy,
     label: 'فواتير الشراء',
     colors: [Color(0xFF4DD0E1), Color(0xFF0097A7)],

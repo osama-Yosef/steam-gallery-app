@@ -77,6 +77,7 @@ abstract final class Routes {
   static const adminProducts = '/admin/products';
   static const adminProductNew = '/admin/products/new';
   static const adminCategories = '/admin/categories';
+  static const adminPriceList = '/admin/products/price-list';
   static String adminProductEdit(String id) => '/admin/products/$id/edit';
   static String customerProductDetail(String id) => '/customer/product/$id';
 
