@@ -197,7 +197,10 @@ class _StockTile extends StatelessWidget {
                 Container(
                   width: 48,
                   height: 48,
-                  decoration: BoxDecoration(shape: BoxShape.circle, color: color),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: color,
+                  ),
                   child: Icon(
                     item.isLow ? Iconsax.warning_2_copy : Iconsax.box_copy,
                     color: Colors.white,

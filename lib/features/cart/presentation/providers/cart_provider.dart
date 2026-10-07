@@ -56,8 +56,10 @@ class Cart extends _$Cart {
         .setQuantity(productId, quantity, optionIds: optionIds),
   );
 
-  Future<CartSummary> remove(String productId, {List<String> optionIds = const []}) =>
-      setQuantity(productId, 0, optionIds: optionIds);
+  Future<CartSummary> remove(
+    String productId, {
+    List<String> optionIds = const [],
+  }) => setQuantity(productId, 0, optionIds: optionIds);
 
   Future<CartSummary> clear() =>
       _apply(() => ref.read(cartRepositoryProvider).clear());

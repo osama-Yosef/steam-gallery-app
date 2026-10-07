@@ -44,7 +44,9 @@ abstract class CartLine with _$CartLine {
     lineTotal: (j['line_total'] as num).toDouble(),
     isActive: j['is_active'] as bool? ?? false,
     isAvailable: j['is_available'] as bool? ?? false,
-    optionIds: [for (final id in (j['option_ids'] as List? ?? const [])) id as String],
+    optionIds: [
+      for (final id in (j['option_ids'] as List? ?? const [])) id as String,
+    ],
     options: [
       for (final o in (j['options'] as List? ?? const []))
         SelectedOption.fromJson(Map<String, dynamic>.from(o as Map)),

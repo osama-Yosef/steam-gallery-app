@@ -81,7 +81,10 @@ class _SaleTile extends StatelessWidget {
                   Container(
                     width: 48,
                     height: 48,
-                    decoration: BoxDecoration(shape: BoxShape.circle, color: color),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: color,
+                    ),
                     child: const Icon(
                       Iconsax.receipt_2_copy,
                       color: Colors.white,
@@ -104,7 +107,8 @@ class _SaleTile extends StatelessWidget {
                           Text(
                             [
                               if (sale.customerName != null) sale.customerName!,
-                              if (sale.customerPhone != null) sale.customerPhone!,
+                              if (sale.customerPhone != null)
+                                sale.customerPhone!,
                             ].join(' — '),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,

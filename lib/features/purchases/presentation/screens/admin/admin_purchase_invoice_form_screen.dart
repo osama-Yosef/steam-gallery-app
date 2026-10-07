@@ -389,10 +389,7 @@ class _AdminPurchaseInvoiceFormScreenState
                 SegmentedButton<_PayMode>(
                   segments: const [
                     ButtonSegment(value: _PayMode.cash, label: Text('نقدي')),
-                    ButtonSegment(
-                      value: _PayMode.partial,
-                      label: Text('جزئي'),
-                    ),
+                    ButtonSegment(value: _PayMode.partial, label: Text('جزئي')),
                     ButtonSegment(value: _PayMode.deferred, label: Text('آجل')),
                   ],
                   selected: {_payMode},

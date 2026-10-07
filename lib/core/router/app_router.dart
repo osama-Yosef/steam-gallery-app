@@ -198,10 +198,7 @@ GoRouter appRouter(Ref ref) {
         path: Routes.verifyPhone,
         builder: (_, _) => const VerifyPhoneScreen(),
       ),
-      GoRoute(
-        path: Routes.addEmail,
-        builder: (_, _) => const AddEmailScreen(),
-      ),
+      GoRoute(path: Routes.addEmail, builder: (_, _) => const AddEmailScreen()),
       GoRoute(
         path: Routes.accountSuspended,
         builder: (_, _) => const AccountSuspendedScreen(),
@@ -875,9 +872,8 @@ GoRouter appRouter(Ref ref) {
       ),
       GoRoute(
         path: '/customer/orders/:id/instapay',
-        builder: (_, state) => InstapayPaymentScreen(
-          orderId: state.pathParameters['id']!,
-        ),
+        builder: (_, state) =>
+            InstapayPaymentScreen(orderId: state.pathParameters['id']!),
       ),
     ],
   );

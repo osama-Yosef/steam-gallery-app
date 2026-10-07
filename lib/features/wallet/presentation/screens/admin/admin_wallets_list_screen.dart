@@ -99,9 +99,7 @@ class _AdminWalletsListScreenState
                         child: Icon(Iconsax.user_copy),
                       ),
                       title: Text(w.customerName),
-                      subtitle: w.isActive
-                          ? null
-                          : const Text('محفظة موقوفة'),
+                      subtitle: w.isActive ? null : const Text('محفظة موقوفة'),
                       trailing: MoneyText(
                         w.balance,
                         style: TextStyle(

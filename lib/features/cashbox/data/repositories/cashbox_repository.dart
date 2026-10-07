@@ -127,7 +127,8 @@ class SupabaseCashboxRepository implements CashboxRepository {
       'p_attachment_url': null,
       'p_kind': cashboxKindToString(kind),
     },
-    label: 'مصروف ${Formatters.currency(amount)}${notes == null ? '' : ' · $notes'}',
+    label:
+        'مصروف ${Formatters.currency(amount)}${notes == null ? '' : ' · $notes'}',
     kind: 'cashbox',
     viaReplay: true,
   );
@@ -144,7 +145,8 @@ class SupabaseCashboxRepository implements CashboxRepository {
       'p_notes': notes,
       'p_kind': cashboxKindToString(kind),
     },
-    label: 'إيداع ${Formatters.currency(amount)} في ${cashboxKindLabelAr(kind)}',
+    label:
+        'إيداع ${Formatters.currency(amount)} في ${cashboxKindLabelAr(kind)}',
     kind: 'cashbox',
     viaReplay: true,
   );

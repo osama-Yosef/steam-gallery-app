@@ -25,7 +25,9 @@ class AdminSaleReturnDetailScreen extends ConsumerWidget {
   const AdminSaleReturnDetailScreen({super.key, required this.saleId});
 
   CashboxKind _defaultKind(PaymentMethod saleMethod) =>
-      saleMethod == PaymentMethod.cash ? CashboxKind.cash : CashboxKind.transfer;
+      saleMethod == PaymentMethod.cash
+      ? CashboxKind.cash
+      : CashboxKind.transfer;
 
   Future<void> _returnItem(
     BuildContext context,
@@ -67,10 +69,7 @@ class AdminSaleReturnDetailScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 8),
               ],
-              Text(
-                'الفلوس هترجع من',
-                style: Theme.of(ctx).textTheme.bodySmall,
-              ),
+              Text('الفلوس هترجع من', style: Theme.of(ctx).textTheme.bodySmall),
               const SizedBox(height: 6),
               SegmentedButton<CashboxKind>(
                 segments: [
@@ -147,10 +146,7 @@ class AdminSaleReturnDetailScreen extends ConsumerWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'الفلوس هترجع من',
-                style: Theme.of(ctx).textTheme.bodySmall,
-              ),
+              Text('الفلوس هترجع من', style: Theme.of(ctx).textTheme.bodySmall),
               const SizedBox(height: 6),
               SegmentedButton<CashboxKind>(
                 segments: [
@@ -176,9 +172,8 @@ class AdminSaleReturnDetailScreen extends ConsumerWidget {
             ),
             FilledButton(
               style: FilledButton.styleFrom(backgroundColor: AppColors.danger),
-              onPressed: () => Navigator.of(
-                ctx,
-              ).pop((reasonCtrl.text.trim(), refundKind)),
+              onPressed: () =>
+                  Navigator.of(ctx).pop((reasonCtrl.text.trim(), refundKind)),
               child: const Text('تأكيد الإرجاع'),
             ),
           ],
@@ -197,11 +192,7 @@ class AdminSaleReturnDetailScreen extends ConsumerWidget {
     try {
       await ref
           .read(salesRepositoryProvider)
-          .returnSale(
-            saleId: saleId,
-            reason: result.$1,
-            refundKind: result.$2,
-          );
+          .returnSale(saleId: saleId, reason: result.$1, refundKind: result.$2);
       ref.invalidate(saleReturnItemsProvider(saleId));
       if (context.mounted) {
         ScaffoldMessenger.of(

@@ -36,9 +36,12 @@ class AppException implements Exception {
   /// body `{"error": "some_code"}` on failure — see their source for the
   /// exact codes each one can return.
   static String _mapFunctionMessage(FunctionException error) {
-    final code = error.details is Map ? error.details['error']?.toString() : null;
+    final code = error.details is Map
+        ? error.details['error']?.toString()
+        : null;
     return switch (code) {
-      'invalid_or_expired_token' => 'انتهت صلاحية كود التأكيد، اطلب كودًا جديدًا',
+      'invalid_or_expired_token' =>
+        'انتهت صلاحية كود التأكيد، اطلب كودًا جديدًا',
       'account_not_found' || 'user_not_found' =>
         'هذا الرقم غير مسجَّل، تحقق منه أو أنشئ حسابًا جديدًا',
       'unauthorized' || 'forbidden' => 'انتهت الجلسة، سجِّل الدخول مرة أخرى',
@@ -131,13 +134,28 @@ class AppException implements Exception {
     ('SALE_NOT_RETURNABLE', 'الفاتورة دي اترجعت أو اتلغت بالفعل'),
     ('SALE_NOT_FOUND', 'الفاتورة غير موجودة'),
     ('NOT_A_WALK_IN_SALE', 'دي فاتورة صنايعي ومش ممكن تتعدل من هنا'),
-    ('ASSEMBLY_HAS_NO_COMPONENTS', 'صنف التجميع ده مالوش مكونات — حدد مكوناته الأول'),
-    ('ASSEMBLY_NEEDS_COMPONENTS', 'صنف التجميع لازم يكون له مكون واحد على الأقل'),
-    ('ASSEMBLY_HAS_STOCK', 'المنتج ده له رصيد في المخزن — صنف التجميع مالوش رصيد خاص بيه'),
+    (
+      'ASSEMBLY_HAS_NO_COMPONENTS',
+      'صنف التجميع ده مالوش مكونات — حدد مكوناته الأول',
+    ),
+    (
+      'ASSEMBLY_NEEDS_COMPONENTS',
+      'صنف التجميع لازم يكون له مكون واحد على الأقل',
+    ),
+    (
+      'ASSEMBLY_HAS_STOCK',
+      'المنتج ده له رصيد في المخزن — صنف التجميع مالوش رصيد خاص بيه',
+    ),
     ('SERVICE_CANNOT_BE_ASSEMBLY', 'الخدمة مينفعش تكون صنف تجميع'),
     ('COMPONENT_CANNOT_BE_ASSEMBLY', 'المنتج ده مكون في صنف تجميع تاني'),
-    ('INVALID_COMPONENT', 'المكونات لازم تكون منتجات مخزنية (مش خدمة ولا صنف تجميع)'),
-    ('NOT_A_STOCK_PRODUCT', 'الخدمات وأصناف التجميع مالهاش شراء — اشترِ مكوناتها'),
+    (
+      'INVALID_COMPONENT',
+      'المكونات لازم تكون منتجات مخزنية (مش خدمة ولا صنف تجميع)',
+    ),
+    (
+      'NOT_A_STOCK_PRODUCT',
+      'الخدمات وأصناف التجميع مالهاش شراء — اشترِ مكوناتها',
+    ),
     ('SUPPLIER_REQUIRED', 'اكتب اسم المورد'),
     ('SUPPLIER_NOT_FOUND', 'المورد غير موجود'),
     ('PAID_EXCEEDS_TOTAL', 'المدفوع أكبر من إجمالي الفاتورة'),
@@ -166,14 +184,8 @@ class AppException implements Exception {
       'VERIFICATION_ALREADY_PENDING',
       'في تحويل بانتظار المراجعة لنفس الطلب بالفعل',
     ),
-    (
-      'DUPLICATE_REFERENCE_OR_REQUEST',
-      'المرجع ده مُسجَّل قبل كدا',
-    ),
-    (
-      'PAYMENT_NOT_PENDING_VERIFICATION',
-      'التحويل ده اتراجع قبل كدا',
-    ),
+    ('DUPLICATE_REFERENCE_OR_REQUEST', 'المرجع ده مُسجَّل قبل كدا'),
+    ('PAYMENT_NOT_PENDING_VERIFICATION', 'التحويل ده اتراجع قبل كدا'),
     // Wallet (0040).
     ('INSUFFICIENT_WALLET_BALANCE', 'رصيد محفظتك مش كافي لدفع المبلغ ده'),
     // Setup problems the admin can actually fix — never the generic message.
@@ -183,7 +195,10 @@ class AppException implements Exception {
     ),
     ('NO_CASHBOX', 'لا توجد خزنة مُفعَّلة — أنشئ الخزنة أولًا'),
     ('INSUFFICIENT_CASH', 'رصيد الخزنة لا يكفي لهذه العملية'),
-    ('INVALID_REFUND_KIND', 'اختر الخزنة التي سيُخصم منها المبلغ (نقدي أو تحويل)'),
+    (
+      'INVALID_REFUND_KIND',
+      'اختر الخزنة التي سيُخصم منها المبلغ (نقدي أو تحويل)',
+    ),
     ('FORBIDDEN_OR_NOT_ASSIGNED', 'هذا الطلب غير مسنَد لك'),
     ('FORBIDDEN_OR_NOT_IN_PROGRESS', 'لا يمكن إنهاء طلب لم يبدأ تنفيذه بعد'),
     ('FORBIDDEN_OR_NOT_CANCELLABLE', 'لا يمكن إلغاء هذا الطلب الآن'),
@@ -241,10 +256,7 @@ class AppException implements Exception {
       'SHIPPING_FEE_NOT_APPROVED',
       'لازم تحديد سعر الشحن وموافقة العميل عليه قبل تأكيد الطلب',
     ),
-    (
-      'SHIPPING_FEE_NOT_PENDING',
-      'لا يوجد سعر شحن بانتظار ردك حاليًا',
-    ),
+    ('SHIPPING_FEE_NOT_PENDING', 'لا يوجد سعر شحن بانتظار ردك حاليًا'),
     ('ORDER_NOT_FOUND', 'الطلب غير موجود'),
     ('ORDER_NOT_PENDING', 'لا يمكن تنفيذ هذا الإجراء على حالة الطلب الحالية'),
     ('ORDER_NOT_CANCELLABLE', 'لا يمكن إلغاء هذا الطلب في حالته الحالية'),

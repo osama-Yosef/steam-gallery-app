@@ -111,7 +111,11 @@ void main() {
     });
 
     testWidgets('also shows for a completed order', (tester) async {
-      await _pump(tester, _order(OrderStatus.completed, paidAmount: 100), _FakeOrderRepo());
+      await _pump(
+        tester,
+        _order(OrderStatus.completed, paidAmount: 100),
+        _FakeOrderRepo(),
+      );
       expect(find.text('استرجاع الطلب'), findsOneWidget);
     });
 

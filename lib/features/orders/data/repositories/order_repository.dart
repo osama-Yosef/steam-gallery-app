@@ -27,6 +27,7 @@ abstract class OrderRepository {
   Stream<List<Order>> watchCustomerOrders(String customerId);
   Stream<Order?> watchOrder(String orderId);
   Future<List<OrderItem>> getOrderItems(String orderId);
+
   /// The customer's answer to a proposed shipping fee — [rejectionReason]
   /// is required when [approve] is false. See
   /// rpc_customer_respond_shipping_fee (0065).
@@ -39,6 +40,7 @@ abstract class OrderRepository {
   // Admin — every action below works offline: it is queued in the [Outbox]
   // (kind 'order', refId = the order) and sent when the connection is back.
   Stream<List<Order>> watchAllOrders();
+
   /// Proposes (or re-proposes, after a rejection) the shipping fee while
   /// the order is still pending — required before [confirmOrder] will
   /// succeed. See rpc_admin_set_shipping_fee (0065).
@@ -49,11 +51,13 @@ abstract class OrderRepository {
   Future<OutboxResult> confirmOrder(String orderId);
   Future<OutboxResult> updateOrderStatus(String orderId, OrderStatus status);
   Future<OutboxResult> cancelOrder(String orderId, String reason);
+
   /// Post-delivery return (Phase 14) — restocks items and refunds through
   /// whichever channel(s) actually paid for the order (wallet, InstaPay, or
   /// cash), unlike [cancelOrder] this only applies to a delivered/completed
   /// order.
   Future<OutboxResult> returnOrder(String orderId, String reason);
+
   /// [paymentMethod] (0059) says which till the money lands in — cash or
   /// transfer/card; 'deferred' is refused server-side. This has nothing to
   /// do with the order's payment_status, only which cashbox gets credited.
@@ -199,12 +203,9 @@ class SupabaseOrderRepository implements OrderRepository {
 
   @override
   Future<OutboxResult> updateOrderStatus(String orderId, OrderStatus status) =>
-      _orderAction(
-        orderId,
-        'rpc_update_order_status',
-        {'p_new_status': status.name},
-        'طلب ← ${orderStatusLabelAr(status)}',
-      );
+      _orderAction(orderId, 'rpc_update_order_status', {
+        'p_new_status': status.name,
+      }, 'طلب ← ${orderStatusLabelAr(status)}');
 
   @override
   Future<OutboxResult> cancelOrder(String orderId, String reason) =>

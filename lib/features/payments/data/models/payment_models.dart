@@ -81,9 +81,7 @@ abstract class PaymentRecord with _$PaymentRecord {
     currency: row['currency'] as String? ?? 'EGP',
     status: paymentTxnStatusFromString(row['status'] as String),
     providerReference: row['provider_reference'] as String?,
-    metadata: Map<String, dynamic>.from(
-      row['metadata'] as Map? ?? const {},
-    ),
+    metadata: Map<String, dynamic>.from(row['metadata'] as Map? ?? const {}),
     createdAt: DateTime.parse(row['created_at'] as String),
     paidAt: row['paid_at'] == null
         ? null
@@ -105,10 +103,9 @@ abstract class InstapayDetails with _$InstapayDetails {
     String? beneficiaryName,
   }) = _InstapayDetails;
 
-  factory InstapayDetails.fromRpc(Map<String, dynamic> json) =>
-      InstapayDetails(
-        configured: json['configured'] as bool? ?? false,
-        ipaAddress: json['ipa_address'] as String?,
-        beneficiaryName: json['beneficiary_name'] as String?,
-      );
+  factory InstapayDetails.fromRpc(Map<String, dynamic> json) => InstapayDetails(
+    configured: json['configured'] as bool? ?? false,
+    ipaAddress: json['ipa_address'] as String?,
+    beneficiaryName: json['beneficiary_name'] as String?,
+  );
 }

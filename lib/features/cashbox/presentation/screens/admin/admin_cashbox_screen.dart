@@ -46,8 +46,7 @@ class AdminCashboxScreen extends ConsumerStatefulWidget {
   const AdminCashboxScreen({super.key});
 
   @override
-  ConsumerState<AdminCashboxScreen> createState() =>
-      _AdminCashboxScreenState();
+  ConsumerState<AdminCashboxScreen> createState() => _AdminCashboxScreenState();
 }
 
 class _AdminCashboxScreenState extends ConsumerState<AdminCashboxScreen> {
@@ -69,9 +68,9 @@ class _AdminCashboxScreenState extends ConsumerState<AdminCashboxScreen> {
               ),
               title: const Text('تسجيل مصروف'),
               subtitle: const Text('يخصم من الخزنة ويُحتسب في المصروفات'),
-              onTap: () => Navigator.of(sheetContext).pop(
-                isSales ? Routes.salesExpenseNew : Routes.adminExpenseNew,
-              ),
+              onTap: () => Navigator.of(
+                sheetContext,
+              ).pop(isSales ? Routes.salesExpenseNew : Routes.adminExpenseNew),
             ),
             ListTile(
               leading: const Icon(
@@ -265,7 +264,10 @@ class _TxnTile extends StatelessWidget {
                 Container(
                   width: 48,
                   height: 48,
-                  decoration: BoxDecoration(shape: BoxShape.circle, color: color),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: color,
+                  ),
                   child: Icon(
                     _cashTxnTypeIcon(txn.type),
                     color: Colors.white,

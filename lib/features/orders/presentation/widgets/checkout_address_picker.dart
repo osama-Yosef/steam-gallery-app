@@ -9,7 +9,11 @@ import '../../../locations/presentation/widgets/availability_badge.dart';
 class CheckoutAddressCard extends StatelessWidget {
   final CustomerAddress? selected;
   final VoidCallback onTap;
-  const CheckoutAddressCard({super.key, required this.selected, required this.onTap});
+  const CheckoutAddressCard({
+    super.key,
+    required this.selected,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +30,9 @@ class CheckoutAddressCard extends StatelessWidget {
             children: [
               Icon(
                 Iconsax.location_copy,
-                color: a == null ? AppColors.textSecondary : AppColors.primaryDark,
+                color: a == null
+                    ? AppColors.textSecondary
+                    : AppColors.primaryDark,
               ),
               const SizedBox(width: 10),
               Expanded(

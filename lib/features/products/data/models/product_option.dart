@@ -46,9 +46,8 @@ class SelectedOption {
   final double extraPrice;
   const SelectedOption({required this.name, required this.extraPrice});
 
-  factory SelectedOption.fromJson(Map<String, dynamic> json) =>
-      SelectedOption(
-        name: json['name'] as String,
-        extraPrice: (json['extra_price'] as num).toDouble(),
-      );
+  factory SelectedOption.fromJson(Map<String, dynamic> json) => SelectedOption(
+    name: json['name'] as String,
+    extraPrice: (json['extra_price'] as num).toDouble(),
+  );
 }

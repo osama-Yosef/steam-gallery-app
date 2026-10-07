@@ -6,13 +6,19 @@ import 'package:steam_gallery_app/features/orders/presentation/widgets/order_sta
 
 void main() {
   group('PaymentStatus (0037)', () {
-    test('parses every value the database can send, unknown falls back to unpaid', () {
-      expect(paymentStatusFromString('unpaid'), PaymentStatus.unpaid);
-      expect(paymentStatusFromString('partially_paid'), PaymentStatus.partiallyPaid);
-      expect(paymentStatusFromString('paid'), PaymentStatus.paid);
-      expect(paymentStatusFromString('refunded'), PaymentStatus.refunded);
-      expect(paymentStatusFromString('something_new'), PaymentStatus.unpaid);
-    });
+    test(
+      'parses every value the database can send, unknown falls back to unpaid',
+      () {
+        expect(paymentStatusFromString('unpaid'), PaymentStatus.unpaid);
+        expect(
+          paymentStatusFromString('partially_paid'),
+          PaymentStatus.partiallyPaid,
+        );
+        expect(paymentStatusFromString('paid'), PaymentStatus.paid);
+        expect(paymentStatusFromString('refunded'), PaymentStatus.refunded);
+        expect(paymentStatusFromString('something_new'), PaymentStatus.unpaid);
+      },
+    );
 
     test('every value has an Arabic label', () {
       for (final s in PaymentStatus.values) {
@@ -56,12 +62,18 @@ void main() {
     });
 
     testWidgets('PaymentStatusChip', (tester) async {
-      await pump(tester, const PaymentStatusChip(status: PaymentStatus.partiallyPaid));
+      await pump(
+        tester,
+        const PaymentStatusChip(status: PaymentStatus.partiallyPaid),
+      );
       expect(find.text('مدفوع جزئيًا'), findsOneWidget);
     });
 
     testWidgets('PaymentStatusLabel (compact, for list rows)', (tester) async {
-      await pump(tester, const PaymentStatusLabel(status: PaymentStatus.refunded));
+      await pump(
+        tester,
+        const PaymentStatusLabel(status: PaymentStatus.refunded),
+      );
       expect(find.text('تم الاسترداد'), findsOneWidget);
     });
   });

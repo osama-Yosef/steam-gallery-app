@@ -285,7 +285,11 @@ class SupabaseAuthRepository implements AuthRepository {
     String? avatarExt,
   }) async {
     try {
-      await _client.auth.verifyOTP(email: email, token: code, type: OtpType.signup);
+      await _client.auth.verifyOTP(
+        email: email,
+        token: code,
+        type: OtpType.signup,
+      );
     } catch (e) {
       throw AppException.from(e);
     }
@@ -338,7 +342,11 @@ class SupabaseAuthRepository implements AuthRepository {
     required String code,
   }) async {
     try {
-      await _client.auth.verifyOTP(email: email, token: code, type: OtpType.recovery);
+      await _client.auth.verifyOTP(
+        email: email,
+        token: code,
+        type: OtpType.recovery,
+      );
     } catch (e) {
       throw AppException.from(e);
     }
@@ -365,7 +373,9 @@ class SupabaseAuthRepository implements AuthRepository {
   }
 
   @override
-  Future<void> markPhoneVerifiedWithFirebaseToken(String firebaseIdToken) async {
+  Future<void> markPhoneVerifiedWithFirebaseToken(
+    String firebaseIdToken,
+  ) async {
     try {
       await _client.functions.invoke(
         'verify-phone-firebase',

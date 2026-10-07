@@ -62,7 +62,7 @@ class _AdminReportDetailScreenState
               tooltip: 'تصدير',
               icon: const Icon(Iconsax.export_1_copy),
               onSelected: (v) => v == 'image'
-                  ? _shareAsImage(context)
+                  ? _shareAsImage()
                   : _copyReport(context, ref, range),
               itemBuilder: (context) => const [
                 PopupMenuItem(
@@ -455,7 +455,7 @@ class _AdminReportDetailScreenState
     _ => type,
   };
 
-  Future<void> _shareAsImage(BuildContext context) async {
+  Future<void> _shareAsImage() async {
     setState(() => _exporting = true);
     try {
       final boundary =

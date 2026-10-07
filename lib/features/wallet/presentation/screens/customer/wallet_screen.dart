@@ -73,10 +73,7 @@ class WalletScreen extends ConsumerWidget {
                 ),
               ),
               const SizedBox(height: 20),
-              Text(
-                'العمليات',
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
+              Text('العمليات', style: Theme.of(context).textTheme.titleMedium),
               const SizedBox(height: 8),
               txnsAsync.when(
                 loading: () => const Padding(

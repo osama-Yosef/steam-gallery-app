@@ -105,12 +105,16 @@ CartSummary _cart(List<CartLine> items) => CartSummary(
 
 /// Records every createOrder call; [orderId] is what it "creates".
 class _FakeOrderRepo implements OrderRepository {
-  final calls = <({
-    String customerId,
-    List<({String productId, int quantity, List<String> optionIds})> items,
-    String addressId,
-    String? notes,
-  })>[];
+  final calls =
+      <
+        ({
+          String customerId,
+          List<({String productId, int quantity, List<String> optionIds})>
+          items,
+          String addressId,
+          String? notes,
+        })
+      >[];
   Object? failWith;
 
   @override
@@ -136,7 +140,8 @@ class _FakeOrderRepo implements OrderRepository {
   }
 
   @override
-  Stream<List<Order>> watchCustomerOrders(String customerId) => const Stream.empty();
+  Stream<List<Order>> watchCustomerOrders(String customerId) =>
+      const Stream.empty();
   @override
   Stream<Order?> watchOrder(String orderId) => const Stream.empty();
   @override
@@ -293,30 +298,37 @@ void main() {
       );
       expect(find.text('أضف عنوان توصيل أولًا'), findsOneWidget);
       expect(
-        tester.widget<FilledButton>(find.widgetWithText(FilledButton, 'إرسال الطلب')).onPressed,
+        tester
+            .widget<FilledButton>(
+              find.widgetWithText(FilledButton, 'إرسال الطلب'),
+            )
+            .onPressed,
         isNull,
       );
     });
 
-    testWidgets(
-      'auto-selects the default address when it is serviceable',
-      (tester) async {
-        await _pumpCheckout(
-          tester,
-          cart: _cart([_cartLine('p1')]),
-          addresses: [
-            _address('a1', label: 'الشغل'),
-            _address('a2', label: 'المنزل', isDefault: true),
-          ],
-          orderRepo: _FakeOrderRepo(),
-        );
-        expect(find.text('المنزل'), findsOneWidget);
-        expect(
-          tester.widget<FilledButton>(find.widgetWithText(FilledButton, 'إرسال الطلب')).onPressed,
-          isNotNull,
-        );
-      },
-    );
+    testWidgets('auto-selects the default address when it is serviceable', (
+      tester,
+    ) async {
+      await _pumpCheckout(
+        tester,
+        cart: _cart([_cartLine('p1')]),
+        addresses: [
+          _address('a1', label: 'الشغل'),
+          _address('a2', label: 'المنزل', isDefault: true),
+        ],
+        orderRepo: _FakeOrderRepo(),
+      );
+      expect(find.text('المنزل'), findsOneWidget);
+      expect(
+        tester
+            .widget<FilledButton>(
+              find.widgetWithText(FilledButton, 'إرسال الطلب'),
+            )
+            .onPressed,
+        isNotNull,
+      );
+    });
 
     testWidgets(
       'falls back to the first serviceable address when the default is not covered',
@@ -325,7 +337,12 @@ void main() {
           tester,
           cart: _cart([_cartLine('p1')]),
           addresses: [
-            _address('a1', label: 'المنزل', isDefault: true, serviceable: false),
+            _address(
+              'a1',
+              label: 'المنزل',
+              isDefault: true,
+              serviceable: false,
+            ),
             _address('a2', label: 'الشغل', serviceable: true),
           ],
           orderRepo: _FakeOrderRepo(),
@@ -345,7 +362,11 @@ void main() {
         );
         expect(find.text('اختر عنوان التوصيل'), findsOneWidget);
         expect(
-          tester.widget<FilledButton>(find.widgetWithText(FilledButton, 'إرسال الطلب')).onPressed,
+          tester
+              .widget<FilledButton>(
+                find.widgetWithText(FilledButton, 'إرسال الطلب'),
+              )
+              .onPressed,
           isNull,
         );
       },
@@ -361,85 +382,97 @@ void main() {
           orderRepo: _FakeOrderRepo(),
         );
         expect(
-          tester.widget<FilledButton>(find.widgetWithText(FilledButton, 'إرسال الطلب')).onPressed,
+          tester
+              .widget<FilledButton>(
+                find.widgetWithText(FilledButton, 'إرسال الطلب'),
+              )
+              .onPressed,
           isNull,
         );
       },
     );
 
-    testWidgets('picking a different address from the sheet updates the selection', (
-      tester,
-    ) async {
-      await _pumpCheckout(
-        tester,
-        cart: _cart([_cartLine('p1')]),
-        addresses: [
-          _address('a1', label: 'المنزل', isDefault: true),
-          _address('a2', label: 'الشغل'),
-        ],
-        orderRepo: _FakeOrderRepo(),
-      );
-      expect(find.text('المنزل'), findsOneWidget);
+    testWidgets(
+      'picking a different address from the sheet updates the selection',
+      (tester) async {
+        await _pumpCheckout(
+          tester,
+          cart: _cart([_cartLine('p1')]),
+          addresses: [
+            _address('a1', label: 'المنزل', isDefault: true),
+            _address('a2', label: 'الشغل'),
+          ],
+          orderRepo: _FakeOrderRepo(),
+        );
+        expect(find.text('المنزل'), findsOneWidget);
 
-      await tester.tap(find.text('المنزل'));
-      await tester.pumpAndSettle();
-      expect(find.text('الشغل'), findsWidgets); // once in the sheet list
+        await tester.tap(find.text('المنزل'));
+        await tester.pumpAndSettle();
+        expect(find.text('الشغل'), findsWidgets); // once in the sheet list
 
-      await tester.tap(find.text('الشغل').last);
-      await tester.pumpAndSettle();
-      expect(find.text('الشغل'), findsOneWidget); // sheet closed, on the card
-    });
+        await tester.tap(find.text('الشغل').last);
+        await tester.pumpAndSettle();
+        expect(find.text('الشغل'), findsOneWidget); // sheet closed, on the card
+      },
+    );
 
-    testWidgets('submits the cart lines and chosen address, then clears the cart', (
-      tester,
-    ) async {
-      final orderRepo = _FakeOrderRepo();
-      final container = await _pumpCheckout(
-        tester,
-        cart: _cart([_cartLine('p1', quantity: 2), _cartLine('p2', quantity: 1)]),
-        addresses: [_address('a1', isDefault: true)],
-        orderRepo: orderRepo,
-      );
+    testWidgets(
+      'submits the cart lines and chosen address, then clears the cart',
+      (tester) async {
+        final orderRepo = _FakeOrderRepo();
+        final container = await _pumpCheckout(
+          tester,
+          cart: _cart([
+            _cartLine('p1', quantity: 2),
+            _cartLine('p2', quantity: 1),
+          ]),
+          addresses: [_address('a1', isDefault: true)],
+          orderRepo: orderRepo,
+        );
 
-      await tester.enterText(find.byType(TextField), 'اطرق الجرس مرتين');
-      await tester.tap(find.widgetWithText(FilledButton, 'إرسال الطلب'));
-      await tester.pumpAndSettle();
+        await tester.enterText(find.byType(TextField), 'اطرق الجرس مرتين');
+        await tester.tap(find.widgetWithText(FilledButton, 'إرسال الطلب'));
+        await tester.pumpAndSettle();
 
-      expect(orderRepo.calls, hasLength(1));
-      final call = orderRepo.calls.single;
-      expect(call.customerId, 'cust-1');
-      expect(call.addressId, 'a1');
-      expect(call.notes, 'اطرق الجرس مرتين');
-      expect(
-        call.items.map((i) => (i.productId, i.quantity)).toSet(),
-        {('p1', 2), ('p2', 1)},
-      );
-      expect(container.read(cartProvider).value!.isEmpty, isTrue);
-    });
+        expect(orderRepo.calls, hasLength(1));
+        final call = orderRepo.calls.single;
+        expect(call.customerId, 'cust-1');
+        expect(call.addressId, 'a1');
+        expect(call.notes, 'اطرق الجرس مرتين');
+        expect(call.items.map((i) => (i.productId, i.quantity)).toSet(), {
+          ('p1', 2),
+          ('p2', 1),
+        });
+        expect(container.read(cartProvider).value!.isEmpty, isTrue);
+      },
+    );
 
-    testWidgets('a server refusal (e.g. address no longer serviceable) shows its message', (
-      tester,
-    ) async {
-      // A real repository would already have translated this to
-      // AppException; PostgrestException here exercises that same mapping
-      // (app_exception.dart's _rpcErrorMessages) instead of hardcoding the
-      // Arabic text on both sides of the test.
-      final orderRepo = _FakeOrderRepo()
-        ..failWith = const PostgrestException(message: 'ADDRESS_NOT_SERVICEABLE');
-      await _pumpCheckout(
-        tester,
-        cart: _cart([_cartLine('p1')]),
-        addresses: [_address('a1', isDefault: true)],
-        orderRepo: orderRepo,
-      );
+    testWidgets(
+      'a server refusal (e.g. address no longer serviceable) shows its message',
+      (tester) async {
+        // A real repository would already have translated this to
+        // AppException; PostgrestException here exercises that same mapping
+        // (app_exception.dart's _rpcErrorMessages) instead of hardcoding the
+        // Arabic text on both sides of the test.
+        final orderRepo = _FakeOrderRepo()
+          ..failWith = const PostgrestException(
+            message: 'ADDRESS_NOT_SERVICEABLE',
+          );
+        await _pumpCheckout(
+          tester,
+          cart: _cart([_cartLine('p1')]),
+          addresses: [_address('a1', isDefault: true)],
+          orderRepo: orderRepo,
+        );
 
-      await tester.tap(find.widgetWithText(FilledButton, 'إرسال الطلب'));
-      await tester.pumpAndSettle();
-      expect(
-        find.text('المنطقة دي غير مغطاة حاليًا — اختر عنوانًا تانيًا'),
-        findsOneWidget,
-      );
-    });
+        await tester.tap(find.widgetWithText(FilledButton, 'إرسال الطلب'));
+        await tester.pumpAndSettle();
+        expect(
+          find.text('المنطقة دي غير مغطاة حاليًا — اختر عنوانًا تانيًا'),
+          findsOneWidget,
+        );
+      },
+    );
 
     testWidgets('payment method is shown as full transfer before shipping', (
       tester,

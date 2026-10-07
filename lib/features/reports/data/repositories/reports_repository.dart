@@ -144,8 +144,10 @@ class SupabaseReportsRepository implements ReportsRepository {
   /// alone (no technician walk-in `sales`), plus how many orders fell in
   /// range — for the "أرباح الطلبات" report (0046), which must read in
   /// isolation from the storefront's technician-sales channel.
-  Future<({double revenue, double cogs, int orderCount})>
-  _ordersRevenueAndCogs(DateTime from, DateTime to) async {
+  Future<({double revenue, double cogs, int orderCount})> _ordersRevenueAndCogs(
+    DateTime from,
+    DateTime to,
+  ) async {
     final orderRows = await _client
         .from('orders')
         .select(

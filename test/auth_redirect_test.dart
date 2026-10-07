@@ -178,11 +178,14 @@ void main() {
       );
     });
 
-    test('a customer with no email (pre-0070 account) is held on add-email', () {
-      final noEmail = _user(email: null);
-      expect(_redirect(Routes.customerCart, user: noEmail), Routes.addEmail);
-      expect(_redirect(Routes.addEmail, user: noEmail), isNull);
-    });
+    test(
+      'a customer with no email (pre-0070 account) is held on add-email',
+      () {
+        final noEmail = _user(email: null);
+        expect(_redirect(Routes.customerCart, user: noEmail), Routes.addEmail);
+        expect(_redirect(Routes.addEmail, user: noEmail), isNull);
+      },
+    );
 
     test('adding the email sends the customer home', () {
       expect(_redirect(Routes.addEmail, user: _user()), Routes.customerHome);

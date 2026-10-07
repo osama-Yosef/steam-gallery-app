@@ -146,7 +146,8 @@ class CustomerOrderDetailScreen extends ConsumerWidget {
                   ),
                 ),
               ),
-              if (order.shippingFeeStatus == ShippingFeeStatus.pendingApproval ||
+              if (order.shippingFeeStatus ==
+                      ShippingFeeStatus.pendingApproval ||
                   order.shippingFeeStatus == ShippingFeeStatus.rejected) ...[
                 const SizedBox(height: 12),
                 _ShippingFeeApprovalCard(
@@ -192,7 +193,8 @@ class CustomerOrderDetailScreen extends ConsumerWidget {
                   padding: const EdgeInsets.all(16),
                   child: Column(
                     children: [
-                      if (order.shippingFeeStatus == ShippingFeeStatus.approved &&
+                      if (order.shippingFeeStatus ==
+                              ShippingFeeStatus.approved &&
                           order.shippingFee != null)
                         _row(
                           context,
@@ -227,9 +229,8 @@ class CustomerOrderDetailScreen extends ConsumerWidget {
                   ].contains(order.status)) ...[
                 const SizedBox(height: 12),
                 OutlinedButton.icon(
-                  onPressed: () => context.push(
-                    Routes.customerInstapayPayment(order.id),
-                  ),
+                  onPressed: () =>
+                      context.push(Routes.customerInstapayPayment(order.id)),
                   icon: const Icon(Iconsax.bank_copy),
                   label: const Text('ادفع عبر InstaPay'),
                 ),
@@ -299,7 +300,10 @@ class CustomerOrderDetailScreen extends ConsumerWidget {
 class _ShippingFeeApprovalCard extends StatelessWidget {
   final Order order;
   final void Function(bool approve) onRespond;
-  const _ShippingFeeApprovalCard({required this.order, required this.onRespond});
+  const _ShippingFeeApprovalCard({
+    required this.order,
+    required this.onRespond,
+  });
 
   @override
   Widget build(BuildContext context) {

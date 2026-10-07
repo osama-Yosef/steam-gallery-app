@@ -320,8 +320,7 @@ class _AdminOfferEditorScreenState
                                     ),
                                 decoration: InputDecoration(
                                   labelText: 'سعر العرض (اختياري)',
-                                  hintText:
-                                      'اتركه فاضي للعرض بدون تخفيض السعر',
+                                  hintText: 'اتركه فاضي للعرض بدون تخفيض السعر',
                                   helperText:
                                       'السعر العادي: '
                                       '${Formatters.currency(p.sellingPrice)}',

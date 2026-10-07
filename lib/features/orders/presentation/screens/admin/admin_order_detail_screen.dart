@@ -339,9 +339,7 @@ class AdminOrderDetailScreen extends ConsumerWidget {
                         color: AppColors.warning,
                       ),
                       title: const Text('مستني المزامنة'),
-                      subtitle: Text(
-                        pending.map((e) => e.label).join('\n'),
-                      ),
+                      subtitle: Text(pending.map((e) => e.label).join('\n')),
                     ),
                   );
                 },
@@ -441,7 +439,8 @@ class AdminOrderDetailScreen extends ConsumerWidget {
                       // 0065: confirming is blocked server-side until the
                       // customer has approved a shipping fee — disabled
                       // here too so the button doesn't invite a doomed tap.
-                      onPressed: order.shippingFeeStatus == ShippingFeeStatus.approved
+                      onPressed:
+                          order.shippingFeeStatus == ShippingFeeStatus.approved
                           ? () => _confirm(context, ref)
                           : null,
                       icon: const Icon(Iconsax.tick_circle_copy),
@@ -676,7 +675,10 @@ class _ShippingFeeCard extends StatelessWidget {
               children: [
                 const Icon(Iconsax.truck_copy, size: 18),
                 const SizedBox(width: 6),
-                Text('سعر الشحن', style: Theme.of(context).textTheme.titleSmall),
+                Text(
+                  'سعر الشحن',
+                  style: Theme.of(context).textTheme.titleSmall,
+                ),
               ],
             ),
             const SizedBox(height: 8),

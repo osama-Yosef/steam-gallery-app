@@ -150,15 +150,17 @@ void main() {
   // intl locale data isn't loaded by anything else already.
   setUpAll(() => initializeDateFormatting('ar'));
 
-
   group('Payment models', () {
-    test('PaymentRecord.fromRow parses channel/status/metadata, no cost column', () {
-      final p = _payment('p1');
-      expect(p.channel, PaymentChannel.instapay);
-      expect(p.status, PaymentTxnStatus.pendingVerification);
-      expect(p.proofPath, 'c1/proof.jpg');
-      expect(p.rejectionReason, isNull);
-    });
+    test(
+      'PaymentRecord.fromRow parses channel/status/metadata, no cost column',
+      () {
+        final p = _payment('p1');
+        expect(p.channel, PaymentChannel.instapay);
+        expect(p.status, PaymentTxnStatus.pendingVerification);
+        expect(p.proofPath, 'c1/proof.jpg');
+        expect(p.rejectionReason, isNull);
+      },
+    );
 
     test('unknown enum strings fall back safely', () {
       expect(paymentChannelFromString('bogus'), PaymentChannel.cashOnDelivery);
@@ -215,7 +217,10 @@ void main() {
       );
       await tester.tap(find.byKey(const Key('submit-instapay')));
       await tester.pumpAndSettle();
-      expect(find.text('اكتب رقم أو مرجع العملية من تطبيق InstaPay'), findsOneWidget);
+      expect(
+        find.text('اكتب رقم أو مرجع العملية من تطبيق InstaPay'),
+        findsOneWidget,
+      );
       expect(repo.submitCalls, isEmpty);
     });
   });
@@ -223,11 +228,7 @@ void main() {
   group('AdminInstapayReviewScreen', () {
     testWidgets('empty state when nothing is pending', (tester) async {
       final repo = _FakePaymentRepo(pending: []);
-      await _pump(
-        tester,
-        const AdminInstapayReviewScreen(),
-        repo: repo,
-      );
+      await _pump(tester, const AdminInstapayReviewScreen(), repo: repo);
       expect(find.text('لا توجد تحويلات بانتظار المراجعة'), findsOneWidget);
     });
 

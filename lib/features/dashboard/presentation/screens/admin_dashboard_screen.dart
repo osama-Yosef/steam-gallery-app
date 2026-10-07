@@ -22,10 +22,7 @@ class DashboardOverview extends ConsumerWidget {
     final trendAsync = ref.watch(dashboardRevenueTrendProvider);
 
     return summaryAsync.when(
-      loading: () => const SizedBox(
-        height: 300,
-        child: LoadingView(),
-      ),
+      loading: () => const SizedBox(height: 300, child: LoadingView()),
       error: (e, _) => SizedBox(
         height: 220,
         child: ErrorView(
@@ -277,7 +274,13 @@ class _KpiCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (highlight) {
-      return _HighlightCard(icon: icon, colors: colors, label: label, value: value, onTap: onTap);
+      return _HighlightCard(
+        icon: icon,
+        colors: colors,
+        label: label,
+        value: value,
+        onTap: onTap,
+      );
     }
     return Card(
       child: InkWell(
@@ -303,7 +306,11 @@ class _KpiCard extends StatelessWidget {
                         end: Alignment.bottomRight,
                       ),
                     ),
-                    child: Icon(icon, color: Colors.white, size: badgeSize * 0.5),
+                    child: Icon(
+                      icon,
+                      color: Colors.white,
+                      size: badgeSize * 0.5,
+                    ),
                   ),
                   const SizedBox(height: 10),
                   Text(

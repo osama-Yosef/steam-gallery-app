@@ -196,9 +196,7 @@ class SupabaseStorefrontRepository implements StorefrontRepository {
   }
 
   @override
-  Future<List<OfferProductInput>> getOfferProductInputs(
-    String offerId,
-  ) async {
+  Future<List<OfferProductInput>> getOfferProductInputs(String offerId) async {
     try {
       final rows = await _client
           .from('offer_products')

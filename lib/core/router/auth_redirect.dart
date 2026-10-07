@@ -79,7 +79,8 @@ String? resolveAuthRedirect({
 
   // Every customer needs an email now (0070) — old phone-only accounts are
   // asked for one the first time they sign back in.
-  if (user.role == AppRole.customer && (user.email == null || user.email!.isEmpty)) {
+  if (user.role == AppRole.customer &&
+      (user.email == null || user.email!.isEmpty)) {
     return location == Routes.addEmail ? null : Routes.addEmail;
   }
 

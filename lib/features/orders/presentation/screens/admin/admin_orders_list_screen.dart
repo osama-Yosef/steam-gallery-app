@@ -138,7 +138,10 @@ class _OrderTile extends StatelessWidget {
                   Container(
                     width: 48,
                     height: 48,
-                    decoration: BoxDecoration(shape: BoxShape.circle, color: color),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: color,
+                    ),
                     child: const Icon(
                       Iconsax.receipt_text_copy,
                       color: Colors.white,

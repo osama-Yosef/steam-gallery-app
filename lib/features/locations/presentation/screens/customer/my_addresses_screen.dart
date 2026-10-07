@@ -146,9 +146,7 @@ class _AddressCard extends StatelessWidget {
               Row(
                 children: [
                   Icon(
-                    address.isDefault
-                        ? Iconsax.star_1
-                        : Iconsax.location_copy,
+                    address.isDefault ? Iconsax.star_1 : Iconsax.location_copy,
                     color: address.isDefault
                         ? AppColors.brandGold
                         : AppColors.textSecondary,

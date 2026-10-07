@@ -41,7 +41,10 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
       ref
           .read(pendingOtpProvider.notifier)
           .start(
-            OtpRequest(destination: email, purpose: OtpPurpose.passwordRecovery),
+            OtpRequest(
+              destination: email,
+              purpose: OtpPurpose.passwordRecovery,
+            ),
           );
       if (mounted) context.push(Routes.verifyOtp);
     } catch (e) {

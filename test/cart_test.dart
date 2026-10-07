@@ -111,7 +111,9 @@ class _FakeCartRepo implements CartRepository {
       ..sort((a, b) => a.productId.compareTo(b.productId));
     return CartSummary(
       items: items,
-      itemCount: items.where((l) => l.isActive).fold(0, (s, l) => s + l.quantity),
+      itemCount: items
+          .where((l) => l.isActive)
+          .fold(0, (s, l) => s + l.quantity),
       subtotal: items.fold(0.0, (s, l) => s + l.lineTotal),
       currency: 'EGP',
       hasIssues: items.any((l) => l.blocksCheckout || l.priceChanged),
@@ -162,8 +164,9 @@ class _FakeCartRepo implements CartRepository {
     final p = products[productId];
     if (p == null || !p.active) throw Exception('PRODUCT_NOT_FOUND');
     final existing = _lines[productId];
-    _lines[productId] = (existing ?? _line(productId, name: p.name, unitPrice: p.price))
-        .copyWith(quantity: quantity.clamp(0, maxCartLineQuantity));
+    _lines[productId] =
+        (existing ?? _line(productId, name: p.name, unitPrice: p.price))
+            .copyWith(quantity: quantity.clamp(0, maxCartLineQuantity));
     return _reprice();
   }
 
@@ -180,7 +183,10 @@ class _FakeCartRepo implements CartRepository {
     for (final id in _lines.keys.toList()) {
       final p = products[id];
       if (p != null) {
-        _lines[id] = _lines[id]!.copyWith(priceSeen: p.price, priceChanged: false);
+        _lines[id] = _lines[id]!.copyWith(
+          priceSeen: p.price,
+          priceChanged: false,
+        );
       }
     }
     return _reprice();
@@ -235,8 +241,9 @@ class _FakeProductRepo implements ProductRepository {
   }) async => [];
 
   @override
-  Future<List<ProductCategory>> getCategories({bool activeOnly = false}) async =>
-      [];
+  Future<List<ProductCategory>> getCategories({
+    bool activeOnly = false,
+  }) async => [];
 
   @override
   Future<ProductPublic?> getProductPublicById(String id) async => product;
@@ -372,16 +379,19 @@ void main() {
       expect(cart.isEmpty, isTrue);
     });
 
-    test('a non-customer (technician) always sees an empty cart, no RPC call', () async {
-      final repo = _FakeCartRepo();
-      final c = ProviderContainer(
-        overrides: _cartOverrides(repo, user: _technician),
-      );
-      addTearDown(c.dispose);
-      final cart = await c.read(cartProvider.future);
-      expect(cart.isEmpty, isTrue);
-      expect(repo.calls, isEmpty);
-    });
+    test(
+      'a non-customer (technician) always sees an empty cart, no RPC call',
+      () async {
+        final repo = _FakeCartRepo();
+        final c = ProviderContainer(
+          overrides: _cartOverrides(repo, user: _technician),
+        );
+        addTearDown(c.dispose);
+        final cart = await c.read(cartProvider.future);
+        expect(cart.isEmpty, isTrue);
+        expect(repo.calls, isEmpty);
+      },
+    );
   });
 
   group('CartScreen', () {
@@ -444,12 +454,13 @@ void main() {
     testWidgets('an unavailable line blocks checkout until removed', (
       tester,
     ) async {
-      final repo = _FakeCartRepo({
-        'p1': const _CatalogProduct('متوفر', 50),
-        'p2': const _CatalogProduct('غير متوفر', 80, available: false),
-      })
-        ..seed('p1', quantity: 1)
-        ..seed('p2', quantity: 1);
+      final repo =
+          _FakeCartRepo({
+              'p1': const _CatalogProduct('متوفر', 50),
+              'p2': const _CatalogProduct('غير متوفر', 80, available: false),
+            })
+            ..seed('p1', quantity: 1)
+            ..seed('p2', quantity: 1);
       await _pumpScreen(
         tester,
         const CartScreen(),
@@ -533,17 +544,18 @@ void main() {
       ProductPublic p,
       _FakeCartRepo cartRepo,
     ) async {
-      final overrides = [
-        productRepositoryProvider.overrideWithValue(
-          _FakeProductRepo(product: p),
-        ),
-        productOffersProvider(p.id).overrideWith((ref) async => []),
-      ]
-        // Spreading a dynamic-typed Iterable here would infer List<dynamic>,
-        // not List<Override> (Override isn't nameable outside riverpod's own
-        // codegen); addAll keeps the outer list's real (Override) runtime type.
-        // ignore: prefer_spread_collections
-        ..addAll(_cartOverrides(cartRepo));
+      final overrides =
+          [
+              productRepositoryProvider.overrideWithValue(
+                _FakeProductRepo(product: p),
+              ),
+              productOffersProvider(p.id).overrideWith((ref) async => []),
+            ]
+            // Spreading a dynamic-typed Iterable here would infer List<dynamic>,
+            // not List<Override> (Override isn't nameable outside riverpod's own
+            // codegen); addAll keeps the outer list's real (Override) runtime type.
+            // ignore: prefer_spread_collections
+            ..addAll(_cartOverrides(cartRepo));
       return _pumpScreen(
         tester,
         ProductDetailScreen(productId: p.id),
@@ -565,10 +577,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(c.read(cartProvider).value!.quantityOf('p1'), 3);
       expect(find.text('في السلة الآن: 3'), findsOneWidget);
-      expect(
-        tester.widget<Text>(find.byKey(const Key('qty-value'))).data,
-        '1',
-      );
+      expect(tester.widget<Text>(find.byKey(const Key('qty-value'))).data, '1');
     });
 
     testWidgets('unavailable products cannot be added', (tester) async {
@@ -593,13 +602,14 @@ void main() {
 
     testWidgets('a hidden or deleted product says so', (tester) async {
       final repo = _FakeCartRepo();
-      final overrides = [
-        productRepositoryProvider.overrideWithValue(_FakeProductRepo()),
-        productOffersProvider('gone').overrideWith((ref) async => []),
-      ]
-        // See the note in pumpDetail above.
-        // ignore: prefer_spread_collections
-        ..addAll(_cartOverrides(repo));
+      final overrides =
+          [
+              productRepositoryProvider.overrideWithValue(_FakeProductRepo()),
+              productOffersProvider('gone').overrideWith((ref) async => []),
+            ]
+            // See the note in pumpDetail above.
+            // ignore: prefer_spread_collections
+            ..addAll(_cartOverrides(repo));
       await _pumpScreen(
         tester,
         const ProductDetailScreen(productId: 'gone'),

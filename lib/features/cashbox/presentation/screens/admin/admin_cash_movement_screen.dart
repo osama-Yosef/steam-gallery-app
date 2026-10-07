@@ -107,8 +107,7 @@ class _AdminCashMovementScreenState
                   ButtonSegment(value: k, label: Text(cashboxKindLabelAr(k))),
               ],
               selected: {_cashboxKind},
-              onSelectionChanged: (s) =>
-                  setState(() => _cashboxKind = s.first),
+              onSelectionChanged: (s) => setState(() => _cashboxKind = s.first),
             ),
             const SizedBox(height: 16),
             if (balance != null)

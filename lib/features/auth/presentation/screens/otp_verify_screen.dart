@@ -58,7 +58,10 @@ class OtpVerifyScreen extends ConsumerWidget {
           // password.
           ref.read(passwordRecoveryProvider.notifier).begin();
           try {
-            await repo.verifyRecoveryEmailOtp(email: request.destination, code: code);
+            await repo.verifyRecoveryEmailOtp(
+              email: request.destination,
+              code: code,
+            );
           } catch (_) {
             ref.read(passwordRecoveryProvider.notifier).end();
             rethrow;
@@ -78,14 +81,19 @@ class OtpVerifyScreen extends ConsumerWidget {
             avatarExt: request.avatarExt,
           );
         case OtpPurpose.emailChange:
-          await repo.verifyEmailChangeOtp(email: request.destination, code: code);
+          await repo.verifyEmailChangeOtp(
+            email: request.destination,
+            code: code,
+          );
       }
       ref.read(pendingOtpProvider.notifier).clear();
       ref.invalidate(currentUserProfileProvider);
     }
 
     Future<void> resend() => switch (purpose) {
-      OtpPurpose.passwordRecovery => repo.sendPasswordRecoveryEmail(request.destination),
+      OtpPurpose.passwordRecovery => repo.sendPasswordRecoveryEmail(
+        request.destination,
+      ),
       OtpPurpose.emailSignup => repo.resendSignupEmailOtp(request.destination),
       OtpPurpose.signup => repo.resendSignupOtp(request.destination),
       OtpPurpose.emailChange => repo.addEmailToAccount(request.destination),
@@ -94,7 +102,9 @@ class OtpVerifyScreen extends ConsumerWidget {
     final isEmail = purpose != OtpPurpose.signup;
 
     return AuthPage(
-      title: purpose == OtpPurpose.passwordRecovery ? 'استعادة الحساب' : 'تأكيد الحساب',
+      title: purpose == OtpPurpose.passwordRecovery
+          ? 'استعادة الحساب'
+          : 'تأكيد الحساب',
       child: OtpCodeForm(
         destination: request.destination,
         codeLength: isEmail ? Validators.emailOtpLength : Validators.otpLength,

@@ -87,9 +87,7 @@ class TechnicianAccountScreen extends ConsumerWidget {
                         onTap: () async {
                           final route = isSelf
                               ? Routes.technicianAccountSupply
-                              : Routes.adminTechnicianAccountSupply(
-                                  resolvedId,
-                                );
+                              : Routes.adminTechnicianAccountSupply(resolvedId);
                           await context.push(route);
                           ref.invalidate(
                             technicianAccountSummaryProvider(resolvedId),

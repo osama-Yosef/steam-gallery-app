@@ -37,7 +37,10 @@ class AdminTechnicianBagListScreen extends ConsumerWidget {
               return ListTile(
                 leading: CircleAvatar(
                   backgroundColor: AppColors.primary.withValues(alpha: 0.15),
-                  child: const Icon(Iconsax.user_copy, color: AppColors.primary),
+                  child: const Icon(
+                    Iconsax.user_copy,
+                    color: AppColors.primary,
+                  ),
                 ),
                 title: Text(t.fullName),
                 subtitle: Text('كود: ${t.employeeCode}'),

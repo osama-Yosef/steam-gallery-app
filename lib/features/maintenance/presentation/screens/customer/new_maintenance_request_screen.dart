@@ -195,7 +195,9 @@ class _NewMaintenanceRequestScreenState
                   const SizedBox(height: 8),
                   Text(
                     'العنوان ده خارج نطاق خدمة الصيانة دلوقتي — اختر عنوانًا تانيًا.',
-                    style: TextStyle(color: Theme.of(context).colorScheme.error),
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.error,
+                    ),
                   ),
                 ],
                 const SizedBox(height: 12),

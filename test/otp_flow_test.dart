@@ -229,44 +229,46 @@ void main() {
       },
     );
 
-    testWidgets('email recovery: success holds the router on the new-password step', (
-      tester,
-    ) async {
-      final (container, repo) = await _pumpOtpScreen(
-        tester,
-        const OtpRequest(
-          destination: _email,
-          purpose: OtpPurpose.passwordRecovery,
-        ),
-      );
-      await tester.enterText(_codeField, '12345678');
-      await tester.pump();
+    testWidgets(
+      'email recovery: success holds the router on the new-password step',
+      (tester) async {
+        final (container, repo) = await _pumpOtpScreen(
+          tester,
+          const OtpRequest(
+            destination: _email,
+            purpose: OtpPurpose.passwordRecovery,
+          ),
+        );
+        await tester.enterText(_codeField, '12345678');
+        await tester.pump();
 
-      expect(repo.calls, ['verifyRecoveryEmail:$_email:12345678']);
-      expect(container.read(passwordRecoveryProvider), isTrue);
-    });
+        expect(repo.calls, ['verifyRecoveryEmail:$_email:12345678']);
+        expect(container.read(passwordRecoveryProvider), isTrue);
+      },
+    );
 
-    testWidgets('email recovery: a wrong code releases the hold and shows why', (
-      tester,
-    ) async {
-      final (container, repo) = await _pumpOtpScreen(
-        tester,
-        const OtpRequest(
-          destination: _email,
-          purpose: OtpPurpose.passwordRecovery,
-        ),
-      );
-      repo.verifyError = AppException.from(
-        AuthException('Token has expired or is invalid', code: 'otp_expired'),
-      );
+    testWidgets(
+      'email recovery: a wrong code releases the hold and shows why',
+      (tester) async {
+        final (container, repo) = await _pumpOtpScreen(
+          tester,
+          const OtpRequest(
+            destination: _email,
+            purpose: OtpPurpose.passwordRecovery,
+          ),
+        );
+        repo.verifyError = AppException.from(
+          AuthException('Token has expired or is invalid', code: 'otp_expired'),
+        );
 
-      await tester.enterText(_codeField, '00000000');
-      await tester.pump();
+        await tester.enterText(_codeField, '00000000');
+        await tester.pump();
 
-      expect(container.read(passwordRecoveryProvider), isFalse);
-      expect(container.read(pendingOtpProvider), isNotNull);
-      expect(find.text('الكود غير صحيح أو انتهت صلاحيته'), findsOneWidget);
-    });
+        expect(container.read(passwordRecoveryProvider), isFalse);
+        expect(container.read(pendingOtpProvider), isNotNull);
+        expect(find.text('الكود غير صحيح أو انتهت صلاحيته'), findsOneWidget);
+      },
+    );
 
     testWidgets('resend is locked for the cooldown, then uses the right call', (
       tester,

@@ -134,7 +134,10 @@ class _MaintenanceTile extends StatelessWidget {
                   Container(
                     width: 48,
                     height: 48,
-                    decoration: BoxDecoration(shape: BoxShape.circle, color: color),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: color,
+                    ),
                     child: const Icon(
                       Iconsax.setting_2_copy,
                       color: Colors.white,

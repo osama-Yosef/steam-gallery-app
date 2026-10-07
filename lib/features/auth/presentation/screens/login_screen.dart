@@ -165,7 +165,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         prefixIcon: const Icon(Iconsax.lock_copy),
                         suffixIcon: IconButton(
                           icon: Icon(
-                            _obscure ? Iconsax.eye_slash_copy : Iconsax.eye_copy,
+                            _obscure
+                                ? Iconsax.eye_slash_copy
+                                : Iconsax.eye_copy,
                           ),
                           onPressed: () => setState(() => _obscure = !_obscure),
                         ),

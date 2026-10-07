@@ -20,7 +20,11 @@ class AccountSuspendedScreen extends ConsumerWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const Icon(Iconsax.lock_slash_copy, size: 56, color: AppColors.danger),
+          const Icon(
+            Iconsax.lock_slash_copy,
+            size: 56,
+            color: AppColors.danger,
+          ),
           const SizedBox(height: 16),
           const Text(
             'تم إيقاف هذا الحساب. لو تعتقد إن ده حصل بالغلط تواصل مع الإدارة.',
