@@ -17,6 +17,11 @@ import 'app_colors.dart';
 /// rather than fetched over the network, applied once here via
 /// `ThemeData.fontFamily` so every Text widget in the app inherits it.
 abstract final class AppTheme {
+  /// Component themes that set their own TextStyle (chips, hints, nav
+  /// labels) name it too: such a style replaces the inherited one, font
+  /// included.
+  static const _font = 'Cairo';
+
   static ThemeData light() {
     final scheme =
         ColorScheme.fromSeed(
@@ -32,7 +37,12 @@ abstract final class AppTheme {
           surfaceContainerHighest: AppColors.surfaceHigh,
         );
 
+    // The font goes on the text theme itself: `ThemeData.fontFamily` below
+    // only reaches Flutter's *default* text theme, and this one (whose
+    // styles name Roboto) replaces it — without this every Text fell back
+    // to Roboto/the system font and Cairo was never drawn.
     final textTheme = ThemeData(brightness: Brightness.light).textTheme.apply(
+      fontFamily: _font,
       bodyColor: AppColors.textPrimary,
       displayColor: AppColors.textPrimary,
     );
@@ -40,7 +50,7 @@ abstract final class AppTheme {
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.light,
-      fontFamily: 'Cairo',
+      fontFamily: _font,
       colorScheme: scheme,
       scaffoldBackgroundColor: Colors.transparent,
       // NOT transparent: canvasColor backs popup/dropdown menus (Dropdown
@@ -87,7 +97,10 @@ abstract final class AppTheme {
         ),
         filled: true,
         fillColor: AppColors.glassFill,
-        hintStyle: const TextStyle(color: AppColors.textSecondary),
+        hintStyle: const TextStyle(
+          fontFamily: _font,
+          color: AppColors.textSecondary,
+        ),
       ),
       // Filled surfaces carrying white labels use the deepest teal for
       // contrast; `primary` is for text and icons.
@@ -138,7 +151,10 @@ abstract final class AppTheme {
       ),
       chipTheme: ChipThemeData(
         backgroundColor: AppColors.glassFillStrong,
-        labelStyle: const TextStyle(color: AppColors.textPrimary),
+        labelStyle: const TextStyle(
+          fontFamily: _font,
+          color: AppColors.textPrimary,
+        ),
         side: const BorderSide(color: AppColors.glassBorder),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       ),
@@ -163,6 +179,7 @@ abstract final class AppTheme {
         indicatorColor: AppColors.primary.withValues(alpha: 0.14),
         labelTextStyle: WidgetStateProperty.resolveWith(
           (states) => TextStyle(
+            fontFamily: _font,
             fontSize: 12,
             color: states.contains(WidgetState.selected)
                 ? AppColors.primary

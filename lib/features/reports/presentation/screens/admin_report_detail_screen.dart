@@ -92,11 +92,16 @@ class _AdminReportDetailScreenState
           // matter the phone's own theme — forced light regardless of the
           // app's actual (dark) theme, which used to leak through as a
           // near-black screenshot with low-contrast text.
-          data: ThemeData.light(),
+          // Still in the app's font: a bare ThemeData would draw the report
+          // (and the image shared from it) in Roboto/the system font.
+          data: ThemeData(brightness: Brightness.light, fontFamily: 'Cairo'),
           child: Material(
             color: Colors.white,
             child: DefaultTextStyle(
-              style: const TextStyle(color: Colors.black87),
+              style: const TextStyle(
+                color: Colors.black87,
+                fontFamily: 'Cairo',
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
@@ -433,7 +438,9 @@ class _AdminReportDetailScreenState
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: style),
+          // A long label wraps rather than pushing the amount off a phone.
+          Expanded(child: Text(label, style: style)),
+          const SizedBox(width: 8),
           isCount
               ? Text(value.toInt().toString(), style: style)
               : MoneyText(value, style: style),
