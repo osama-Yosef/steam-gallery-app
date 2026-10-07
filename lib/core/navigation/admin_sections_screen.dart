@@ -1,130 +1,115 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import '../../features/support/presentation/providers/support_providers.dart';
 import '../errors/app_exception.dart';
 import '../router/route_names.dart';
-import '../theme/app_colors.dart';
-import '../widgets/glass_panel.dart';
+import 'section_grid.dart';
 
-class _SectionItem {
-  final IconData icon;
-  final String label;
-  final List<Color> colors;
-  final String route;
-  const _SectionItem({
-    required this.icon,
-    required this.label,
-    required this.colors,
-    required this.route,
-  });
-}
-
-const _sections = [
-  _SectionItem(
+const _sections = <SectionItem>[
+  SectionItem(
     icon: Iconsax.box_copy,
     label: 'المنتجات',
     colors: [Color(0xFF6D8CFF), Color(0xFF3B5BFF)],
     route: Routes.adminProducts,
   ),
-  _SectionItem(
+  SectionItem(
     icon: Iconsax.receipt_text_copy,
     label: 'الطلبات',
     colors: [Color(0xFFB07CFF), Color(0xFF7C4DFF)],
     route: Routes.adminOrders,
   ),
-  _SectionItem(
+  SectionItem(
     icon: Iconsax.setting_2_copy,
     label: 'الصيانة',
     colors: [Color(0xFFFBBF24), Color(0xFFF59E0B)],
     route: Routes.adminMaintenance,
   ),
-  _SectionItem(
+  SectionItem(
     icon: Iconsax.buildings_2_copy,
     label: 'المخزن',
     colors: [Color(0xFF34D399), Color(0xFF10B981)],
     route: Routes.adminWarehouse,
   ),
-  _SectionItem(
+  SectionItem(
     icon: Iconsax.wallet_money_copy,
     label: 'الخزنة',
     colors: [Color(0xFF7CE0FF), Color(0xFF38BDF8)],
     route: Routes.adminCashbox,
   ),
-  _SectionItem(
+  SectionItem(
     icon: Iconsax.card_pos_copy,
     label: 'بيع مباشر',
     colors: [Color(0xFFFF8A65), Color(0xFFE64A19)],
     route: Routes.adminWalkInSale,
   ),
-  _SectionItem(
+  SectionItem(
     icon: Iconsax.tag_copy,
     label: 'عرض السعر',
     colors: [Color(0xFFFFB74D), Color(0xFFF57C00)],
     route: Routes.adminPriceList,
   ),
-  _SectionItem(
+  SectionItem(
     icon: Iconsax.receipt_2_copy,
     label: 'فواتير الشراء',
     colors: [Color(0xFF4DD0E1), Color(0xFF0097A7)],
     route: Routes.adminPurchaseInvoices,
   ),
-  _SectionItem(
+  SectionItem(
     icon: Iconsax.profile_2user_copy,
     label: 'الموردين',
     colors: [Color(0xFFAED581), Color(0xFF689F38)],
     route: Routes.adminSuppliers,
   ),
-  _SectionItem(
+  SectionItem(
     icon: Iconsax.refresh_circle_copy,
     label: 'المزامنة',
     colors: [Color(0xFF90A4AE), Color(0xFF546E7A)],
     route: Routes.adminSync,
   ),
-  _SectionItem(
+  SectionItem(
     icon: Iconsax.chart_2_copy,
     label: 'التقارير',
     colors: [Color(0xFFA78BFA), Color(0xFF7C3AED)],
     route: Routes.adminReports,
   ),
-  _SectionItem(
+  SectionItem(
     icon: Iconsax.people_copy,
     label: 'العملاء',
     colors: [Color(0xFFF48FB1), Color(0xFFEC407A)],
     route: Routes.adminCustomers,
   ),
-  _SectionItem(
+  SectionItem(
     icon: Iconsax.discount_shape_copy,
     label: 'العروض والبانرات',
     colors: [Color(0xFFE4B83F), Color(0xFFB7862A)],
     route: Routes.adminMarketing,
   ),
-  _SectionItem(
+  SectionItem(
     icon: Iconsax.map_copy,
     label: 'مناطق الخدمة',
     colors: [Color(0xFF67A9B2), Color(0xFF2F7784)],
     route: Routes.adminServiceAreas,
   ),
-  _SectionItem(
+  SectionItem(
     icon: Iconsax.profile_2user_copy,
     label: 'المستخدمون',
     colors: [Color(0xFF80CBC4), Color(0xFF00897B)],
     route: Routes.adminUsers,
   ),
-  _SectionItem(
+  SectionItem(
     icon: Iconsax.bank_copy,
     label: 'مراجعة InstaPay',
     colors: [Color(0xFF9575CD), Color(0xFF5E35B1)],
     route: Routes.adminInstapayReview,
   ),
-  _SectionItem(
+  SectionItem(
     icon: Iconsax.receipt_2_copy,
     label: 'مرتجع المبيعات',
     colors: [Color(0xFFEF9A9A), Color(0xFFD32F2F)],
     route: Routes.adminSalesReturns,
   ),
-  _SectionItem(
+  SectionItem(
     icon: Iconsax.wallet_2_copy,
     label: 'محافظ العملاء',
     colors: [Color(0xFF64B5F6), Color(0xFF1976D2)],
@@ -157,35 +142,7 @@ class AdminSectionsScreen extends StatelessWidget {
           ),
         ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: LayoutBuilder(
-          builder: (context, c) {
-            final columns = (c.maxWidth / 190).floor().clamp(2, 6);
-            return GridView(
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: columns,
-                mainAxisSpacing: 14,
-                crossAxisSpacing: 14,
-                // A fixed row height rather than childAspectRatio, which
-                // ties height to width — otherwise, whenever the sidebar
-                // rail opens and narrows this grid, the shorter cells
-                // would overflow their tile and spill text out of it.
-                mainAxisExtent: 132,
-              ),
-              children: [
-                for (final section in _sections)
-                  _SectionTile(
-                    icon: section.icon,
-                    label: section.label,
-                    colors: section.colors,
-                    onTap: () => context.push(section.route),
-                  ),
-              ],
-            );
-          },
-        ),
-      ),
+      body: const SectionGrid(sections: _sections),
     );
   }
 }
@@ -277,72 +234,6 @@ class _SupportSettingsSheetState extends ConsumerState<_SupportSettingsSheet> {
                 : const Text('حفظ'),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _SectionTile extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final List<Color> colors;
-  final VoidCallback onTap;
-  const _SectionTile({
-    required this.icon,
-    required this.label,
-    required this.colors,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GlassPanel(
-      borderRadius: BorderRadius.circular(22),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(22),
-          child: Padding(
-            padding: const EdgeInsets.all(12),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 46,
-                  height: 46,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient: LinearGradient(
-                      colors: colors,
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: colors.last.withValues(alpha: 0.4),
-                        blurRadius: 16,
-                      ),
-                    ],
-                  ),
-                  child: Icon(icon, color: Colors.white, size: 22),
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  label,
-                  textAlign: TextAlign.center,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: AppColors.textPrimary,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
       ),
     );
   }
