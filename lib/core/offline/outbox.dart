@@ -251,24 +251,46 @@ class Outbox extends ChangeNotifier {
   /// Sends everything waiting, oldest first. Stops at the first connection
   /// failure (the rest would fail the same way); a server rejection marks
   /// that entry failed and moves on.
-  Future<void> sync() async {
-    if (_syncing || _client == null || _userId == null) return;
+  ///
+  /// A call while a sync is already running joins it rather than returning
+  /// at once, and that sync also sends whatever was queued while it ran —
+  /// otherwise a write made mid-sync sat until the next 20-second tick and
+  /// was reported as "saved offline" although the server was reachable.
+  Future<void> sync() {
+    if (_client == null || _userId == null) return Future.value();
+    return _inFlight ??= _drain().whenComplete(() => _inFlight = null);
+  }
+
+  Future<void>? _inFlight;
+
+  Future<void> _drain() async {
     _syncing = true;
     notifyListeners();
     var sent = 0;
     try {
-      for (final entry in pending) {
-        try {
-          await _send(entry);
-          _all.removeWhere((e) => e.id == entry.id);
-          sent++;
-          await _persist();
-          notifyListeners();
-        } catch (e) {
-          if (isNetworkError(e)) break;
-          _replace(entry.withError(AppException.from(e).messageAr));
-          await _persist();
-          notifyListeners();
+      // Each pass sends what was pending when it started; anything added
+      // meanwhile is picked up by the next pass. Sent entries leave the
+      // queue and rejected ones are marked failed, so this always ends.
+      var reachable = true;
+      while (reachable) {
+        final batch = pending;
+        if (batch.isEmpty) break;
+        for (final entry in batch) {
+          try {
+            await _send(entry);
+            _all.removeWhere((e) => e.id == entry.id);
+            sent++;
+            await _persist();
+            notifyListeners();
+          } catch (e) {
+            if (isNetworkError(e)) {
+              reachable = false;
+              break;
+            }
+            _replace(entry.withError(AppException.from(e).messageAr));
+            await _persist();
+            notifyListeners();
+          }
         }
       }
     } finally {
