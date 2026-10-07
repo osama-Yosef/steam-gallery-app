@@ -1,22 +1,30 @@
 import 'package:flutter/material.dart';
-import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:uuid/uuid.dart';
 import '../../../../../core/errors/app_exception.dart';
+import '../../../../../core/offline/offline_widgets.dart';
+import '../../../../../core/offline/outbox.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/utils/formatters.dart';
-import '../../../../../core/utils/maps_launcher.dart';
 import '../../../../../core/widgets/confirm_dialog.dart';
 import '../../../../../core/widgets/state_views.dart';
 import '../../../../auth/presentation/providers/auth_providers.dart';
-import '../../../../locations/presentation/providers/locations_providers.dart';
-import '../../../../technician_account/data/models/sale.dart';
 import '../../../data/models/order.dart';
 import '../../../presentation/providers/order_providers.dart';
+import '../../widgets/admin_order/order_actions.dart';
+import '../../widgets/admin_order/order_address_card.dart';
+import '../../widgets/admin_order/order_dialogs.dart';
+import '../../widgets/admin_order/order_summary_cards.dart';
+import '../../widgets/admin_order/shipping_fee_card.dart';
 import '../../widgets/order_status_chips.dart';
-import '../../../../../core/offline/outbox.dart';
-import '../../../../../core/offline/offline_widgets.dart';
 
+/// One order as the admin works it: the shipping fee (0065), confirming,
+/// each status step, payments, cancelling and returning. Every action goes
+/// through the offline queue, and steps still waiting to be sent are shown.
+///
+/// The cards, buttons and dialogs live in `widgets/admin_order/`; this class
+/// wires each action to the repository.
 class AdminOrderDetailScreen extends ConsumerWidget {
   final String orderId;
   const AdminOrderDetailScreen({super.key, required this.orderId});
@@ -30,7 +38,6 @@ class AdminOrderDetailScreen extends ConsumerWidget {
     if (!ok || !context.mounted) return;
     await _run(
       context,
-      ref,
       () => ref.read(orderRepositoryProvider).confirmOrder(orderId),
     );
   }
@@ -40,46 +47,17 @@ class AdminOrderDetailScreen extends ConsumerWidget {
     WidgetRef ref,
     double? currentFee,
   ) async {
-    final amountCtrl = TextEditingController(
-      text: currentFee == null ? '' : currentFee.toStringAsFixed(2),
-    );
-    final amount = await showDialog<double>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('تحديد سعر الشحن'),
-        content: TextField(
-          controller: amountCtrl,
-          decoration: const InputDecoration(labelText: 'سعر الشحن'),
-          keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          autofocus: true,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('إلغاء'),
-          ),
-          FilledButton(
-            onPressed: () {
-              final a = double.tryParse(amountCtrl.text);
-              if (a == null || a < 0) return;
-              Navigator.of(ctx).pop(a);
-            },
-            child: const Text('إرسال للعميل'),
-          ),
-        ],
-      ),
-    );
+    final amount = await askShippingFee(context, currentFee);
     if (amount == null || !context.mounted) return;
     await _run(
       context,
-      ref,
       () => ref
           .read(orderRepositoryProvider)
           .setShippingFee(orderId: orderId, amount: amount),
     );
   }
 
-  Future<void> _updateStatus(
+  Future<void> _advance(
     BuildContext context,
     WidgetRef ref,
     OrderStatus status,
@@ -92,76 +70,35 @@ class AdminOrderDetailScreen extends ConsumerWidget {
     if (!ok || !context.mounted) return;
     await _run(
       context,
-      ref,
       () =>
           ref.read(orderRepositoryProvider).updateOrderStatus(orderId, status),
     );
   }
 
   Future<void> _cancel(BuildContext context, WidgetRef ref) async {
-    final reasonCtrl = TextEditingController();
-    final reason = await showDialog<String>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('إلغاء الطلب'),
-        content: TextField(
-          controller: reasonCtrl,
-          decoration: const InputDecoration(labelText: 'سبب الإلغاء'),
-          autofocus: true,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('تراجع'),
-          ),
-          FilledButton(
-            style: FilledButton.styleFrom(
-              backgroundColor: Theme.of(ctx).colorScheme.error,
-            ),
-            onPressed: () => Navigator.of(ctx).pop(reasonCtrl.text.trim()),
-            child: const Text('تأكيد الإلغاء'),
-          ),
-        ],
-      ),
+    final reason = await askOrderReason(
+      context,
+      title: 'إلغاء الطلب',
+      fieldLabel: 'سبب الإلغاء',
+      confirmLabel: 'تأكيد الإلغاء',
     );
-    if (reason == null || reason.isEmpty || !context.mounted) return;
+    if (reason == null || !context.mounted) return;
     await _run(
       context,
-      ref,
       () => ref.read(orderRepositoryProvider).cancelOrder(orderId, reason),
     );
   }
 
-  Future<void> _returnOrder(BuildContext context, WidgetRef ref) async {
-    final reasonCtrl = TextEditingController();
-    final reason = await showDialog<String>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('استرجاع الطلب'),
-        content: TextField(
-          controller: reasonCtrl,
-          decoration: const InputDecoration(labelText: 'سبب الاسترجاع'),
-          autofocus: true,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('تراجع'),
-          ),
-          FilledButton(
-            style: FilledButton.styleFrom(
-              backgroundColor: Theme.of(ctx).colorScheme.error,
-            ),
-            onPressed: () => Navigator.of(ctx).pop(reasonCtrl.text.trim()),
-            child: const Text('تأكيد الاسترجاع'),
-          ),
-        ],
-      ),
+  Future<void> _return(BuildContext context, WidgetRef ref) async {
+    final reason = await askOrderReason(
+      context,
+      title: 'استرجاع الطلب',
+      fieldLabel: 'سبب الاسترجاع',
+      confirmLabel: 'تأكيد الاسترجاع',
     );
-    if (reason == null || reason.isEmpty || !context.mounted) return;
+    if (reason == null || !context.mounted) return;
     await _run(
       context,
-      ref,
       () => ref.read(orderRepositoryProvider).returnOrder(orderId, reason),
     );
   }
@@ -169,93 +106,34 @@ class AdminOrderDetailScreen extends ConsumerWidget {
   Future<void> _recordPayment(
     BuildContext context,
     WidgetRef ref,
-    String customerId,
-    double remaining,
+    Order order,
   ) async {
-    final amountCtrl = TextEditingController(
-      text: remaining > 0 ? remaining.toStringAsFixed(2) : '',
-    );
-    var method = PaymentMethod.cash;
-    final result = await showDialog<(double, PaymentMethod)>(
-      context: context,
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setDialogState) => AlertDialog(
-          title: const Text('تسجيل دفعة'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              TextField(
-                controller: amountCtrl,
-                decoration: const InputDecoration(labelText: 'المبلغ'),
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
-                autofocus: true,
-              ),
-              const SizedBox(height: 16),
-              const Text('استُلم الفلوس إزاي؟'),
-              const SizedBox(height: 8),
-              SegmentedButton<PaymentMethod>(
-                segments: const [
-                  ButtonSegment(
-                    value: PaymentMethod.cash,
-                    label: Text('نقدًا'),
-                  ),
-                  ButtonSegment(
-                    value: PaymentMethod.transfer,
-                    label: Text('تحويل'),
-                  ),
-                ],
-                selected: {method},
-                onSelectionChanged: (s) =>
-                    setDialogState(() => method = s.first),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(ctx).pop(),
-              child: const Text('إلغاء'),
-            ),
-            FilledButton(
-              onPressed: () {
-                final amount = double.tryParse(amountCtrl.text);
-                if (amount == null) return;
-                Navigator.of(ctx).pop((amount, method));
-              },
-              child: const Text('تسجيل'),
-            ),
-          ],
-        ),
-      ),
-    );
-    if (result == null || result.$1 <= 0 || !context.mounted) return;
+    final payment = await askOrderPayment(context, remaining: order.remaining);
+    if (payment == null || !context.mounted) return;
     // The dialog is already closed, so this call can't be re-triggered by a
     // double tap; the key covers a retried request carrying the same entry.
     final clientRequestId = const Uuid().v4();
     await _run(
       context,
-      ref,
       () => ref
           .read(orderRepositoryProvider)
           .recordPayment(
-            customerId: customerId,
-            amount: result.$1,
+            customerId: order.customerId,
+            amount: payment.amount,
             orderId: orderId,
             clientRequestId: clientRequestId,
-            paymentMethod: result.$2,
+            paymentMethod: payment.method,
           ),
     );
   }
 
+  /// Runs one action behind a non-dismissible spinner — mainly to stop a
+  /// double tap firing it twice before the first reply lands — and says how
+  /// it went.
   Future<void> _run(
     BuildContext context,
-    WidgetRef ref,
     Future<Object?> Function() action,
   ) async {
-    // A non-dismissible barrier while the RPC is in flight, mainly to stop a
-    // double-tap firing the same action twice before the first reply lands.
     showDialog<void>(
       context: context,
       barrierDismissible: false,
@@ -263,23 +141,21 @@ class AdminOrderDetailScreen extends ConsumerWidget {
     );
     try {
       final result = await action();
-      if (context.mounted) {
-        Navigator.of(context, rootNavigator: true).pop();
-        if (result is OutboxResult && result.queued) {
-          showSavedOfflineSnack(context);
-        } else {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(const SnackBar(content: Text('تم التنفيذ بنجاح')));
-        }
-      }
-    } catch (e) {
-      if (context.mounted) {
-        Navigator.of(context, rootNavigator: true).pop();
+      if (!context.mounted) return;
+      Navigator.of(context, rootNavigator: true).pop();
+      if (result is OutboxResult && result.queued) {
+        showSavedOfflineSnack(context);
+      } else {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text(AppException.from(e).messageAr)));
+        ).showSnackBar(const SnackBar(content: Text('تم التنفيذ بنجاح')));
       }
+    } catch (e) {
+      if (!context.mounted) return;
+      Navigator.of(context, rootNavigator: true).pop();
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(AppException.from(e).messageAr)));
     }
   }
 
@@ -299,11 +175,6 @@ class AdminOrderDetailScreen extends ConsumerWidget {
           final customerAsync = ref.watch(
             userProfileByIdProvider(order.customerId),
           );
-          final canCancel = ![
-            OrderStatus.completed,
-            OrderStatus.cancelled,
-            OrderStatus.returned,
-          ].contains(order.status);
 
           return ListView(
             padding: const EdgeInsets.all(16),
@@ -326,21 +197,9 @@ class AdminOrderDetailScreen extends ConsumerWidget {
               // status above is still the server's until they are.
               ListenableBuilder(
                 listenable: outbox,
-                builder: (context, _) {
-                  final pending = outbox.pendingOf('order', refId: orderId);
-                  if (pending.isEmpty) return const SizedBox.shrink();
-                  return Card(
-                    color: AppColors.warning.withValues(alpha: 0.1),
-                    child: ListTile(
-                      leading: const Icon(
-                        Icons.cloud_upload_outlined,
-                        color: AppColors.warning,
-                      ),
-                      title: const Text('مستني المزامنة'),
-                      subtitle: Text(pending.map((e) => e.label).join('\n')),
-                    ),
-                  );
-                },
+                builder: (context, _) => _PendingSync(
+                  entries: outbox.pendingOf('order', refId: orderId),
+                ),
               ),
               const SizedBox(height: 8),
               // Independent of order status on purpose (0037) — an admin
@@ -363,7 +222,7 @@ class AdminOrderDetailScreen extends ConsumerWidget {
               ),
               if (order.deliveryAddress != null) ...[
                 const SizedBox(height: 12),
-                _AddressCard(order: order),
+                OrderAddressCard(order: order),
               ],
               if (order.notes != null) ...[
                 const SizedBox(height: 8),
@@ -372,7 +231,7 @@ class AdminOrderDetailScreen extends ConsumerWidget {
               const SizedBox(height: 8),
               const Text('طريقة الدفع: تحويل كامل قبل الشحن'),
               const SizedBox(height: 16),
-              _ShippingFeeCard(
+              ShippingFeeCard(
                 order: order,
                 onSet: () => _setShippingFee(context, ref, order.shippingFee),
               ),
@@ -382,132 +241,18 @@ class AdminOrderDetailScreen extends ConsumerWidget {
               itemsAsync.when(
                 loading: () => const LoadingView(),
                 error: (e, _) => const Text('تعذَّر تحميل المنتجات'),
-                data: (items) => Card(
-                  child: Column(
-                    children: items
-                        .map(
-                          (it) => ListTile(
-                            title: Text(it.productNameSnapshot),
-                            subtitle: Text(
-                              it.selectedOptions.isEmpty
-                                  ? '${Formatters.currency(it.unitPriceSnapshot)} × ${it.quantity}'
-                                  : '${Formatters.currency(it.unitPriceSnapshot)} × ${it.quantity} — ${it.selectedOptions.map((o) => o.name).join('، ')}',
-                            ),
-                            trailing: Text(Formatters.currency(it.lineTotal)),
-                          ),
-                        )
-                        .toList(),
-                  ),
-                ),
+                data: (items) => OrderItemsCard(items: items),
               ),
               const SizedBox(height: 16),
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    children: [
-                      _row(
-                        context,
-                        'الإجمالي',
-                        Formatters.currency(order.total),
-                      ),
-                      _row(
-                        context,
-                        'المدفوع',
-                        Formatters.currency(order.paidAmount),
-                      ),
-                      _row(
-                        context,
-                        'المتبقي',
-                        Formatters.currency(order.remaining),
-                        bold: true,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
+              OrderTotalsCard(order: order),
               const SizedBox(height: 24),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  if (order.status == OrderStatus.pending)
-                    FilledButton.icon(
-                      style: _actionButtonStyle(),
-                      // 0065: confirming is blocked server-side until the
-                      // customer has approved a shipping fee — disabled
-                      // here too so the button doesn't invite a doomed tap.
-                      onPressed:
-                          order.shippingFeeStatus == ShippingFeeStatus.approved
-                          ? () => _confirm(context, ref)
-                          : null,
-                      icon: const Icon(Iconsax.tick_circle_copy),
-                      label: const Text('تأكيد الطلب'),
-                    ),
-                  if (order.status == OrderStatus.confirmed)
-                    FilledButton.icon(
-                      style: _actionButtonStyle(),
-                      onPressed: () =>
-                          _updateStatus(context, ref, OrderStatus.preparing),
-                      icon: const Icon(Iconsax.box_copy),
-                      label: const Text('بدء التجهيز'),
-                    ),
-                  if (order.status == OrderStatus.preparing)
-                    FilledButton.icon(
-                      style: _actionButtonStyle(),
-                      onPressed: () =>
-                          _updateStatus(context, ref, OrderStatus.delivered),
-                      icon: const Icon(Iconsax.truck_copy),
-                      label: const Text('تم التسليم'),
-                    ),
-                  if (order.status == OrderStatus.delivered)
-                    FilledButton.icon(
-                      style: _actionButtonStyle(),
-                      onPressed: () =>
-                          _updateStatus(context, ref, OrderStatus.completed),
-                      icon: const Icon(Iconsax.tick_square_copy),
-                      label: const Text('إتمام الطلب'),
-                    ),
-                  if (order.remaining > 0 &&
-                      ![
-                        OrderStatus.cancelled,
-                        OrderStatus.returned,
-                      ].contains(order.status))
-                    OutlinedButton.icon(
-                      style: _actionButtonStyle(
-                        foregroundColor: AppColors.warning,
-                      ),
-                      onPressed: () => _recordPayment(
-                        context,
-                        ref,
-                        order.customerId,
-                        order.remaining,
-                      ),
-                      icon: const Icon(Iconsax.wallet_money_copy),
-                      label: const Text('تسجيل دفعة'),
-                    ),
-                  if (canCancel)
-                    OutlinedButton.icon(
-                      style: _actionButtonStyle(
-                        foregroundColor: AppColors.danger,
-                      ),
-                      onPressed: () => _cancel(context, ref),
-                      icon: const Icon(Iconsax.close_circle_copy),
-                      label: const Text('إلغاء الطلب'),
-                    ),
-                  if ([
-                    OrderStatus.delivered,
-                    OrderStatus.completed,
-                  ].contains(order.status))
-                    OutlinedButton.icon(
-                      style: _actionButtonStyle(
-                        foregroundColor: AppColors.danger,
-                      ),
-                      onPressed: () => _returnOrder(context, ref),
-                      icon: const Icon(Iconsax.undo_copy),
-                      label: const Text('استرجاع الطلب'),
-                    ),
-                ],
+              OrderActions(
+                order: order,
+                onConfirm: () => _confirm(context, ref),
+                onAdvance: (next) => _advance(context, ref, next),
+                onRecordPayment: () => _recordPayment(context, ref, order),
+                onCancel: () => _cancel(context, ref),
+                onReturn: () => _return(context, ref),
               ),
             ],
           );
@@ -515,215 +260,25 @@ class AdminOrderDetailScreen extends ConsumerWidget {
       ),
     );
   }
-
-  /// Every action button gets the same minimum size, so the row reads as one
-  /// consistent set of actions instead of each button sizing to its own
-  /// label length.
-  ButtonStyle _actionButtonStyle({Color? foregroundColor}) {
-    return ButtonStyle(
-      minimumSize: const WidgetStatePropertyAll(Size(150, 44)),
-      foregroundColor: foregroundColor == null
-          ? null
-          : WidgetStatePropertyAll(foregroundColor),
-      side: foregroundColor == null
-          ? null
-          : WidgetStatePropertyAll(BorderSide(color: foregroundColor)),
-    );
-  }
-
-  Widget _row(
-    BuildContext context,
-    String label,
-    String value, {
-    bool bold = false,
-  }) {
-    final style = bold
-        ? Theme.of(
-            context,
-          ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)
-        : Theme.of(context).textTheme.bodyMedium;
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(label, style: style),
-          Text(value, style: style),
-        ],
-      ),
-    );
-  }
 }
 
-/// Everything about where the order goes, laid out clearly in one place —
-/// city/area (looked up client-side, since the realtime `orders` stream
-/// can't embed a join), the full snapshotted address, and a direct link to
-/// the pin on the map when coordinates are on file.
-class _AddressCard extends ConsumerWidget {
-  final Order order;
-  const _AddressCard({required this.order});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final citiesAsync = ref.watch(citiesProvider(activeOnly: false));
-    final cityId = order.deliveryCityId;
-    final cityName = citiesAsync.value
-        ?.where((c) => c.id == cityId)
-        .firstOrNull
-        ?.nameAr;
-    final serviceAreasAsync = cityId == null
-        ? null
-        : ref.watch(serviceAreasProvider(cityId, activeOnly: false));
-    final areaName = serviceAreasAsync?.value
-        ?.where((a) => a.id == order.deliveryServiceAreaId)
-        .firstOrNull
-        ?.nameAr;
-    final hasCoordinates =
-        order.deliveryLatitude != null && order.deliveryLongitude != null;
-
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                const Icon(Iconsax.location_copy, size: 18),
-                const SizedBox(width: 6),
-                Text(
-                  'عنوان التوصيل',
-                  style: Theme.of(context).textTheme.titleSmall,
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            if (order.deliveryRecipientName != null ||
-                order.deliveryPhone != null)
-              Text(
-                [
-                  if (order.deliveryRecipientName != null)
-                    order.deliveryRecipientName!,
-                  if (order.deliveryPhone != null) order.deliveryPhone!,
-                ].join(' — '),
-                style: const TextStyle(fontWeight: FontWeight.w600),
-              ),
-            if (cityName != null || areaName != null)
-              Text(
-                [?cityName, ?areaName].join(' — '),
-                style: Theme.of(
-                  context,
-                ).textTheme.bodySmall?.copyWith(color: AppColors.textSecondary),
-              ),
-            const SizedBox(height: 4),
-            Text(order.deliveryAddress!),
-            if (order.deliveryDetailsLine.isNotEmpty)
-              Text(order.deliveryDetailsLine),
-            if (order.deliveryLandmark != null)
-              Text('علامة مميزة: ${order.deliveryLandmark}'),
-            if (hasCoordinates) ...[
-              const SizedBox(height: 8),
-              SizedBox(
-                width: double.infinity,
-                child: FilledButton.tonalIcon(
-                  onPressed: () => MapsLauncher.open(
-                    latitude: order.deliveryLatitude,
-                    longitude: order.deliveryLongitude,
-                  ),
-                  style: FilledButton.styleFrom(
-                    foregroundColor: AppColors.info,
-                    backgroundColor: AppColors.info.withValues(alpha: 0.12),
-                  ),
-                  icon: const Icon(Iconsax.location_copy, size: 18),
-                  label: const Text('افتح في الخرائط'),
-                ),
-              ),
-            ],
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-/// Shipping-fee negotiation status (0065) — set/re-set while pending, and
-/// what the customer answered once they have.
-class _ShippingFeeCard extends StatelessWidget {
-  final Order order;
-  final VoidCallback onSet;
-  const _ShippingFeeCard({required this.order, required this.onSet});
+/// "مستني المزامنة": the steps taken on this order offline, not sent yet.
+class _PendingSync extends StatelessWidget {
+  final List<OutboxEntry> entries;
+  const _PendingSync({required this.entries});
 
   @override
   Widget build(BuildContext context) {
-    final canSet = order.status == OrderStatus.pending;
-    final color = switch (order.shippingFeeStatus) {
-      ShippingFeeStatus.approved => AppColors.success,
-      ShippingFeeStatus.rejected => AppColors.danger,
-      ShippingFeeStatus.pendingApproval => AppColors.warning,
-      ShippingFeeStatus.notSet => AppColors.textSecondary,
-    };
-
+    if (entries.isEmpty) return const SizedBox.shrink();
     return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                const Icon(Iconsax.truck_copy, size: 18),
-                const SizedBox(width: 6),
-                Text(
-                  'سعر الشحن',
-                  style: Theme.of(context).textTheme.titleSmall,
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  order.shippingFee == null
-                      ? 'لم يُحدَّد بعد'
-                      : Formatters.currency(order.shippingFee!),
-                  style: const TextStyle(fontWeight: FontWeight.w600),
-                ),
-                Text(
-                  shippingFeeStatusLabelAr(order.shippingFeeStatus),
-                  style: TextStyle(color: color, fontWeight: FontWeight.w600),
-                ),
-              ],
-            ),
-            if (order.shippingFeeStatus == ShippingFeeStatus.rejected &&
-                order.shippingFeeRejectionReason != null) ...[
-              const SizedBox(height: 4),
-              Text(
-                'سبب الرفض: ${order.shippingFeeRejectionReason}',
-                style: TextStyle(color: AppColors.danger),
-              ),
-            ],
-            if (canSet) ...[
-              const SizedBox(height: 12),
-              SizedBox(
-                width: double.infinity,
-                child: FilledButton.tonalIcon(
-                  onPressed: onSet,
-                  style: FilledButton.styleFrom(
-                    foregroundColor: AppColors.warning,
-                    backgroundColor: AppColors.warning.withValues(alpha: 0.12),
-                  ),
-                  icon: const Icon(Iconsax.dollar_circle_copy, size: 18),
-                  label: Text(
-                    order.shippingFeeStatus == ShippingFeeStatus.notSet
-                        ? 'تحديد سعر الشحن'
-                        : 'تعديل سعر الشحن',
-                  ),
-                ),
-              ),
-            ],
-          ],
+      color: AppColors.warning.withValues(alpha: 0.1),
+      child: ListTile(
+        leading: const Icon(
+          Icons.cloud_upload_outlined,
+          color: AppColors.warning,
         ),
+        title: const Text('مستني المزامنة'),
+        subtitle: Text(entries.map((e) => e.label).join('\n')),
       ),
     );
   }
