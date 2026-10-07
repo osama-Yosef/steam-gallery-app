@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../../core/errors/app_exception.dart';
 import '../../../../../core/widgets/state_views.dart';
@@ -216,6 +217,7 @@ class _AdminBannerEditorScreenState
             TextFormField(
               controller: _sortCtrl,
               keyboardType: TextInputType.number,
+              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
               decoration: const InputDecoration(
                 labelText: 'الترتيب (الأصغر يظهر أولًا)',
               ),

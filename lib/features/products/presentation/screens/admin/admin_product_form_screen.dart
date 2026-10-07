@@ -1,5 +1,5 @@
-import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:image_picker/image_picker.dart';
@@ -438,6 +438,7 @@ class _AdminProductFormScreenState
             controller: _minStockCtrl,
             decoration: const InputDecoration(labelText: 'الحد الأدنى للمخزون'),
             keyboardType: TextInputType.number,
+            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
             validator: (v) =>
                 Validators.nonNegativeInteger(v, 'الحد الأدنى للمخزون'),
           ),

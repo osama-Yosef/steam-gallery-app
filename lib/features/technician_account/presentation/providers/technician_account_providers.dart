@@ -7,12 +7,16 @@ import '../../data/models/technician_account_transaction.dart';
 import '../../data/models/technician_supply.dart';
 import '../../data/repositories/technician_account_repository.dart';
 import '../../../../core/utils/provider_cache.dart';
+import '../../../../core/offline/outbox.dart';
 
 part 'technician_account_providers.g.dart';
 
 @Riverpod(keepAlive: true)
 TechnicianAccountRepository technicianAccountRepository(Ref ref) {
-  return SupabaseTechnicianAccountRepository(ref.watch(supabaseClientProvider));
+  return SupabaseTechnicianAccountRepository(
+    ref.watch(supabaseClientProvider),
+    ref.watch(outboxProvider),
+  );
 }
 
 @riverpod

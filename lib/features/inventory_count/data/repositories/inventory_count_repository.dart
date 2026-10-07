@@ -2,6 +2,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../core/errors/app_exception.dart';
 import '../models/inventory_count.dart';
 import '../models/inventory_count_item.dart';
+import '../../../../core/offline/outbox.dart';
 
 abstract class InventoryCountRepository {
   Future<List<InventoryCount>> getCounts();
@@ -25,7 +26,8 @@ abstract class InventoryCountRepository {
 
 class SupabaseInventoryCountRepository implements InventoryCountRepository {
   final SupabaseClient _client;
-  SupabaseInventoryCountRepository(this._client);
+  final Outbox _outbox;
+  SupabaseInventoryCountRepository(this._client, this._outbox);
 
   @override
   Future<List<InventoryCount>> getCounts() async {
@@ -123,6 +125,8 @@ class SupabaseInventoryCountRepository implements InventoryCountRepository {
         'rpc_complete_inventory_count',
         params: {'p_count_id': countId},
       );
+      // Stock, tills and prices shown elsewhere refetch on this.
+      _outbox.markServerChanged();
     } catch (e) {
       throw AppException.from(e);
     }

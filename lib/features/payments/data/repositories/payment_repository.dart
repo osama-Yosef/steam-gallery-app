@@ -3,6 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
 import '../../../../core/errors/app_exception.dart';
 import '../models/payment_models.dart';
+import '../../../../core/offline/outbox.dart';
 
 abstract class PaymentRepository {
   Future<InstapayDetails> getInstapayDetails();
@@ -42,7 +43,8 @@ abstract class PaymentRepository {
 
 class SupabasePaymentRepository implements PaymentRepository {
   final SupabaseClient _client;
-  SupabasePaymentRepository(this._client);
+  final Outbox _outbox;
+  SupabasePaymentRepository(this._client, this._outbox);
 
   static const _bucket = 'payment_proofs';
 
@@ -148,6 +150,8 @@ class SupabasePaymentRepository implements PaymentRepository {
           'p_rejection_reason': rejectionReason,
         },
       );
+      // Stock, tills and prices shown elsewhere refetch on this.
+      _outbox.markServerChanged();
     } catch (e) {
       throw AppException.from(e);
     }

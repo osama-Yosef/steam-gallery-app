@@ -2,12 +2,16 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../../../core/supabase/supabase_client_provider.dart';
 import '../../data/models/payment_models.dart';
 import '../../data/repositories/payment_repository.dart';
+import '../../../../core/offline/outbox.dart';
 
 part 'payment_providers.g.dart';
 
 @Riverpod(keepAlive: true)
 PaymentRepository paymentRepository(Ref ref) {
-  return SupabasePaymentRepository(ref.watch(supabaseClientProvider));
+  return SupabasePaymentRepository(
+    ref.watch(supabaseClientProvider),
+    ref.watch(outboxProvider),
+  );
 }
 
 @riverpod

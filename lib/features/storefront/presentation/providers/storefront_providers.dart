@@ -4,12 +4,16 @@ import '../../../products/data/models/product_public.dart';
 import '../../data/models/storefront_models.dart';
 import '../../data/repositories/storefront_repository.dart';
 import '../../../../core/utils/provider_cache.dart';
+import '../../../../core/offline/outbox.dart';
 
 part 'storefront_providers.g.dart';
 
 @Riverpod(keepAlive: true)
 StorefrontRepository storefrontRepository(Ref ref) {
-  return SupabaseStorefrontRepository(ref.watch(supabaseClientProvider));
+  return SupabaseStorefrontRepository(
+    ref.watch(supabaseClientProvider),
+    ref.watch(outboxProvider),
+  );
 }
 
 @riverpod

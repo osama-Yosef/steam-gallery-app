@@ -5,6 +5,7 @@ import '../../../../core/errors/app_exception.dart';
 import '../../../products/data/models/product_category.dart';
 import '../../../products/data/models/product_public.dart';
 import '../models/storefront_models.dart';
+import '../../../../core/offline/outbox.dart';
 
 /// Home-screen content (0033). Customers only ever receive live offers and
 /// banners — RLS filters them — so the queries below don't have to (and
@@ -43,7 +44,8 @@ abstract class StorefrontRepository {
 
 class SupabaseStorefrontRepository implements StorefrontRepository {
   final SupabaseClient _client;
-  SupabaseStorefrontRepository(this._client);
+  final Outbox _outbox;
+  SupabaseStorefrontRepository(this._client, this._outbox);
 
   static const homeSectionLimit = 10;
 
@@ -260,6 +262,8 @@ class SupabaseStorefrontRepository implements StorefrontRepository {
             },
         ]);
       }
+      // Offer prices change what the register charges.
+      _outbox.markServerChanged();
     } catch (e) {
       throw AppException.from(e);
     }

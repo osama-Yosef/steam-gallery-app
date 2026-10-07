@@ -6,6 +6,7 @@ import '../models/sale_item.dart';
 import '../models/technician_account_summary.dart';
 import '../models/technician_account_transaction.dart';
 import '../models/technician_supply.dart';
+import '../../../../core/offline/outbox.dart';
 
 abstract class TechnicianAccountRepository {
   /// All technicians' summaries at once — used by the admin Technicians
@@ -63,7 +64,8 @@ abstract class TechnicianAccountRepository {
 class SupabaseTechnicianAccountRepository
     implements TechnicianAccountRepository {
   final SupabaseClient _client;
-  SupabaseTechnicianAccountRepository(this._client);
+  final Outbox _outbox;
+  SupabaseTechnicianAccountRepository(this._client, this._outbox);
 
   @override
   Future<List<TechnicianAccountSummary>> getAllAccountSummaries() async {
@@ -196,6 +198,8 @@ class SupabaseTechnicianAccountRepository
           'p_maintenance_request_id': maintenanceRequestId,
         },
       );
+      // Stock, tills and prices shown elsewhere refetch on this.
+      _outbox.markServerChanged();
       return saleId as String;
     } catch (e) {
       throw AppException.from(e);
@@ -217,6 +221,8 @@ class SupabaseTechnicianAccountRepository
           'p_notes': notes,
         },
       );
+      // Stock, tills and prices shown elsewhere refetch on this.
+      _outbox.markServerChanged();
     } catch (e) {
       throw AppException.from(e);
     }
@@ -252,6 +258,8 @@ class SupabaseTechnicianAccountRepository
           'p_reason': reason,
         },
       );
+      // Stock, tills and prices shown elsewhere refetch on this.
+      _outbox.markServerChanged();
     } catch (e) {
       throw AppException.from(e);
     }

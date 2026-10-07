@@ -4,12 +4,16 @@ import '../../data/models/inventory_count.dart';
 import '../../data/models/inventory_count_item.dart';
 import '../../data/repositories/inventory_count_repository.dart';
 import '../../../../core/utils/provider_cache.dart';
+import '../../../../core/offline/outbox.dart';
 
 part 'inventory_count_providers.g.dart';
 
 @Riverpod(keepAlive: true)
 InventoryCountRepository inventoryCountRepository(Ref ref) {
-  return SupabaseInventoryCountRepository(ref.watch(supabaseClientProvider));
+  return SupabaseInventoryCountRepository(
+    ref.watch(supabaseClientProvider),
+    ref.watch(outboxProvider),
+  );
 }
 
 @riverpod
