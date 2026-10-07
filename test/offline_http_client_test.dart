@@ -124,4 +124,36 @@ void main() {
       throwsA(isA<http.ClientException>()),
     );
   });
+
+  test('a body with newlines and quotes survives the cache intact', () async {
+    // A raw newline in the body as well as an escaped one.
+    const body = '[{"note":"line 1\\nline \\"2\\""}]\n';
+    final c = OfflineHttpClient(
+      store,
+      MockClient((req) async {
+        if (!online) throw http.ClientException('Failed host lookup');
+        return http.Response(body, 200);
+      }),
+    );
+    await get(c, '/rest/v1/notes?select=*');
+    await Future<void>.delayed(Duration.zero);
+    online = false;
+    expect((await get(c, '/rest/v1/notes?select=*')).body, body);
+  });
+
+  test('entries cached by 1.1.x (one JSON map) are still served', () async {
+    final c = client();
+    await get(c, '/rest/v1/products?select=*');
+    await Future<void>.delayed(Duration.zero);
+    final key = store.data.keys.single;
+    store.data[key] = jsonEncode({
+      'status': 200,
+      'headers': {'content-type': 'application/json'},
+      'body': '[{"legacy":true}]',
+    });
+    online = false;
+    final hit = await get(c, '/rest/v1/products?select=*');
+    expect(hit.body, '[{"legacy":true}]');
+    expect(hit.headers['x-offline-cache'], '1');
+  });
 }

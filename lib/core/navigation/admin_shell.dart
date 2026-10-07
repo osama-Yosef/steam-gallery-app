@@ -90,7 +90,6 @@ class _AdminShellState extends ConsumerState<AdminShell> {
                             padding: const EdgeInsets.fromLTRB(10, 16, 4, 16),
                             child: GlassPanel(
                               borderRadius: BorderRadius.circular(28),
-                              blurSigma: 30,
                               padding: const EdgeInsets.symmetric(
                                 vertical: 16,
                                 horizontal: 8,
@@ -216,7 +215,6 @@ class _ToggleHandle extends StatelessWidget {
   Widget build(BuildContext context) {
     return GlassPanel(
       borderRadius: BorderRadius.circular(14),
-      blurSigma: 20,
       child: Material(
         color: Colors.transparent,
         child: InkWell(

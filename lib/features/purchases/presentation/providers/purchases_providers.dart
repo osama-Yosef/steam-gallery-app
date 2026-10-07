@@ -2,6 +2,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../../../core/supabase/supabase_client_provider.dart';
 import '../../data/models/purchase_models.dart';
 import '../../data/repositories/purchases_repository.dart';
+import '../../../../core/utils/provider_cache.dart';
 
 part 'purchases_providers.g.dart';
 
@@ -12,11 +13,13 @@ PurchasesRepository purchasesRepository(Ref ref) {
 
 @riverpod
 Future<List<SupplierBalance>> suppliers(Ref ref) {
+  ref.cacheFor();
   return ref.watch(purchasesRepositoryProvider).getSuppliers();
 }
 
 @riverpod
 Future<List<PurchaseInvoice>> purchaseInvoices(Ref ref, {String? supplierId}) {
+  ref.cacheFor();
   return ref
       .watch(purchasesRepositoryProvider)
       .getInvoices(supplierId: supplierId);

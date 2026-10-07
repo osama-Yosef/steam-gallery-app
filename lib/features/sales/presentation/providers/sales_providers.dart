@@ -4,6 +4,7 @@ import '../../../technician_account/data/models/sale.dart';
 import '../../data/models/invoice_line.dart';
 import '../../data/models/sale_return_item.dart';
 import '../../data/repositories/sales_repository.dart';
+import '../../../../core/utils/provider_cache.dart';
 
 part 'sales_providers.g.dart';
 
@@ -14,6 +15,7 @@ SalesRepository salesRepository(Ref ref) {
 
 @riverpod
 Future<List<Sale>> walkInSales(Ref ref) {
+  ref.cacheFor();
   return ref.watch(salesRepositoryProvider).getWalkInSales();
 }
 

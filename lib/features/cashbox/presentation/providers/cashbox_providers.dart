@@ -5,6 +5,7 @@ import '../../data/models/cashbox_balance.dart';
 import '../../data/models/expense.dart';
 import '../../data/models/expense_category.dart';
 import '../../data/repositories/cashbox_repository.dart';
+import '../../../../core/utils/provider_cache.dart';
 
 part 'cashbox_providers.g.dart';
 
@@ -15,11 +16,13 @@ CashboxRepository cashboxRepository(Ref ref) {
 
 @riverpod
 Future<List<CashboxBalance>> cashboxBalances(Ref ref) {
+  ref.cacheFor();
   return ref.watch(cashboxRepositoryProvider).getBalances();
 }
 
 @riverpod
 Future<List<CashTransaction>> cashTransactions(Ref ref, String? cashboxId) {
+  ref.cacheFor();
   return ref
       .watch(cashboxRepositoryProvider)
       .getCashTransactions(cashboxId: cashboxId);
@@ -27,10 +30,12 @@ Future<List<CashTransaction>> cashTransactions(Ref ref, String? cashboxId) {
 
 @riverpod
 Future<List<ExpenseCategory>> expenseCategories(Ref ref) {
+  ref.cacheFor();
   return ref.watch(cashboxRepositoryProvider).getExpenseCategories();
 }
 
 @riverpod
 Future<List<Expense>> expenses(Ref ref) {
+  ref.cacheFor();
   return ref.watch(cashboxRepositoryProvider).getExpenses();
 }

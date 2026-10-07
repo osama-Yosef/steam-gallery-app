@@ -1,8 +1,8 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
+import '../../../../../core/widgets/app_network_image.dart';
 import '../../../../../core/router/route_names.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/utils/formatters.dart';
@@ -40,16 +40,17 @@ class AdminMarketingScreen extends ConsumerWidget {
               context.push(
                 isOffers
                     ? (isSales ? Routes.salesOfferNew : Routes.adminOfferNew)
-                    : (isSales
-                          ? Routes.salesBannerNew
-                          : Routes.adminBannerNew),
+                    : (isSales ? Routes.salesBannerNew : Routes.adminBannerNew),
               );
             },
             icon: const Icon(Iconsax.add_copy),
             label: const Text('إضافة'),
           ),
           body: TabBarView(
-            children: [_OffersTab(isSales: isSales), _BannersTab(isSales: isSales)],
+            children: [
+              _OffersTab(isSales: isSales),
+              _BannersTab(isSales: isSales),
+            ],
           ),
         ),
       ),
@@ -94,7 +95,7 @@ Widget _thumb(String? url, IconData fallback) => ClipRRect(
             color: AppColors.accentSoft,
             child: Icon(fallback, color: AppColors.primary),
           )
-        : CachedNetworkImage(imageUrl: url, fit: BoxFit.cover),
+        : AppNetworkImage(imageUrl: url, fit: BoxFit.cover),
   ),
 );
 

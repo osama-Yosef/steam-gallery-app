@@ -1,9 +1,9 @@
 import 'dart:async';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
+import '../../../../../core/widgets/app_network_image.dart';
 import '../../../../../core/constants/brand.dart';
 import '../../../../../core/router/route_names.dart';
 import '../../../../../core/theme/app_colors.dart';
@@ -210,7 +210,7 @@ class _BannerCarouselState extends State<_BannerCarousel> {
                         onTap: b.targetType == BannerTarget.none
                             ? null
                             : () => openBannerTarget(context, b),
-                        child: CachedNetworkImage(
+                        child: AppNetworkImage(
                           imageUrl: b.imageUrl,
                           fit: BoxFit.cover,
                           errorWidget: (_, _, _) => Center(
@@ -364,7 +364,7 @@ class OfferCard extends StatelessWidget {
             fit: StackFit.expand,
             children: [
               if (offer.imageUrl != null)
-                CachedNetworkImage(imageUrl: offer.imageUrl!, fit: BoxFit.cover)
+                AppNetworkImage(imageUrl: offer.imageUrl!, fit: BoxFit.cover)
               else
                 const DecoratedBox(
                   decoration: BoxDecoration(

@@ -2,6 +2,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../../../core/supabase/supabase_client_provider.dart';
 import '../../data/models/audit_log_entry.dart';
 import '../../data/repositories/audit_log_repository.dart';
+import '../../../../core/utils/provider_cache.dart';
 
 part 'audit_log_providers.g.dart';
 
@@ -24,5 +25,6 @@ Future<List<AuditLogEntry>> auditLogEntries(
 
 @riverpod
 Future<List<String>> auditLogTableNames(Ref ref) {
+  ref.cacheFor();
   return ref.watch(auditLogRepositoryProvider).listTableNames();
 }

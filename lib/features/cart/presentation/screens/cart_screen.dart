@@ -1,8 +1,8 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
+import '../../../../core/widgets/app_network_image.dart';
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/router/route_names.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -142,7 +142,9 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                         _LineTile(
                           line: line,
                           busy:
-                              _busy.contains(_lineKey(line.productId, line.optionIds)) ||
+                              _busy.contains(
+                                _lineKey(line.productId, line.optionIds),
+                              ) ||
                               _busy.contains('*'),
                           onQuantity: (q) => _run(
                             _lineKey(line.productId, line.optionIds),
@@ -158,7 +160,10 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                             _lineKey(line.productId, line.optionIds),
                             () => ref
                                 .read(cartProvider.notifier)
-                                .remove(line.productId, optionIds: line.optionIds),
+                                .remove(
+                                  line.productId,
+                                  optionIds: line.optionIds,
+                                ),
                           ),
                         ),
                     ],
@@ -245,7 +250,7 @@ class _LineTile extends StatelessWidget {
                             Icons.local_fire_department_outlined,
                           ),
                         )
-                      : CachedNetworkImage(
+                      : AppNetworkImage(
                           imageUrl: line.imageUrl!,
                           fit: BoxFit.cover,
                         ),

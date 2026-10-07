@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:image_picker/image_picker.dart';
+import '../../../../core/widgets/app_network_image.dart';
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/router/route_names.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -55,7 +56,7 @@ class CustomerAccountScreen extends ConsumerWidget {
                             color: Colors.white,
                             size: 28,
                           )
-                        : CachedNetworkImage(
+                        : AppNetworkImage(
                             imageUrl: profile!.avatarUrl!,
                             fit: BoxFit.cover,
                             width: 52,
@@ -185,6 +186,7 @@ class _EditProfileSheetState extends ConsumerState<_EditProfileSheet> {
   Future<void> _pickAvatar() async {
     final file = await ImagePicker().pickImage(
       source: ImageSource.gallery,
+      maxWidth: 512,
       imageQuality: 85,
     );
     if (file == null) return;
@@ -294,7 +296,10 @@ class _SupportSection extends ConsumerWidget {
       borderRadius: BorderRadius.circular(18),
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: ListTile(
-        leading: const Icon(Iconsax.message_question_copy, color: Color(0xFF25D366)),
+        leading: const Icon(
+          Iconsax.message_question_copy,
+          color: Color(0xFF25D366),
+        ),
         title: const Text('تواصل معنا'),
         subtitle: const Text('في مشكلة أو استفسار؟ راسلنا على واتساب'),
         trailing: const Icon(Iconsax.arrow_left_2_copy),
@@ -329,7 +334,9 @@ class _LocationSection extends ConsumerWidget {
             for (final c in cities)
               ListTile(
                 title: Text(c.nameAr),
-                trailing: c.id == current ? const Icon(Iconsax.tick_circle_copy) : null,
+                trailing: c.id == current
+                    ? const Icon(Iconsax.tick_circle_copy)
+                    : null,
                 onTap: () => Navigator.of(ctx).pop(c.id),
               ),
           ],

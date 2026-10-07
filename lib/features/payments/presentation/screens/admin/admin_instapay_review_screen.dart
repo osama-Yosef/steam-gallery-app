@@ -65,7 +65,8 @@ class AdminInstapayReviewScreen extends ConsumerWidget {
               padding: const EdgeInsets.all(16),
               itemCount: payments.length,
               separatorBuilder: (_, _) => const SizedBox(height: 12),
-              itemBuilder: (context, i) => _SubmissionCard(payment: payments[i]),
+              itemBuilder: (context, i) =>
+                  _SubmissionCard(payment: payments[i]),
             ),
           );
         },
@@ -82,7 +83,8 @@ class _InstapaySettingsSheet extends ConsumerStatefulWidget {
       _InstapaySettingsSheetState();
 }
 
-class _InstapaySettingsSheetState extends ConsumerState<_InstapaySettingsSheet> {
+class _InstapaySettingsSheetState
+    extends ConsumerState<_InstapaySettingsSheet> {
   final _ipaCtrl = TextEditingController();
   final _nameCtrl = TextEditingController();
   bool _saving = false;
@@ -159,9 +161,9 @@ class _InstapaySettingsSheetState extends ConsumerState<_InstapaySettingsSheet> 
                 onPressed: () {
                   if (_ipaCtrl.text.trim().isEmpty) return;
                   Clipboard.setData(ClipboardData(text: _ipaCtrl.text.trim()));
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('تم النسخ')),
-                  );
+                  ScaffoldMessenger.of(
+                    context,
+                  ).showSnackBar(const SnackBar(content: Text('تم النسخ')));
                 },
               ),
             ),
@@ -204,7 +206,9 @@ class _SubmissionCardState extends ConsumerState<_SubmissionCard> {
     final path = widget.payment.proofPath;
     if (path == null) return;
     try {
-      final url = await ref.read(paymentRepositoryProvider).signedProofUrl(path);
+      final url = await ref
+          .read(paymentRepositoryProvider)
+          .signedProofUrl(path);
       if (mounted) setState(() => _proofUrl = url);
     } catch (_) {
       // Non-fatal: the review can proceed without the preview loading.
@@ -307,6 +311,9 @@ class _SubmissionCardState extends ConsumerState<_SubmissionCard> {
                 child: Image.network(
                   _proofUrl!,
                   height: 200,
+                  // Decode at display size, not the phone photo's full size.
+                  cacheHeight: (200 * MediaQuery.devicePixelRatioOf(context))
+                      .round(),
                   fit: BoxFit.contain,
                   errorBuilder: (_, _, _) =>
                       const Text('تعذَّر تحميل صورة الإثبات'),

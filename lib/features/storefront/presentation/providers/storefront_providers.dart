@@ -3,6 +3,7 @@ import '../../../../core/supabase/supabase_client_provider.dart';
 import '../../../products/data/models/product_public.dart';
 import '../../data/models/storefront_models.dart';
 import '../../data/repositories/storefront_repository.dart';
+import '../../../../core/utils/provider_cache.dart';
 
 part 'storefront_providers.g.dart';
 
@@ -13,25 +14,30 @@ StorefrontRepository storefrontRepository(Ref ref) {
 
 @riverpod
 Future<CustomerHomeData> customerHome(Ref ref) {
+  ref.cacheFor();
   return ref.watch(storefrontRepositoryProvider).getCustomerHome();
 }
 
 @riverpod
 Future<Offer?> offerDetail(Ref ref, String offerId) {
+  ref.cacheFor();
   return ref.watch(storefrontRepositoryProvider).getOffer(offerId);
 }
 
 @riverpod
 Future<List<ProductPublic>> offerProducts(Ref ref, String offerId) {
+  ref.cacheFor();
   return ref.watch(storefrontRepositoryProvider).getOfferProducts(offerId);
 }
 
 @riverpod
 Future<List<HomeBanner>> adminBanners(Ref ref) {
+  ref.cacheFor();
   return ref.watch(storefrontRepositoryProvider).listBannersAdmin();
 }
 
 @riverpod
 Future<List<Offer>> adminOffers(Ref ref) {
+  ref.cacheFor();
   return ref.watch(storefrontRepositoryProvider).listOffersAdmin();
 }

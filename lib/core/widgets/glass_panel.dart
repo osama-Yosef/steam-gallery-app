@@ -1,17 +1,19 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 
-/// A real frosted-glass surface: backdrop blur + translucent fill + a
-/// light 1px border + a soft top-edge sheen. Used for the navigation chrome
-/// (sidebar / bottom nav) and hero dashboard cards — the highest-visibility
-/// surfaces, where a genuine BackdropFilter blur is worth the cost. Ordinary
-/// content cards get the cheaper "fake glass" look via CardTheme instead.
+/// A frosted-glass surface: translucent white fill + a light 1px border + a
+/// soft shadow. Used for the navigation chrome (sidebar / bottom nav) and
+/// hero cards.
+///
+/// There is deliberately no `BackdropFilter` here. Every panel sits over the
+/// static [GlassBackground] (never over scrolling content), and the
+/// near-opaque fill hides what a blur would have softened — while a backdrop
+/// blur is re-rendered on every frame anything on screen moves, which is
+/// what made switching tabs and pushing screens feel heavy.
 class GlassPanel extends StatelessWidget {
   final Widget child;
   final BorderRadius borderRadius;
   final EdgeInsetsGeometry? padding;
-  final double blurSigma;
   final Color fill;
   final Gradient? gradient;
 
@@ -19,7 +21,6 @@ class GlassPanel extends StatelessWidget {
     required this.child,
     this.borderRadius = const BorderRadius.all(Radius.circular(24)),
     this.padding,
-    this.blurSigma = 24,
     this.fill = AppColors.glassFill,
     this.gradient,
     super.key,
@@ -27,28 +28,23 @@ class GlassPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: borderRadius,
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: blurSigma, sigmaY: blurSigma),
-        child: Container(
-          padding: padding,
-          decoration: BoxDecoration(
-            color: gradient == null ? fill : null,
-            gradient: gradient,
-            borderRadius: borderRadius,
-            border: Border.all(color: AppColors.glassBorder, width: 1),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.shadow,
-                blurRadius: 24,
-                offset: const Offset(0, 8),
-              ),
-            ],
+    return Container(
+      padding: padding,
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(
+        color: gradient == null ? fill : null,
+        gradient: gradient,
+        borderRadius: borderRadius,
+        border: Border.all(color: AppColors.glassBorder, width: 1),
+        boxShadow: const [
+          BoxShadow(
+            color: AppColors.shadow,
+            blurRadius: 24,
+            offset: Offset(0, 8),
           ),
-          child: child,
-        ),
+        ],
       ),
+      child: child,
     );
   }
 }

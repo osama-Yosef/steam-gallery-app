@@ -1,6 +1,6 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/widgets/app_network_image.dart';
 import '../../../../core/router/route_names.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../data/models/product_public.dart';
@@ -25,7 +25,7 @@ class ProductCard extends StatelessWidget {
                 color: Theme.of(context).colorScheme.surfaceContainerHighest,
                 child: product.primaryImageUrl == null
                     ? const Icon(Icons.local_fire_department_outlined, size: 40)
-                    : CachedNetworkImage(
+                    : AppNetworkImage(
                         imageUrl: product.primaryImageUrl!,
                         fit: BoxFit.cover,
                         width: double.infinity,

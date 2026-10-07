@@ -1,7 +1,7 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/widgets/app_network_image.dart';
 import '../providers/maintenance_providers.dart';
 
 /// Renders one maintenance photo. The `maintenance` bucket is private, so the
@@ -36,7 +36,7 @@ class MaintenanceImageThumb extends ConsumerWidget {
             color: Colors.black12,
             child: Icon(Iconsax.gallery_slash_copy),
           ),
-          data: (url) => CachedNetworkImage(
+          data: (url) => AppNetworkImage(
             imageUrl: url,
             width: size,
             height: size,

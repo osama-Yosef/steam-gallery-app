@@ -5,6 +5,7 @@ import '../../data/models/maintenance_request.dart';
 import '../../data/models/queue_position.dart';
 import '../../data/models/technician_option.dart';
 import '../../data/repositories/maintenance_repository.dart';
+import '../../../../core/utils/provider_cache.dart';
 
 part 'maintenance_providers.g.dart';
 
@@ -50,6 +51,10 @@ Future<List<MaintenanceImage>> maintenanceImages(Ref ref, String requestId) {
 /// private, so this is the only way the image can actually render.
 @riverpod
 Future<String> maintenanceImageUrl(Ref ref, String storedPathOrUrl) {
+  ref.cacheFor(
+    keep: const Duration(minutes: 30),
+    staleAfter: const Duration(minutes: 30),
+  );
   return ref
       .watch(maintenanceRepositoryProvider)
       .signedImageUrl(storedPathOrUrl);
@@ -57,5 +62,6 @@ Future<String> maintenanceImageUrl(Ref ref, String storedPathOrUrl) {
 
 @riverpod
 Future<List<TechnicianOption>> assignableTechnicians(Ref ref) {
+  ref.cacheFor();
   return ref.watch(maintenanceRepositoryProvider).listTechnicians();
 }

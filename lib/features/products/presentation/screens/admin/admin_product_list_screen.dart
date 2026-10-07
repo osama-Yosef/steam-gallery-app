@@ -1,8 +1,8 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
+import '../../../../../core/widgets/app_network_image.dart';
 import '../../../../../core/errors/app_exception.dart';
 import '../../../../../core/router/route_names.dart';
 import '../../../../../core/theme/app_colors.dart';
@@ -196,7 +196,7 @@ class _ProductTile extends StatelessWidget {
                                 color: color,
                               ),
                             )
-                          : CachedNetworkImage(
+                          : AppNetworkImage(
                               imageUrl: p.primaryImageUrl!,
                               fit: BoxFit.cover,
                             ),
@@ -261,9 +261,7 @@ class _ProductTile extends StatelessWidget {
                           ? 'إزالة من مختارات مكوجي'
                           : 'إضافة لمختارات مكوجي',
                       icon: Icon(
-                        p.isFeatured
-                            ? Iconsax.star_1
-                            : Iconsax.star_1_copy,
+                        p.isFeatured ? Iconsax.star_1 : Iconsax.star_1_copy,
                         color: p.isFeatured ? AppColors.brandGold : null,
                       ),
                       onPressed: onToggleFeatured,

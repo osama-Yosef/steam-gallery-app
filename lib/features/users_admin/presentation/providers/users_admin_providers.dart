@@ -2,6 +2,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../../../core/supabase/supabase_client_provider.dart';
 import '../../../auth/data/models/app_user.dart';
 import '../../data/repositories/users_admin_repository.dart';
+import '../../../../core/utils/provider_cache.dart';
 
 part 'users_admin_providers.g.dart';
 
@@ -16,6 +17,7 @@ Future<List<AppUser>> adminUsersList(
   String? search,
   AppRole? roleFilter,
 }) {
+  ref.cacheFor();
   return ref
       .watch(usersAdminRepositoryProvider)
       .listUsers(search: search, roleFilter: roleFilter);

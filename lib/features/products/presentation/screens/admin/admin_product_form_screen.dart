@@ -1,9 +1,9 @@
 import 'dart:typed_data';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:image_picker/image_picker.dart';
+import '../../../../../core/widgets/app_network_image.dart';
 import '../../../../../core/errors/app_exception.dart';
 import '../../../../../core/utils/formatters.dart';
 import '../../../../../core/utils/validators.dart';
@@ -545,6 +545,7 @@ class _ProductImagesSection extends ConsumerWidget {
     final picker = ImagePicker();
     final file = await picker.pickImage(
       source: ImageSource.gallery,
+      maxWidth: 1600,
       imageQuality: 85,
     );
     if (file == null) return;
@@ -611,7 +612,7 @@ class _ProductImagesSection extends ConsumerWidget {
                       children: [
                         ClipRRect(
                           borderRadius: BorderRadius.circular(8),
-                          child: CachedNetworkImage(
+                          child: AppNetworkImage(
                             imageUrl: img.imageUrl,
                             width: 100,
                             height: 100,

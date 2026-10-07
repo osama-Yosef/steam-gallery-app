@@ -1,8 +1,8 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:uuid/uuid.dart';
+import '../../../../../core/widgets/app_network_image.dart';
 import '../../../../../core/errors/app_exception.dart';
 import '../../../../../core/offline/offline_widgets.dart';
 import '../../../../../core/offline/outbox.dart';
@@ -545,7 +545,7 @@ class _ProductCard extends StatelessWidget {
                           color: theme.colorScheme.surfaceContainerHighest,
                           child: const Icon(Iconsax.box_copy, size: 32),
                         )
-                      : CachedNetworkImage(
+                      : AppNetworkImage(
                           imageUrl: item.imageUrl!,
                           fit: BoxFit.cover,
                         ),

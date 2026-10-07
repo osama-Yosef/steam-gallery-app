@@ -3,6 +3,7 @@ import '../../../../core/supabase/supabase_client_provider.dart';
 import '../../data/models/inventory_count.dart';
 import '../../data/models/inventory_count_item.dart';
 import '../../data/repositories/inventory_count_repository.dart';
+import '../../../../core/utils/provider_cache.dart';
 
 part 'inventory_count_providers.g.dart';
 
@@ -13,6 +14,7 @@ InventoryCountRepository inventoryCountRepository(Ref ref) {
 
 @riverpod
 Future<List<InventoryCount>> inventoryCounts(Ref ref) {
+  ref.cacheFor();
   return ref.watch(inventoryCountRepositoryProvider).getCounts();
 }
 

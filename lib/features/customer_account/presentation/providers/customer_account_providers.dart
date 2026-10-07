@@ -3,6 +3,7 @@ import '../../../../core/supabase/supabase_client_provider.dart';
 import '../../data/models/customer_account_summary.dart';
 import '../../data/models/customer_account_transaction.dart';
 import '../../data/repositories/customer_account_repository.dart';
+import '../../../../core/utils/provider_cache.dart';
 
 part 'customer_account_providers.g.dart';
 
@@ -16,6 +17,7 @@ Future<List<CustomerAccountSummary>> customerAccounts(
   Ref ref, {
   String? search,
 }) {
+  ref.cacheFor();
   return ref
       .watch(customerAccountRepositoryProvider)
       .getAllAccounts(search: search);

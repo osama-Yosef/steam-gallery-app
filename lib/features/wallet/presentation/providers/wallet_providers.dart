@@ -2,6 +2,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../../../core/supabase/supabase_client_provider.dart';
 import '../../data/models/wallet_models.dart';
 import '../../data/repositories/wallet_repository.dart';
+import '../../../../core/utils/provider_cache.dart';
 
 part 'wallet_providers.g.dart';
 
@@ -32,10 +33,12 @@ Future<List<WalletTransaction>> myWalletTransactions(Ref ref) {
 // ---------------------------------------------------------------- admin (Phase 15)
 @riverpod
 Future<List<WalletSummary>> adminWallets(Ref ref, {String? search}) {
+  ref.cacheFor();
   return ref.watch(walletRepositoryProvider).getAllWallets(search: search);
 }
 
 @riverpod
 Future<({double totalLiability, int walletCount})> walletLiability(Ref ref) {
+  ref.cacheFor();
   return ref.watch(walletRepositoryProvider).getLiabilitySummary();
 }

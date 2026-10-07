@@ -71,19 +71,19 @@ class AdminPurchaseInvoicesScreen extends ConsumerWidget {
                   ],
                 );
               }
-              return ListView(
+              // Up to 500 invoices — built as they scroll into view.
+              return ListView.builder(
                 padding: const EdgeInsets.fromLTRB(16, 12, 16, 96),
-                children: [
-                  for (final p in pending)
-                    Card(
-                      child: ListTile(
-                        leading: const Icon(Iconsax.clock_copy),
-                        title: Text(p.label),
-                        subtitle: const Text('مستنية المزامنة'),
-                      ),
-                    ),
-                  for (final inv in invoices) _InvoiceCard(invoice: inv),
-                ],
+                itemCount: pending.length + invoices.length,
+                itemBuilder: (context, i) => i < pending.length
+                    ? Card(
+                        child: ListTile(
+                          leading: const Icon(Iconsax.clock_copy),
+                          title: Text(pending[i].label),
+                          subtitle: const Text('مستنية المزامنة'),
+                        ),
+                      )
+                    : _InvoiceCard(invoice: invoices[i - pending.length]),
               );
             },
           ),

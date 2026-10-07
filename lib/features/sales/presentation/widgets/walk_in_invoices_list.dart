@@ -23,6 +23,16 @@ class _WalkInInvoicesListState extends ConsumerState<WalkInInvoicesList> {
   bool _todayOnly = true;
   String _search = '';
 
+  // The search field scrolls with the list, so its text must outlive the
+  // field being built and disposed again as it leaves and re-enters view.
+  final _searchCtrl = TextEditingController();
+
+  @override
+  void dispose() {
+    _searchCtrl.dispose();
+    super.dispose();
+  }
+
   bool _isToday(DateTime d) {
     final l = d.toLocal();
     final now = DateTime.now();
@@ -57,85 +67,92 @@ class _WalkInInvoicesListState extends ConsumerState<WalkInInvoicesList> {
           final todayTotal = today.fold<double>(0, (sum, s) => sum + s.total);
           final pending = Outbox.instance.pendingOf('walk_in_sale');
 
-          return RefreshIndicator(
-            onRefresh: () async => ref.invalidate(walkInSalesProvider),
-            child: ListView(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
-              children: [
-                Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(14),
-                    child: Row(
-                      children: [
-                        const Icon(Iconsax.calendar_1_copy),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: Text(
-                            'فواتير اليوم: ${today.length}',
-                            style: theme.textTheme.titleSmall,
-                          ),
-                        ),
-                        Text(
-                          Formatters.currency(todayTotal),
-                          style: theme.textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Row(
+          // Up to 1000 invoices: the summary, filters and pending sales are a
+          // fixed header, the invoices themselves are built lazily.
+          final header = <Widget>[
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(14),
+                child: Row(
                   children: [
-                    SegmentedButton<bool>(
-                      segments: const [
-                        ButtonSegment(value: true, label: Text('اليوم')),
-                        ButtonSegment(value: false, label: Text('الكل')),
-                      ],
-                      selected: {_todayOnly},
-                      onSelectionChanged: (s) =>
-                          setState(() => _todayOnly = s.first),
-                    ),
-                    const SizedBox(width: 12),
+                    const Icon(Iconsax.calendar_1_copy),
+                    const SizedBox(width: 10),
                     Expanded(
-                      child: TextField(
-                        decoration: const InputDecoration(
-                          hintText: 'رقم الفاتورة أو العميل',
-                          prefixIcon: Icon(Iconsax.search_normal_1_copy),
-                          isDense: true,
-                        ),
-                        onChanged: (v) => setState(() => _search = v.trim()),
+                      child: Text(
+                        'فواتير اليوم: ${today.length}',
+                        style: theme.textTheme.titleSmall,
+                      ),
+                    ),
+                    Text(
+                      Formatters.currency(todayTotal),
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 8),
-                for (final p in pending)
-                  Card(
-                    child: ListTile(
-                      leading: const Icon(
-                        Iconsax.clock_copy,
-                        color: AppColors.warning,
-                      ),
-                      title: Text(p.label),
-                      subtitle: Text(
-                        'مستنية المزامنة · ${Formatters.dateTime(p.createdAt)}',
-                      ),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                SegmentedButton<bool>(
+                  segments: const [
+                    ButtonSegment(value: true, label: Text('اليوم')),
+                    ButtonSegment(value: false, label: Text('الكل')),
+                  ],
+                  selected: {_todayOnly},
+                  onSelectionChanged: (s) =>
+                      setState(() => _todayOnly = s.first),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: TextField(
+                    controller: _searchCtrl,
+                    decoration: const InputDecoration(
+                      hintText: 'رقم الفاتورة أو العميل',
+                      prefixIcon: Icon(Iconsax.search_normal_1_copy),
+                      isDense: true,
                     ),
+                    onChanged: (v) => setState(() => _search = v.trim()),
                   ),
-                if (shown.isEmpty && pending.isEmpty)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 48),
-                    child: EmptyView(
-                      message: _todayOnly
-                          ? 'لا توجد فواتير اليوم'
-                          : 'لا توجد فواتير',
-                      icon: Iconsax.receipt_copy,
-                    ),
-                  ),
-                for (final s in shown) _InvoiceTile(sale: s),
+                ),
               ],
+            ),
+            const SizedBox(height: 8),
+            for (final p in pending)
+              Card(
+                child: ListTile(
+                  leading: const Icon(
+                    Iconsax.clock_copy,
+                    color: AppColors.warning,
+                  ),
+                  title: Text(p.label),
+                  subtitle: Text(
+                    'مستنية المزامنة · ${Formatters.dateTime(p.createdAt)}',
+                  ),
+                ),
+              ),
+            if (shown.isEmpty && pending.isEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 48),
+                child: EmptyView(
+                  message: _todayOnly
+                      ? 'لا توجد فواتير اليوم'
+                      : 'لا توجد فواتير',
+                  icon: Iconsax.receipt_copy,
+                ),
+              ),
+          ];
+
+          return RefreshIndicator(
+            onRefresh: () async => ref.invalidate(walkInSalesProvider),
+            child: ListView.builder(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+              itemCount: header.length + shown.length,
+              itemBuilder: (context, i) => i < header.length
+                  ? header[i]
+                  : _InvoiceTile(sale: shown[i - header.length]),
             ),
           );
         },

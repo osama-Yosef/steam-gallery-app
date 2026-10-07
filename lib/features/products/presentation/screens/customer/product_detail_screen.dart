@@ -1,8 +1,8 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
+import '../../../../../core/widgets/app_network_image.dart';
 import '../../../../../core/errors/app_exception.dart';
 import '../../../../../core/router/route_names.dart';
 import '../../../../../core/theme/app_colors.dart';
@@ -46,9 +46,8 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
         loading: () => const LoadingView(),
         error: (e, _) => ErrorView(
           message: 'تعذَّر تحميل بيانات المنتج',
-          onRetry: () => ref.invalidate(
-            customerProductDetailProvider(widget.productId),
-          ),
+          onRetry: () =>
+              ref.invalidate(customerProductDetailProvider(widget.productId)),
         ),
         data: (product) {
           if (product == null) {
@@ -293,7 +292,7 @@ class _GalleryState extends State<_Gallery> {
                   key: const Key('product-gallery'),
                   itemCount: urls.length,
                   onPageChanged: (i) => setState(() => _index = i),
-                  itemBuilder: (_, i) => CachedNetworkImage(
+                  itemBuilder: (_, i) => AppNetworkImage(
                     imageUrl: urls[i],
                     fit: BoxFit.cover,
                     width: double.infinity,
@@ -507,6 +506,7 @@ class _AddToCartBarState extends ConsumerState<_AddToCartBar> {
     );
   }
 }
+
 /// − value + control, bounded to [min]..[max].
 class QuantityStepper extends StatelessWidget {
   final int value;

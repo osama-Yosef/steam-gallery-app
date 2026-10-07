@@ -110,23 +110,29 @@ class OfflineHttpClient extends http.BaseClient {
     return 'anon';
   }
 
+  /// Stored as `v2`, a one-line JSON header (status + the headers worth
+  /// keeping), then the body verbatim. Wrapping the body in JSON instead
+  /// meant escaping every response on the UI thread — on a big list that
+  /// was a visible hitch while a new screen was animating in.
+  static const _formatV2 = 'v2\n';
+
   Future<void> _save(
     String key,
     http.StreamedResponse response,
     List<int> bytes,
   ) async {
     try {
+      final header = jsonEncode({
+        'status': response.statusCode,
+        'headers': {
+          for (final e in response.headers.entries)
+            if (e.key == 'content-type' || e.key == 'content-range')
+              e.key: e.value,
+        },
+      });
       await _store.write(
         key,
-        jsonEncode({
-          'status': response.statusCode,
-          'headers': {
-            for (final e in response.headers.entries)
-              if (e.key == 'content-type' || e.key == 'content-range')
-                e.key: e.value,
-          },
-          'body': utf8.decode(bytes, allowMalformed: true),
-        }),
+        '$_formatV2$header\n${utf8.decode(bytes, allowMalformed: true)}',
       );
     } catch (_) {
       // Caching is best-effort; never fail a request over it.
@@ -139,10 +145,22 @@ class OfflineHttpClient extends http.BaseClient {
     final raw = await _store.read(key);
     if (raw == null) return null;
     try {
-      final map = jsonDecode(raw) as Map<String, dynamic>;
-      final bytes = utf8.encode(map['body'] as String);
-      final headers = (map['headers'] as Map).cast<String, String>();
-      return (request) => _response(request, map['status'] as int, {
+      final Map<String, dynamic> meta;
+      final String body;
+      if (raw.startsWith(_formatV2)) {
+        final split = raw.indexOf('\n', _formatV2.length);
+        meta =
+            jsonDecode(raw.substring(_formatV2.length, split))
+                as Map<String, dynamic>;
+        body = raw.substring(split + 1);
+      } else {
+        // Written by 1.1.x: the whole entry, body included, as one JSON map.
+        meta = jsonDecode(raw) as Map<String, dynamic>;
+        body = meta['body'] as String;
+      }
+      final bytes = utf8.encode(body);
+      final headers = (meta['headers'] as Map).cast<String, String>();
+      return (request) => _response(request, meta['status'] as int, {
         ...headers,
         'x-offline-cache': '1',
       }, bytes);

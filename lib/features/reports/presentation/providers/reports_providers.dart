@@ -2,6 +2,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../../../core/supabase/supabase_client_provider.dart';
 import '../../data/models/report_models.dart';
 import '../../data/repositories/reports_repository.dart';
+import '../../../../core/utils/provider_cache.dart';
 
 part 'reports_providers.g.dart';
 
@@ -12,11 +13,13 @@ ReportsRepository reportsRepository(Ref ref) {
 
 @riverpod
 Future<SalesReport> salesReport(Ref ref, DateTime from, DateTime to) {
+  ref.cacheFor();
   return ref.watch(reportsRepositoryProvider).getSalesReport(from, to);
 }
 
 @riverpod
 Future<ProfitReport> profitReport(Ref ref, DateTime from, DateTime to) {
+  ref.cacheFor();
   return ref.watch(reportsRepositoryProvider).getProfitReport(from, to);
 }
 
@@ -26,16 +29,19 @@ Future<OrdersProfitReport> ordersProfitReport(
   DateTime from,
   DateTime to,
 ) {
+  ref.cacheFor();
   return ref.watch(reportsRepositoryProvider).getOrdersProfitReport(from, to);
 }
 
 @riverpod
 Future<ExpensesReport> expensesReport(Ref ref, DateTime from, DateTime to) {
+  ref.cacheFor();
   return ref.watch(reportsRepositoryProvider).getExpensesReport(from, to);
 }
 
 @riverpod
 Future<InventoryReport> inventoryReport(Ref ref, DateTime from, DateTime to) {
+  ref.cacheFor();
   return ref.watch(reportsRepositoryProvider).getInventoryReport(from, to);
 }
 

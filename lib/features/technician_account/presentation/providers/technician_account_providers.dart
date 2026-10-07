@@ -6,6 +6,7 @@ import '../../data/models/technician_account_summary.dart';
 import '../../data/models/technician_account_transaction.dart';
 import '../../data/models/technician_supply.dart';
 import '../../data/repositories/technician_account_repository.dart';
+import '../../../../core/utils/provider_cache.dart';
 
 part 'technician_account_providers.g.dart';
 
@@ -26,6 +27,7 @@ Future<TechnicianAccountSummary?> technicianAccountSummary(
 
 @riverpod
 Future<List<TechnicianAccountSummary>> allTechnicianAccountSummaries(Ref ref) {
+  ref.cacheFor();
   return ref
       .watch(technicianAccountRepositoryProvider)
       .getAllAccountSummaries();

@@ -46,6 +46,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   Future<void> _pickAvatar() async {
     final file = await ImagePicker().pickImage(
       source: ImageSource.gallery,
+      maxWidth: 512,
       imageQuality: 85,
     );
     if (file == null) return;
@@ -132,10 +133,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                               left: 0,
                               child: CircleAvatar(
                                 radius: 14,
-                                child: Icon(
-                                  Iconsax.camera_copy,
-                                  size: 14,
-                                ),
+                                child: Icon(Iconsax.camera_copy, size: 14),
                               ),
                             ),
                           ],

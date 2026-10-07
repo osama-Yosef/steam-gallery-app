@@ -2,6 +2,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../../../core/supabase/supabase_client_provider.dart';
 import '../../data/models/location_models.dart';
 import '../../data/repositories/locations_repository.dart';
+import '../../../../core/utils/provider_cache.dart';
 
 part 'locations_providers.g.dart';
 
@@ -12,6 +13,7 @@ LocationsRepository locationsRepository(Ref ref) {
 
 @riverpod
 Future<List<City>> cities(Ref ref, {bool activeOnly = true}) {
+  ref.cacheFor();
   return ref
       .watch(locationsRepositoryProvider)
       .getCities(activeOnly: activeOnly);
@@ -23,6 +25,7 @@ Future<List<ServiceArea>> serviceAreas(
   String cityId, {
   bool activeOnly = true,
 }) {
+  ref.cacheFor();
   return ref
       .watch(locationsRepositoryProvider)
       .getServiceAreas(cityId, activeOnly: activeOnly);
@@ -40,5 +43,6 @@ Future<String?> myCityId(Ref ref) {
 
 @riverpod
 Future<List<Country>> countries(Ref ref) {
+  ref.cacheFor();
   return ref.watch(locationsRepositoryProvider).getCountries();
 }

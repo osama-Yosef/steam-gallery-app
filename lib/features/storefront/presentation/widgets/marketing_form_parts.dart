@@ -1,8 +1,8 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:image_picker/image_picker.dart';
+import '../../../../core/widgets/app_network_image.dart';
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/formatters.dart';
@@ -82,10 +82,7 @@ class _MarketingImageFieldState extends ConsumerState<MarketingImageField> {
                   fit: StackFit.expand,
                   children: [
                     if (widget.url != null)
-                      CachedNetworkImage(
-                        imageUrl: widget.url!,
-                        fit: BoxFit.cover,
-                      ),
+                      AppNetworkImage(imageUrl: widget.url!, fit: BoxFit.cover),
                     if (widget.url == null || _uploading)
                       Center(
                         child: _uploading
@@ -93,10 +90,7 @@ class _MarketingImageFieldState extends ConsumerState<MarketingImageField> {
                             : const Column(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Icon(
-                                    Iconsax.gallery_add_copy,
-                                    size: 36,
-                                  ),
+                                  Icon(Iconsax.gallery_add_copy, size: 36),
                                   Text('اختر صورة'),
                                 ],
                               ),

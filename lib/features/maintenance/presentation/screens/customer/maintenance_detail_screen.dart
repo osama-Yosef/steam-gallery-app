@@ -24,6 +24,7 @@ class MaintenanceDetailScreen extends ConsumerWidget {
     final picker = ImagePicker();
     final file = await picker.pickImage(
       source: ImageSource.gallery,
+      maxWidth: 1600,
       imageQuality: 85,
     );
     if (file == null) return;
@@ -204,9 +205,7 @@ class MaintenanceDetailScreen extends ConsumerWidget {
                                   ),
                                   borderRadius: BorderRadius.circular(8),
                                 ),
-                                child: const Icon(
-                                  Iconsax.gallery_add_copy,
-                                ),
+                                child: const Icon(Iconsax.gallery_add_copy),
                               ),
                             ),
                         ],
