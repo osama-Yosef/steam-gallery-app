@@ -1,4 +1,4 @@
-import 'dart:typed_data';
+import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
 import '../../../../core/errors/app_exception.dart';
@@ -7,6 +7,8 @@ import '../models/maintenance_request.dart';
 import '../models/queue_position.dart';
 import '../models/technician_option.dart';
 import '../../../../core/offline/offline_stream.dart';
+import '../../../../core/supabase/live_query.dart';
+import '../../../../core/utils/history_query.dart';
 
 abstract class MaintenanceRepository {
   /// [addressId] must be one of the customer's own saved, service-area-
@@ -28,11 +30,22 @@ abstract class MaintenanceRepository {
 
   Stream<MaintenanceRequest?> watchRequest(String requestId);
 
-  /// Every row currently visible to the caller via RLS — for a customer
-  /// that's only their own; for a technician it's waiting ones + their own
-  /// assignments; for an admin it's everything. Callers filter/sort this
-  /// client-side to build the active queue (see docs/03-business-logic.md §5).
-  Stream<List<MaintenanceRequest>> watchVisibleRequests();
+  /// Live: every request still open (waiting, assigned, in progress) plus
+  /// everything opened today, as far as RLS lets the caller see — for a
+  /// technician that's waiting ones + their own assignments, for an admin
+  /// everything. Callers filter/sort this client-side to build the active
+  /// queue (see docs/03-business-logic.md §5). Finished requests from
+  /// earlier days are left to [searchRequests].
+  Stream<List<MaintenanceRequest>> watchOpenRequests();
+
+  /// Past requests for the history screen, newest first, one page at a
+  /// time: [query]'s text matches a ticket number or the customer's
+  /// name/phone, and its days bound when the request was opened.
+  Future<List<MaintenanceRequest>> searchRequests(
+    HistoryQuery query, {
+    required int limit,
+    required int offset,
+  });
 
   /// Accurate global queue position for one request — bypasses the
   /// customer's own row-level RLS restriction server-side (SECURITY DEFINER)
@@ -124,14 +137,59 @@ class SupabaseMaintenanceRepository implements MaintenanceRepository {
         );
   }
 
+  /// Statuses a request still has work left in.
+  static const openStatuses = ['waiting', 'assigned', 'in_progress'];
+
   @override
-  Stream<List<MaintenanceRequest>> watchVisibleRequests() {
-    return _client
-        .from('maintenance_requests')
-        .stream(primaryKey: ['id'])
-        .order('created_at', ascending: true)
-        .offlineTolerant()
-        .map((rows) => rows.map(MaintenanceRequest.fromRow).toList());
+  Stream<List<MaintenanceRequest>> watchOpenRequests() => refetchOn(
+    fetchOpenRequests,
+    tableChanges(_client, 'maintenance_requests'),
+  );
+
+  @visibleForTesting
+  Future<List<MaintenanceRequest>> fetchOpenRequests() async {
+    try {
+      final rows = await _client
+          .from('maintenance_requests')
+          .select()
+          .or(
+            'status.in.(${openStatuses.join(',')}),'
+            'created_at.gte.${startOfTodayUtc()}',
+          )
+          .order('created_at', ascending: true);
+      return rows.map(MaintenanceRequest.fromRow).toList();
+    } catch (e) {
+      throw AppException.from(e);
+    }
+  }
+
+  @override
+  Future<List<MaintenanceRequest>> searchRequests(
+    HistoryQuery query, {
+    required int limit,
+    required int offset,
+  }) async {
+    try {
+      var q = _client.from('maintenance_requests').select();
+      final number = query.number;
+      final text = query.safeText.trim();
+      if (number != null) {
+        // Digits are a ticket number — or part of a phone.
+        q = q.or('ticket_number.eq.$number,phone.ilike.%$text%');
+      } else if (text.isNotEmpty) {
+        q = q.or('customer_name.ilike.%$text%,phone.ilike.%$text%');
+      }
+      final from = query.fromUtc;
+      final to = query.toUtcExclusive;
+      if (from != null) q = q.gte('created_at', from);
+      if (to != null) q = q.lt('created_at', to);
+      final rows = await q
+          .order('created_at', ascending: false)
+          .range(offset, offset + limit - 1);
+      return rows.map(MaintenanceRequest.fromRow).toList();
+    } catch (e) {
+      throw AppException.from(e);
+    }
   }
 
   @override

@@ -270,10 +270,10 @@ final class OrderItemsFamily extends $Family
   String toString() => r'orderItemsProvider';
 }
 
-@ProviderFor(allOrders)
-const allOrdersProvider = AllOrdersProvider._();
+@ProviderFor(openOrders)
+const openOrdersProvider = OpenOrdersProvider._();
 
-final class AllOrdersProvider
+final class OpenOrdersProvider
     extends
         $FunctionalProvider<
           AsyncValue<List<Order>>,
@@ -281,19 +281,19 @@ final class AllOrdersProvider
           Stream<List<Order>>
         >
     with $FutureModifier<List<Order>>, $StreamProvider<List<Order>> {
-  const AllOrdersProvider._()
+  const OpenOrdersProvider._()
     : super(
         from: null,
         argument: null,
         retry: null,
-        name: r'allOrdersProvider',
+        name: r'openOrdersProvider',
         isAutoDispose: true,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
 
   @override
-  String debugGetCreateSourceHash() => _$allOrdersHash();
+  String debugGetCreateSourceHash() => _$openOrdersHash();
 
   @$internal
   @override
@@ -303,8 +303,115 @@ final class AllOrdersProvider
 
   @override
   Stream<List<Order>> create(Ref ref) {
-    return allOrders(ref);
+    return openOrders(ref);
   }
 }
 
-String _$allOrdersHash() => r'15b319f65faac08c662acf379e10d2b127c62cae';
+String _$openOrdersHash() => r'5c77f356a65fc1a087cb3684ca4beec80d7673b0';
+
+/// The orders history screen's results for one [HistoryQuery]: the first
+/// page loads on watch, [loadMore] appends the next (infinite scroll).
+
+@ProviderFor(OrderHistory)
+const orderHistoryProvider = OrderHistoryFamily._();
+
+/// The orders history screen's results for one [HistoryQuery]: the first
+/// page loads on watch, [loadMore] appends the next (infinite scroll).
+final class OrderHistoryProvider
+    extends $AsyncNotifierProvider<OrderHistory, HistoryPage<Order>> {
+  /// The orders history screen's results for one [HistoryQuery]: the first
+  /// page loads on watch, [loadMore] appends the next (infinite scroll).
+  const OrderHistoryProvider._({
+    required OrderHistoryFamily super.from,
+    required HistoryQuery super.argument,
+  }) : super(
+         retry: null,
+         name: r'orderHistoryProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
+  @override
+  String debugGetCreateSourceHash() => _$orderHistoryHash();
+
+  @override
+  String toString() {
+    return r'orderHistoryProvider'
+        ''
+        '($argument)';
+  }
+
+  @$internal
+  @override
+  OrderHistory create() => OrderHistory();
+
+  @override
+  bool operator ==(Object other) {
+    return other is OrderHistoryProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$orderHistoryHash() => r'139142feb5f47263516989e67c444bdcb1276efd';
+
+/// The orders history screen's results for one [HistoryQuery]: the first
+/// page loads on watch, [loadMore] appends the next (infinite scroll).
+
+final class OrderHistoryFamily extends $Family
+    with
+        $ClassFamilyOverride<
+          OrderHistory,
+          AsyncValue<HistoryPage<Order>>,
+          HistoryPage<Order>,
+          FutureOr<HistoryPage<Order>>,
+          HistoryQuery
+        > {
+  const OrderHistoryFamily._()
+    : super(
+        retry: null,
+        name: r'orderHistoryProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  /// The orders history screen's results for one [HistoryQuery]: the first
+  /// page loads on watch, [loadMore] appends the next (infinite scroll).
+
+  OrderHistoryProvider call(HistoryQuery query) =>
+      OrderHistoryProvider._(argument: query, from: this);
+
+  @override
+  String toString() => r'orderHistoryProvider';
+}
+
+/// The orders history screen's results for one [HistoryQuery]: the first
+/// page loads on watch, [loadMore] appends the next (infinite scroll).
+
+abstract class _$OrderHistory extends $AsyncNotifier<HistoryPage<Order>> {
+  late final _$args = ref.$arg as HistoryQuery;
+  HistoryQuery get query => _$args;
+
+  FutureOr<HistoryPage<Order>> build(HistoryQuery query);
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final created = build(_$args);
+    final ref =
+        this.ref as $Ref<AsyncValue<HistoryPage<Order>>, HistoryPage<Order>>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<AsyncValue<HistoryPage<Order>>, HistoryPage<Order>>,
+              AsyncValue<HistoryPage<Order>>,
+              Object?,
+              Object?
+            >;
+    element.handleValue(ref, created);
+  }
+}

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:steam_gallery_app/core/utils/history_query.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:steam_gallery_app/core/errors/app_exception.dart';
@@ -153,7 +154,14 @@ class _FakeOrderRepo implements OrderRepository {
     String? rejectionReason,
   }) async {}
   @override
-  Stream<List<Order>> watchAllOrders() => const Stream.empty();
+  Stream<List<Order>> watchOpenOrders() => const Stream.empty();
+
+  @override
+  Future<List<Order>> searchOrders(
+    HistoryQuery query, {
+    required int limit,
+    required int offset,
+  }) async => const [];
   @override
   Future<OutboxResult> setShippingFee({
     required String orderId,

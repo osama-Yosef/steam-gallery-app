@@ -39,6 +39,7 @@ import '../../features/locations/presentation/screens/admin/admin_service_area_e
 import '../../features/locations/presentation/screens/customer/address_form_screen.dart';
 import '../../features/locations/presentation/screens/customer/my_addresses_screen.dart';
 import '../../features/maintenance/presentation/screens/admin/admin_maintenance_detail_screen.dart';
+import '../../features/maintenance/presentation/screens/admin/admin_maintenance_history_screen.dart';
 import '../../features/maintenance/presentation/screens/admin/admin_maintenance_list_screen.dart';
 import '../../features/maintenance/presentation/screens/customer/customer_maintenance_home_screen.dart';
 import '../../features/maintenance/presentation/screens/customer/maintenance_detail_screen.dart';
@@ -47,6 +48,7 @@ import '../../features/maintenance/presentation/screens/technician/technician_ma
 import '../../features/maintenance/presentation/screens/technician/technician_queue_screen.dart';
 import '../../features/notifications/presentation/screens/notifications_screen.dart';
 import '../../features/orders/presentation/screens/admin/admin_order_detail_screen.dart';
+import '../../features/orders/presentation/screens/admin/admin_orders_history_screen.dart';
 import '../../features/orders/presentation/screens/admin/admin_orders_list_screen.dart';
 import '../../features/orders/presentation/screens/customer/checkout_screen.dart';
 import '../../features/orders/presentation/screens/customer/customer_order_detail_screen.dart';
@@ -396,6 +398,11 @@ GoRouter appRouter(Ref ref) {
                 path: Routes.adminOrders,
                 builder: (_, _) => const AdminOrdersListScreen(),
                 routes: [
+                  // Before ':id', which would otherwise match it.
+                  GoRoute(
+                    path: 'history',
+                    builder: (_, _) => const AdminOrdersHistoryScreen(),
+                  ),
                   GoRoute(
                     path: ':id',
                     builder: (_, state) => AdminOrderDetailScreen(
@@ -412,6 +419,11 @@ GoRouter appRouter(Ref ref) {
                 path: Routes.adminMaintenance,
                 builder: (_, _) => const AdminMaintenanceListScreen(),
                 routes: [
+                  // Before ':id', which would otherwise match it.
+                  GoRoute(
+                    path: 'history',
+                    builder: (_, _) => const AdminMaintenanceHistoryScreen(),
+                  ),
                   GoRoute(
                     path: ':id',
                     builder: (_, state) => AdminMaintenanceDetailScreen(
@@ -565,6 +577,11 @@ GoRouter appRouter(Ref ref) {
                 path: Routes.salesOrders,
                 builder: (_, _) => const AdminOrdersListScreen(),
                 routes: [
+                  // Before ':id', which would otherwise match it.
+                  GoRoute(
+                    path: 'history',
+                    builder: (_, _) => const AdminOrdersHistoryScreen(),
+                  ),
                   GoRoute(
                     path: ':id',
                     builder: (_, state) => AdminOrderDetailScreen(

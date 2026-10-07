@@ -7,6 +7,7 @@ import '../../data/models/technician_option.dart';
 import '../../data/repositories/maintenance_repository.dart';
 import '../../../../core/utils/provider_cache.dart';
 
+import '../../../../core/utils/history_query.dart';
 part 'maintenance_providers.g.dart';
 
 @Riverpod(keepAlive: true)
@@ -30,11 +31,49 @@ Stream<MaintenanceRequest?> maintenanceRequestDetail(
   return ref.watch(maintenanceRepositoryProvider).watchRequest(requestId);
 }
 
-/// Raw RLS-scoped stream every queue screen (technician/admin) derives its
-/// sorted "active" list from client-side — see repository doc comment.
+/// The open maintenance requests (plus today's), live, RLS-scoped — every
+/// queue screen (technician/admin) derives its sorted "active" list from it
+/// client-side; see the repository doc comment.
 @Riverpod(keepAlive: true)
-Stream<List<MaintenanceRequest>> visibleMaintenanceRequests(Ref ref) {
-  return ref.watch(maintenanceRepositoryProvider).watchVisibleRequests();
+Stream<List<MaintenanceRequest>> openMaintenanceRequests(Ref ref) {
+  return ref.watch(maintenanceRepositoryProvider).watchOpenRequests();
+}
+
+/// The maintenance history screen's results for one [HistoryQuery]: the
+/// first page loads on watch, [loadMore] appends the next.
+@riverpod
+class MaintenanceHistory extends _$MaintenanceHistory {
+  @override
+  Future<HistoryPage<MaintenanceRequest>> build(HistoryQuery query) async {
+    final items = await ref
+        .watch(maintenanceRepositoryProvider)
+        .searchRequests(query, limit: historyPageSize, offset: 0);
+    return HistoryPage(items: items, hasMore: items.length == historyPageSize);
+  }
+
+  Future<void> loadMore() async {
+    final current = state.value;
+    if (current == null || !current.hasMore || current.loadingMore) return;
+    state = AsyncData(
+      current.copyWith(loadingMore: true, loadMoreFailed: false),
+    );
+    try {
+      final next = await ref
+          .read(maintenanceRepositoryProvider)
+          .searchRequests(
+            query,
+            limit: historyPageSize,
+            offset: current.items.length,
+          );
+      if (ref.mounted) state = AsyncData(current.append(next, historyPageSize));
+    } catch (_) {
+      if (ref.mounted) {
+        state = AsyncData(
+          current.copyWith(loadingMore: false, loadMoreFailed: true),
+        );
+      }
+    }
+  }
 }
 
 @riverpod

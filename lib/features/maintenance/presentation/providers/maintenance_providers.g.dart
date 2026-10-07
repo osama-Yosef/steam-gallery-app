@@ -214,17 +214,18 @@ final class MaintenanceRequestDetailFamily extends $Family
   String toString() => r'maintenanceRequestDetailProvider';
 }
 
-/// Raw RLS-scoped stream every queue screen (technician/admin) derives its
-/// sorted "active" list from client-side — see repository doc comment.
+/// The open maintenance requests (plus today's), live, RLS-scoped — every
+/// queue screen (technician/admin) derives its sorted "active" list from it
+/// client-side; see the repository doc comment.
 
-@ProviderFor(visibleMaintenanceRequests)
-const visibleMaintenanceRequestsProvider =
-    VisibleMaintenanceRequestsProvider._();
+@ProviderFor(openMaintenanceRequests)
+const openMaintenanceRequestsProvider = OpenMaintenanceRequestsProvider._();
 
-/// Raw RLS-scoped stream every queue screen (technician/admin) derives its
-/// sorted "active" list from client-side — see repository doc comment.
+/// The open maintenance requests (plus today's), live, RLS-scoped — every
+/// queue screen (technician/admin) derives its sorted "active" list from it
+/// client-side; see the repository doc comment.
 
-final class VisibleMaintenanceRequestsProvider
+final class OpenMaintenanceRequestsProvider
     extends
         $FunctionalProvider<
           AsyncValue<List<MaintenanceRequest>>,
@@ -234,21 +235,22 @@ final class VisibleMaintenanceRequestsProvider
     with
         $FutureModifier<List<MaintenanceRequest>>,
         $StreamProvider<List<MaintenanceRequest>> {
-  /// Raw RLS-scoped stream every queue screen (technician/admin) derives its
-  /// sorted "active" list from client-side — see repository doc comment.
-  const VisibleMaintenanceRequestsProvider._()
+  /// The open maintenance requests (plus today's), live, RLS-scoped — every
+  /// queue screen (technician/admin) derives its sorted "active" list from it
+  /// client-side; see the repository doc comment.
+  const OpenMaintenanceRequestsProvider._()
     : super(
         from: null,
         argument: null,
         retry: null,
-        name: r'visibleMaintenanceRequestsProvider',
+        name: r'openMaintenanceRequestsProvider',
         isAutoDispose: false,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
 
   @override
-  String debugGetCreateSourceHash() => _$visibleMaintenanceRequestsHash();
+  String debugGetCreateSourceHash() => _$openMaintenanceRequestsHash();
 
   @$internal
   @override
@@ -258,12 +260,132 @@ final class VisibleMaintenanceRequestsProvider
 
   @override
   Stream<List<MaintenanceRequest>> create(Ref ref) {
-    return visibleMaintenanceRequests(ref);
+    return openMaintenanceRequests(ref);
   }
 }
 
-String _$visibleMaintenanceRequestsHash() =>
-    r'08923b297b312cae0d2c987be33b4f4a26787660';
+String _$openMaintenanceRequestsHash() =>
+    r'83cc92bc325c583e8f3ffa2673afe5aa086e2f73';
+
+/// The maintenance history screen's results for one [HistoryQuery]: the
+/// first page loads on watch, [loadMore] appends the next.
+
+@ProviderFor(MaintenanceHistory)
+const maintenanceHistoryProvider = MaintenanceHistoryFamily._();
+
+/// The maintenance history screen's results for one [HistoryQuery]: the
+/// first page loads on watch, [loadMore] appends the next.
+final class MaintenanceHistoryProvider
+    extends
+        $AsyncNotifierProvider<
+          MaintenanceHistory,
+          HistoryPage<MaintenanceRequest>
+        > {
+  /// The maintenance history screen's results for one [HistoryQuery]: the
+  /// first page loads on watch, [loadMore] appends the next.
+  const MaintenanceHistoryProvider._({
+    required MaintenanceHistoryFamily super.from,
+    required HistoryQuery super.argument,
+  }) : super(
+         retry: null,
+         name: r'maintenanceHistoryProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
+  @override
+  String debugGetCreateSourceHash() => _$maintenanceHistoryHash();
+
+  @override
+  String toString() {
+    return r'maintenanceHistoryProvider'
+        ''
+        '($argument)';
+  }
+
+  @$internal
+  @override
+  MaintenanceHistory create() => MaintenanceHistory();
+
+  @override
+  bool operator ==(Object other) {
+    return other is MaintenanceHistoryProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$maintenanceHistoryHash() =>
+    r'efac36862fca62e773c1b8e32f70de351cd70046';
+
+/// The maintenance history screen's results for one [HistoryQuery]: the
+/// first page loads on watch, [loadMore] appends the next.
+
+final class MaintenanceHistoryFamily extends $Family
+    with
+        $ClassFamilyOverride<
+          MaintenanceHistory,
+          AsyncValue<HistoryPage<MaintenanceRequest>>,
+          HistoryPage<MaintenanceRequest>,
+          FutureOr<HistoryPage<MaintenanceRequest>>,
+          HistoryQuery
+        > {
+  const MaintenanceHistoryFamily._()
+    : super(
+        retry: null,
+        name: r'maintenanceHistoryProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  /// The maintenance history screen's results for one [HistoryQuery]: the
+  /// first page loads on watch, [loadMore] appends the next.
+
+  MaintenanceHistoryProvider call(HistoryQuery query) =>
+      MaintenanceHistoryProvider._(argument: query, from: this);
+
+  @override
+  String toString() => r'maintenanceHistoryProvider';
+}
+
+/// The maintenance history screen's results for one [HistoryQuery]: the
+/// first page loads on watch, [loadMore] appends the next.
+
+abstract class _$MaintenanceHistory
+    extends $AsyncNotifier<HistoryPage<MaintenanceRequest>> {
+  late final _$args = ref.$arg as HistoryQuery;
+  HistoryQuery get query => _$args;
+
+  FutureOr<HistoryPage<MaintenanceRequest>> build(HistoryQuery query);
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final created = build(_$args);
+    final ref =
+        this.ref
+            as $Ref<
+              AsyncValue<HistoryPage<MaintenanceRequest>>,
+              HistoryPage<MaintenanceRequest>
+            >;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<
+                AsyncValue<HistoryPage<MaintenanceRequest>>,
+                HistoryPage<MaintenanceRequest>
+              >,
+              AsyncValue<HistoryPage<MaintenanceRequest>>,
+              Object?,
+              Object?
+            >;
+    element.handleValue(ref, created);
+  }
+}
 
 @ProviderFor(myQueuePosition)
 const myQueuePositionProvider = MyQueuePositionFamily._();

@@ -3,12 +3,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import '../../../../../core/router/route_names.dart';
-import '../../../../../core/utils/formatters.dart';
 import '../../../../../core/widgets/state_views.dart';
 import '../../../data/models/maintenance_request.dart';
 import '../../providers/maintenance_providers.dart';
-import '../../widgets/maintenance_status_chips.dart';
+import '../../widgets/admin_maintenance_tile.dart';
+import 'admin_maintenance_history_screen.dart';
 
+/// The requests still open plus today's, live; finished ones from earlier
+/// days are in "السجل" ([AdminMaintenanceHistoryScreen]).
 class AdminMaintenanceListScreen extends ConsumerStatefulWidget {
   const AdminMaintenanceListScreen({super.key});
 
@@ -23,10 +25,19 @@ class _AdminMaintenanceListScreenState
 
   @override
   Widget build(BuildContext context) {
-    final allAsync = ref.watch(visibleMaintenanceRequestsProvider);
+    final allAsync = ref.watch(openMaintenanceRequestsProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('الصيانة')),
+      appBar: AppBar(
+        title: const Text('الصيانة'),
+        actions: [
+          TextButton.icon(
+            onPressed: () => context.push(Routes.adminMaintenanceHistory),
+            icon: const Icon(Iconsax.archive_book_copy),
+            label: const Text('السجل'),
+          ),
+        ],
+      ),
       body: Column(
         children: [
           SizedBox(
@@ -77,7 +88,7 @@ class _AdminMaintenanceListScreenState
                   padding: const EdgeInsets.symmetric(vertical: 8),
                   itemCount: filtered.length,
                   itemBuilder: (context, i) =>
-                      _MaintenanceTile(request: filtered[i]),
+                      AdminMaintenanceTile(request: filtered[i]),
                 );
               },
             ),
@@ -104,93 +115,6 @@ class _FilterChip extends StatelessWidget {
       label: Text(label),
       selected: selected,
       onSelected: (_) => onTap(),
-    );
-  }
-}
-
-/// A full-width, colour-coded card — same visual language as the customer
-/// maintenance tile and the admin order tile, so the status colour says
-/// what stage a request is at before its label is even read.
-class _MaintenanceTile extends StatelessWidget {
-  final MaintenanceRequest request;
-  const _MaintenanceTile({required this.request});
-
-  @override
-  Widget build(BuildContext context) {
-    final color = maintenanceStatusColor(request.status);
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(20),
-        child: Material(
-          color: color.withValues(alpha: 0.08),
-          child: InkWell(
-            onTap: () =>
-                context.push(Routes.adminMaintenanceDetail(request.id)),
-            child: Padding(
-              padding: const EdgeInsets.all(14),
-              child: Row(
-                children: [
-                  Container(
-                    width: 48,
-                    height: 48,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: color,
-                    ),
-                    child: const Icon(
-                      Iconsax.setting_2_copy,
-                      color: Colors.white,
-                      size: 22,
-                    ),
-                  ),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          request.customerName,
-                          style: Theme.of(context).textTheme.titleMedium
-                              ?.copyWith(fontWeight: FontWeight.bold),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          '#${request.ticketNumber} · ${request.phone} · ${Formatters.date(request.createdAt)}',
-                          style: Theme.of(context).textTheme.bodySmall,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: color.withValues(alpha: 0.16),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      maintenanceStatusLabelAr(request.status),
-                      style: TextStyle(
-                        color: color,
-                        fontWeight: FontWeight.w700,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
     );
   }
 }

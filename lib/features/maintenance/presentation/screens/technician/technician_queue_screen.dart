@@ -13,7 +13,7 @@ import '../../widgets/maintenance_status_chips.dart';
 
 /// Technician's landing screen — the queue itself, per the original spec
 /// ("الصفحة الرئيسية تعرض الصيانات مرتبة حسب الدور"). RLS already scopes
-/// `visibleMaintenanceRequestsProvider` to waiting requests + this
+/// `openMaintenanceRequestsProvider` to waiting requests + this
 /// technician's own assignments, so filtering to active statuses here and
 /// sorting by created_at reproduces the exact queue order without needing
 /// the (non-realtime-capable) maintenance_queue_view.
@@ -23,7 +23,7 @@ class TechnicianQueueScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final profile = ref.watch(currentUserProfileProvider).value;
-    final allAsync = ref.watch(visibleMaintenanceRequestsProvider);
+    final allAsync = ref.watch(openMaintenanceRequestsProvider);
 
     return Scaffold(
       appBar: AppBar(

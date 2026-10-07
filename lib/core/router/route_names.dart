@@ -23,6 +23,7 @@ abstract final class Routes {
   static const salesSections = '/sales/sections';
   static const salesOrders = '/sales/orders';
   static String salesOrderDetail(String id) => '/sales/orders/$id';
+  static const salesOrdersHistory = '/sales/orders/history';
   static const salesMarketing = '/sales/sections/marketing';
   static const salesOfferNew = '/sales/sections/marketing/offers/new';
   static String salesOfferEdit(String id) =>
@@ -90,6 +91,7 @@ abstract final class Routes {
       '/customer/orders/$orderId/instapay';
   static const adminOrders = '/admin/orders';
   static String adminOrderDetail(String id) => '/admin/orders/$id';
+  static const adminOrdersHistory = '/admin/orders/history';
   static const adminInstapayReview = '/admin/instapay';
   static const adminSalesReturns = '/admin/sales-returns';
   static String adminSaleReturnDetail(String id) => '/admin/sales-returns/$id';
@@ -103,6 +105,7 @@ abstract final class Routes {
       '/technician/maintenance/$id';
   static const adminMaintenance = '/admin/maintenance';
   static String adminMaintenanceDetail(String id) => '/admin/maintenance/$id';
+  static const adminMaintenanceHistory = '/admin/maintenance/history';
 
   // Warehouse & Technician Bag (Module 5)
   static const adminWarehouse = '/admin/warehouse';

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/offline/outbox.dart';
@@ -6,6 +7,8 @@ import '../../../technician_account/data/models/sale.dart';
 import '../models/order.dart';
 import '../models/order_item.dart';
 import '../../../../core/offline/offline_stream.dart';
+import '../../../../core/supabase/live_query.dart';
+import '../../../../core/utils/history_query.dart';
 
 abstract class OrderRepository {
   /// Snapshot-priced order creation via rpc_create_order. [clientRequestId]
@@ -37,9 +40,23 @@ abstract class OrderRepository {
     String? rejectionReason,
   });
 
+  /// The admin's working list, live: every order still in progress
+  /// (pending → delivered), plus everything placed today whatever its
+  /// status. Finished orders from earlier days are left to [searchOrders],
+  /// so this list stays short however many orders pile up over the years.
+  Stream<List<Order>> watchOpenOrders();
+
+  /// Past orders for the history screen, newest first, one page at a time:
+  /// [query]'s text matches an order number or the recipient's name/phone,
+  /// and its days bound when the order was placed.
+  Future<List<Order>> searchOrders(
+    HistoryQuery query, {
+    required int limit,
+    required int offset,
+  });
+
   // Admin — every action below works offline: it is queued in the [Outbox]
   // (kind 'order', refId = the order) and sent when the connection is back.
-  Stream<List<Order>> watchAllOrders();
 
   /// Proposes (or re-proposes, after a rejection) the shipping fee while
   /// the order is still pending — required before [confirmOrder] will
@@ -144,14 +161,64 @@ class SupabaseOrderRepository implements OrderRepository {
     }
   }
 
+  /// Statuses an order still has work left in.
+  static const openStatuses = [
+    'pending',
+    'confirmed',
+    'preparing',
+    'delivered',
+  ];
+
   @override
-  Stream<List<Order>> watchAllOrders() {
-    return _client
-        .from('orders')
-        .stream(primaryKey: ['id'])
-        .order('created_at', ascending: false)
-        .offlineTolerant()
-        .map((rows) => rows.map(Order.fromRow).toList());
+  Stream<List<Order>> watchOpenOrders() =>
+      refetchOn(fetchOpenOrders, tableChanges(_client, 'orders'));
+
+  @visibleForTesting
+  Future<List<Order>> fetchOpenOrders() async {
+    try {
+      final rows = await _client
+          .from('orders')
+          .select()
+          .or(
+            'status.in.(${openStatuses.join(',')}),'
+            'created_at.gte.${startOfTodayUtc()}',
+          )
+          .order('created_at', ascending: false);
+      return rows.map(Order.fromRow).toList();
+    } catch (e) {
+      throw AppException.from(e);
+    }
+  }
+
+  @override
+  Future<List<Order>> searchOrders(
+    HistoryQuery query, {
+    required int limit,
+    required int offset,
+  }) async {
+    try {
+      var q = _client.from('orders').select();
+      final number = query.number;
+      final text = query.safeText.trim();
+      if (number != null) {
+        // Digits are an order number — or part of a phone.
+        q = q.or('order_number.eq.$number,delivery_phone.ilike.%$text%');
+      } else if (text.isNotEmpty) {
+        q = q.or(
+          'delivery_recipient_name.ilike.%$text%,delivery_phone.ilike.%$text%',
+        );
+      }
+      final from = query.fromUtc;
+      final to = query.toUtcExclusive;
+      if (from != null) q = q.gte('created_at', from);
+      if (to != null) q = q.lt('created_at', to);
+      final rows = await q
+          .order('created_at', ascending: false)
+          .range(offset, offset + limit - 1);
+      return rows.map(Order.fromRow).toList();
+    } catch (e) {
+      throw AppException.from(e);
+    }
   }
 
   /// Order actions have no idempotency key of their own, so they go through
