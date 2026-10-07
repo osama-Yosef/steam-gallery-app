@@ -5,20 +5,8 @@ import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:steam_gallery_app/core/offline/network_status.dart';
 import 'package:steam_gallery_app/core/offline/offline_http_client.dart';
-import 'package:steam_gallery_app/core/offline/offline_store.dart';
 
-class _MemoryStore implements OfflineStore {
-  final data = <String, String>{};
-  @override
-  Future<String?> read(String key) async => data[key];
-  @override
-  Future<void> write(String key, String value) async => data[key] = value;
-  @override
-  Future<void> delete(String key) async => data.remove(key);
-  @override
-  Future<void> clearCache() async =>
-      data.removeWhere((k, _) => k.startsWith('cache:'));
-}
+import 'helpers/test_outbox.dart';
 
 String _jwt(String sub) {
   String part(Map<String, dynamic> m) =>
@@ -27,12 +15,12 @@ String _jwt(String sub) {
 }
 
 void main() {
-  late _MemoryStore store;
+  late MemoryStore store;
   var online = true;
   var calls = 0;
 
   setUp(() {
-    store = _MemoryStore();
+    store = MemoryStore();
     online = true;
     calls = 0;
   });

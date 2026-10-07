@@ -3,12 +3,16 @@ import '../../../../core/supabase/supabase_client_provider.dart';
 import '../../data/models/order.dart';
 import '../../data/models/order_item.dart';
 import '../../data/repositories/order_repository.dart';
+import '../../../../core/offline/outbox.dart';
 
 part 'order_providers.g.dart';
 
 @Riverpod(keepAlive: true)
 OrderRepository orderRepository(Ref ref) {
-  return SupabaseOrderRepository(ref.watch(supabaseClientProvider));
+  return SupabaseOrderRepository(
+    ref.watch(supabaseClientProvider),
+    ref.watch(outboxProvider),
+  );
 }
 
 @riverpod

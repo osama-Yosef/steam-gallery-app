@@ -73,7 +73,8 @@ abstract class OrderRepository {
 
 class SupabaseOrderRepository implements OrderRepository {
   final SupabaseClient _client;
-  SupabaseOrderRepository(this._client);
+  final Outbox _outbox;
+  SupabaseOrderRepository(this._client, this._outbox);
 
   @override
   Future<String> createOrder({
@@ -160,7 +161,7 @@ class SupabaseOrderRepository implements OrderRepository {
     String rpc,
     Map<String, dynamic> params,
     String label,
-  ) => Outbox.instance.submit(
+  ) => _outbox.submit(
     rpc: rpc,
     params: {'p_order_id': orderId, ...params},
     label: label,
@@ -227,7 +228,7 @@ class SupabaseOrderRepository implements OrderRepository {
     String? notes,
     required String clientRequestId,
     required PaymentMethod paymentMethod,
-  }) => Outbox.instance.submit(
+  }) => _outbox.submit(
     rpc: 'rpc_record_customer_payment',
     params: {
       'p_customer_id': customerId,

@@ -94,7 +94,7 @@ final class DashboardSummaryProvider
   }
 }
 
-String _$dashboardSummaryHash() => r'fa2db08bcae0a1ff992d5d463c0b793642e231cb';
+String _$dashboardSummaryHash() => r'2d601d256242cfc6141ac586052caeb9e1defaca';
 
 @ProviderFor(dashboardRevenueTrend)
 const dashboardRevenueTrendProvider = DashboardRevenueTrendProvider._();
@@ -136,4 +136,4 @@ final class DashboardRevenueTrendProvider
 }
 
 String _$dashboardRevenueTrendHash() =>
-    r'6cad5ce716440d7791b0201b9babc39b9ea4bb8b';
+    r'37690d0b13d4638531f8c30db68e5e9bfeb8fb3b';

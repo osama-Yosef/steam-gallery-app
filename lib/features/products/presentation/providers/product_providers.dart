@@ -11,12 +11,16 @@ import '../../data/models/product_public.dart';
 import '../../data/repositories/product_repository.dart';
 import '../../data/models/assembly_component.dart';
 import '../../../../core/utils/provider_cache.dart';
+import '../../../../core/offline/outbox.dart';
 
 part 'product_providers.g.dart';
 
 @Riverpod(keepAlive: true)
 ProductRepository productRepository(Ref ref) {
-  return SupabaseProductRepository(ref.watch(supabaseClientProvider));
+  return SupabaseProductRepository(
+    ref.watch(supabaseClientProvider),
+    ref.watch(outboxProvider),
+  );
 }
 
 @riverpod
@@ -119,6 +123,7 @@ Future<List<Product>> adminProducts(
   String? categoryId,
 }) {
   ref.cacheFor();
+  ref.refreshOnServerChange();
   return ref
       .watch(productRepositoryProvider)
       .listProductsAdmin(search: search, categoryId: categoryId);
@@ -128,12 +133,14 @@ Future<List<Product>> adminProducts(
 @riverpod
 Future<List<Product>> serviceProducts(Ref ref) {
   ref.cacheFor();
+  ref.refreshOnServerChange();
   return ref.watch(productRepositoryProvider).listServices();
 }
 
 @riverpod
 Future<List<AssemblyComponent>> assemblyComponents(Ref ref, String productId) {
   ref.cacheFor();
+  ref.refreshOnServerChange();
   return ref.watch(productRepositoryProvider).getAssemblyComponents(productId);
 }
 

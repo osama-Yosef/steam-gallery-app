@@ -28,6 +28,7 @@ Future<void> main() async {
     await pushService.init();
   }
 
+  Outbox? outbox;
   if (Env.isConfigured) {
     // Reads are cached and served from the device when the server can't be
     // reached; admin writes queue in the Outbox until it can (offline mode).
@@ -37,7 +38,8 @@ Future<void> main() async {
       publishableKey: Env.supabasePublishableKey,
       httpClient: OfflineHttpClient(offlineStore),
     );
-    await Outbox.instance.init(Supabase.instance.client, offlineStore);
+    outbox = Outbox.supabase(Supabase.instance.client, offlineStore);
+    await outbox.start();
   }
 
   runApp(
@@ -45,6 +47,7 @@ Future<void> main() async {
       overrides: [
         if (pushService != null)
           pushNotificationServiceProvider.overrideWithValue(pushService),
+        if (outbox != null) outboxProvider.overrideWithValue(outbox),
       ],
       child: const MokojiApp(),
     ),

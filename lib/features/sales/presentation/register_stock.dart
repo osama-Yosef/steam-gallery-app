@@ -2,14 +2,16 @@ import '../../../core/offline/outbox.dart';
 import '../../inventory/data/models/warehouse_stock_item.dart';
 
 /// What the register can sell: warehouse stock plus assembly products, with
-/// walk-in sales still waiting in the offline queue already taken off — so
-/// selling offline can't oversell what the cached stock list shows.
+/// walk-in sales still waiting in the offline queue ([queuedSales], i.e.
+/// `outbox.pendingOf('walk_in_sale')`) already taken off — so selling
+/// offline can't oversell what the cached stock list shows.
 List<WarehouseStockItem> registerStock(
   List<WarehouseStockItem> warehouse,
-  List<WarehouseStockItem> assemblies,
-) {
+  List<WarehouseStockItem> assemblies, {
+  required List<OutboxEntry> queuedSales,
+}) {
   final reserved = <String, int>{};
-  for (final entry in Outbox.instance.pendingOf('walk_in_sale')) {
+  for (final entry in queuedSales) {
     final items = entry.params['p_items'];
     if (items is! List) continue;
     for (final item in items) {

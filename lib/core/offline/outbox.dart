@@ -2,12 +2,15 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
 
 import '../errors/app_exception.dart';
 import 'network_status.dart';
 import 'offline_store.dart';
+
+part 'outbox.g.dart';
 
 /// One write waiting to reach the server.
 class OutboxEntry {
@@ -110,30 +113,68 @@ class OutboxResult {
   const OutboxResult.queued() : this._(true, null);
 }
 
+/// Sends one RPC to the server and returns its result — in the app,
+/// `SupabaseClient.rpc`. Injected so tests can run the real queue logic
+/// against a fake server.
+typedef RpcCall =
+    Future<dynamic> Function(String rpc, Map<String, dynamic> params);
+
 /// Queue of admin writes made while offline. A write is first tried
 /// directly; if the server can't be reached it is stored on the device and
 /// sent, in order, as soon as a request gets through again (checked on every
-/// successful request and every 20 seconds).
+/// successful request and every [retryEvery]).
 ///
 /// Order matters (an order confirmed then marked prepared), so while
 /// anything is waiting, new writes queue behind it instead of jumping ahead.
+///
+/// One instance per app run, created and started in main() and handed to
+/// the app through [outboxProvider]; repositories receive it in their
+/// constructor.
 class Outbox extends ChangeNotifier {
-  Outbox._();
-  static final instance = Outbox._();
+  Outbox({
+    required OfflineStore store,
+    required RpcCall rpc,
+    required String? Function() currentUserId,
+    Stream<void>? userChanges,
+    NetworkStatus? network,
+    this.retryEvery = const Duration(seconds: 20),
+  }) : _store = store,
+       _rpc = rpc,
+       _currentUserId = currentUserId,
+       _userChanges = userChanges,
+       _network = network ?? NetworkStatus.instance;
+
+  /// The production wiring: RPCs and the signed-in user come from [client].
+  factory Outbox.supabase(SupabaseClient client, OfflineStore store) => Outbox(
+    store: store,
+    rpc: (name, params) => client.rpc(name, params: params),
+    currentUserId: () => client.auth.currentUser?.id,
+    userChanges: client.auth.onAuthStateChange,
+  );
 
   static const _storeKey = 'outbox.v1';
 
-  OfflineStore? _store;
-  SupabaseClient? _client;
+  final OfflineStore _store;
+  final RpcCall _rpc;
+  final String? Function() _currentUserId;
+  final Stream<void>? _userChanges;
+  final NetworkStatus _network;
+
+  /// How often a non-empty queue is retried with no other trigger. Null
+  /// turns the timer off (tests call [sync] themselves).
+  final Duration? retryEvery;
+
   List<OutboxEntry> _all = [];
   bool _syncing = false;
   Timer? _timer;
+  StreamSubscription<void>? _userSub;
+  Future<void>? _inFlight;
   final _serverChanged = StreamController<void>.broadcast();
 
   /// Fires whenever a write from this device reached the server — sent
-  /// directly or later by a sync. Screens built on one-shot fetches refetch
-  /// on it (OfflineRefresh), so a sale shows up at once in the invoice list,
-  /// the cashbox and the dashboard.
+  /// directly or later by a sync. Providers built on one-shot fetches
+  /// refetch on it (`ref.refreshOnServerChange()`), so a sale shows up at
+  /// once in the invoice list, the cashbox and the dashboard.
   Stream<void> get onServerChanged => _serverChanged.stream;
 
   /// For the few writes that don't go through [submit] (online-only
@@ -142,11 +183,10 @@ class Outbox extends ChangeNotifier {
 
   bool get isSyncing => _syncing;
 
-  Future<void> init(SupabaseClient client, OfflineStore store) async {
-    _client = client;
-    _store = store;
+  /// Loads what an earlier run left queued and starts sending it.
+  Future<void> start() async {
     try {
-      final raw = await store.read(_storeKey);
+      final raw = await _store.read(_storeKey);
       if (raw != null) {
         _all = (jsonDecode(raw) as List)
             .map(
@@ -157,17 +197,22 @@ class Outbox extends ChangeNotifier {
     } catch (_) {
       _all = [];
     }
-    NetworkStatus.instance.addListener(() {
-      if (NetworkStatus.instance.isOnline) unawaited(sync());
-    });
-    client.auth.onAuthStateChange.listen((_) => notifyListeners());
-    _timer = Timer.periodic(const Duration(seconds: 20), (_) {
-      if (pending.isNotEmpty) unawaited(sync());
-    });
+    _network.addListener(_onNetwork);
+    _userSub = _userChanges?.listen((_) => notifyListeners());
+    final every = retryEvery;
+    if (every != null) {
+      _timer = Timer.periodic(every, (_) {
+        if (pending.isNotEmpty) unawaited(sync());
+      });
+    }
     if (pending.isNotEmpty) unawaited(sync());
   }
 
-  String? get _userId => _client?.auth.currentUser?.id;
+  void _onNetwork() {
+    if (_network.isOnline) unawaited(sync());
+  }
+
+  String? get _userId => _currentUserId();
 
   /// The signed-in user's entries — another account's queued work on a
   /// shared device is neither shown nor sent under this session.
@@ -197,7 +242,7 @@ class Outbox extends ChangeNotifier {
     String? requestId,
   }) async {
     final userId = _userId;
-    if (_client == null || userId == null) {
+    if (userId == null) {
       throw const AppException('انتهت الجلسة، سجِّل الدخول مرة أخرى');
     }
     final entry = OutboxEntry(
@@ -240,11 +285,12 @@ class Outbox extends ChangeNotifier {
   }
 
   Future<dynamic> _send(OutboxEntry e) async {
-    if (!e.viaReplay) return _client!.rpc(e.rpc, params: e.params);
-    final res = await _client!.rpc(
-      'rpc_replay',
-      params: {'p_request_id': e.id, 'p_rpc': e.rpc, 'p_params': e.params},
-    );
+    if (!e.viaReplay) return _rpc(e.rpc, e.params);
+    final res = await _rpc('rpc_replay', {
+      'p_request_id': e.id,
+      'p_rpc': e.rpc,
+      'p_params': e.params,
+    });
     return res is Map ? res['result'] : null;
   }
 
@@ -254,14 +300,12 @@ class Outbox extends ChangeNotifier {
   ///
   /// A call while a sync is already running joins it rather than returning
   /// at once, and that sync also sends whatever was queued while it ran —
-  /// otherwise a write made mid-sync sat until the next 20-second tick and
+  /// otherwise a write made mid-sync sat until the next retry tick and
   /// was reported as "saved offline" although the server was reachable.
   Future<void> sync() {
-    if (_client == null || _userId == null) return Future.value();
+    if (_userId == null) return Future.value();
     return _inFlight ??= _drain().whenComplete(() => _inFlight = null);
   }
-
-  Future<void>? _inFlight;
 
   Future<void> _drain() async {
     _syncing = true;
@@ -325,7 +369,7 @@ class Outbox extends ChangeNotifier {
   }
 
   Future<void> _persist() async {
-    await _store?.write(
+    await _store.write(
       _storeKey,
       jsonEncode(_all.map((e) => e.toJson()).toList()),
     );
@@ -334,7 +378,17 @@ class Outbox extends ChangeNotifier {
   @override
   void dispose() {
     _timer?.cancel();
+    _userSub?.cancel();
+    _network.removeListener(_onNetwork);
     _serverChanged.close();
     super.dispose();
   }
 }
+
+/// The app's [Outbox]. main() creates and starts it before the app runs and
+/// provides it by overriding this; tests override it with an [Outbox] wired
+/// to a fake server.
+@Riverpod(keepAlive: true)
+Outbox outbox(Ref ref) => throw UnimplementedError(
+  'outboxProvider must be overridden with the Outbox started in main()',
+);

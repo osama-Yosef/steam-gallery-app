@@ -49,7 +49,7 @@ final class OrderRepositoryProvider
   }
 }
 
-String _$orderRepositoryHash() => r'6d6ca501b010e879682a74fca8f685b1637aabba';
+String _$orderRepositoryHash() => r'963a53c6ae00377d96d97e32280043b1311eab57';
 
 @ProviderFor(customerOrders)
 const customerOrdersProvider = CustomerOrdersFamily._();

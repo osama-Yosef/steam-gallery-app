@@ -80,7 +80,9 @@ class _AdminSaleInvoiceScreenState
     for (final l in serverLines) {
       _originalQty[l.productId] = l.quantity;
     }
-    final pendingEdits = Outbox.instance.pendingOf('sale_edit', refId: sale.id);
+    final pendingEdits = ref
+        .read(outboxProvider)
+        .pendingOf('sale_edit', refId: sale.id);
     final meta = pendingEdits.isEmpty ? null : pendingEdits.last.meta;
     if (meta != null && meta['lines'] is List) {
       _fromPending = true;
@@ -390,11 +392,16 @@ class _AdminSaleInvoiceScreenState
       );
     }
 
+    final outbox = ref.watch(outboxProvider);
     return ListenableBuilder(
-      listenable: Outbox.instance,
+      listenable: outbox,
       builder: (context, _) {
-        final stock = registerStock(warehouse, assemblies);
-        final pendingDelete = Outbox.instance
+        final stock = registerStock(
+          warehouse,
+          assemblies,
+          queuedSales: outbox.pendingOf('walk_in_sale'),
+        );
+        final pendingDelete = outbox
             .pendingOf('sale_delete', refId: sale.id)
             .isNotEmpty;
         final editable = sale.status == SaleStatus.completed && !pendingDelete;

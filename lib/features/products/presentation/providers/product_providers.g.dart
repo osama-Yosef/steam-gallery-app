@@ -54,7 +54,7 @@ final class ProductRepositoryProvider
   }
 }
 
-String _$productRepositoryHash() => r'6c09e39b585b5606eee4d06cb3d385e7176edfee';
+String _$productRepositoryHash() => r'189cbe017fdbea4da1912327ce7e3a75e81ff836';
 
 @ProviderFor(categories)
 const categoriesProvider = CategoriesFamily._();
@@ -113,7 +113,7 @@ final class CategoriesProvider
   }
 }
 
-String _$categoriesHash() => r'9fce36b999461df9e4107f38baaa993dbbf70e94';
+String _$categoriesHash() => r'1ec0bb10a4c270d70e9d455f3ea6bdaf1dc17bbe';
 
 final class CategoriesFamily extends $Family
     with $FunctionalFamilyOverride<FutureOr<List<ProductCategory>>, bool> {
@@ -181,7 +181,7 @@ final class CatalogProductsProvider
   }
 }
 
-String _$catalogProductsHash() => r'7a93a74f014e1469766d96b06b7e234be9b28952';
+String _$catalogProductsHash() => r'e8ada7fa054ee7f471d5f481272f33da0aae9d88';
 
 /// Paginated store results for one [CatalogQuery]: the first page loads on
 /// watch, [loadMore] appends the next one (infinite scroll).
@@ -305,7 +305,7 @@ final class RelatedProductsProvider
   }
 }
 
-String _$relatedProductsHash() => r'6af0c7d00f2b01ea2e67b9cfa85576cf1c0dda90';
+String _$relatedProductsHash() => r'd385171930752152b033a04a87a22ae923045a99';
 
 /// «منتجات مشابهة»: same category, the product itself excluded.
 
@@ -398,7 +398,7 @@ final class ProductOffersProvider
   }
 }
 
-String _$productOffersHash() => r'74e31e909319b7fbb49fddb7238cb339d7e29c9f';
+String _$productOffersHash() => r'3c59193a28bb56367c18a6dbbbc022d6c93c2c5f';
 
 /// Live offers this product is part of (RLS already hides the others).
 
@@ -478,7 +478,7 @@ final class CustomerProductDetailProvider
 }
 
 String _$customerProductDetailHash() =>
-    r'803d50dde9a68049df2d30f2a33ab621997a0715';
+    r'353f5e32f44b68f85298aa0d1fbf86c8c2e1e42f';
 
 final class CustomerProductDetailFamily extends $Family
     with $FunctionalFamilyOverride<FutureOr<ProductPublic?>, String> {
@@ -555,7 +555,7 @@ final class ProductImagesProvider
   }
 }
 
-String _$productImagesHash() => r'f449b0989d2be994e2f922adda61fb53e62f7099';
+String _$productImagesHash() => r'8ba6db65fd4e6b3a3bd0eab37fb83dbeda1ac300';
 
 final class ProductImagesFamily extends $Family
     with $FunctionalFamilyOverride<FutureOr<List<ProductImage>>, String> {
@@ -632,7 +632,7 @@ final class ProductOptionsProvider
   }
 }
 
-String _$productOptionsHash() => r'8f44837c904f2c93deb4be5211beceeb90e62efe';
+String _$productOptionsHash() => r'a24ebbfa4499fd809199c00aa88e6bf5b2fd797a';
 
 final class ProductOptionsFamily extends $Family
     with $FunctionalFamilyOverride<FutureOr<List<ProductOption>>, String> {
@@ -711,7 +711,7 @@ final class AdminProductsProvider
   }
 }
 
-String _$adminProductsHash() => r'a7a8b68063e331a56f1c1997fbf5916fd5905f4c';
+String _$adminProductsHash() => r'0f4e1fa3cbdf42aa83c0bab63865cd246b209356';
 
 final class AdminProductsFamily extends $Family
     with
@@ -780,7 +780,7 @@ final class ServiceProductsProvider
   }
 }
 
-String _$serviceProductsHash() => r'7e290ccd4612816fbeed5b119e0446e436175ca1';
+String _$serviceProductsHash() => r'4fd43f46b31c18fb373e3d9042470154891d0287';
 
 @ProviderFor(assemblyComponents)
 const assemblyComponentsProvider = AssemblyComponentsFamily._();
@@ -840,7 +840,7 @@ final class AssemblyComponentsProvider
 }
 
 String _$assemblyComponentsHash() =>
-    r'0b2cb94528b316e30118b990569b09583c959158';
+    r'c1aa4e692a2e7e5955e33b0a8342fcf869b736bb';
 
 final class AssemblyComponentsFamily extends $Family
     with $FunctionalFamilyOverride<FutureOr<List<AssemblyComponent>>, String> {

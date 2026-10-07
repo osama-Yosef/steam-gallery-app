@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 
@@ -23,18 +24,18 @@ void showSavedOfflineSnack(BuildContext context, [String? what]) {
 /// A strip above the admin content: offline notice, and how many writes are
 /// waiting to sync (tap for the list). Hidden when online with nothing
 /// pending.
-class OfflineStatusBar extends StatelessWidget {
+class OfflineStatusBar extends ConsumerWidget {
   /// Where the sync list lives for this shell (admin or sales).
   final String syncRoute;
   const OfflineStatusBar({super.key, this.syncRoute = Routes.adminSync});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final outbox = ref.watch(outboxProvider);
     return ListenableBuilder(
-      listenable: Listenable.merge([NetworkStatus.instance, Outbox.instance]),
+      listenable: Listenable.merge([NetworkStatus.instance, outbox]),
       builder: (context, _) {
         final online = NetworkStatus.instance.isOnline;
-        final outbox = Outbox.instance;
         final pending = outbox.pending.length;
         final failed = outbox.failed.length;
         if (online && pending == 0 && failed == 0) {
@@ -99,12 +100,12 @@ class OfflineStatusBar extends StatelessWidget {
 
 /// Everything waiting to be sent, plus anything the server rejected (with
 /// its reason) to retry or discard.
-class OfflineSyncScreen extends StatelessWidget {
+class OfflineSyncScreen extends ConsumerWidget {
   const OfflineSyncScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final outbox = Outbox.instance;
+  Widget build(BuildContext context, WidgetRef ref) {
+    final outbox = ref.watch(outboxProvider);
     return Scaffold(
       appBar: AppBar(title: const Text('المزامنة')),
       body: ListenableBuilder(

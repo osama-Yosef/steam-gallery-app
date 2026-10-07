@@ -111,7 +111,7 @@ final class SalesReportProvider
   }
 }
 
-String _$salesReportHash() => r'602fa7b5c161d4117adbf2cc45845b9639478a6b';
+String _$salesReportHash() => r'1f73c6a1fa41c10d1bafd19dc665acced8934b63';
 
 final class SalesReportFamily extends $Family
     with
@@ -187,7 +187,7 @@ final class ProfitReportProvider
   }
 }
 
-String _$profitReportHash() => r'ffaedfc7710080c1d54673782ff8273cb85d9834';
+String _$profitReportHash() => r'9c316b21f1878b3dede5e0e5c9120197cc1c8d74';
 
 final class ProfitReportFamily extends $Family
     with
@@ -269,7 +269,7 @@ final class OrdersProfitReportProvider
 }
 
 String _$ordersProfitReportHash() =>
-    r'466b18458cbee1c0d606038afc0020d40a6d045f';
+    r'f76c0366c5b95265832657a774c01c282f922150';
 
 final class OrdersProfitReportFamily extends $Family
     with
@@ -348,7 +348,7 @@ final class ExpensesReportProvider
   }
 }
 
-String _$expensesReportHash() => r'1877c5e9433b8278848152eef762d02528360b42';
+String _$expensesReportHash() => r'ee7fee842d898ec486c515039ae436e25324ee7d';
 
 final class ExpensesReportFamily extends $Family
     with
@@ -427,7 +427,7 @@ final class InventoryReportProvider
   }
 }
 
-String _$inventoryReportHash() => r'10b0c07aef2c3b13ee411a241a34e0c9efd67366';
+String _$inventoryReportHash() => r'f018f0deb5fc552f16060bdae32b84db80dd8485';
 
 final class InventoryReportFamily extends $Family
     with

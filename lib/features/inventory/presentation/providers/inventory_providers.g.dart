@@ -55,7 +55,7 @@ final class InventoryRepositoryProvider
 }
 
 String _$inventoryRepositoryHash() =>
-    r'8a4df661d9d86576f4fd8393d9e3a4d7482cbdea';
+    r'10bb056264303cf819ded6a951aabd2507d1c7d5';
 
 @ProviderFor(warehouseStock)
 const warehouseStockProvider = WarehouseStockFamily._();
@@ -114,7 +114,7 @@ final class WarehouseStockProvider
   }
 }
 
-String _$warehouseStockHash() => r'1f28239225ed35c90a7e8034573b3f2e2ca05fbb';
+String _$warehouseStockHash() => r'df94f4499082f8869edb97611225751686e1a5e2';
 
 final class WarehouseStockFamily extends $Family
     with
@@ -174,7 +174,7 @@ final class AssemblyStockProvider
   }
 }
 
-String _$assemblyStockHash() => r'b303826930ffa71edde4ceb1ebdb7dc0e088eaac';
+String _$assemblyStockHash() => r'7b915f37d9b7cef3221c695d27373111ed1471a8';
 
 @ProviderFor(technicianBagStock)
 const technicianBagStockProvider = TechnicianBagStockFamily._();
@@ -315,7 +315,7 @@ final class StockMovementsProvider
   }
 }
 
-String _$stockMovementsHash() => r'f4bfa9808eb6b4e223050bbd9e9b0b5cc98a7425';
+String _$stockMovementsHash() => r'b154b5a5e00149afc4f011c60cfce928983e2d0c';
 
 final class StockMovementsFamily extends $Family
     with $FunctionalFamilyOverride<FutureOr<List<StockMovement>>, String?> {

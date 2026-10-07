@@ -51,7 +51,8 @@ abstract class CashboxRepository {
 
 class SupabaseCashboxRepository implements CashboxRepository {
   final SupabaseClient _client;
-  SupabaseCashboxRepository(this._client);
+  final Outbox _outbox;
+  SupabaseCashboxRepository(this._client, this._outbox);
 
   @override
   Future<List<CashboxBalance>> getBalances() async {
@@ -117,7 +118,7 @@ class SupabaseCashboxRepository implements CashboxRepository {
     required DateTime expenseDate,
     required CashboxKind kind,
     String? notes,
-  }) => Outbox.instance.submit(
+  }) => _outbox.submit(
     rpc: 'rpc_record_expense',
     params: {
       'p_category_id': categoryId,
@@ -138,7 +139,7 @@ class SupabaseCashboxRepository implements CashboxRepository {
     required double amount,
     required CashboxKind kind,
     String? notes,
-  }) => Outbox.instance.submit(
+  }) => _outbox.submit(
     rpc: 'rpc_cashbox_deposit',
     params: {
       'p_amount': amount,
@@ -156,7 +157,7 @@ class SupabaseCashboxRepository implements CashboxRepository {
     required double amount,
     required CashboxKind kind,
     String? notes,
-  }) => Outbox.instance.submit(
+  }) => _outbox.submit(
     rpc: 'rpc_cashbox_withdraw',
     params: {
       'p_amount': amount,

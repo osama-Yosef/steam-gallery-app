@@ -7,7 +7,6 @@ import '../router/route_names.dart';
 import '../theme/app_colors.dart';
 import '../widgets/confirm_dialog.dart';
 import '../widgets/glass_panel.dart';
-import 'data_refresh_scope.dart';
 
 /// Collapsible glass sidebar for the admin role, wrapping a
 /// [StatefulShellRoute.indexedStack] — replaces the old GridView home menu:
@@ -56,147 +55,142 @@ class _AdminShellState extends ConsumerState<AdminShell> {
         final isWide = constraints.maxWidth >= _wideBreakpoint;
         final railWidth = isWide ? _wideRailWidth : _compactRailWidth;
 
-        return DataRefreshScope(
-          child: PopScope(
-            // Otherwise the Android back button/gesture from any non-"الرئيسية"
-            // section does nothing useful (StatefulShellRoute branches aren't a
-            // navigation stack) — this makes "back" step toward home first, one
-            // section at a time, like users expect.
-            canPop: widget.navigationShell.currentIndex == 0,
-            onPopInvokedWithResult: (didPop, _) {
-              if (!didPop) widget.navigationShell.goBranch(0);
-            },
-            child: Scaffold(
-              backgroundColor: Colors.transparent,
-              // The routed content (navigationShell) already has its own Scaffold
-              // handling its own keyboard insets — without this, the sidebar's
-              // fixed-height rail Column overflows whenever a nested screen's text
-              // field opens the keyboard and this outer Scaffold also tries to
-              // shrink for it.
-              resizeToAvoidBottomInset: false,
-              body: SafeArea(
-                child: Row(
-                  children: [
-                    ClipRect(
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 220),
-                        curve: Curves.easeInOutCubic,
-                        width: _open ? railWidth : 0,
-                        child: OverflowBox(
-                          minWidth: railWidth,
-                          maxWidth: railWidth,
-                          alignment: AlignmentDirectional.centerStart,
-                          child: Padding(
-                            padding: const EdgeInsets.fromLTRB(10, 16, 4, 16),
-                            child: GlassPanel(
-                              borderRadius: BorderRadius.circular(28),
-                              padding: const EdgeInsets.symmetric(
-                                vertical: 16,
-                                horizontal: 8,
-                              ),
-                              // A desktop window can be short (or the list can
-                              // grow), so the rail scrolls rather than overflows.
-                              child: SingleChildScrollView(
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    for (var i = 0; i < _items.length; i++) ...[
-                                      _RailItem(
-                                        icon: _items[i].icon,
-                                        label: _items[i].label,
-                                        expanded: isWide,
-                                        selected:
-                                            widget
-                                                .navigationShell
-                                                .currentIndex ==
-                                            i,
-                                        onTap: () =>
-                                            widget.navigationShell.goBranch(
-                                              i,
-                                              initialLocation:
-                                                  i ==
-                                                  widget
-                                                      .navigationShell
-                                                      .currentIndex,
-                                            ),
-                                      ),
-                                      // "الأقسام" ranks 2nd, right after
-                                      // "الرئيسية" — it isn't a branch of its
-                                      // own (it pushes a page instead), so it's
-                                      // spliced into the loop rather than
-                                      // living in _items.
-                                      if (i == 0)
-                                        _RailItem(
-                                          icon: Icons.apps_rounded,
-                                          label: 'الأقسام',
-                                          expanded: isWide,
-                                          selected: false,
-                                          onTap: () => context.push(
-                                            Routes.adminSections,
-                                          ),
-                                        ),
-                                    ],
-                                    const SizedBox(height: 12),
-                                    Container(
-                                      height: 1,
-                                      width: 32,
-                                      color: AppColors.glassBorder,
-                                    ),
-                                    const SizedBox(height: 12),
+        return PopScope(
+          // Otherwise the Android back button/gesture from any non-"الرئيسية"
+          // section does nothing useful (StatefulShellRoute branches aren't a
+          // navigation stack) — this makes "back" step toward home first, one
+          // section at a time, like users expect.
+          canPop: widget.navigationShell.currentIndex == 0,
+          onPopInvokedWithResult: (didPop, _) {
+            if (!didPop) widget.navigationShell.goBranch(0);
+          },
+          child: Scaffold(
+            backgroundColor: Colors.transparent,
+            // The routed content (navigationShell) already has its own Scaffold
+            // handling its own keyboard insets — without this, the sidebar's
+            // fixed-height rail Column overflows whenever a nested screen's text
+            // field opens the keyboard and this outer Scaffold also tries to
+            // shrink for it.
+            resizeToAvoidBottomInset: false,
+            body: SafeArea(
+              child: Row(
+                children: [
+                  ClipRect(
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 220),
+                      curve: Curves.easeInOutCubic,
+                      width: _open ? railWidth : 0,
+                      child: OverflowBox(
+                        minWidth: railWidth,
+                        maxWidth: railWidth,
+                        alignment: AlignmentDirectional.centerStart,
+                        child: Padding(
+                          padding: const EdgeInsets.fromLTRB(10, 16, 4, 16),
+                          child: GlassPanel(
+                            borderRadius: BorderRadius.circular(28),
+                            padding: const EdgeInsets.symmetric(
+                              vertical: 16,
+                              horizontal: 8,
+                            ),
+                            // A desktop window can be short (or the list can
+                            // grow), so the rail scrolls rather than overflows.
+                            child: SingleChildScrollView(
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  for (var i = 0; i < _items.length; i++) ...[
                                     _RailItem(
-                                      icon: Icons.logout_rounded,
-                                      label: 'خروج',
+                                      icon: _items[i].icon,
+                                      label: _items[i].label,
                                       expanded: isWide,
-                                      selected: false,
-                                      danger: true,
-                                      onTap: () async {
-                                        final confirmed = await showConfirmDialog(
-                                          context,
-                                          title: 'تسجيل الخروج',
-                                          message:
-                                              'هل تريد تسجيل الخروج من حسابك؟',
-                                        );
-                                        if (confirmed) {
-                                          await ref
-                                              .read(authRepositoryProvider)
-                                              .signOut();
-                                        }
-                                      },
+                                      selected:
+                                          widget.navigationShell.currentIndex ==
+                                          i,
+                                      onTap: () =>
+                                          widget.navigationShell.goBranch(
+                                            i,
+                                            initialLocation:
+                                                i ==
+                                                widget
+                                                    .navigationShell
+                                                    .currentIndex,
+                                          ),
                                     ),
+                                    // "الأقسام" ranks 2nd, right after
+                                    // "الرئيسية" — it isn't a branch of its
+                                    // own (it pushes a page instead), so it's
+                                    // spliced into the loop rather than
+                                    // living in _items.
+                                    if (i == 0)
+                                      _RailItem(
+                                        icon: Icons.apps_rounded,
+                                        label: 'الأقسام',
+                                        expanded: isWide,
+                                        selected: false,
+                                        onTap: () =>
+                                            context.push(Routes.adminSections),
+                                      ),
                                   ],
-                                ),
+                                  const SizedBox(height: 12),
+                                  Container(
+                                    height: 1,
+                                    width: 32,
+                                    color: AppColors.glassBorder,
+                                  ),
+                                  const SizedBox(height: 12),
+                                  _RailItem(
+                                    icon: Icons.logout_rounded,
+                                    label: 'خروج',
+                                    expanded: isWide,
+                                    selected: false,
+                                    danger: true,
+                                    onTap: () async {
+                                      final confirmed = await showConfirmDialog(
+                                        context,
+                                        title: 'تسجيل الخروج',
+                                        message:
+                                            'هل تريد تسجيل الخروج من حسابك؟',
+                                      );
+                                      if (confirmed) {
+                                        await ref
+                                            .read(authRepositoryProvider)
+                                            .signOut();
+                                      }
+                                    },
+                                  ),
+                                ],
                               ),
                             ),
                           ),
                         ),
                       ),
                     ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      child: _ToggleHandle(
-                        open: _open,
-                        onTap: () => setState(() => _open = !_open),
-                      ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    child: _ToggleHandle(
+                      open: _open,
+                      onTap: () => setState(() => _open = !_open),
                     ),
-                    Expanded(
-                      child: Center(
-                        child: ConstrainedBox(
-                          constraints: const BoxConstraints(
-                            maxWidth: _maxContentWidth,
-                          ),
-                          // Offline notice / pending-sync count above every
-                          // admin screen.
-                          child: Column(
-                            children: [
-                              const OfflineStatusBar(),
-                              Expanded(child: widget.navigationShell),
-                            ],
-                          ),
+                  ),
+                  Expanded(
+                    child: Center(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(
+                          maxWidth: _maxContentWidth,
+                        ),
+                        // Offline notice / pending-sync count above every
+                        // admin screen.
+                        child: Column(
+                          children: [
+                            const OfflineStatusBar(),
+                            Expanded(child: widget.navigationShell),
+                          ],
                         ),
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ),

@@ -98,7 +98,8 @@ abstract class ProductRepository {
 
 class SupabaseProductRepository implements ProductRepository {
   final SupabaseClient _client;
-  SupabaseProductRepository(this._client);
+  final Outbox _outbox;
+  SupabaseProductRepository(this._client, this._outbox);
 
   @override
   Future<List<ProductCategory>> getCategories({bool activeOnly = false}) async {
@@ -324,7 +325,7 @@ class SupabaseProductRepository implements ProductRepository {
           'p_components': components.map((c) => c.toJson()).toList(),
         },
       );
-      Outbox.instance.markServerChanged();
+      _outbox.markServerChanged();
     } catch (e) {
       throw AppException.from(e);
     }
@@ -359,7 +360,7 @@ class SupabaseProductRepository implements ProductRepository {
           })
           .select('id')
           .single();
-      Outbox.instance.markServerChanged();
+      _outbox.markServerChanged();
       return row['id'] as String;
     } catch (e) {
       throw AppException.from(e);
@@ -394,7 +395,7 @@ class SupabaseProductRepository implements ProductRepository {
             'min_stock': minStock,
           })
           .eq('id', id);
-      Outbox.instance.markServerChanged();
+      _outbox.markServerChanged();
     } catch (e) {
       throw AppException.from(e);
     }
@@ -419,7 +420,7 @@ class SupabaseProductRepository implements ProductRepository {
           .from('products')
           .update({'is_active': isActive})
           .eq('id', id);
-      Outbox.instance.markServerChanged();
+      _outbox.markServerChanged();
     } catch (e) {
       throw AppException.from(e);
     }

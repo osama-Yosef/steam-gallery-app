@@ -49,7 +49,7 @@ final class SalesRepositoryProvider
   }
 }
 
-String _$salesRepositoryHash() => r'536847a7a7bb853be98d835bf38d6ba025fb301a';
+String _$salesRepositoryHash() => r'8358dc0e78148cc534546e9c452e381bc33c4855';
 
 @ProviderFor(walkInSales)
 const walkInSalesProvider = WalkInSalesProvider._();
@@ -87,7 +87,7 @@ final class WalkInSalesProvider
   }
 }
 
-String _$walkInSalesHash() => r'a437e2e4ea4d3abb73ae576cdd6f8bee69aecadc';
+String _$walkInSalesHash() => r'899f077d9d9feedad6c87e0faf64f23a7ada2268';
 
 @ProviderFor(saleReturnItems)
 const saleReturnItemsProvider = SaleReturnItemsFamily._();
@@ -146,7 +146,7 @@ final class SaleReturnItemsProvider
   }
 }
 
-String _$saleReturnItemsHash() => r'638f9da0e76f7fe8e1f4a04a4db73afccb9798c6';
+String _$saleReturnItemsHash() => r'3532f6eaf17036a2fd97d34cdf65afa9800dd88e';
 
 final class SaleReturnItemsFamily extends $Family
     with $FunctionalFamilyOverride<FutureOr<List<SaleReturnItem>>, String> {
@@ -215,7 +215,7 @@ final class SaleByIdProvider
   }
 }
 
-String _$saleByIdHash() => r'9b33a4dbe94f0059ddf03e181dccf475717c230e';
+String _$saleByIdHash() => r'80bfb72764bc294b83cacb912f7582447446ab29';
 
 final class SaleByIdFamily extends $Family
     with $FunctionalFamilyOverride<FutureOr<Sale>, String> {
@@ -292,7 +292,7 @@ final class InvoiceLinesProvider
   }
 }
 
-String _$invoiceLinesHash() => r'58219b883b631668a645f4b783e260b0f5fde8e0';
+String _$invoiceLinesHash() => r'a58802454874d5ecc3bd565c39a1cf6d98cf4702';
 
 final class InvoiceLinesFamily extends $Family
     with $FunctionalFamilyOverride<FutureOr<List<InvoiceLine>>, String> {

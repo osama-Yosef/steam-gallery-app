@@ -30,7 +30,8 @@ abstract class InventoryRepository {
 
 class SupabaseInventoryRepository implements InventoryRepository {
   final SupabaseClient _client;
-  SupabaseInventoryRepository(this._client);
+  final Outbox _outbox;
+  SupabaseInventoryRepository(this._client, this._outbox);
 
   @override
   Future<List<WarehouseStockItem>> getWarehouseStock({String? search}) async {
@@ -173,7 +174,7 @@ class SupabaseInventoryRepository implements InventoryRepository {
           'p_notes': notes,
         },
       );
-      Outbox.instance.markServerChanged();
+      _outbox.markServerChanged();
     } catch (e) {
       throw AppException.from(e);
     }

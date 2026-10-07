@@ -54,7 +54,7 @@ final class CashboxRepositoryProvider
   }
 }
 
-String _$cashboxRepositoryHash() => r'27bce8e0f5544a2f992815c34dafa1411ce65bc8';
+String _$cashboxRepositoryHash() => r'bc2a529e9f39624a207701173388e7a3cec46118';
 
 @ProviderFor(cashboxBalances)
 const cashboxBalancesProvider = CashboxBalancesProvider._();
@@ -95,7 +95,7 @@ final class CashboxBalancesProvider
   }
 }
 
-String _$cashboxBalancesHash() => r'de31c58e5d9dbfe3df51d92a3c36fc99949e7076';
+String _$cashboxBalancesHash() => r'ad21b3ed4268c32515a6c03863d7d3077cab3735';
 
 @ProviderFor(cashTransactions)
 const cashTransactionsProvider = CashTransactionsFamily._();
@@ -154,7 +154,7 @@ final class CashTransactionsProvider
   }
 }
 
-String _$cashTransactionsHash() => r'9600b6babf27e9574a3e025bd1b1d0bcb6c67e57';
+String _$cashTransactionsHash() => r'a243150efc97c8ea7ca91e57d4f6ec5843e29654';
 
 final class CashTransactionsFamily extends $Family
     with $FunctionalFamilyOverride<FutureOr<List<CashTransaction>>, String?> {
@@ -213,7 +213,7 @@ final class ExpenseCategoriesProvider
   }
 }
 
-String _$expenseCategoriesHash() => r'5b2d941c6de00b13b6b2b66b17779d93fea8717d';
+String _$expenseCategoriesHash() => r'0b58051a92142a3522eb1f3f13ec11ba9e26f7bf';
 
 @ProviderFor(expenses)
 const expensesProvider = ExpensesProvider._();
@@ -252,4 +252,4 @@ final class ExpensesProvider
   }
 }
 
-String _$expensesHash() => r'59185a67c979f3839f0bbe3f89b338191a85842f';
+String _$expensesHash() => r'20e4b1e3288f8d1722e67cc31aa6e247db03a54a';

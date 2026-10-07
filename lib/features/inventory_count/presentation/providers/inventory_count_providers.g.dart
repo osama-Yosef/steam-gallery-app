@@ -96,7 +96,7 @@ final class InventoryCountsProvider
   }
 }
 
-String _$inventoryCountsHash() => r'a5f13ffd8c7c24977321962ec087cca7824ef8a4';
+String _$inventoryCountsHash() => r'0fa17a57fe77815c9ecc8aeacfc48641127d6c18';
 
 @ProviderFor(inventoryCountDetail)
 const inventoryCountDetailProvider = InventoryCountDetailFamily._();

@@ -13,6 +13,8 @@ import 'package:steam_gallery_app/features/orders/presentation/providers/order_p
 import 'package:steam_gallery_app/features/orders/presentation/screens/admin/admin_order_detail_screen.dart';
 import 'package:steam_gallery_app/core/offline/outbox.dart';
 
+import 'helpers/test_outbox.dart';
+
 Order _order(OrderStatus status, {double paidAmount = 0}) => Order.fromRow({
   'id': 'o1',
   'order_number': 1,
@@ -50,6 +52,7 @@ Future<void> _pump(
     ProviderScope(
       overrides: [
         orderRepositoryProvider.overrideWithValue(repo),
+        outboxProvider.overrideWithValue(testOutbox()),
         orderDetailProvider('o1').overrideWith((ref) => Stream.value(order)),
         orderItemsProvider('o1').overrideWith((ref) async => <OrderItem>[]),
         userProfileByIdProvider('c1').overrideWith(

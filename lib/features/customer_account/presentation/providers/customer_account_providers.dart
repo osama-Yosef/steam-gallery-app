@@ -4,12 +4,16 @@ import '../../data/models/customer_account_summary.dart';
 import '../../data/models/customer_account_transaction.dart';
 import '../../data/repositories/customer_account_repository.dart';
 import '../../../../core/utils/provider_cache.dart';
+import '../../../../core/offline/outbox.dart';
 
 part 'customer_account_providers.g.dart';
 
 @Riverpod(keepAlive: true)
 CustomerAccountRepository customerAccountRepository(Ref ref) {
-  return SupabaseCustomerAccountRepository(ref.watch(supabaseClientProvider));
+  return SupabaseCustomerAccountRepository(
+    ref.watch(supabaseClientProvider),
+    ref.watch(outboxProvider),
+  );
 }
 
 @riverpod
@@ -18,6 +22,7 @@ Future<List<CustomerAccountSummary>> customerAccounts(
   String? search,
 }) {
   ref.cacheFor();
+  ref.refreshOnServerChange();
   return ref
       .watch(customerAccountRepositoryProvider)
       .getAllAccounts(search: search);
@@ -28,6 +33,7 @@ Future<CustomerAccountSummary?> customerAccountSummary(
   Ref ref,
   String customerId,
 ) {
+  ref.refreshOnServerChange();
   return ref
       .watch(customerAccountRepositoryProvider)
       .getAccountSummary(customerId);
@@ -38,6 +44,7 @@ Future<List<CustomerAccountTransaction>> customerAccountTransactions(
   Ref ref,
   String customerId,
 ) {
+  ref.refreshOnServerChange();
   return ref
       .watch(customerAccountRepositoryProvider)
       .getTransactions(customerId);

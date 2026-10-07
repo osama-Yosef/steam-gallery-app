@@ -55,7 +55,7 @@ final class PurchasesRepositoryProvider
 }
 
 String _$purchasesRepositoryHash() =>
-    r'46ab4294ba36e546611eb49585c68398d83bcfd2';
+    r'6fcd59acf26f00bb44d43f2327afd45b8ba11559';
 
 @ProviderFor(suppliers)
 const suppliersProvider = SuppliersProvider._();
@@ -96,7 +96,7 @@ final class SuppliersProvider
   }
 }
 
-String _$suppliersHash() => r'e1e50cbe12f3949f5ea481439253d95e0bbcf44f';
+String _$suppliersHash() => r'c99c96749fbcd03da11088dc1207fc62ed077423';
 
 @ProviderFor(purchaseInvoices)
 const purchaseInvoicesProvider = PurchaseInvoicesFamily._();
@@ -155,7 +155,7 @@ final class PurchaseInvoicesProvider
   }
 }
 
-String _$purchaseInvoicesHash() => r'cad1a596cc0ea19017e9a27aebbbc43e02b14619';
+String _$purchaseInvoicesHash() => r'fda6463b9075fc6ba5f7900036cd61b2889bef59';
 
 final class PurchaseInvoicesFamily extends $Family
     with $FunctionalFamilyOverride<FutureOr<List<PurchaseInvoice>>, String?> {
@@ -230,7 +230,7 @@ final class PurchaseInvoiceProvider
   }
 }
 
-String _$purchaseInvoiceHash() => r'822be4acd51a99a88790010d67b15f64faaa9e9e';
+String _$purchaseInvoiceHash() => r'fba6440c12698508604048012b676eddd595f4e6';
 
 final class PurchaseInvoiceFamily extends $Family
     with $FunctionalFamilyOverride<FutureOr<PurchaseInvoice>, String> {
@@ -388,7 +388,7 @@ final class PurchaseInvoicePaymentsProvider
 }
 
 String _$purchaseInvoicePaymentsHash() =>
-    r'330929523c37e0a2a79ec22fceba49f87300da6d';
+    r'c5cdfa920c9597a70aba21480223e05c2cd65e47';
 
 final class PurchaseInvoicePaymentsFamily extends $Family
     with $FunctionalFamilyOverride<FutureOr<List<SupplierPayment>>, String> {

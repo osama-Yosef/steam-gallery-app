@@ -90,7 +90,8 @@ abstract class SalesRepository {
 
 class SupabaseSalesRepository implements SalesRepository {
   final SupabaseClient _client;
-  SupabaseSalesRepository(this._client);
+  final Outbox _outbox;
+  SupabaseSalesRepository(this._client, this._outbox);
 
   @override
   Future<OutboxResult> recordWalkInSale({
@@ -103,7 +104,7 @@ class SupabaseSalesRepository implements SalesRepository {
     String? notes,
   }) {
     final count = items.fold<int>(0, (sum, i) => sum + i.quantity);
-    return Outbox.instance.submit(
+    return _outbox.submit(
       rpc: 'rpc_admin_walk_in_sale',
       params: {
         'p_customer_name': customerName,
@@ -181,7 +182,7 @@ class SupabaseSalesRepository implements SalesRepository {
   }) {
     final total =
         items.fold<double>(0, (sum, l) => sum + l.lineTotal) - (discount ?? 0);
-    return Outbox.instance.submit(
+    return _outbox.submit(
       rpc: 'rpc_admin_edit_sale',
       params: {
         'p_sale_id': saleId,
@@ -209,7 +210,7 @@ class SupabaseSalesRepository implements SalesRepository {
     required String reason,
     CashboxKind? refundKind,
   }) {
-    return Outbox.instance.submit(
+    return _outbox.submit(
       rpc: 'rpc_admin_delete_sale',
       params: {
         'p_sale_id': saleId,
@@ -256,7 +257,7 @@ class SupabaseSalesRepository implements SalesRepository {
               : cashboxKindToString(refundKind),
         },
       );
-      Outbox.instance.markServerChanged();
+      _outbox.markServerChanged();
     } catch (e) {
       throw AppException.from(e);
     }
@@ -308,7 +309,7 @@ class SupabaseSalesRepository implements SalesRepository {
               : cashboxKindToString(refundKind),
         },
       );
-      Outbox.instance.markServerChanged();
+      _outbox.markServerChanged();
     } catch (e) {
       throw AppException.from(e);
     }

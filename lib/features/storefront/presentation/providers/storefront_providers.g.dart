@@ -94,7 +94,7 @@ final class CustomerHomeProvider
   }
 }
 
-String _$customerHomeHash() => r'7091d0564882a746c0bd0db24869d2364c83da2d';
+String _$customerHomeHash() => r'268ba18f7f1eb7523d80d2c22fe116472c3f149a';
 
 @ProviderFor(offerDetail)
 const offerDetailProvider = OfferDetailFamily._();
@@ -145,7 +145,7 @@ final class OfferDetailProvider
   }
 }
 
-String _$offerDetailHash() => r'f3b21032c9a9ccc79464532e33563964f1208bd8';
+String _$offerDetailHash() => r'ae65d1a355b809af5feba02ab4ca2fbe7ebfc07d';
 
 final class OfferDetailFamily extends $Family
     with $FunctionalFamilyOverride<FutureOr<Offer?>, String> {
@@ -222,7 +222,7 @@ final class OfferProductsProvider
   }
 }
 
-String _$offerProductsHash() => r'6efe8b0b201e5240539c345d03238ed6b82a9878';
+String _$offerProductsHash() => r'a08fb0cdc39e7a7acc0b60059e63a7371185acec';
 
 final class OfferProductsFamily extends $Family
     with $FunctionalFamilyOverride<FutureOr<List<ProductPublic>>, String> {
@@ -279,7 +279,7 @@ final class AdminBannersProvider
   }
 }
 
-String _$adminBannersHash() => r'1c5a571280bca20ddcc3af028d8671e1b039d253';
+String _$adminBannersHash() => r'bedf50b7d75cfc7fb844acaeef88b03a22a96e82';
 
 @ProviderFor(adminOffers)
 const adminOffersProvider = AdminOffersProvider._();
@@ -318,4 +318,4 @@ final class AdminOffersProvider
   }
 }
 
-String _$adminOffersHash() => r'57f6f27c294fe3fb21d893e2525794194b4b7087';
+String _$adminOffersHash() => r'c70e6336841a8b019752f5fcf1f34c6ed422fa7e';

@@ -188,4 +188,4 @@ final class AuditLogTableNamesProvider
 }
 
 String _$auditLogTableNamesHash() =>
-    r'f97efb29ef2fedb5167023d0d59b7dd0955d9d93';
+    r'89b4168d44ba33fb163dc5e3d466c18ea601b212';

@@ -111,7 +111,7 @@ final class CitiesProvider
   }
 }
 
-String _$citiesHash() => r'6f3dddf4ac10e8f1cb9ddf1081ba4022b034f49b';
+String _$citiesHash() => r'a2fcd25f4a9dcf9892253f25a8b360e415e88fe4';
 
 final class CitiesFamily extends $Family
     with $FunctionalFamilyOverride<FutureOr<List<City>>, bool> {
@@ -188,7 +188,7 @@ final class ServiceAreasProvider
   }
 }
 
-String _$serviceAreasHash() => r'8fe234c6829b8a5c19093620b0c4d7edb27b5896';
+String _$serviceAreasHash() => r'94a4e6272e24e26130d1fb65f8fa113d97164cc6';
 
 final class ServiceAreasFamily extends $Family
     with
@@ -326,4 +326,4 @@ final class CountriesProvider
   }
 }
 
-String _$countriesHash() => r'12008318162890da4f122d62da1e0bae854ba2ac';
+String _$countriesHash() => r'5b5d2af15570304d8a3e2ada0d4ff83fc93444bf';

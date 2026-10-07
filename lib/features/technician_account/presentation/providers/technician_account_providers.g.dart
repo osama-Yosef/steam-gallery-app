@@ -179,7 +179,7 @@ final class AllTechnicianAccountSummariesProvider
 }
 
 String _$allTechnicianAccountSummariesHash() =>
-    r'0ef7bbfe72747fc5c1989aeef53ae06e0e08211f';
+    r'16a70cebc797bc87be7d6c923f4adba2754fa978';
 
 @ProviderFor(technicianAccountTransactions)
 const technicianAccountTransactionsProvider =

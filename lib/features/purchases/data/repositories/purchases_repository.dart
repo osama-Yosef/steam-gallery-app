@@ -46,7 +46,8 @@ abstract class PurchasesRepository {
 
 class SupabasePurchasesRepository implements PurchasesRepository {
   final SupabaseClient _client;
-  SupabasePurchasesRepository(this._client);
+  final Outbox _outbox;
+  SupabasePurchasesRepository(this._client, this._outbox);
 
   @override
   Future<List<SupplierBalance>> getSuppliers() async {
@@ -134,7 +135,7 @@ class SupabasePurchasesRepository implements PurchasesRepository {
   }) {
     final total =
         items.fold<double>(0, (sum, l) => sum + l.lineTotal) - discount;
-    return Outbox.instance.submit(
+    return _outbox.submit(
       rpc: 'rpc_create_purchase_invoice',
       params: {
         'p_supplier_id': supplierId,
@@ -168,7 +169,7 @@ class SupabasePurchasesRepository implements PurchasesRepository {
     String? notes,
     required String clientRequestId,
   }) {
-    return Outbox.instance.submit(
+    return _outbox.submit(
       rpc: 'rpc_pay_supplier',
       params: {
         'p_supplier_id': supplierId,

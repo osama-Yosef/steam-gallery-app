@@ -475,7 +475,7 @@ final class MaintenanceImageUrlProvider
 }
 
 String _$maintenanceImageUrlHash() =>
-    r'e82975ca622639d2654236f12d028eb8997b5ce2';
+    r'afe467c7e404a2c7bb05782bc37de4ae39e9ad2a';
 
 /// Signed, time-limited URL for one stored maintenance image. The bucket is
 /// private, so this is the only way the image can actually render.
@@ -541,4 +541,4 @@ final class AssignableTechniciansProvider
 }
 
 String _$assignableTechniciansHash() =>
-    r'3b07d7ee25c7aefad6f8e269343877b4783bbd9f';
+    r'1fbe71dce7b1408a94e808a0869c2c4e6f0554e7';

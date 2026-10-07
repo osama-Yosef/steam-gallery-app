@@ -23,6 +23,7 @@ class AdminPurchaseInvoicesScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final outbox = ref.watch(outboxProvider);
     final invoicesAsync = ref.watch(
       purchaseInvoicesProvider(supplierId: supplierId),
     );
@@ -55,10 +56,10 @@ class AdminPurchaseInvoicesScreen extends ConsumerWidget {
             onRetry: () => ref.invalidate(purchaseInvoicesProvider),
           ),
           data: (invoices) => ListenableBuilder(
-            listenable: Outbox.instance,
+            listenable: outbox,
             builder: (context, _) {
               final pending = supplierId == null
-                  ? Outbox.instance.pendingOf('purchase_invoice')
+                  ? outbox.pendingOf('purchase_invoice')
                   : const <OutboxEntry>[];
               if (invoices.isEmpty && pending.isEmpty) {
                 return ListView(

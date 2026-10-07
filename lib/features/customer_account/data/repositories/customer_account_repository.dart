@@ -31,7 +31,8 @@ abstract class CustomerAccountRepository {
 
 class SupabaseCustomerAccountRepository implements CustomerAccountRepository {
   final SupabaseClient _client;
-  SupabaseCustomerAccountRepository(this._client);
+  final Outbox _outbox;
+  SupabaseCustomerAccountRepository(this._client, this._outbox);
 
   @override
   Future<List<CustomerAccountSummary>> getAllAccounts({String? search}) async {
@@ -86,7 +87,7 @@ class SupabaseCustomerAccountRepository implements CustomerAccountRepository {
     String? notes,
     required String clientRequestId,
     required PaymentMethod paymentMethod,
-  }) => Outbox.instance.submit(
+  }) => _outbox.submit(
     rpc: 'rpc_record_customer_payment',
     params: {
       'p_customer_id': customerId,

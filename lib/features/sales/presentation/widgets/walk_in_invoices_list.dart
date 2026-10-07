@@ -41,6 +41,7 @@ class _WalkInInvoicesListState extends ConsumerState<WalkInInvoicesList> {
 
   @override
   Widget build(BuildContext context) {
+    final outbox = ref.watch(outboxProvider);
     final salesAsync = ref.watch(walkInSalesProvider);
     final theme = Theme.of(context);
 
@@ -51,7 +52,7 @@ class _WalkInInvoicesListState extends ConsumerState<WalkInInvoicesList> {
         onRetry: () => ref.invalidate(walkInSalesProvider),
       ),
       data: (sales) => ListenableBuilder(
-        listenable: Outbox.instance,
+        listenable: outbox,
         builder: (context, _) {
           final q = _search.toLowerCase();
           final shown = sales.where((s) {
@@ -65,7 +66,7 @@ class _WalkInInvoicesListState extends ConsumerState<WalkInInvoicesList> {
             (s) => _isToday(s.createdAt) && s.status == SaleStatus.completed,
           );
           final todayTotal = today.fold<double>(0, (sum, s) => sum + s.total);
-          final pending = Outbox.instance.pendingOf('walk_in_sale');
+          final pending = outbox.pendingOf('walk_in_sale');
 
           // Up to 1000 invoices: the summary, filters and pending sales are a
           // fixed header, the invoices themselves are built lazily.
@@ -152,7 +153,10 @@ class _WalkInInvoicesListState extends ConsumerState<WalkInInvoicesList> {
               itemCount: header.length + shown.length,
               itemBuilder: (context, i) => i < header.length
                   ? header[i]
-                  : _InvoiceTile(sale: shown[i - header.length]),
+                  : _InvoiceTile(
+                      sale: shown[i - header.length],
+                      outbox: outbox,
+                    ),
             ),
           );
         },
@@ -163,14 +167,15 @@ class _WalkInInvoicesListState extends ConsumerState<WalkInInvoicesList> {
 
 class _InvoiceTile extends StatelessWidget {
   final Sale sale;
-  const _InvoiceTile({required this.sale});
+  final Outbox outbox;
+  const _InvoiceTile({required this.sale, required this.outbox});
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final pendingEdit =
-        Outbox.instance.pendingOf('sale_edit', refId: sale.id).isNotEmpty ||
-        Outbox.instance.pendingOf('sale_delete', refId: sale.id).isNotEmpty;
+        outbox.pendingOf('sale_edit', refId: sale.id).isNotEmpty ||
+        outbox.pendingOf('sale_delete', refId: sale.id).isNotEmpty;
     final statusColor = switch (sale.status) {
       SaleStatus.completed => AppColors.success,
       SaleStatus.returned => AppColors.warning,

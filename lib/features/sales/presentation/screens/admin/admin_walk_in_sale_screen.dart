@@ -382,6 +382,7 @@ class _AdminWalkInSaleScreenState extends ConsumerState<AdminWalkInSaleScreen>
     AsyncValue<List<WarehouseStockItem>> stockAsync,
     List<WarehouseStockItem> assemblies,
   ) {
+    final outbox = ref.watch(outboxProvider);
     return Column(
       children: [
         _CustomerHeader(
@@ -416,19 +417,26 @@ class _AdminWalkInSaleScreenState extends ConsumerState<AdminWalkInSaleScreen>
               onRetry: () => ref.invalidate(warehouseStockProvider),
             ),
             data: (warehouse) => ListenableBuilder(
-              listenable: Outbox.instance,
+              listenable: outbox,
               builder: (context, _) {
-                final available = registerStock(warehouse, assemblies)
-                    .where((s) => s.quantity > 0)
-                    .where(
-                      (s) =>
-                          _search.isEmpty ||
-                          s.productName.toLowerCase().contains(
-                            _search.toLowerCase(),
-                          ) ||
-                          s.sku.toLowerCase().contains(_search.toLowerCase()),
-                    )
-                    .toList();
+                final available =
+                    registerStock(
+                          warehouse,
+                          assemblies,
+                          queuedSales: outbox.pendingOf('walk_in_sale'),
+                        )
+                        .where((s) => s.quantity > 0)
+                        .where(
+                          (s) =>
+                              _search.isEmpty ||
+                              s.productName.toLowerCase().contains(
+                                _search.toLowerCase(),
+                              ) ||
+                              s.sku.toLowerCase().contains(
+                                _search.toLowerCase(),
+                              ),
+                        )
+                        .toList();
                 if (available.isEmpty) {
                   return EmptyView(
                     message: _search.isEmpty

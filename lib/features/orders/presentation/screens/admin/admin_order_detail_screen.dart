@@ -285,6 +285,7 @@ class AdminOrderDetailScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final outbox = ref.watch(outboxProvider);
     final orderAsync = ref.watch(orderDetailProvider(orderId));
     final itemsAsync = ref.watch(orderItemsProvider(orderId));
 
@@ -324,12 +325,9 @@ class AdminOrderDetailScreen extends ConsumerWidget {
               // Actions taken offline on this order, not sent yet — the
               // status above is still the server's until they are.
               ListenableBuilder(
-                listenable: Outbox.instance,
+                listenable: outbox,
                 builder: (context, _) {
-                  final pending = Outbox.instance.pendingOf(
-                    'order',
-                    refId: orderId,
-                  );
+                  final pending = outbox.pendingOf('order', refId: orderId);
                   if (pending.isEmpty) return const SizedBox.shrink();
                   return Card(
                     color: AppColors.warning.withValues(alpha: 0.1),

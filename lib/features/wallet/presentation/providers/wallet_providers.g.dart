@@ -198,7 +198,7 @@ final class AdminWalletsProvider
   }
 }
 
-String _$adminWalletsHash() => r'15ef35dd27cefaddd404f7b3292ccd6d6342616e';
+String _$adminWalletsHash() => r'b4327bcbdb6356785e3cb71e9ec0b117eeb05ebf';
 
 final class AdminWalletsFamily extends $Family
     with $FunctionalFamilyOverride<FutureOr<List<WalletSummary>>, String?> {
@@ -256,4 +256,4 @@ final class WalletLiabilityProvider
   }
 }
 
-String _$walletLiabilityHash() => r'28d98140fcefbc0e5162d6d74293c58781f369d1';
+String _$walletLiabilityHash() => r'30da533bcb2b2ab1208c97d941531f74d65be679';
