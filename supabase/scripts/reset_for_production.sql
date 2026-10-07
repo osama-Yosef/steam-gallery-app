@@ -24,6 +24,7 @@
 --
 -- Expense categories are cleared and the standard seven put back: the app
 -- has no screen to add categories, so with none an expense can't be saved.
+-- Likewise the maintenance service line ("خدمة صيانة") is put back.
 --
 -- Files already uploaded to Storage (product photos, banners, maintenance
 -- photos, InstaPay receipts) are not touched by SQL; empty those buckets
@@ -87,6 +88,12 @@ update public.wallets set balance = 0, updated_at = now() where balance <> 0;
 
 insert into public.expense_categories (name)
 values ('كهرباء'), ('إيجار'), ('نقل'), ('مرتبات'), ('صيانة'), ('شراء أدوات'), ('مصاريف أخرى');
+
+-- The maintenance service line (seeded by 0027) is part of the app, not
+-- trial data: the technician's maintenance invoice and the counter's
+-- "خدمة" line both sell it.
+insert into public.products (sku, name, description, cost_price, selling_price, is_service)
+values ('SERVICE-MAINT', 'خدمة صيانة', 'أجر خدمة الصيانة — السعر يُحدَّد وقت الفاتورة', 0, 0, true);
 
 -- Last, so the steps above (which the audit triggers record) leave no trace.
 truncate table public.audit_logs restart identity;

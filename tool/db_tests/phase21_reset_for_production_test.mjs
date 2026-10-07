@@ -70,7 +70,7 @@ await db.exec(script);
 for (const t of ['sales', 'sale_items', 'orders', 'order_items', 'payments', 'maintenance_requests',
   'cash_transactions', 'expenses', 'purchase_invoices', 'purchase_invoice_items', 'supplier_payments',
   'suppliers', 'stock_movements', 'warehouse_stock', 'technician_bag_stock', 'inventory_counts',
-  'products', 'product_categories', 'offers', 'home_banners', 'service_areas', 'notifications',
+  'product_categories', 'offers', 'home_banners', 'service_areas', 'notifications',
   'audit_logs', 'wallet_transactions', 'customer_account_transactions', 'technician_account_transactions',
   'technician_supplies', 'cart_items']) {
   ok(`${t} is empty`, (await count(`public.${t}`)) === 0);
@@ -79,6 +79,9 @@ ok('both tills read 0', (await tillTotal()) === 0);
 ok('wallets are back to 0',
   Number((await one(`select coalesce(sum(balance), 0)::numeric as b from public.wallets`)).b) === 0);
 ok('the seven standard expense categories are back', (await count('public.expense_categories')) === 7);
+ok('the catalogue is empty but for the maintenance service line',
+  (await count('public.products')) === 1
+  && (await count(`public.products where sku = 'SERVICE-MAINT' and is_service and is_active`)) === 1);
 
 ok('every account kept', (await count('public.users')) === before.users);
 ok('technicians kept', (await count('public.technicians')) === before.technicians);
