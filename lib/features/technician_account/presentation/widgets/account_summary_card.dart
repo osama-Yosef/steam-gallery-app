@@ -41,7 +41,8 @@ class AccountSummaryCard extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: style),
+          Expanded(child: Text(label, style: style)),
+          const SizedBox(width: 8),
           MoneyText(amount, style: style),
         ],
       ),

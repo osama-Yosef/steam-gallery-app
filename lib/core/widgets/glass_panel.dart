@@ -44,7 +44,10 @@ class GlassPanel extends StatelessWidget {
           ),
         ],
       ),
-      child: child,
+      // Its own (see-through) Material, so a ListTile or InkWell inside
+      // draws its tap ripple on top of the panel's fill, not hidden under
+      // it on the page's Material.
+      child: Material(type: MaterialType.transparency, child: child),
     );
   }
 }

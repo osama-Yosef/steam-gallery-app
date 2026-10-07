@@ -25,7 +25,10 @@ class AdminShell extends ConsumerStatefulWidget {
 }
 
 class _AdminShellState extends ConsumerState<AdminShell> {
-  bool _open = true;
+  /// The admin's own choice once they toggle the rail. Until then it starts
+  /// open where there's room for it and closed on a phone, where its 84px would take
+  /// a quarter of the screen from every list and form.
+  bool? _open;
 
   static const _items = [
     (icon: Icons.space_dashboard_rounded, label: 'الرئيسية'),
@@ -39,6 +42,9 @@ class _AdminShellState extends ConsumerState<AdminShell> {
   /// Below this the window is treated as a phone: icon-only rail, content
   /// edge to edge. At or above it there's room for labels beside the icons.
   static const _wideBreakpoint = 900.0;
+
+  /// Below this the rail starts closed (see [_open]).
+  static const _phoneBreakpoint = 600.0;
 
   static const _compactRailWidth = 84.0;
   static const _wideRailWidth = 216.0;
@@ -54,6 +60,7 @@ class _AdminShellState extends ConsumerState<AdminShell> {
       builder: (context, constraints) {
         final isWide = constraints.maxWidth >= _wideBreakpoint;
         final railWidth = isWide ? _wideRailWidth : _compactRailWidth;
+        final open = _open ?? constraints.maxWidth >= _phoneBreakpoint;
 
         return PopScope(
           // Otherwise the Android back button/gesture from any non-"الرئيسية"
@@ -79,7 +86,7 @@ class _AdminShellState extends ConsumerState<AdminShell> {
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 220),
                       curve: Curves.easeInOutCubic,
-                      width: _open ? railWidth : 0,
+                      width: open ? railWidth : 0,
                       child: OverflowBox(
                         minWidth: railWidth,
                         maxWidth: railWidth,
@@ -169,8 +176,8 @@ class _AdminShellState extends ConsumerState<AdminShell> {
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     child: _ToggleHandle(
-                      open: _open,
-                      onTap: () => setState(() => _open = !_open),
+                      open: open,
+                      onTap: () => setState(() => _open = !open),
                     ),
                   ),
                   Expanded(
