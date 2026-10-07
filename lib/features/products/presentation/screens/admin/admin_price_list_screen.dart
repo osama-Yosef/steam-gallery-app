@@ -118,56 +118,81 @@ class _AdminPriceListScreenState extends ConsumerState<AdminPriceListScreen> {
   }
 }
 
+/// The price table: a fixed header row over rows built only as they
+/// scroll into view, so hundreds of products open as fast as ten. On a
+/// narrow screen the whole table scrolls sideways rather than squeezing
+/// its columns.
 class _PriceTable extends StatelessWidget {
   final List<_PriceRow> rows;
   const _PriceTable({required this.rows});
 
+  /// Column widths, name first. The name column takes any spare width.
+  static const _numberColumn = 120.0;
+  static const _minNameColumn = 180.0;
+  static const _rowHeight = 48.0;
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final header = theme.textTheme.labelLarge?.copyWith(
+    final headerStyle = theme.textTheme.labelLarge?.copyWith(
       fontWeight: FontWeight.bold,
     );
     return LayoutBuilder(
-      builder: (context, c) => SingleChildScrollView(
-        physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
-        child: SingleChildScrollView(
+      builder: (context, c) {
+        final available = c.maxWidth - 32;
+        final width = available < _minNameColumn + 3 * _numberColumn
+            ? _minNameColumn + 3 * _numberColumn
+            : available;
+
+        Widget row(List<Widget> cells, {Color? color}) => Container(
+          height: _rowHeight,
+          color: color,
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          child: Row(
+            children: [
+              Expanded(child: cells[0]),
+              for (final cell in cells.skip(1))
+                SizedBox(
+                  width: _numberColumn,
+                  child: Align(
+                    alignment: AlignmentDirectional.centerEnd,
+                    child: cell,
+                  ),
+                ),
+            ],
+          ),
+        );
+
+        return SingleChildScrollView(
           scrollDirection: Axis.horizontal,
-          child: ConstrainedBox(
-            // Fill the screen when it's wide, scroll sideways on a phone.
-            constraints: BoxConstraints(minWidth: c.maxWidth - 32),
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+          child: SizedBox(
+            width: width,
             child: Card(
               clipBehavior: Clip.antiAlias,
-              child: DataTable(
-                headingRowColor: WidgetStatePropertyAll(
-                  theme.colorScheme.surfaceContainerHighest,
-                ),
-                columnSpacing: 16,
-                horizontalMargin: 12,
-                columns: [
-                  DataColumn(label: Text('الصنف', style: header)),
-                  DataColumn(
-                    numeric: true,
-                    label: Text('سعر البيع', style: header),
-                  ),
-                  DataColumn(
-                    numeric: true,
-                    label: Text('سعر الشراء', style: header),
-                  ),
-                  DataColumn(
-                    numeric: true,
-                    label: Text('الموجود بالمخزن', style: header),
-                  ),
-                ],
-                rows: [
-                  for (final r in rows)
-                    DataRow(
-                      cells: [
-                        DataCell(Text(r.name)),
-                        DataCell(Text(Formatters.currency(r.sellingPrice))),
-                        DataCell(Text(Formatters.currency(r.costPrice))),
-                        DataCell(
+              child: Column(
+                children: [
+                  row([
+                    Text('الصنف', style: headerStyle),
+                    Text('سعر البيع', style: headerStyle),
+                    Text('سعر الشراء', style: headerStyle),
+                    Text('الموجود بالمخزن', style: headerStyle),
+                  ], color: theme.colorScheme.surfaceContainerHighest),
+                  Expanded(
+                    child: ListView.separated(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      itemCount: rows.length,
+                      separatorBuilder: (_, _) => const Divider(height: 1),
+                      itemBuilder: (context, i) {
+                        final r = rows[i];
+                        return row([
+                          Text(
+                            r.name,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          Text(Formatters.currency(r.sellingPrice)),
+                          Text(Formatters.currency(r.costPrice)),
                           Text(
                             '${r.quantity}',
                             style: TextStyle(
@@ -175,15 +200,16 @@ class _PriceTable extends StatelessWidget {
                               color: r.quantity == 0 ? AppColors.danger : null,
                             ),
                           ),
-                        ),
-                      ],
+                        ]);
+                      },
                     ),
+                  ),
                 ],
               ),
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }
