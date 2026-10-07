@@ -178,6 +178,14 @@ class _AdminProductFormScreenState
     ref.invalidate(assemblyComponentsProvider(productId));
   }
 
+  /// Drops the option rows on screen so they are refilled from the server —
+  /// with the ids the server just gave the new ones. Without the ids, the
+  /// next save would insert them again.
+  void _reloadOptions() {
+    _options.clear();
+    _optionsPrefilled = false;
+  }
+
   void _prefillOptions(List<ProductOption> options) {
     if (_optionsPrefilled) return;
     _optionsPrefilled = true;
@@ -236,6 +244,9 @@ class _AdminProductFormScreenState
         await _saveAssembly(_currentProductId!);
         ref.invalidate(adminProductDetailProvider(_currentProductId!));
         ref.invalidate(productOptionsProvider(_currentProductId!));
+        // New option rows were inserted server-side; reload them so they
+        // carry their ids and the next save updates them in place.
+        if (mounted) setState(_reloadOptions);
         if (mounted) {
           ScaffoldMessenger.of(
             context,
@@ -260,7 +271,15 @@ class _AdminProductFormScreenState
         await repo.saveProductOptions(id, optionInputs);
         await _saveAssembly(id);
         if (mounted) {
-          setState(() => _currentProductId = id);
+          setState(() {
+            _currentProductId = id;
+            // The fields and components on screen are exactly what was just
+            // saved — refilling them from the server would add every
+            // component a second time.
+            _prefilled = true;
+            _componentsPrefilled = true;
+            _reloadOptions();
+          });
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('تم إنشاء المنتج — يمكنك الآن إضافة صور'),
@@ -485,6 +504,9 @@ class _AdminProductFormScreenState
             final i = entry.key;
             final row = entry.value;
             return Padding(
+              // Keyed by the row: removing one must not hand its text field
+              // (and the text in it) to the row that moves up into its place.
+              key: ObjectKey(row),
               padding: const EdgeInsets.symmetric(vertical: 4),
               child: Row(
                 children: [
