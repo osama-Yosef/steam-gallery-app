@@ -12,6 +12,7 @@ import '../../../../products/presentation/providers/product_providers.dart';
 import '../../../../technician_account/data/models/sale.dart';
 import '../../providers/sales_providers.dart';
 import '../../state/register_stock.dart';
+import '../../state/line_change.dart';
 import '../../state/walk_in_cart.dart';
 import '../../widgets/walk_in/add_service_dialog.dart';
 import '../../widgets/walk_in/register_product_grid.dart';
@@ -96,7 +97,7 @@ class _AdminWalkInSaleScreenState extends ConsumerState<AdminWalkInSaleScreen>
 
   void _addProduct(WarehouseStockItem item) {
     final change = _cart.addProduct(item);
-    if (change == CartChange.overStock) {
+    if (change == LineChange.overStock) {
       _snack('المتاح بالمخزن ${item.quantity} فقط');
     }
     setState(() {});
@@ -104,7 +105,7 @@ class _AdminWalkInSaleScreenState extends ConsumerState<AdminWalkInSaleScreen>
 
   void _changeQuantity(CartLine line, int delta) {
     final change = _cart.changeQuantity(line.productId, delta);
-    if (change == CartChange.overStock) {
+    if (change == LineChange.overStock) {
       _snack('المتاح بالمخزن ${line.available} فقط');
     }
     setState(() {});

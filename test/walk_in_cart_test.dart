@@ -3,6 +3,7 @@ import 'package:steam_gallery_app/core/offline/outbox.dart';
 import 'package:steam_gallery_app/features/inventory/data/models/warehouse_stock_item.dart';
 import 'package:steam_gallery_app/features/products/data/models/product.dart';
 import 'package:steam_gallery_app/features/sales/presentation/state/register_stock.dart';
+import 'package:steam_gallery_app/features/sales/presentation/state/line_change.dart';
 import 'package:steam_gallery_app/features/sales/presentation/state/walk_in_cart.dart';
 
 WarehouseStockItem _item(
@@ -54,10 +55,10 @@ void main() {
     test('never more than the warehouse has', () {
       final cart = WalkInCart();
       final item = _item('a', 1, 10);
-      expect(cart.addProduct(item), CartChange.updated);
-      expect(cart.addProduct(item), CartChange.overStock);
+      expect(cart.addProduct(item), LineChange.updated);
+      expect(cart.addProduct(item), LineChange.overStock);
       expect(cart.quantityOf('a'), 1);
-      expect(cart.changeQuantity('a', 1), CartChange.overStock);
+      expect(cart.changeQuantity('a', 1), LineChange.overStock);
       expect(cart.quantityOf('a'), 1);
     });
 
@@ -70,7 +71,7 @@ void main() {
       final cart = WalkInCart()
         ..addProduct(_item('a', 3, 10))
         ..addProduct(_item('b', 3, 5));
-      expect(cart.changeQuantity('a', -1), CartChange.removed);
+      expect(cart.changeQuantity('a', -1), LineChange.removed);
       expect(cart.quantityOf('a'), 0);
       expect(cart.lines.single.productId, 'b');
     });
@@ -94,7 +95,7 @@ void main() {
           80,
         );
       // A service isn't limited by stock.
-      expect(cart.changeQuantity('svc', 5), CartChange.updated);
+      expect(cart.changeQuantity('svc', 5), LineChange.updated);
       expect(cart.subtotal, 10 + 6 * 80);
       final inputs = cart.toSaleInputs();
       expect(inputs[0].unitPrice, isNull);

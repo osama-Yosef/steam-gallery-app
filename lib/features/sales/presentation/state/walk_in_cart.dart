@@ -1,6 +1,7 @@
 import '../../../inventory/data/models/warehouse_stock_item.dart';
 import '../../../products/data/models/product.dart';
 import '../../data/models/sale_line_input.dart';
+import 'line_change.dart';
 
 /// One product (or service) rung up at the register.
 class CartLine {
@@ -47,22 +48,10 @@ class CartLine {
   );
 }
 
-/// What happened to the cart after a tap.
-enum CartChange {
-  /// The line was added or its quantity changed.
-  updated,
-
-  /// The quantity went to zero, so the line was removed.
-  removed,
-
-  /// Refused: the warehouse doesn't have that many.
-  overStock,
-}
-
 /// The walk-in register's cart: what is being sold right now and what it
 /// comes to. Plain Dart, so the selling rules are tested without a screen
 /// (test/walk_in_cart_test.dart); the screen only shows it and reports
-/// [CartChange.overStock].
+/// [LineChange.overStock].
 class WalkInCart {
   final List<CartLine> _lines = [];
 
@@ -80,7 +69,7 @@ class WalkInCart {
 
   /// Tapping a product adds one of it; tapping again adds another, up to
   /// what is in stock.
-  CartChange addProduct(WarehouseStockItem item) {
+  LineChange addProduct(WarehouseStockItem item) {
     final i = _lines.indexWhere((l) => l.productId == item.productId);
     if (i < 0) {
       _lines.add(
@@ -92,12 +81,12 @@ class WalkInCart {
           quantity: 1,
         ),
       );
-      return CartChange.updated;
+      return LineChange.updated;
     }
     final line = _lines[i];
-    if (line.quantity >= item.quantity) return CartChange.overStock;
+    if (line.quantity >= item.quantity) return LineChange.overStock;
     _lines[i] = line.withQuantity(line.quantity + 1);
-    return CartChange.updated;
+    return LineChange.updated;
   }
 
   /// A labour line at the price agreed for this sale.
@@ -118,18 +107,18 @@ class WalkInCart {
   /// product can't go past what was available. Looked up by product rather
   /// than by the line object, so two quick taps both count even if the
   /// screen hasn't rebuilt in between.
-  CartChange changeQuantity(String productId, int delta) {
+  LineChange changeQuantity(String productId, int delta) {
     final i = _lines.indexWhere((l) => l.productId == productId);
-    if (i < 0) return CartChange.removed;
+    if (i < 0) return LineChange.removed;
     final line = _lines[i];
     final next = line.quantity + delta;
     if (next <= 0) {
       _lines.removeAt(i);
-      return CartChange.removed;
+      return LineChange.removed;
     }
-    if (!line.isService && next > line.available) return CartChange.overStock;
+    if (!line.isService && next > line.available) return LineChange.overStock;
     _lines[i] = line.withQuantity(next);
-    return CartChange.updated;
+    return LineChange.updated;
   }
 
   List<SaleLineInput> toSaleInputs() => [
