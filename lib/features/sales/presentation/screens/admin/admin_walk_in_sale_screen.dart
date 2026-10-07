@@ -575,17 +575,29 @@ class _ProductCard extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 2),
+                      // A narrow card (two columns beside the admin rail)
+                      // can't fit a four-digit price and the stock side by
+                      // side — the price wins and the stock is shortened,
+                      // instead of the row overflowing.
                       Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(
-                            Formatters.currency(item.displayPrice),
-                            style: theme.textTheme.bodySmall,
+                          Expanded(
+                            child: Text(
+                              Formatters.currency(item.displayPrice),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: theme.textTheme.bodySmall,
+                            ),
                           ),
-                          Text(
-                            'متاح ${item.quantity}',
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: AppColors.textSecondary,
+                          const SizedBox(width: 4),
+                          Flexible(
+                            child: Text(
+                              'متاح ${item.quantity}',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: AppColors.textSecondary,
+                              ),
                             ),
                           ),
                         ],
