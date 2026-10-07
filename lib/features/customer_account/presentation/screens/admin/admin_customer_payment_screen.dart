@@ -6,6 +6,7 @@ import '../../../../../core/errors/app_exception.dart';
 import '../../../../technician_account/data/models/sale.dart';
 import '../../providers/customer_account_providers.dart';
 import '../../../../../core/offline/offline_widgets.dart';
+import '../../../../../core/utils/input_formatters.dart';
 
 class AdminCustomerPaymentScreen extends ConsumerStatefulWidget {
   final String customerId;
@@ -81,6 +82,7 @@ class _AdminCustomerPaymentScreenState
               keyboardType: const TextInputType.numberWithOptions(
                 decimal: true,
               ),
+              inputFormatters: [moneyInputFormatter],
               decoration: const InputDecoration(labelText: 'المبلغ'),
               validator: (v) {
                 final n = double.tryParse(v ?? '');

@@ -8,6 +8,7 @@ import '../../../data/models/cashbox_balance.dart';
 import '../../../data/models/expense_category.dart';
 import '../../providers/cashbox_providers.dart';
 import '../../../../../core/offline/offline_widgets.dart';
+import '../../../../../core/utils/input_formatters.dart';
 
 class AdminRecordExpenseScreen extends ConsumerStatefulWidget {
   const AdminRecordExpenseScreen({super.key});
@@ -124,6 +125,7 @@ class _AdminRecordExpenseScreenState
                   keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
+                  inputFormatters: [moneyInputFormatter],
                   decoration: const InputDecoration(labelText: 'المبلغ'),
                   validator: (v) {
                     final n = double.tryParse(v ?? '');

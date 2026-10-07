@@ -7,6 +7,7 @@ import '../../../../../core/widgets/money_text.dart';
 import '../../../data/models/cashbox_balance.dart';
 import '../../providers/cashbox_providers.dart';
 import '../../../../../core/offline/offline_widgets.dart';
+import '../../../../../core/utils/input_formatters.dart';
 
 /// Manual cash in / cash out on the till.
 ///
@@ -125,6 +126,7 @@ class _AdminCashMovementScreenState
               keyboardType: const TextInputType.numberWithOptions(
                 decimal: true,
               ),
+              inputFormatters: [moneyInputFormatter],
               decoration: const InputDecoration(labelText: 'المبلغ'),
               validator: (v) {
                 final n = double.tryParse(v ?? '');

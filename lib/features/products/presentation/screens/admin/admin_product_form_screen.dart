@@ -16,6 +16,7 @@ import '../../../data/models/product_category.dart';
 import '../../../data/models/product_image.dart';
 import '../../../data/models/product_option.dart';
 import '../../../presentation/providers/product_providers.dart';
+import '../../../../../core/utils/input_formatters.dart';
 
 /// One editable row in the "الخيارات الإضافية" section. [id] null means the
 /// row is new and hasn't been saved yet.
@@ -414,6 +415,7 @@ class _AdminProductFormScreenState
                   keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
+                  inputFormatters: [moneyInputFormatter],
                   validator: (v) => Validators.positiveNumber(v, 'سعر التكلفة'),
                 ),
               ),
@@ -425,6 +427,7 @@ class _AdminProductFormScreenState
                   keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
+                  inputFormatters: [moneyInputFormatter],
                   validator: (v) => Validators.positiveNumber(v, 'سعر البيع'),
                 ),
               ),
@@ -526,6 +529,7 @@ class _AdminProductFormScreenState
                       keyboardType: const TextInputType.numberWithOptions(
                         decimal: true,
                       ),
+                      inputFormatters: [moneyInputFormatter],
                       onChanged: (v) => row.priceText = v,
                     ),
                   ),

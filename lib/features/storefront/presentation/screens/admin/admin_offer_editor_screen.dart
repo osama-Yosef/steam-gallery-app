@@ -8,6 +8,7 @@ import '../../../../products/presentation/providers/product_providers.dart';
 import '../../../data/models/storefront_models.dart';
 import '../../providers/storefront_providers.dart';
 import '../../widgets/marketing_form_parts.dart';
+import '../../../../../core/utils/input_formatters.dart';
 
 /// Add ([offerId] null) or edit a special offer and choose its products.
 /// Offers are promotional only: prices shown stay the products' own prices.
@@ -318,6 +319,7 @@ class _AdminOfferEditorScreenState
                                     const TextInputType.numberWithOptions(
                                       decimal: true,
                                     ),
+                                inputFormatters: [moneyInputFormatter],
                                 decoration: InputDecoration(
                                   labelText: 'سعر العرض (اختياري)',
                                   hintText: 'اتركه فاضي للعرض بدون تخفيض السعر',

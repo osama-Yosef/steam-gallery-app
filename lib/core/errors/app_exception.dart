@@ -129,6 +129,20 @@ class AppException implements Exception {
   /// them all.
   static const List<(String, String)> _rpcErrorMessages = [
     ('INSUFFICIENT_STOCK', 'الكمية المطلوبة غير متوفرة'),
+    (
+      'RETURN_QUANTITY_EXCEEDS_REMAINING',
+      'الكمية أكبر من اللي باقي في الفاتورة',
+    ),
+    ('SALE_ITEM_NOT_FOUND', 'الصنف ده مش موجود في الفاتورة'),
+    ('OPTION_NOT_FOUND', 'الاختيار ده اتشال من المنتج — اختار تاني'),
+    ('CART_FULL', 'السلة وصلت للحد الأقصى من الأصناف'),
+    ('BANNER_TARGET_NOT_FOUND', 'العرض أو المنتج اللي البانر بيفتحه مش موجود'),
+    ('NOT_AN_INSTAPAY_PAYMENT', 'الدفعة دي مش تحويل InstaPay'),
+    ('PAYMENT_NOT_FOUND', 'الدفعة غير موجودة'),
+    (
+      'UNSUPPORTED_RPC',
+      'العملية دي مش ممكن تتبعت من المزامنة — اعملها تاني وانت أونلاين',
+    ),
     // Invoice editing, assembly products, purchase invoices (0075).
     ('SALE_NOT_EDITABLE', 'الفاتورة دي اترجعت أو اتلغت ومش ممكن تتعدل'),
     ('SALE_NOT_RETURNABLE', 'الفاتورة دي اترجعت أو اتلغت بالفعل'),

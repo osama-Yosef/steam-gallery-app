@@ -4,6 +4,7 @@ import 'package:iconsax_flutter/iconsax_flutter.dart';
 import '../../../../../core/errors/app_exception.dart';
 import '../../../../auth/presentation/providers/auth_providers.dart';
 import '../../providers/technician_account_providers.dart';
+import '../../../../../core/utils/input_formatters.dart';
 
 /// Records a توريد (remittance of cash held by the technician to the
 /// gallery's cashbox). [technicianId] null means the signed-in technician is
@@ -87,6 +88,7 @@ class _TechnicianSupplyScreenState
                     keyboardType: const TextInputType.numberWithOptions(
                       decimal: true,
                     ),
+                    inputFormatters: [moneyInputFormatter],
                     decoration: const InputDecoration(labelText: 'المبلغ'),
                     validator: (v) {
                       final n = double.tryParse(v ?? '');

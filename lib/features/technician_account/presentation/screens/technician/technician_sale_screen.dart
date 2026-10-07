@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:uuid/uuid.dart';
 import '../../../../../core/errors/app_exception.dart';
 import '../../../../../core/utils/formatters.dart';
+import '../../../../../core/utils/input_formatters.dart';
 import '../../../../../core/widgets/state_views.dart';
 import '../../../../auth/presentation/providers/auth_providers.dart';
 import '../../../../inventory/data/models/technician_bag_stock_item.dart';
@@ -136,6 +138,7 @@ class _TechnicianSaleScreenState extends ConsumerState<TechnicianSaleScreen> {
               TextField(
                 controller: qtyCtrl,
                 keyboardType: TextInputType.number,
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                 decoration: const InputDecoration(labelText: 'الكمية'),
               ),
             ],
@@ -217,6 +220,7 @@ class _TechnicianSaleScreenState extends ConsumerState<TechnicianSaleScreen> {
                 keyboardType: const TextInputType.numberWithOptions(
                   decimal: true,
                 ),
+                inputFormatters: [moneyInputFormatter],
                 decoration: const InputDecoration(labelText: 'سعر الخدمة'),
               ),
             ],
@@ -412,6 +416,9 @@ class _TechnicianSaleScreenState extends ConsumerState<TechnicianSaleScreen> {
           TextFormField(
             controller: _discountCtrl,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            // A hardware keyboard ignores keyboardType; a stray letter must
+            // not silently count as a zero discount.
+            inputFormatters: [moneyInputFormatter],
             decoration: const InputDecoration(labelText: 'الخصم'),
             onChanged: (_) => setState(() {}),
           ),
@@ -430,6 +437,7 @@ class _TechnicianSaleScreenState extends ConsumerState<TechnicianSaleScreen> {
           TextFormField(
             controller: _paidAmountCtrl,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            inputFormatters: [moneyInputFormatter],
             decoration: InputDecoration(
               labelText: 'المبلغ المحصَّل',
               suffixIcon: TextButton(

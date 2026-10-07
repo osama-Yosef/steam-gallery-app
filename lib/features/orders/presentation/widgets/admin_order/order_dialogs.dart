@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../technician_account/data/models/sale.dart';
+import '../../../../../core/utils/input_formatters.dart';
 
 /// Asks for the shipping fee to propose to the customer (0065). Returns the
 /// amount, or null when cancelled; an empty or negative entry keeps the
@@ -18,6 +19,7 @@ Future<double?> askShippingFee(BuildContext context, double? currentFee) {
         controller: amountCtrl,
         decoration: const InputDecoration(labelText: 'سعر الشحن'),
         keyboardType: const TextInputType.numberWithOptions(decimal: true),
+        inputFormatters: [moneyInputFormatter],
         autofocus: true,
       ),
       actions: [
@@ -101,6 +103,7 @@ Future<({double amount, PaymentMethod method})?> askOrderPayment(
               keyboardType: const TextInputType.numberWithOptions(
                 decimal: true,
               ),
+              inputFormatters: [moneyInputFormatter],
               autofocus: true,
             ),
             const SizedBox(height: 16),
