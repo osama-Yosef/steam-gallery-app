@@ -14,8 +14,10 @@ console.log('\n== Provisioning ==');
 await asSuper();
 ok('customer phone comes from auth.users, not user metadata',
   (await one(`select phone from public.users where id = $1`, [CUST_A])).phone === '+201000000004');
-ok('empty auth phone is stored as NULL (no metadata fallback)',
-  (await one(`select phone from public.users where id = $1`, [CUST_B])).phone === null);
+// 0070: customers sign up by email, so Auth has no phone for them — the
+// phone typed at sign-up (user metadata) is the fallback.
+ok('empty auth phone falls back to the sign-up phone (0070)',
+  (await one(`select phone from public.users where id = $1`, [CUST_B])).phone === '+201999999999');
 
 // Before 0029 a customer could write any number into users.phone. Simulate a
 // profile squatting a number (in the older "+20…" format), then the real
@@ -221,11 +223,13 @@ ok('tech amount due = 100 after cash sale', (await due()) === 100);
 const cashBeforeSupply = await cash();
 await as(TECH);
 const S1 = (await one(`select public.rpc_technician_supply($1, 100, 'cash') as id`, [TECH])).id;
-ok('tech supply is pending', (await (async () => { await asSuper(); return (await one(`select status from public.technician_supplies where id = $1`, [S1])).status; })()) === 'pending');
-ok('pending supply does not reduce amount due', (await due()) === 100);
-ok('pending supply does not touch the till', (await cash()) === cashBeforeSupply);
+// 0055: a technician's own supply posts immediately, like an admin-recorded
+// one — there is no pending review step any more.
+ok('tech supply is confirmed at once', (await (async () => { await asSuper(); return (await one(`select status from public.technician_supplies where id = $1`, [S1])).status; })()) === 'confirmed');
+ok('supply reduces the amount due at once', (await due()) === 0);
+ok('supply credits the till at once', (await cash()) === cashBeforeSupply + 100);
 await asSuper();
-ok('admins were notified of the pending supply', (await one(`select count(*)::int as n from public.notifications where user_id = $1 and type = 'supply_pending'`, [ADMIN])).n === 1);
+ok('no pending-supply notification is sent', (await one(`select count(*)::int as n from public.notifications where user_id = $1 and type = 'supply_pending'`, [ADMIN])).n === 0);
 await as(TECH);
 ok('tech cannot approve own supply', (await err(`select public.rpc_admin_review_technician_supply($1, true, null)`, [S1]))?.includes('FORBIDDEN'));
 await as(ADMIN);
@@ -243,8 +247,8 @@ ok('admin-recorded supply posts immediately', (await cash()) === cashBeforeAdmin
 // ---------------------------------------------------------------- P1-13 maintenance + invoice
 console.log('\n== P1-13: maintenance + invoice ==');
 await as(CUST_A);
-const M1 = (await one(`select public.rpc_create_maintenance_request($1, 'A', '010 1234 5678', 'addr', null, null, 'iron', 'broken', null) as id`, [CUST_A])).id;
-ok('bad phone refused', (await err(`select public.rpc_create_maintenance_request($1, 'A', 'abc', null, null, null, null, 'x', null)`, [CUST_A]))?.includes('INVALID_PHONE'));
+const M1 = (await one(`select public.rpc_create_maintenance_request($1, 'A', '010 1234 5678', $2, 'iron', 'broken', null) as id`, [CUST_A, addrA])).id;
+ok('bad phone refused', (await err(`select public.rpc_create_maintenance_request($1, 'A', 'abc', $2, null, 'x', null)`, [CUST_A, addrA]))?.includes('INVALID_PHONE'));
 await as(TECH);
 await q(`select public.rpc_claim_maintenance($1)`, [M1]);
 await q(`select public.rpc_start_maintenance($1)`, [M1]);
@@ -271,7 +275,7 @@ ok('other customer: sale_items_display returns 0 rows (IDOR)', (await q(`select 
 // ---------------------------------------------------------------- P0-5 deactivation
 console.log('\n== P0-5: deactivation enforced ==');
 await as(CUST_B);
-const M2 = (await one(`select public.rpc_create_maintenance_request($1, 'B', '01012345678', null, null, null, null, 'x', null) as id`, [CUST_B])).id;
+const M2 = (await one(`select public.rpc_create_maintenance_request($1, 'B', '01012345678', $2, null, 'x', null) as id`, [CUST_B, addrB])).id;
 await as(ADMIN);
 ok('admin cannot deactivate self', (await err(`select public.rpc_admin_set_active($1, false)`, [ADMIN]))?.includes('CANNOT_CHANGE_OWN_ACCOUNT'));
 await q(`select public.rpc_admin_set_active($1, false)`, [TECH2]);

@@ -55,11 +55,13 @@ ok('order snapshots the address id, city and service area', order.delivery_addre
 ok('total still comes from the database price (2 × 100)', Number(order.total) === 200);
 
 // ---------------------------------------------------------------- uncovered address
-console.log('\n== An uncovered address is refused ==');
+// 0046: orders ship anywhere — only maintenance (a technician visit) is
+// limited to covered areas.
+console.log('\n== An uncovered address still takes an order (0046) ==');
 const workA = (await saveAddress(CUST_A, MAADI, { label: 'الشغل' })).r;
 ok('this address is not covered', workA.available === false);
-ok('order to an uncovered address is refused',
-  (await createOrderErr(CUST_A, [{ product_id: P1, quantity: 1 }], workA.id))?.includes('ADDRESS_NOT_SERVICEABLE'));
+ok('order to an uncovered address is accepted',
+  (await createOrderErr(CUST_A, [{ product_id: P1, quantity: 1 }], workA.id)) === null);
 
 // ---------------------------------------------------------------- ownership
 console.log('\n== Address ownership ==');

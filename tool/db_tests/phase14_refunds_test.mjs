@@ -119,7 +119,10 @@ row = await orderRow(o2);
 ok('order is cancelled and payment_status is refunded', row.status === 'cancelled' && row.payment_status === 'refunded');
 const wB = await wallet(CUST_B);
 ok('a customer with no prior wallet gets one, credited with the InstaPay amount', Number(wB.balance) === 100);
-ok('cancelling reverses the cashbox credit back out', await cashboxBalance() === cashBeforeInstapay2);
+// 0071: the InstaPay money never left the transfer account — refunding it
+// as wallet credit turns it into a liability, not a payout — so the
+// cashbox keeps the transfer instead of reversing it.
+ok('cancelling keeps the transfer in the cashbox (refunded as wallet credit)', await cashboxBalance() === cashBeforeInstapay2 + 100);
 
 await asSuper();
 const instapayPayRow = await one(`select * from public.payments where id = $1`, [instapayPaymentId]);

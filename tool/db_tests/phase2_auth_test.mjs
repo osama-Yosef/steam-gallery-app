@@ -58,7 +58,7 @@ console.log('\n== Gating: unverified customers are anon for writes ==');
 await as(CUST_A);
 ok('unverified customer cannot order', (await err(order(CUST_A)))?.includes('FORBIDDEN'));
 ok('unverified customer cannot open maintenance',
-  (await err(`select public.rpc_create_maintenance_request($1, 'A', '01012345678', null, null, null, null, 'x', null)`, [CUST_A]))?.includes('FORBIDDEN'));
+  (await err(`select public.rpc_create_maintenance_request($1, 'A', '01012345678', $2, null, 'x', null)`, [CUST_A, addrA]))?.includes('FORBIDDEN'));
 ok('unverified customer still reads own orders', (await q(`select id from public.orders where customer_id = $1`, [CUST_A])).length === 1);
 await as(ADMIN);
 ok('admin is never gated', (await err(`select public.rpc_cashbox_deposit(1, 'x')`)) === null);
@@ -94,13 +94,16 @@ await as(CUST_A);
 ok('verified customer can order again', (await err(order(CUST_A))) === null);
 
 // ---------------------------------------------------------------- new signup via Auth
-console.log('\n== New signup: Auth confirming the phone counts (switch on) ==');
+// 0068: with sms_autoconfirm on, Auth sets phone_confirmed_at on every
+// signup without checking any code, so it is no longer verification
+// evidence — only a Firebase proof (verify-phone-firebase) is.
+console.log('\n== New signup: Auth confirming the phone does not count (0068) ==');
 const NEW = uid(20);
 await asSuper();
 await db.query(`insert into auth.users (id, phone, raw_user_meta_data) values ($1, '201055555555', '{"full_name":"New"}')`, [NEW]);
 ok('signup provisions an unverified customer', (await verifiedAt(NEW)) === null);
 await db.query(`update auth.users set phone_confirmed_at = now() where id = $1`, [NEW]);
-ok('Auth confirming the OTP marks the profile verified', (await verifiedAt(NEW)) !== null);
+ok('Auth confirming the phone does not mark the profile verified', (await verifiedAt(NEW)) === null);
 ok('phone confirmation audited', (await audit('PHONE_CONFIRMED', NEW)) === 1);
 
 console.log('\n== Switch off: Auth confirmations are not trusted ==');
@@ -148,8 +151,9 @@ await asSuper();
 await db.query(`update auth.users set phone = '201012121212', phone_confirmed_at = now() where id = $1`, [CUST_A]);
 const afterChange = await one(`select phone, phone_verified_at from public.users where id = $1`, [CUST_A]);
 ok('profile follows the new auth number', afterChange.phone === '201012121212');
-ok('verification restarts at the change (switch on: Auth proved the new number)',
-  afterChange.phone_verified_at !== null && afterChange.phone_verified_at.getTime() > first.getTime());
+// 0068: a number changed through Auth isn't Firebase evidence either.
+ok('verification restarts at the change (the new number is unverified)',
+  afterChange.phone_verified_at === null);
 ok('phone change audited', (await audit('PHONE_CHANGED', CUST_A)) === 1);
 await as(ADMIN);
 await q(`select public.rpc_admin_set_setting('require_verified_phone', false)`);
