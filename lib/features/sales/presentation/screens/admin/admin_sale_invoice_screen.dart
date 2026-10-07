@@ -16,7 +16,7 @@ import '../../../../products/presentation/providers/product_providers.dart';
 import '../../../../technician_account/data/models/sale.dart';
 import '../../../data/models/invoice_line.dart';
 import '../../providers/sales_providers.dart';
-import '../../register_stock.dart';
+import '../../state/register_stock.dart';
 import '../../../../../features/cashbox/presentation/widgets/cashbox_kind_selector.dart';
 import '../../../../../core/widgets/amount_row.dart';
 import '../../../../../core/utils/input_formatters.dart';

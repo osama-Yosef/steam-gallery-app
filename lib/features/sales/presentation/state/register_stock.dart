@@ -1,5 +1,5 @@
-import '../../../core/offline/outbox.dart';
-import '../../inventory/data/models/warehouse_stock_item.dart';
+import '../../../../core/offline/outbox.dart';
+import '../../../inventory/data/models/warehouse_stock_item.dart';
 
 /// What the register can sell: warehouse stock plus assembly products, with
 /// walk-in sales still waiting in the offline queue ([queuedSales], i.e.
@@ -30,4 +30,23 @@ List<WarehouseStockItem> registerStock(
 
   return [...warehouse.map(net), ...assemblies.map(net)]
     ..sort((a, b) => a.productName.compareTo(b.productName));
+}
+
+/// What the register's grid shows for [query]: products with something
+/// left to sell whose name or SKU contains it (case-insensitive). Filtering
+/// the loaded list instead of re-querying per keystroke keeps typing instant
+/// — the warehouse is small.
+List<WarehouseStockItem> sellableMatching(
+  List<WarehouseStockItem> stock,
+  String query,
+) {
+  final q = query.trim().toLowerCase();
+  return [
+    for (final s in stock)
+      if (s.quantity > 0 &&
+          (q.isEmpty ||
+              s.productName.toLowerCase().contains(q) ||
+              s.sku.toLowerCase().contains(q)))
+        s,
+  ];
 }

@@ -309,6 +309,10 @@ void main() {
       isEmpty,
     );
 
+    // The payment method shows cash again, not only in what gets sent.
+    expect(find.text('نقدًا'), findsOneWidget);
+    expect(find.text('تحويل'), findsNothing);
+
     // …and the next sale can't be mistaken for a resend of this one.
     await tester.tap(find.text('مكواة بخار'));
     await tester.pump();

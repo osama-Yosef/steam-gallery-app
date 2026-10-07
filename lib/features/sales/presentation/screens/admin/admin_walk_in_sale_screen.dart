@@ -2,49 +2,22 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:uuid/uuid.dart';
-import '../../../../../core/widgets/app_network_image.dart';
 import '../../../../../core/errors/app_exception.dart';
 import '../../../../../core/offline/offline_widgets.dart';
 import '../../../../../core/offline/outbox.dart';
-import '../../../../../core/theme/app_colors.dart';
-import '../../../../../core/utils/formatters.dart';
 import '../../../../../core/widgets/state_views.dart';
 import '../../../../inventory/data/models/warehouse_stock_item.dart';
 import '../../../../inventory/presentation/providers/inventory_providers.dart';
-import '../../../../products/data/models/product.dart';
 import '../../../../products/presentation/providers/product_providers.dart';
-import '../../../data/models/sale_line_input.dart';
 import '../../../../technician_account/data/models/sale.dart';
 import '../../providers/sales_providers.dart';
-import '../../register_stock.dart';
+import '../../state/register_stock.dart';
+import '../../state/walk_in_cart.dart';
+import '../../widgets/walk_in/add_service_dialog.dart';
+import '../../widgets/walk_in/register_product_grid.dart';
+import '../../widgets/walk_in/walk_in_checkout_bar.dart';
+import '../../widgets/walk_in/walk_in_customer_header.dart';
 import '../../widgets/walk_in_invoices_list.dart';
-import '../../../../../core/utils/input_formatters.dart';
-
-class _SaleLine {
-  final String productId;
-  final String productName;
-
-  /// For a service this is the price agreed with the customer for THIS sale,
-  /// not a catalogue price.
-  final double sellingPrice;
-  final int available;
-  final bool isService;
-  int quantity;
-  _SaleLine({
-    required this.productId,
-    required this.productName,
-    required this.sellingPrice,
-    required this.available,
-    required this.quantity,
-    this.isService = false,
-  });
-
-  double get lineTotal => quantity * sellingPrice;
-
-  /// Only a service carries an explicit price to the server; for a stock
-  /// product the catalogue price is authoritative (see SaleLineInput).
-  double? get unitPrice => isService ? sellingPrice : null;
-}
 
 /// Counter sale for a walk-in customer who came to the gallery in person and
 /// has no app account — reachable from the admin home dashboard. Sells from
@@ -53,14 +26,15 @@ class _SaleLine {
 ///
 /// Laid out top-to-bottom the way the sale actually happens at the counter:
 /// customer first, then search, then tap products to add them, and a single
-/// bottom bar that shows what to charge and confirms. The old version made
-/// every line a modal dialog with a dropdown, which was several taps per item
-/// and hid the running total behind a scroll.
+/// bottom bar that shows what to charge and confirms.
 ///
 /// A second tab lists every invoice (today's by default) for editing or
 /// deleting; the dashboard's "مبيعات اليوم" tile opens straight onto it
 /// ([showInvoices]). Works offline: a sale is queued and the stock shown
 /// already accounts for queued sales.
+///
+/// The selling rules live in [WalkInCart]; the pieces of the screen in
+/// `widgets/walk_in/`. This class wires them together and submits the sale.
 class AdminWalkInSaleScreen extends ConsumerStatefulWidget {
   final bool showInvoices;
   const AdminWalkInSaleScreen({super.key, this.showInvoices = false});
@@ -92,12 +66,12 @@ class _AdminWalkInSaleScreenState extends ConsumerState<AdminWalkInSaleScreen>
   // sales in a row. A key that never changed would make every sale after
   // the first in that tab reuse the first one's idempotency key.
   String _clientRequestId = const Uuid().v4();
+  final _cart = WalkInCart();
   final _customerNameCtrl = TextEditingController();
   final _customerPhoneCtrl = TextEditingController();
   final _searchCtrl = TextEditingController();
   final _discountCtrl = TextEditingController(text: '0');
   final _notesCtrl = TextEditingController();
-  final List<_SaleLine> _lines = [];
   PaymentMethod _paymentMethod = PaymentMethod.cash;
   String _search = '';
   bool _submitting = false;
@@ -113,149 +87,56 @@ class _AdminWalkInSaleScreenState extends ConsumerState<AdminWalkInSaleScreen>
     super.dispose();
   }
 
-  double get _subtotal => _lines.fold<double>(0, (sum, l) => sum + l.lineTotal);
   double get _discount => double.tryParse(_discountCtrl.text) ?? 0;
-  double get _total => _subtotal - _discount;
+  double get _total => _cart.subtotal - _discount;
 
-  /// Tapping a product adds one of it; tapping again bumps the quantity, so
-  /// selling three of the same thing is three taps and never a dialog.
-  void _addOrIncrement(WarehouseStockItem item) {
-    final existing = _lines.where((l) => l.productId == item.productId);
-    setState(() {
-      if (existing.isEmpty) {
-        _lines.add(
-          _SaleLine(
-            productId: item.productId,
-            productName: item.productName,
-            sellingPrice: item.displayPrice,
-            available: item.quantity,
-            quantity: 1,
-          ),
-        );
-        return;
-      }
-      final line = existing.first;
-      if (line.quantity >= item.quantity) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('المتاح بالمخزن ${item.quantity} فقط')),
-        );
-        return;
-      }
-      line.quantity += 1;
-    });
+  void _snack(String message) => ScaffoldMessenger.of(
+    context,
+  ).showSnackBar(SnackBar(content: Text(message)));
+
+  void _addProduct(WarehouseStockItem item) {
+    final change = _cart.addProduct(item);
+    if (change == CartChange.overStock) {
+      _snack('المتاح بالمخزن ${item.quantity} فقط');
+    }
+    setState(() {});
   }
 
-  void _changeQuantity(_SaleLine line, int delta) {
-    setState(() {
-      final next = line.quantity + delta;
-      if (next <= 0) {
-        _lines.remove(line);
-      } else if (!line.isService && next > line.available) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('المتاح بالمخزن ${line.available} فقط')),
-        );
-      } else {
-        line.quantity = next;
-      }
-    });
+  void _changeQuantity(CartLine line, int delta) {
+    final change = _cart.changeQuantity(line.productId, delta);
+    if (change == CartChange.overStock) {
+      _snack('المتاح بالمخزن ${line.available} فقط');
+    }
+    setState(() {});
   }
 
-  /// Adds a labour line. Unlike a stock product the price isn't in the
-  /// catalogue — it's agreed per job — so it's typed here and sent explicitly.
-  Future<void> _addServiceLine() async {
+  Future<void> _addService() async {
     final services = await ref.read(serviceProductsProvider.future);
     if (!mounted) return;
     if (services.isEmpty) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('لا توجد خدمات معرَّفة')));
+      _snack('لا توجد خدمات معرَّفة');
       return;
     }
-    Product selected = services.first;
-    final priceCtrl = TextEditingController();
-    final added = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setDialogState) => AlertDialog(
-          title: const Text('إضافة خدمة'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              DropdownButtonFormField<Product>(
-                initialValue: selected,
-                isExpanded: true,
-                decoration: const InputDecoration(labelText: 'الخدمة'),
-                items: services
-                    .map(
-                      (s) => DropdownMenuItem(
-                        value: s,
-                        child: Text(s.name, overflow: TextOverflow.ellipsis),
-                      ),
-                    )
-                    .toList(),
-                onChanged: (s) => setDialogState(() => selected = s!),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: priceCtrl,
-                autofocus: true,
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
-                inputFormatters: [moneyInputFormatter],
-                decoration: const InputDecoration(labelText: 'سعر الخدمة'),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(ctx).pop(false),
-              child: const Text('إلغاء'),
-            ),
-            FilledButton(
-              onPressed: () => Navigator.of(ctx).pop(true),
-              child: const Text('إضافة'),
-            ),
-          ],
-        ),
-      ),
-    );
-    if (added != true) return;
-    final price = double.tryParse(priceCtrl.text) ?? 0;
-    if (price <= 0) {
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('أدخل سعرًا صحيحًا')));
-      }
+    final picked = await showAddServiceDialog(context, services);
+    if (picked == null || !mounted) return;
+    if (picked.price <= 0) {
+      _snack('أدخل سعرًا صحيحًا');
       return;
     }
-    setState(() {
-      _lines.add(
-        _SaleLine(
-          productId: selected.id,
-          productName: selected.name,
-          sellingPrice: price,
-          available: 1,
-          quantity: 1,
-          isService: true,
-        ),
-      );
-    });
+    setState(() => _cart.addService(picked.service, picked.price));
   }
+
+  String? _optional(TextEditingController c) =>
+      c.text.trim().isEmpty ? null : c.text.trim();
 
   Future<void> _submit() async {
     if (_submitting) return;
-    if (_lines.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('أضف منتجًا واحدًا على الأقل')),
-      );
+    if (_cart.isEmpty) {
+      _snack('أضف منتجًا واحدًا على الأقل');
       return;
     }
     if (_total < 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('الخصم أكبر من إجمالي الفاتورة')),
-      );
+      _snack('الخصم أكبر من إجمالي الفاتورة');
       return;
     }
     setState(() => _submitting = true);
@@ -263,75 +144,52 @@ class _AdminWalkInSaleScreenState extends ConsumerState<AdminWalkInSaleScreen>
       final result = await ref
           .read(salesRepositoryProvider)
           .recordWalkInSale(
-            customerName: _customerNameCtrl.text.trim().isEmpty
-                ? null
-                : _customerNameCtrl.text.trim(),
-            customerPhone: _customerPhoneCtrl.text.trim().isEmpty
-                ? null
-                : _customerPhoneCtrl.text.trim(),
-            items: _lines
-                .map(
-                  (l) => SaleLineInput(
-                    productId: l.productId,
-                    quantity: l.quantity,
-                    unitPrice: l.unitPrice,
-                  ),
-                )
-                .toList(),
+            customerName: _optional(_customerNameCtrl),
+            customerPhone: _optional(_customerPhoneCtrl),
+            items: _cart.toSaleInputs(),
             paymentMethod: _paymentMethod,
             discount: _discount,
             clientRequestId: _clientRequestId,
-            notes: _notesCtrl.text.trim().isEmpty
-                ? null
-                : _notesCtrl.text.trim(),
+            notes: _optional(_notesCtrl),
           );
-      if (mounted) {
-        if (result.queued) {
-          showSavedOfflineSnack(context, 'البيع اتسجل');
-        } else {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(const SnackBar(content: Text('تم تسجيل البيع بنجاح')));
-        }
-        // Pushed from the admin dashboard, this screen sits on top of it and
-        // should pop back. Reached as the sales role's home tab, it IS the
-        // screen — there's nothing above it to pop to, and forcing a pop
-        // here crashed the shell's nested navigator right after the sale
-        // had already gone through server-side. Reset in place instead so
-        // the next walk-in sale starts clean either way.
-        if (Navigator.of(context).canPop()) {
-          Navigator.of(context).pop(true);
-        } else {
-          setState(() {
-            _lines.clear();
-            _customerNameCtrl.clear();
-            _customerPhoneCtrl.clear();
-            _discountCtrl.text = '0';
-            _notesCtrl.clear();
-            _paymentMethod = PaymentMethod.cash;
-            _clientRequestId = const Uuid().v4();
-          });
-        }
+      if (!mounted) return;
+      if (result.queued) {
+        showSavedOfflineSnack(context, 'البيع اتسجل');
+      } else {
+        _snack('تم تسجيل البيع بنجاح');
+      }
+      // Pushed from the admin dashboard, this screen sits on top of it and
+      // should pop back. Reached as the sales role's home tab, it IS the
+      // screen — there's nothing above it to pop to, and forcing a pop
+      // here crashed the shell's nested navigator right after the sale
+      // had already gone through server-side. Reset in place instead so
+      // the next walk-in sale starts clean either way.
+      if (Navigator.of(context).canPop()) {
+        Navigator.of(context).pop(true);
+      } else {
+        _resetForNextSale();
       }
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(AppException.from(e).messageAr)));
-      }
+      if (mounted) _snack(AppException.from(e).messageAr);
     } finally {
       if (mounted) setState(() => _submitting = false);
     }
   }
 
+  void _resetForNextSale() {
+    setState(() {
+      _cart.clear();
+      _customerNameCtrl.clear();
+      _customerPhoneCtrl.clear();
+      _discountCtrl.text = '0';
+      _notesCtrl.clear();
+      _paymentMethod = PaymentMethod.cash;
+      _clientRequestId = const Uuid().v4();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    // Filtering happens on the already-loaded list rather than re-querying per
-    // keystroke: the warehouse is small and this keeps typing instant.
-    final stockAsync = ref.watch(warehouseStockProvider());
-    // Assembly products are optional extras on the grid — a failure there
-    // (e.g. an older database without 0075) mustn't block selling stock.
-    final assemblies = ref.watch(assemblyStockProvider).value ?? const [];
     final onSaleTab = _tabIndex == 0;
 
     return Scaffold(
@@ -340,7 +198,7 @@ class _AdminWalkInSaleScreenState extends ConsumerState<AdminWalkInSaleScreen>
         actions: [
           if (onSaleTab)
             TextButton.icon(
-              onPressed: _addServiceLine,
+              onPressed: _addService,
               icon: const Icon(Iconsax.setting_2_copy),
               label: const Text('خدمة'),
             ),
@@ -355,16 +213,12 @@ class _AdminWalkInSaleScreenState extends ConsumerState<AdminWalkInSaleScreen>
       ),
       body: TabBarView(
         controller: _tabs,
-        children: [
-          _saleTab(stockAsync, assemblies),
-          const WalkInInvoicesList(),
-        ],
+        children: [_saleTab(), const WalkInInvoicesList()],
       ),
       bottomNavigationBar: !onSaleTab
           ? null
-          : _CheckoutBar(
-              lines: _lines,
-              subtotal: _subtotal,
+          : WalkInCheckoutBar(
+              cart: _cart,
               total: _total,
               discountCtrl: _discountCtrl,
               notesCtrl: _notesCtrl,
@@ -378,14 +232,16 @@ class _AdminWalkInSaleScreenState extends ConsumerState<AdminWalkInSaleScreen>
     );
   }
 
-  Widget _saleTab(
-    AsyncValue<List<WarehouseStockItem>> stockAsync,
-    List<WarehouseStockItem> assemblies,
-  ) {
+  Widget _saleTab() {
+    final stockAsync = ref.watch(warehouseStockProvider());
+    // Assembly products are optional extras on the grid — a failure there
+    // (e.g. an older database without 0075) mustn't block selling stock.
+    final assemblies = ref.watch(assemblyStockProvider).value ?? const [];
     final outbox = ref.watch(outboxProvider);
+
     return Column(
       children: [
-        _CustomerHeader(
+        WalkInCustomerHeader(
           nameCtrl: _customerNameCtrl,
           phoneCtrl: _customerPhoneCtrl,
         ),
@@ -419,25 +275,15 @@ class _AdminWalkInSaleScreenState extends ConsumerState<AdminWalkInSaleScreen>
             data: (warehouse) => ListenableBuilder(
               listenable: outbox,
               builder: (context, _) {
-                final available =
-                    registerStock(
-                          warehouse,
-                          assemblies,
-                          queuedSales: outbox.pendingOf('walk_in_sale'),
-                        )
-                        .where((s) => s.quantity > 0)
-                        .where(
-                          (s) =>
-                              _search.isEmpty ||
-                              s.productName.toLowerCase().contains(
-                                _search.toLowerCase(),
-                              ) ||
-                              s.sku.toLowerCase().contains(
-                                _search.toLowerCase(),
-                              ),
-                        )
-                        .toList();
-                if (available.isEmpty) {
+                final items = sellableMatching(
+                  registerStock(
+                    warehouse,
+                    assemblies,
+                    queuedSales: outbox.pendingOf('walk_in_sale'),
+                  ),
+                  _search,
+                );
+                if (items.isEmpty) {
                   return EmptyView(
                     message: _search.isEmpty
                         ? 'لا توجد منتجات متاحة بالمخزن'
@@ -445,361 +291,16 @@ class _AdminWalkInSaleScreenState extends ConsumerState<AdminWalkInSaleScreen>
                     icon: Iconsax.box_copy,
                   );
                 }
-                return LayoutBuilder(
-                  builder: (context, c) {
-                    final columns = (c.maxWidth / 180).floor().clamp(2, 6);
-                    return GridView.builder(
-                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: columns,
-                        mainAxisSpacing: 12,
-                        crossAxisSpacing: 12,
-                        childAspectRatio: 0.78,
-                      ),
-                      itemCount: available.length,
-                      itemBuilder: (context, i) {
-                        final item = available[i];
-                        final line = _lines
-                            .where((l) => l.productId == item.productId)
-                            .firstOrNull;
-                        return _ProductCard(
-                          item: item,
-                          inCart: line?.quantity ?? 0,
-                          onTap: () => _addOrIncrement(item),
-                        );
-                      },
-                    );
-                  },
+                return RegisterProductGrid(
+                  items: items,
+                  quantityInCart: _cart.quantityOf,
+                  onTap: _addProduct,
                 );
               },
             ),
           ),
         ),
       ],
-    );
-  }
-}
-
-/// Customer name + phone, both optional — the first thing filled in at the
-/// counter, so it sits above everything else.
-class _CustomerHeader extends StatelessWidget {
-  final TextEditingController nameCtrl;
-  final TextEditingController phoneCtrl;
-  const _CustomerHeader({required this.nameCtrl, required this.phoneCtrl});
-
-  @override
-  Widget build(BuildContext context) {
-    final name = TextField(
-      controller: nameCtrl,
-      decoration: const InputDecoration(
-        labelText: 'اسم العميل (اختياري)',
-        isDense: true,
-      ),
-    );
-    final phone = TextField(
-      controller: phoneCtrl,
-      keyboardType: TextInputType.phone,
-      decoration: const InputDecoration(
-        labelText: 'رقم الهاتف (اختياري)',
-        isDense: true,
-      ),
-    );
-
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
-      // Side by side these two labels get ellipsised on a phone — the admin
-      // shell's rail leaves the content barely 260 logical pixels wide — so
-      // they stack until there is room for both.
-      child: LayoutBuilder(
-        builder: (context, c) => c.maxWidth < 420
-            ? Column(children: [name, const SizedBox(height: 8), phone])
-            : Row(
-                children: [
-                  Expanded(child: name),
-                  const SizedBox(width: 12),
-                  Expanded(child: phone),
-                ],
-              ),
-      ),
-    );
-  }
-}
-
-class _ProductCard extends StatelessWidget {
-  final WarehouseStockItem item;
-  final int inCart;
-  final VoidCallback onTap;
-  const _ProductCard({
-    required this.item,
-    required this.inCart,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Card(
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onTap,
-        child: Stack(
-          children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Expanded(
-                  child: item.imageUrl == null
-                      ? ColoredBox(
-                          color: theme.colorScheme.surfaceContainerHighest,
-                          child: const Icon(Iconsax.box_copy, size: 32),
-                        )
-                      : AppNetworkImage(
-                          imageUrl: item.imageUrl!,
-                          fit: BoxFit.cover,
-                        ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(8, 8, 8, 10),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        item.isAssembly
-                            ? '${item.productName} (تجميع)'
-                            : item.productName,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      // A narrow card (two columns beside the admin rail)
-                      // can't fit a four-digit price and the stock side by
-                      // side — the price wins and the stock is shortened,
-                      // instead of the row overflowing.
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              Formatters.currency(item.displayPrice),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: theme.textTheme.bodySmall,
-                            ),
-                          ),
-                          const SizedBox(width: 4),
-                          Flexible(
-                            child: Text(
-                              'متاح ${item.quantity}',
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: theme.textTheme.bodySmall?.copyWith(
-                                color: AppColors.textSecondary,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            // Quantity already in the cart, so the same grid doubles as the
-            // "what have I rung up so far" view without scrolling anywhere.
-            if (inCart > 0)
-              Positioned(
-                top: 6,
-                right: 6,
-                child: CircleAvatar(
-                  radius: 13,
-                  backgroundColor: theme.colorScheme.primary,
-                  child: Text(
-                    '$inCart',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      color: theme.colorScheme.onPrimary,
-                    ),
-                  ),
-                ),
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-/// The bottom bar: discount sits directly above the total/confirm button, and
-/// the cart itself expands from here so the product grid never gets pushed
-/// off screen.
-class _CheckoutBar extends StatelessWidget {
-  final List<_SaleLine> lines;
-  final double subtotal;
-  final double total;
-  final TextEditingController discountCtrl;
-  final TextEditingController notesCtrl;
-  final PaymentMethod paymentMethod;
-  final bool submitting;
-  final VoidCallback onDiscountChanged;
-  final ValueChanged<PaymentMethod> onPaymentMethodChanged;
-  final void Function(_SaleLine, int) onChangeQuantity;
-  final VoidCallback onSubmit;
-
-  const _CheckoutBar({
-    required this.lines,
-    required this.subtotal,
-    required this.total,
-    required this.discountCtrl,
-    required this.notesCtrl,
-    required this.paymentMethod,
-    required this.submitting,
-    required this.onDiscountChanged,
-    required this.onPaymentMethodChanged,
-    required this.onChangeQuantity,
-    required this.onSubmit,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final itemCount = lines.fold<int>(0, (sum, l) => sum + l.quantity);
-
-    return Material(
-      color: theme.colorScheme.surfaceContainerHighest,
-      child: SafeArea(
-        top: false,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (lines.isNotEmpty)
-                ExpansionTile(
-                  tilePadding: EdgeInsets.zero,
-                  title: Text('السلة ($itemCount صنف)'),
-                  subtitle: Text('المجموع ${Formatters.currency(subtotal)}'),
-                  children: [
-                    for (final line in lines)
-                      ListTile(
-                        dense: true,
-                        contentPadding: EdgeInsets.zero,
-                        title: Text(line.productName),
-                        subtitle: Text(
-                          '${line.quantity} × '
-                          '${Formatters.currency(line.sellingPrice)}'
-                          '${line.isService ? ' · خدمة' : ''}',
-                        ),
-                        trailing: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            IconButton(
-                              visualDensity: VisualDensity.compact,
-                              icon: const Icon(Iconsax.minus_cirlce_copy),
-                              onPressed: () => onChangeQuantity(line, -1),
-                            ),
-                            Text('${line.quantity}'),
-                            IconButton(
-                              visualDensity: VisualDensity.compact,
-                              icon: const Icon(Iconsax.add_circle_copy),
-                              onPressed: () => onChangeQuantity(line, 1),
-                            ),
-                          ],
-                        ),
-                      ),
-                    TextField(
-                      controller: notesCtrl,
-                      decoration: const InputDecoration(
-                        labelText: 'ملاحظات (اختياري)',
-                        isDense: true,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                  ],
-                ),
-              Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: discountCtrl,
-                      keyboardType: const TextInputType.numberWithOptions(
-                        decimal: true,
-                      ),
-                      // A hardware keyboard ignores keyboardType, so on
-                      // desktop a stray letter used to sit in here silently
-                      // parsing as 0 — found while testing the Windows build.
-                      inputFormatters: [moneyInputFormatter],
-                      decoration: const InputDecoration(
-                        labelText: 'الخصم',
-                        isDense: true,
-                      ),
-                      onChanged: (_) => onDiscountChanged(),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: DropdownButtonFormField<PaymentMethod>(
-                      initialValue: paymentMethod,
-                      isExpanded: true,
-                      decoration: const InputDecoration(
-                        labelText: 'طريقة الدفع',
-                        isDense: true,
-                      ),
-                      items:
-                          const [
-                                PaymentMethod.cash,
-                                PaymentMethod.card,
-                                PaymentMethod.transfer,
-                              ]
-                              .map(
-                                (m) => DropdownMenuItem(
-                                  value: m,
-                                  child: Text(paymentMethodLabelAr(m)),
-                                ),
-                              )
-                              .toList(),
-                      onChanged: (m) => onPaymentMethodChanged(m!),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 10),
-              SizedBox(
-                width: double.infinity,
-                child: FilledButton(
-                  onPressed: submitting || lines.isEmpty ? null : onSubmit,
-                  style: FilledButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                  ),
-                  child: submitting
-                      ? const SizedBox(
-                          width: 18,
-                          height: 18,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Icon(Iconsax.card_pos_copy, size: 20),
-                            const SizedBox(width: 8),
-                            Text(
-                              'تأكيد البيع · ${Formatters.currency(total)}',
-                              style: theme.textTheme.titleMedium?.copyWith(
-                                color: theme.colorScheme.onPrimary,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
     );
   }
 }
