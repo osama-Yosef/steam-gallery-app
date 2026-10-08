@@ -85,14 +85,9 @@ class _TabItem extends StatelessWidget {
           ),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(18),
-            gradient: selected
-                ? LinearGradient(
-                    colors: [
-                      AppColors.primary.withValues(alpha: 0.35),
-                      AppColors.accent.withValues(alpha: 0.25),
-                    ],
-                  )
-                : null,
+            // Flat, not a gradient: old integrated GPUs draw gradients as
+            // nothing, which left the selected tab unmarked (see GradientBox).
+            color: selected ? AppColors.primary.withValues(alpha: 0.3) : null,
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,

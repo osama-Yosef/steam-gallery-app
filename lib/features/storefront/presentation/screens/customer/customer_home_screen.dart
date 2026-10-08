@@ -14,6 +14,7 @@ import '../../../../products/data/models/product_public.dart';
 import '../../../../products/presentation/widgets/product_card.dart';
 import '../../../data/models/storefront_models.dart';
 import '../../providers/storefront_providers.dart';
+import '../../../../../core/widgets/gradient_box.dart';
 
 /// «الرئيسية»: where the customer lands. Sections with nothing in them are
 /// simply not shown, so an empty catalogue still looks deliberate.
@@ -366,11 +367,10 @@ class OfferCard extends StatelessWidget {
               if (offer.imageUrl != null)
                 AppNetworkImage(imageUrl: offer.imageUrl!, fit: BoxFit.cover)
               else
-                const DecoratedBox(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [AppColors.primaryDark, AppColors.brandTeal],
-                    ),
+                const GradientBox(
+                  fallback: AppColors.primaryDark,
+                  gradient: LinearGradient(
+                    colors: [AppColors.primaryDark, AppColors.brandTeal],
                   ),
                 ),
               // Keeps the text legible on any image.
@@ -475,14 +475,13 @@ class _MaintenanceCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 24, 16, 0),
-      child: Container(
+      child: GradientBox(
         padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [AppColors.brandNavy, AppColors.primaryDark],
-          ),
-          borderRadius: BorderRadius.circular(20),
+        fallback: AppColors.brandNavy,
+        gradient: const LinearGradient(
+          colors: [AppColors.brandNavy, AppColors.primaryDark],
         ),
+        borderRadius: BorderRadius.circular(20),
         child: Row(
           children: [
             const Icon(

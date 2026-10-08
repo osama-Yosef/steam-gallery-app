@@ -8,6 +8,7 @@ import '../../../../core/widgets/money_text.dart';
 import '../../../../core/widgets/state_views.dart';
 import '../providers/dashboard_providers.dart';
 import '../widgets/revenue_trend_chart.dart';
+import '../../../../core/widgets/gradient_box.dart';
 
 /// The KPI grid + revenue chart, with no Scaffold of its own — embedded
 /// directly at the top of [AdminHomeScreen] (the user asked for the
@@ -295,16 +296,15 @@ class _KpiCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Container(
+                  GradientBox(
                     width: badgeSize,
                     height: badgeSize,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: LinearGradient(
-                        colors: colors,
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
+                    shape: BoxShape.circle,
+                    fallback: colors.last,
+                    gradient: LinearGradient(
+                      colors: colors,
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
                     ),
                     child: Icon(
                       icon,
@@ -357,13 +357,12 @@ class _HighlightCard extends StatelessWidget {
       child: Material(
         child: InkWell(
           onTap: onTap,
-          child: Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: colors,
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
+          child: GradientBox(
+            fallback: colors.last,
+            gradient: LinearGradient(
+              colors: colors,
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
             ),
             padding: const EdgeInsets.all(20),
             child: Row(

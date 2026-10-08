@@ -17,6 +17,7 @@ import '../../../locations/data/models/location_models.dart';
 import '../../../locations/presentation/providers/locations_providers.dart';
 import '../../../support/presentation/providers/support_providers.dart';
 import '../../../../core/utils/whatsapp_launcher.dart';
+import '../../../../core/widgets/gradient_box.dart';
 
 /// Customer's "حسابي" tab — home for the logout action now that the old
 /// catalog-screen AppBar icons moved into CustomerShell's bottom nav, plus
@@ -40,14 +41,13 @@ class CustomerAccountScreen extends ConsumerWidget {
             padding: const EdgeInsets.all(20),
             child: Row(
               children: [
-                Container(
+                GradientBox(
                   width: 52,
                   height: 52,
-                  decoration: const BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient: LinearGradient(
-                      colors: [AppColors.primary, AppColors.accent],
-                    ),
+                  shape: BoxShape.circle,
+                  fallback: AppColors.primary,
+                  gradient: const LinearGradient(
+                    colors: [AppColors.primary, AppColors.accent],
                   ),
                   child: ClipOval(
                     child: profile?.avatarUrl == null

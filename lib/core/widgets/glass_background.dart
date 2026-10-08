@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
+import 'gradient_box.dart';
 
 /// App-wide backdrop: a soft paper-to-teal gradient with a few large, soft
 /// color "blobs" behind it. Every Scaffold is transparent (see AppTheme) so
@@ -23,13 +24,14 @@ class GlassBackground extends StatelessWidget {
       fit: StackFit.expand,
       children: [
         RepaintBoundary(
-          child: DecoratedBox(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [AppColors.bgTop, AppColors.bgBottom],
-              ),
+          child: GradientBox(
+            // Old integrated GPUs draw no gradients (see GradientBox): they
+            // get the flat paper colour and no blobs.
+            fallback: AppColors.bgTop,
+            gradient: const LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [AppColors.bgTop, AppColors.bgBottom],
             ),
             child: Stack(
               fit: StackFit.expand,

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../theme/app_colors.dart';
 import '../widgets/glass_panel.dart';
+import '../widgets/gradient_box.dart';
 
 /// One tile on a "الأقسام" page: tapping it pushes [route].
 class SectionItem {
@@ -74,23 +75,22 @@ class _SectionTile extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               mainAxisSize: MainAxisSize.min,
               children: [
-                Container(
+                GradientBox(
                   width: 46,
                   height: 46,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient: LinearGradient(
-                      colors: section.colors,
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: section.colors.last.withValues(alpha: 0.4),
-                        blurRadius: 16,
-                      ),
-                    ],
+                  shape: BoxShape.circle,
+                  fallback: section.colors.last,
+                  gradient: LinearGradient(
+                    colors: section.colors,
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
                   ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: section.colors.last.withValues(alpha: 0.4),
+                      blurRadius: 16,
+                    ),
+                  ],
                   child: Icon(section.icon, color: Colors.white, size: 22),
                 ),
                 const SizedBox(height: 10),

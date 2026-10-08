@@ -263,16 +263,9 @@ class _RailItem extends StatelessWidget {
 
     final decoration = BoxDecoration(
       borderRadius: BorderRadius.circular(16),
-      gradient: selected
-          ? LinearGradient(
-              colors: [
-                AppColors.primary.withValues(alpha: 0.35),
-                AppColors.accent.withValues(alpha: 0.25),
-              ],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            )
-          : null,
+      // Flat, not a gradient: old integrated GPUs draw gradients as nothing,
+      // which left the selected item unmarked (see GradientBox).
+      color: selected ? AppColors.primary.withValues(alpha: 0.3) : null,
     );
 
     return Padding(
