@@ -38,6 +38,12 @@ const _sections = <SectionItem>[
     route: Routes.adminCashbox,
   ),
   SectionItem(
+    icon: Iconsax.people_copy,
+    label: 'الموظفين',
+    colors: [Color(0xFFFFAB91), Color(0xFFF4511E)],
+    route: Routes.adminEmployees,
+  ),
+  SectionItem(
     icon: Iconsax.card_pos_copy,
     label: 'بيع مباشر',
     colors: [Color(0xFFFF8A65), Color(0xFFE64A19)],

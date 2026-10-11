@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../widgets/cashbox_kind_selector.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../../core/errors/app_exception.dart';
@@ -102,13 +103,9 @@ class _AdminCashMovementScreenState
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            SegmentedButton<CashboxKind>(
-              segments: [
-                for (final k in CashboxKind.values)
-                  ButtonSegment(value: k, label: Text(cashboxKindLabelAr(k))),
-              ],
-              selected: {_cashboxKind},
-              onSelectionChanged: (s) => setState(() => _cashboxKind = s.first),
+            CashboxKindSelector(
+              value: _cashboxKind,
+              onChanged: (k) => setState(() => _cashboxKind = k),
             ),
             const SizedBox(height: 16),
             if (balance != null)

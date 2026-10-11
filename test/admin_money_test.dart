@@ -176,8 +176,8 @@ void main() {
       tester,
     ) async {
       await _open(tester, const AdminCashboxScreen(), cashboxOverrides());
-      expect(find.text('الخزنة النقدية'), findsOneWidget);
-      expect(find.text('خزنة التحويلات'), findsOneWidget);
+      expect(find.text('خزنة الدرج'), findsOneWidget);
+      expect(find.text('حساب CIB'), findsOneWidget);
       expect(find.text(Formatters.currency(500)), findsOneWidget);
       expect(find.text(Formatters.currency(1200)), findsOneWidget);
       expect(find.text('بيع'), findsOneWidget);
@@ -192,7 +192,7 @@ void main() {
       await _open(tester, const AdminCashboxScreen(), cashboxOverrides());
       await tester.tap(find.text('الكل'));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('خزنة التحويلات').last);
+      await tester.tap(find.text('حساب CIB').last);
       await tester.pumpAndSettle();
       expect(find.text('بيع'), findsNothing);
       expect(find.text('إيداع نقدي'), findsOneWidget);
@@ -270,7 +270,7 @@ void main() {
         find.widgetWithText(TextFormField, 'المبلغ'),
         '750.5',
       );
-      await tester.tap(find.text('خزنة التحويلات'));
+      await tester.tap(find.text('حساب CIB'));
       await tester.enterText(
         find.widgetWithText(TextFormField, 'ملاحظات (اختياري)'),
         'شهر أكتوبر',
@@ -326,9 +326,9 @@ void main() {
         const AdminCashMovementScreen(kind: CashMovementKind.withdrawal),
         movementOverrides(_FakeCashboxRepo()),
       );
-      expect(find.text('رصيد الخزنة النقدية'), findsOneWidget);
+      expect(find.text('رصيد خزنة الدرج'), findsOneWidget);
       expect(find.text(Formatters.currency(500)), findsOneWidget);
-      await tester.tap(find.text('خزنة التحويلات'));
+      await tester.tap(find.text('حساب CIB'));
       await tester.pumpAndSettle();
       expect(find.text(Formatters.currency(1200)), findsOneWidget);
     });
@@ -350,7 +350,7 @@ void main() {
       expect(repo.calls, isEmpty);
 
       // From the transfer till (1200) the same amount is fine.
-      await tester.tap(find.text('خزنة التحويلات'));
+      await tester.tap(find.text('حساب CIB'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('تأكيد السحب'));
       await tester.pumpAndSettle();
@@ -410,7 +410,7 @@ void main() {
         find.widgetWithText(TextFormField, 'المبلغ'),
         '250',
       );
-      await tester.tap(find.text('تحويل'));
+      await tester.tap(find.text('تحويل بنكي'));
       await tester.tap(find.text('تسجيل الدفعة'));
       await tester.pumpAndSettle();
       expect(find.text('لا يوجد اتصال'), findsOneWidget);
@@ -477,7 +477,7 @@ void main() {
       final repo = _FakePurchasesRepo();
       await openDialog(tester, repo, invoiceId: 'inv-1');
       expect(find.text('سداد للمورد مورد المكاوي'), findsOneWidget);
-      await tester.tap(find.text('تحويل'));
+      await tester.tap(find.text('حساب CIB'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('سداد').last);
       await tester.pumpAndSettle();

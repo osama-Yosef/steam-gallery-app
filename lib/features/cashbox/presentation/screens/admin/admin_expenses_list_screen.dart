@@ -20,7 +20,18 @@ class AdminExpensesListScreen extends ConsumerWidget {
         ref.watch(currentUserProfileProvider).value?.role == AppRole.sales;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('المصروفات')),
+      appBar: AppBar(
+        title: const Text('المصروفات'),
+        actions: [
+          // Categories are admin-only (RLS); sales just uses them.
+          if (!isSales)
+            IconButton(
+              icon: const Icon(Iconsax.category_copy),
+              tooltip: 'تصنيفات المصروفات',
+              onPressed: () => context.push(Routes.adminExpenseCategories),
+            ),
+        ],
+      ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {
           await context.push(

@@ -233,7 +233,7 @@ void main() {
       find.widgetWithText(TextField, 'المبلغ'),
     );
     expect(field.controller!.text, '200.00');
-    await tester.tap(find.text('تحويل'));
+    await tester.tap(find.text('تحويل بنكي'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('تسجيل'));
     await tester.pumpAndSettle();

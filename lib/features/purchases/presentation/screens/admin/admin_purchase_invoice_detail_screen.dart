@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import '../../../../../core/utils/formatters.dart';
+import '../../../../cashbox/data/models/cashbox_balance.dart';
+import '../../../../cashbox/presentation/widgets/cashbox_kind_selector.dart';
 import '../../../../../core/widgets/state_views.dart';
 import '../../../data/models/purchase_models.dart';
 import '../../providers/purchases_providers.dart';
@@ -114,13 +116,11 @@ class AdminPurchaseInvoiceDetailScreen extends ConsumerWidget {
                           for (final SupplierPayment p in payments)
                             ListTile(
                               leading: Icon(
-                                p.kind == 'cash'
-                                    ? Iconsax.money_copy
-                                    : Iconsax.card_copy,
+                                cashboxKindIcon(cashboxKindFromString(p.kind)),
                               ),
                               title: Text(Formatters.currency(p.amount)),
                               subtitle: Text(
-                                '${p.kind == 'cash' ? 'كاش' : 'تحويل'} · ${Formatters.dateTime(p.createdAt)}'
+                                '${cashboxKindLabelAr(cashboxKindFromString(p.kind))} · ${Formatters.dateTime(p.createdAt)}'
                                 '${p.notes == null ? '' : '\n${p.notes}'}',
                               ),
                             ),

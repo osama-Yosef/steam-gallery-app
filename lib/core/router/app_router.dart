@@ -17,6 +17,13 @@ import '../../features/cart/presentation/screens/cart_screen.dart';
 import '../../features/cashbox/presentation/screens/admin/admin_cashbox_screen.dart';
 import '../../features/cashbox/presentation/screens/admin/admin_expenses_list_screen.dart';
 import '../../features/cashbox/presentation/screens/admin/admin_cash_movement_screen.dart';
+import '../../features/cashbox/presentation/screens/admin/admin_cash_transfer_screen.dart';
+import '../../features/cashbox/presentation/screens/admin/admin_expense_categories_screen.dart';
+import '../../features/inventory/presentation/screens/admin/admin_opening_stock_screen.dart';
+import '../../features/employees/presentation/screens/admin_employees_screen.dart';
+import '../../features/employees/presentation/screens/admin_employee_form_screen.dart';
+import '../../features/employees/presentation/screens/admin_employee_detail_screen.dart';
+import '../../features/employees/presentation/screens/admin_attendance_screen.dart';
 import '../../features/cashbox/presentation/screens/admin/admin_record_expense_screen.dart';
 import '../../features/customer_account/presentation/screens/admin/admin_customer_account_detail_screen.dart';
 import '../../features/customer_account/presentation/screens/admin/admin_customer_payment_screen.dart';
@@ -219,6 +226,35 @@ GoRouter appRouter(Ref ref) {
                   GoRoute(
                     path: 'sections',
                     builder: (_, _) => const AdminSectionsScreen(),
+                  ),
+                  GoRoute(
+                    path: 'employees',
+                    builder: (_, _) => const AdminEmployeesScreen(),
+                    routes: [
+                      // Before ':id', which would otherwise match them.
+                      GoRoute(
+                        path: 'new',
+                        builder: (_, _) => const AdminEmployeeFormScreen(),
+                      ),
+                      GoRoute(
+                        path: 'attendance',
+                        builder: (_, _) => const AdminAttendanceScreen(),
+                      ),
+                      GoRoute(
+                        path: ':id',
+                        builder: (_, state) => AdminEmployeeDetailScreen(
+                          employeeId: state.pathParameters['id']!,
+                        ),
+                        routes: [
+                          GoRoute(
+                            path: 'edit',
+                            builder: (_, state) => AdminEmployeeFormScreen(
+                              employeeId: state.pathParameters['id'],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
                   GoRoute(
                     path: 'walk-in-sale',
@@ -468,6 +504,10 @@ GoRouter appRouter(Ref ref) {
                 builder: (_, _) => const AdminIssueStockScreen(),
               ),
               GoRoute(
+                path: Routes.adminOpeningStock,
+                builder: (_, _) => const AdminOpeningStockScreen(),
+              ),
+              GoRoute(
                 path: Routes.adminStockMovements,
                 builder: (_, _) => const AdminStockMovementsScreen(),
               ),
@@ -530,6 +570,14 @@ GoRouter appRouter(Ref ref) {
               GoRoute(
                 path: Routes.adminExpenseNew,
                 builder: (_, _) => const AdminRecordExpenseScreen(),
+              ),
+              GoRoute(
+                path: Routes.adminExpenseCategories,
+                builder: (_, _) => const AdminExpenseCategoriesScreen(),
+              ),
+              GoRoute(
+                path: Routes.adminCashTransfer,
+                builder: (_, _) => const AdminCashTransferScreen(),
               ),
               GoRoute(
                 path: Routes.adminCashDeposit,
@@ -665,6 +713,10 @@ GoRouter appRouter(Ref ref) {
                         builder: (_, _) => const AdminCashMovementScreen(
                           kind: CashMovementKind.withdrawal,
                         ),
+                      ),
+                      GoRoute(
+                        path: 'transfer',
+                        builder: (_, _) => const AdminCashTransferScreen(),
                       ),
                     ],
                   ),

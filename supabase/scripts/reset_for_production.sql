@@ -14,12 +14,14 @@
 --   * stock: warehouse and technician-bag quantities, movements, counts
 --   * the catalogue: products, categories, images, options, components
 --   * suppliers and purchase invoices, offers, banners, service areas
+--   * employees' attendance, advances and salary payments (the employees
+--     themselves are kept)
 --   * notifications and the audit log
 --
 -- Kept: every account (admin, sales, technicians, customers) and their
 -- logins, customers' saved addresses (their service area cleared — areas
 -- are redrawn from scratch), countries and cities, the warehouse and the
--- two tills, technicians' (empty) bags, app settings (InstaPay, WhatsApp,
+-- four tills, the employees, technicians' (empty) bags, app settings (InstaPay, WhatsApp,
 -- phone verification switch).
 --
 -- Expense categories are cleared and the standard seven put back: the app
@@ -39,6 +41,9 @@ where service_area_id is not null;
 -- One statement, no CASCADE: if any table this script keeps still pointed
 -- at one of these, Postgres refuses and nothing is wiped.
 truncate table
+  public.employee_payrolls,
+  public.employee_advances,
+  public.employee_attendance,
   public.notifications,
   public.cart_items,
   public.payment_webhook_events,

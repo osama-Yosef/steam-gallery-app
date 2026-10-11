@@ -37,7 +37,15 @@ Future<List<CashTransaction>> cashTransactions(Ref ref, String? cashboxId) {
 @riverpod
 Future<List<ExpenseCategory>> expenseCategories(Ref ref) {
   ref.cacheFor();
+  ref.refreshOnServerChange();
   return ref.watch(cashboxRepositoryProvider).getExpenseCategories();
+}
+
+@riverpod
+Future<List<ExpenseCategory>> allExpenseCategories(Ref ref) {
+  ref.cacheFor();
+  ref.refreshOnServerChange();
+  return ref.watch(cashboxRepositoryProvider).getAllExpenseCategories();
 }
 
 @riverpod

@@ -168,7 +168,7 @@ class AppException implements Exception {
     ),
     (
       'NOT_A_STOCK_PRODUCT',
-      'الخدمات وأصناف التجميع مالهاش شراء — اشترِ مكوناتها',
+      'الخدمات وأصناف التجميع مالهاش رصيد مخزني — سجّل مكوناتها',
     ),
     ('SUPPLIER_REQUIRED', 'اكتب اسم المورد'),
     ('SUPPLIER_NOT_FOUND', 'المورد غير موجود'),
@@ -200,6 +200,16 @@ class AppException implements Exception {
     ),
     ('DUPLICATE_REFERENCE_OR_REQUEST', 'المرجع ده مُسجَّل قبل كدا'),
     ('PAYMENT_NOT_PENDING_VERIFICATION', 'التحويل ده اتراجع قبل كدا'),
+    // Tills, expenses, opening stock (0080) and employees (0081).
+    ('SAME_CASHBOX', 'اختار خزنتين مختلفتين للتحويل'),
+    ('CATEGORY_NOT_FOUND', 'تصنيف المصروف ده مش موجود أو موقوف'),
+    ('expense_categories_name_key', 'في تصنيف بنفس الاسم بالفعل'),
+    ('EMPLOYEE_NOT_FOUND', 'الموظف غير موجود'),
+    ('EMPLOYEE_INACTIVE', 'الموظف ده موقوف — فعّله الأول'),
+    ('SALARY_ALREADY_PAID', 'مرتب الشهر ده اتصرف قبل كدا'),
+    ('ADVANCE_EXCEEDS_BALANCE', 'خصم السلف أكبر من السلف اللي على الموظف'),
+    ('INVALID_DEDUCTION', 'الخصم أكبر من المستحق'),
+    ('employees_full_name_check', 'اكتب اسم الموظف'),
     // Wallet (0040).
     ('INSUFFICIENT_WALLET_BALANCE', 'رصيد محفظتك مش كافي لدفع المبلغ ده'),
     // Setup problems the admin can actually fix — never the generic message.
@@ -209,10 +219,7 @@ class AppException implements Exception {
     ),
     ('NO_CASHBOX', 'لا توجد خزنة مُفعَّلة — أنشئ الخزنة أولًا'),
     ('INSUFFICIENT_CASH', 'رصيد الخزنة لا يكفي لهذه العملية'),
-    (
-      'INVALID_REFUND_KIND',
-      'اختر الخزنة التي سيُخصم منها المبلغ (نقدي أو تحويل)',
-    ),
+    ('INVALID_REFUND_KIND', 'اختر الخزنة التي سيُخصم منها المبلغ'),
     ('FORBIDDEN_OR_NOT_ASSIGNED', 'هذا الطلب غير مسنَد لك'),
     ('FORBIDDEN_OR_NOT_IN_PROGRESS', 'لا يمكن إنهاء طلب لم يبدأ تنفيذه بعد'),
     ('FORBIDDEN_OR_NOT_CANCELLABLE', 'لا يمكن إلغاء هذا الطلب الآن'),

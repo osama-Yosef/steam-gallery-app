@@ -38,6 +38,16 @@ String cashTxnTypeLabelAr(CashTxnType t) => switch (t) {
   CashTxnType.otherExpense => 'سحب نقدي',
 };
 
+/// The row's label — [cashTxnTypeLabelAr], made specific where the
+/// reference says more than the type does (0080/0081 reuse existing types).
+String cashTxnLabelAr(CashTransaction t) => switch (t.referenceType) {
+  'cashbox_transfer' =>
+    t.amount < 0 ? 'تحويل إلى خزنة أخرى' : 'تحويل من خزنة أخرى',
+  'employee_advance' => 'سلفة موظف',
+  'employee_payroll' => 'مرتب موظف',
+  _ => cashTxnTypeLabelAr(t.type),
+};
+
 @freezed
 abstract class CashTransaction with _$CashTransaction {
   const factory CashTransaction({

@@ -253,7 +253,7 @@ void main() {
     await _addLine(tester, 'قاعدة', qty: '5');
     await tester.enterText(find.widgetWithText(TextField, 'الخصم'), '20');
     await tester.pump();
-    await tester.tap(find.text('تحويل'));
+    await tester.tap(find.text('حساب CIB'));
     await tester.pump();
     expect(find.text(_saveLabel(200)), findsOneWidget);
 
@@ -359,7 +359,7 @@ void main() {
     await _addLine(tester, 'مكواة');
     await tester.tap(find.text('آجل'));
     await tester.pump();
-    expect(find.text('كاش'), findsNothing, reason: 'no till to choose');
+    expect(find.text('خزنة الدرج'), findsNothing, reason: 'no till to choose');
     await _save(tester, 60);
     expect(repo.calls.single.paidAmount, 0);
     expect(repo.calls.single.paymentKind, isNull);

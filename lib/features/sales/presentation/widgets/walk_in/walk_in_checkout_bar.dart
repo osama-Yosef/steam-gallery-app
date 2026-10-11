@@ -35,11 +35,7 @@ class WalkInCheckoutBar extends StatelessWidget {
   });
 
   /// A walk-in customer pays in full on the spot — never "آجل".
-  static const _methods = [
-    PaymentMethod.cash,
-    PaymentMethod.card,
-    PaymentMethod.transfer,
-  ];
+  static const _methods = offeredPaymentMethods;
 
   @override
   Widget build(BuildContext context) {

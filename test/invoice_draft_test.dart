@@ -150,5 +150,9 @@ void main() {
       defaultTillFor(_sale(method: PaymentMethod.card)),
       CashboxKind.transfer,
     );
+    expect(
+      defaultTillFor(_sale(method: PaymentMethod.wallet)),
+      CashboxKind.wallet,
+    );
   });
 }

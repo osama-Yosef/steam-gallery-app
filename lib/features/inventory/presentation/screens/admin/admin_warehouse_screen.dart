@@ -37,6 +37,15 @@ class _AdminWarehouseScreenState extends ConsumerState<AdminWarehouseScreen> {
           children: [
             ListTile(
               leading: const Icon(
+                Iconsax.archive_add_copy,
+                color: AppColors.info,
+              ),
+              title: const Text('رصيد افتتاحي'),
+              subtitle: const Text('البضاعة الموجودة قبل البرنامج — بدون مورد'),
+              onTap: () => Navigator.of(ctx).pop('opening'),
+            ),
+            ListTile(
+              leading: const Icon(
                 Iconsax.box_add_copy,
                 color: AppColors.success,
               ),
@@ -57,9 +66,11 @@ class _AdminWarehouseScreenState extends ConsumerState<AdminWarehouseScreen> {
       ),
     );
     if (!mounted || action == null) return;
-    final route = action == 'purchase'
-        ? Routes.adminPurchaseInvoiceNew
-        : Routes.adminIssueStock;
+    final route = switch (action) {
+      'opening' => Routes.adminOpeningStock,
+      'purchase' => Routes.adminPurchaseInvoiceNew,
+      _ => Routes.adminIssueStock,
+    };
     await context.push(route);
     ref.invalidate(warehouseStockProvider);
   }
@@ -156,9 +167,19 @@ class _AdminWarehouseScreenState extends ConsumerState<AdminWarehouseScreen> {
               ),
               data: (items) {
                 if (items.isEmpty) {
-                  return const EmptyView(
+                  return EmptyView(
                     message: 'لا توجد أصناف بالمخزن',
                     icon: Iconsax.buildings_2_copy,
+                    action: _search.isNotEmpty
+                        ? null
+                        : OutlinedButton.icon(
+                            onPressed: () async {
+                              await context.push(Routes.adminOpeningStock);
+                              ref.invalidate(warehouseStockProvider);
+                            },
+                            icon: const Icon(Iconsax.archive_add_copy),
+                            label: const Text('إضافة رصيد افتتاحي'),
+                          ),
                   );
                 }
                 return ListView.builder(

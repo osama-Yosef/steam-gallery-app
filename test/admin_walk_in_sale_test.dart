@@ -277,7 +277,7 @@ void main() {
     // Pay by transfer instead of the default cash.
     await tester.tap(find.text('نقدًا'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('تحويل').last);
+    await tester.tap(find.text('تحويل بنكي').last);
     await tester.pumpAndSettle();
 
     expect(find.text(_confirmLabel(170)), findsOneWidget);
@@ -311,7 +311,7 @@ void main() {
 
     // The payment method shows cash again, not only in what gets sent.
     expect(find.text('نقدًا'), findsOneWidget);
-    expect(find.text('تحويل'), findsNothing);
+    expect(find.text('تحويل بنكي'), findsNothing);
 
     // …and the next sale can't be mistaken for a resend of this one.
     await tester.tap(find.text('مكواة بخار'));

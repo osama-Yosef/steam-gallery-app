@@ -18,6 +18,7 @@ const cityId = 'c-1';
 const areaId = 'a-1';
 const offerId = 'of-1';
 const bannerId = 'b-1';
+const employeeId = 'e-1';
 
 typedef Screen = ({AppRole role, String location});
 
@@ -88,6 +89,14 @@ const List<Screen> screens = [
   (role: AppRole.admin, location: '/admin/expenses/new'),
   (role: AppRole.admin, location: '/admin/cashbox/deposit'),
   (role: AppRole.admin, location: '/admin/cashbox/withdraw'),
+  (role: AppRole.admin, location: '/admin/cashbox/transfer'),
+  (role: AppRole.admin, location: '/admin/expenses/categories'),
+  (role: AppRole.admin, location: '/admin/warehouse/opening-stock'),
+  (role: AppRole.admin, location: '/admin/employees'),
+  (role: AppRole.admin, location: '/admin/employees/new'),
+  (role: AppRole.admin, location: '/admin/employees/attendance'),
+  (role: AppRole.admin, location: '/admin/employees/$employeeId'),
+  (role: AppRole.admin, location: '/admin/employees/$employeeId/edit'),
   (role: AppRole.admin, location: '/notifications'),
   // Sales
   (role: AppRole.sales, location: '/sales'),
@@ -100,6 +109,7 @@ const List<Screen> screens = [
   (role: AppRole.sales, location: '/sales/sections/sales-returns'),
   (role: AppRole.sales, location: '/sales/sections/cashbox'),
   (role: AppRole.sales, location: '/sales/sections/cashbox/expenses'),
+  (role: AppRole.sales, location: '/sales/sections/cashbox/transfer'),
   // Technician
   (role: AppRole.technician, location: '/technician'),
   (

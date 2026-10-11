@@ -300,7 +300,7 @@ void main() {
       findsOneWidget,
     );
     // Paid in cash, so the cash till is suggested; switch to transfer.
-    await tester.tap(find.text('تحويل'));
+    await tester.tap(find.text('حساب CIB'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('حفظ'));
     await tester.pumpAndSettle();
@@ -337,7 +337,7 @@ void main() {
     await _open(tester, _FakeSalesRepo());
     await _saveAndConfirm(tester, 280);
     expect(find.text('لا يوجد فرق في الفلوس'), findsOneWidget);
-    expect(find.text('كاش'), findsNothing);
+    expect(find.text('خزنة الدرج'), findsNothing);
   });
 
   testWidgets('backing out of the save dialog sends nothing', (tester) async {

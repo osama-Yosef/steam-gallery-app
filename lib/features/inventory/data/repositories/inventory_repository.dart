@@ -26,6 +26,14 @@ abstract class InventoryRepository {
     required List<({String productId, int quantity})> items,
     String? notes,
   });
+
+  /// رصيد افتتاحي (0080): stock the warehouse already had before the app —
+  /// no supplier, no money. A given [unitCost] becomes the product's cost
+  /// price; null keeps the current one.
+  Future<void> addOpeningStock({
+    required List<({String productId, int quantity, double? unitCost})> items,
+    String? notes,
+  });
 }
 
 class SupabaseInventoryRepository implements InventoryRepository {
@@ -171,6 +179,32 @@ class SupabaseInventoryRepository implements InventoryRepository {
           'p_items': items
               .map((e) => {'product_id': e.productId, 'quantity': e.quantity})
               .toList(),
+          'p_notes': notes,
+        },
+      );
+      _outbox.markServerChanged();
+    } catch (e) {
+      throw AppException.from(e);
+    }
+  }
+
+  @override
+  Future<void> addOpeningStock({
+    required List<({String productId, int quantity, double? unitCost})> items,
+    String? notes,
+  }) async {
+    try {
+      await _client.rpc(
+        'rpc_admin_opening_stock',
+        params: {
+          'p_items': [
+            for (final e in items)
+              {
+                'product_id': e.productId,
+                'quantity': e.quantity,
+                'unit_cost': e.unitCost,
+              },
+          ],
           'p_notes': notes,
         },
       );

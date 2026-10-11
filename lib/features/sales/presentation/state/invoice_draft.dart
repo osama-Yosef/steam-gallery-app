@@ -122,6 +122,4 @@ class InvoiceDraft {
 /// The till money is collected into or refunded from by default: the one
 /// the invoice was paid into.
 CashboxKind defaultTillFor(Sale sale) =>
-    sale.paymentMethod == PaymentMethod.cash
-    ? CashboxKind.cash
-    : CashboxKind.transfer;
+    cashboxKindForPayment(sale.paymentMethod);

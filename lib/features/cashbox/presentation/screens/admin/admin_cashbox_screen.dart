@@ -12,6 +12,7 @@ import '../../../../auth/presentation/providers/auth_providers.dart';
 import '../../../data/models/cash_transaction.dart';
 import '../../../data/models/cashbox_balance.dart';
 import '../../providers/cashbox_providers.dart';
+import '../../widgets/cashbox_kind_selector.dart';
 
 /// Four clearly distinct colours so the kind of money movement reads at a
 /// glance: sales/technician deposits are genuine income (green), a manual
@@ -39,9 +40,9 @@ IconData _cashTxnTypeIcon(CashTxnType t) => switch (t) {
   CashTxnType.purchase => Iconsax.box_add_copy,
 };
 
-/// Two tills since 0059 (cash + transfer) — this screen shows both balances
-/// and lets the transaction list be filtered to just one, "الكل" (both
-/// mixed, sorted by date) being the default.
+/// Four tills since 0080 (drawer, main safe, CIB, Vodafone Cash) — this
+/// screen shows every balance and lets the transaction list be filtered to
+/// just one, "الكل" (all mixed, sorted by date) being the default.
 class AdminCashboxScreen extends ConsumerStatefulWidget {
   const AdminCashboxScreen({super.key});
 
@@ -81,6 +82,19 @@ class _AdminCashboxScreenState extends ConsumerState<AdminCashboxScreen> {
               subtitle: const Text('يزوّد الرصيد فقط، بدون أي أثر على الأرباح'),
               onTap: () => Navigator.of(sheetContext).pop(
                 isSales ? Routes.salesCashDeposit : Routes.adminCashDeposit,
+              ),
+            ),
+            ListTile(
+              leading: const Icon(
+                Iconsax.arrow_swap_horizontal_copy,
+                color: AppColors.primary,
+              ),
+              title: const Text('تحويل بين الخزن'),
+              subtitle: const Text(
+                'مثلًا من الدرج للخزنة الرئيسية أو لحساب CIB',
+              ),
+              onTap: () => Navigator.of(sheetContext).pop(
+                isSales ? Routes.salesCashTransfer : Routes.adminCashTransfer,
               ),
             ),
             ListTile(
@@ -144,14 +158,42 @@ class _AdminCashboxScreenState extends ConsumerState<AdminCashboxScreen> {
             ),
             data: (balances) {
               if (balances.isEmpty) return const SizedBox.shrink();
+              final total = balances.fold<double>(0, (s, b) => s + b.balance);
               return Padding(
                 padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-                child: Row(
+                child: Column(
                   children: [
-                    for (final b in balances) ...[
-                      Expanded(child: _BalanceCard(balance: b)),
-                      if (b != balances.last) const SizedBox(width: 12),
-                    ],
+                    LayoutBuilder(
+                      builder: (context, c) {
+                        // Two per row on a phone, all four side by side on
+                        // anything wider.
+                        final perRow = c.maxWidth >= 700 ? 4 : 2;
+                        final w = (c.maxWidth - 8 * (perRow - 1)) / perRow;
+                        return Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: [
+                            for (final b in balances)
+                              SizedBox(
+                                width: w,
+                                child: _BalanceCard(balance: b),
+                              ),
+                          ],
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      alignment: WrapAlignment.center,
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      children: [
+                        const Text('إجمالي كل الخزن: '),
+                        MoneyText(
+                          total,
+                          style: Theme.of(context).textTheme.titleSmall,
+                        ),
+                      ],
+                    ),
                   ],
                 ),
               );
@@ -220,19 +262,26 @@ class _BalanceCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
+      margin: EdgeInsets.zero,
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
         child: Column(
           children: [
+            Icon(cashboxKindIcon(balance.kind), size: 20),
+            const SizedBox(height: 4),
             Text(
               cashboxKindLabelAr(balance.kind),
               style: Theme.of(context).textTheme.bodyMedium,
               textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
-            const SizedBox(height: 6),
-            MoneyText(
-              balance.balance,
-              style: Theme.of(context).textTheme.titleLarge,
+            const SizedBox(height: 4),
+            FittedBox(
+              child: MoneyText(
+                balance.balance,
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
             ),
           ],
         ),
@@ -280,7 +329,7 @@ class _TxnTile extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        cashTxnTypeLabelAr(txn.type),
+                        cashTxnLabelAr(txn),
                         style: Theme.of(context).textTheme.titleMedium
                             ?.copyWith(fontWeight: FontWeight.bold),
                       ),

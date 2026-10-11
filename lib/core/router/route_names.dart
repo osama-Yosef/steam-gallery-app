@@ -42,6 +42,7 @@ abstract final class Routes {
   static const salesExpenseNew = '/sales/sections/cashbox/expenses/new';
   static const salesCashDeposit = '/sales/sections/cashbox/deposit';
   static const salesCashWithdraw = '/sales/sections/cashbox/withdraw';
+  static const salesCashTransfer = '/sales/sections/cashbox/transfer';
   static const technicianHome = '/technician';
   static const customerHome = '/customer';
   static const customerAccount = '/customer/account';
@@ -163,6 +164,16 @@ abstract final class Routes {
   static const adminExpenseNew = '/admin/expenses/new';
   static const adminCashDeposit = '/admin/cashbox/deposit';
   static const adminCashWithdraw = '/admin/cashbox/withdraw';
+  static const adminCashTransfer = '/admin/cashbox/transfer';
+  static const adminExpenseCategories = '/admin/expenses/categories';
+  static const adminOpeningStock = '/admin/warehouse/opening-stock';
+
+  // Employees: salary, attendance, advances (0081).
+  static const adminEmployees = '/admin/employees';
+  static const adminEmployeeNew = '/admin/employees/new';
+  static const adminAttendance = '/admin/employees/attendance';
+  static String adminEmployeeDetail(String id) => '/admin/employees/$id';
+  static String adminEmployeeEdit(String id) => '/admin/employees/$id/edit';
 
   // Walk-in sales — `?tab=invoices` opens on the invoice history (the
   // dashboard's "مبيعات اليوم" tile).

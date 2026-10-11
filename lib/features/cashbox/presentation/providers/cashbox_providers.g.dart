@@ -213,7 +213,49 @@ final class ExpenseCategoriesProvider
   }
 }
 
-String _$expenseCategoriesHash() => r'0b58051a92142a3522eb1f3f13ec11ba9e26f7bf';
+String _$expenseCategoriesHash() => r'01bef2ba23b3779d8f8678ddf8622276f663e6b2';
+
+@ProviderFor(allExpenseCategories)
+const allExpenseCategoriesProvider = AllExpenseCategoriesProvider._();
+
+final class AllExpenseCategoriesProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<List<ExpenseCategory>>,
+          List<ExpenseCategory>,
+          FutureOr<List<ExpenseCategory>>
+        >
+    with
+        $FutureModifier<List<ExpenseCategory>>,
+        $FutureProvider<List<ExpenseCategory>> {
+  const AllExpenseCategoriesProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'allExpenseCategoriesProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$allExpenseCategoriesHash();
+
+  @$internal
+  @override
+  $FutureProviderElement<List<ExpenseCategory>> $createElement(
+    $ProviderPointer pointer,
+  ) => $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<List<ExpenseCategory>> create(Ref ref) {
+    return allExpenseCategories(ref);
+  }
+}
+
+String _$allExpenseCategoriesHash() =>
+    r'adfec795ac17d42baed2e3a5b4f2d3de778cd136';
 
 @ProviderFor(expenses)
 const expensesProvider = ExpensesProvider._();

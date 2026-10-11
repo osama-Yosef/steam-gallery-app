@@ -12,6 +12,7 @@ enum StockMovementType {
   damage,
   inventoryAdjustment,
   transfer,
+  openingBalance,
 }
 
 StockMovementType stockMovementTypeFromString(String v) => switch (v) {
@@ -24,6 +25,7 @@ StockMovementType stockMovementTypeFromString(String v) => switch (v) {
   'damage' => StockMovementType.damage,
   'inventory_adjustment' => StockMovementType.inventoryAdjustment,
   'transfer' => StockMovementType.transfer,
+  'opening_balance' => StockMovementType.openingBalance,
   _ => StockMovementType.purchase,
 };
 
@@ -37,6 +39,7 @@ String stockMovementTypeLabelAr(StockMovementType t) => switch (t) {
   StockMovementType.damage => 'تالف',
   StockMovementType.inventoryAdjustment => 'تسوية جرد',
   StockMovementType.transfer => 'نقل',
+  StockMovementType.openingBalance => 'رصيد افتتاحي',
 };
 
 String locationTypeLabelAr(String? t) => switch (t) {

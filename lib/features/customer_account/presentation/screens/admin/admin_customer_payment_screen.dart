@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:uuid/uuid.dart';
 import '../../../../../core/errors/app_exception.dart';
+import '../../../../cashbox/presentation/widgets/cashbox_kind_selector.dart';
 import '../../../../technician_account/data/models/sale.dart';
 import '../../providers/customer_account_providers.dart';
 import '../../../../../core/offline/offline_widgets.dart';
@@ -93,17 +94,9 @@ class _AdminCustomerPaymentScreenState
             const SizedBox(height: 16),
             const Text('استُلم الفلوس إزاي؟'),
             const SizedBox(height: 8),
-            SegmentedButton<PaymentMethod>(
-              segments: const [
-                ButtonSegment(value: PaymentMethod.cash, label: Text('نقدًا')),
-                ButtonSegment(
-                  value: PaymentMethod.transfer,
-                  label: Text('تحويل'),
-                ),
-              ],
-              selected: {_paymentMethod},
-              onSelectionChanged: (s) =>
-                  setState(() => _paymentMethod = s.first),
+            PaymentMethodSelector(
+              value: _paymentMethod,
+              onChanged: (m) => setState(() => _paymentMethod = m),
             ),
             const SizedBox(height: 16),
             TextFormField(

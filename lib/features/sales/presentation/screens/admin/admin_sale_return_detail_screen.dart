@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../cashbox/presentation/widgets/cashbox_kind_selector.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import '../../../../../core/errors/app_exception.dart';
@@ -25,9 +26,7 @@ class AdminSaleReturnDetailScreen extends ConsumerWidget {
   const AdminSaleReturnDetailScreen({super.key, required this.saleId});
 
   CashboxKind _defaultKind(PaymentMethod saleMethod) =>
-      saleMethod == PaymentMethod.cash
-      ? CashboxKind.cash
-      : CashboxKind.transfer;
+      cashboxKindForPayment(saleMethod);
 
   Future<void> _returnItem(
     BuildContext context,
@@ -71,14 +70,9 @@ class AdminSaleReturnDetailScreen extends ConsumerWidget {
               ],
               Text('الفلوس هترجع من', style: Theme.of(ctx).textTheme.bodySmall),
               const SizedBox(height: 6),
-              SegmentedButton<CashboxKind>(
-                segments: [
-                  for (final k in CashboxKind.values)
-                    ButtonSegment(value: k, label: Text(cashboxKindLabelAr(k))),
-                ],
-                selected: {refundKind},
-                onSelectionChanged: (s) =>
-                    setDialogState(() => refundKind = s.first),
+              CashboxKindSelector(
+                value: refundKind,
+                onChanged: (k) => setDialogState(() => refundKind = k),
               ),
               const SizedBox(height: 12),
               TextField(
@@ -148,14 +142,9 @@ class AdminSaleReturnDetailScreen extends ConsumerWidget {
             children: [
               Text('الفلوس هترجع من', style: Theme.of(ctx).textTheme.bodySmall),
               const SizedBox(height: 6),
-              SegmentedButton<CashboxKind>(
-                segments: [
-                  for (final k in CashboxKind.values)
-                    ButtonSegment(value: k, label: Text(cashboxKindLabelAr(k))),
-                ],
-                selected: {refundKind},
-                onSelectionChanged: (s) =>
-                    setDialogState(() => refundKind = s.first),
+              CashboxKindSelector(
+                value: refundKind,
+                onChanged: (k) => setDialogState(() => refundKind = k),
               ),
               const SizedBox(height: 12),
               TextField(

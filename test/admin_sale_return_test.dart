@@ -152,7 +152,7 @@ void main() {
     await _pump(tester, repo);
     await tester.tap(find.text('إرجاع'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('خزنة التحويلات'));
+    await tester.tap(find.text('حساب CIB'));
     await tester.pumpAndSettle();
     await tester.enterText(find.byType(TextField), 'غلط');
     await tester.tap(find.text('تأكيد الإرجاع'));

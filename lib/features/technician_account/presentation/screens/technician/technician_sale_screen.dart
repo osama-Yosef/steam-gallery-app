@@ -397,19 +397,14 @@ class _TechnicianSaleScreenState extends ConsumerState<TechnicianSaleScreen> {
             initialValue: _paymentMethod,
             isExpanded: true,
             decoration: const InputDecoration(labelText: 'طريقة الدفع'),
-            items:
-                const [
-                      PaymentMethod.cash,
-                      PaymentMethod.card,
-                      PaymentMethod.transfer,
-                    ]
-                    .map(
-                      (m) => DropdownMenuItem(
-                        value: m,
-                        child: Text(paymentMethodLabelAr(m)),
-                      ),
-                    )
-                    .toList(),
+            items: offeredPaymentMethods
+                .map(
+                  (m) => DropdownMenuItem(
+                    value: m,
+                    child: Text(paymentMethodLabelAr(m)),
+                  ),
+                )
+                .toList(),
             onChanged: (m) => setState(() => _paymentMethod = m!),
           ),
           const SizedBox(height: 12),

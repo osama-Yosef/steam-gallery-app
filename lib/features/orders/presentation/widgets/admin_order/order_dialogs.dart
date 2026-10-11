@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../cashbox/presentation/widgets/cashbox_kind_selector.dart';
 import '../../../../technician_account/data/models/sale.dart';
 import '../../../../../core/utils/input_formatters.dart';
 
@@ -109,16 +110,9 @@ Future<({double amount, PaymentMethod method})?> askOrderPayment(
             const SizedBox(height: 16),
             const Text('استُلم الفلوس إزاي؟'),
             const SizedBox(height: 8),
-            SegmentedButton<PaymentMethod>(
-              segments: const [
-                ButtonSegment(value: PaymentMethod.cash, label: Text('نقدًا')),
-                ButtonSegment(
-                  value: PaymentMethod.transfer,
-                  label: Text('تحويل'),
-                ),
-              ],
-              selected: {method},
-              onSelectionChanged: (s) => setDialogState(() => method = s.first),
+            PaymentMethodSelector(
+              value: method,
+              onChanged: (m) => setDialogState(() => method = m),
             ),
           ],
         ),

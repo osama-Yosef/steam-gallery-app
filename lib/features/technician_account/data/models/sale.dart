@@ -2,12 +2,22 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'sale.freezed.dart';
 
-enum PaymentMethod { cash, card, transfer, deferred }
+/// [wallet] (0079) is an e-wallet transfer (Vodafone Cash & co.). [card] is
+/// no longer offered at checkout but stays readable on older sales.
+enum PaymentMethod { cash, card, transfer, wallet, deferred }
+
+/// What the registers and payment dialogs offer, in order.
+const offeredPaymentMethods = [
+  PaymentMethod.cash,
+  PaymentMethod.transfer,
+  PaymentMethod.wallet,
+];
 
 PaymentMethod paymentMethodFromString(String v) => switch (v) {
   'cash' => PaymentMethod.cash,
   'card' => PaymentMethod.card,
   'transfer' => PaymentMethod.transfer,
+  'wallet' => PaymentMethod.wallet,
   'deferred' => PaymentMethod.deferred,
   _ => PaymentMethod.cash,
 };
@@ -16,13 +26,15 @@ String paymentMethodToString(PaymentMethod m) => switch (m) {
   PaymentMethod.cash => 'cash',
   PaymentMethod.card => 'card',
   PaymentMethod.transfer => 'transfer',
+  PaymentMethod.wallet => 'wallet',
   PaymentMethod.deferred => 'deferred',
 };
 
 String paymentMethodLabelAr(PaymentMethod m) => switch (m) {
   PaymentMethod.cash => 'نقدًا',
   PaymentMethod.card => 'بطاقة',
-  PaymentMethod.transfer => 'تحويل',
+  PaymentMethod.transfer => 'تحويل بنكي',
+  PaymentMethod.wallet => 'تحويل محفظة',
   PaymentMethod.deferred => 'آجل',
 };
 
