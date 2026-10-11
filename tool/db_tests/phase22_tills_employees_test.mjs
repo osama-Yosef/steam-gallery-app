@@ -192,4 +192,29 @@ console.log('\n== Employees ==');
   ok('payroll is admin only', /FORBIDDEN/.test(await err(`select public.rpc_pay_salary($1, '2026-10-01', 0, 0, 0, 'main', null)`, [E])));
 }
 
+console.log('\n== Re-pricing at the register (0082) ==');
+{
+  await as(ADMIN);
+  const R = (await one(`insert into public.products (sku, name, cost_price, selling_price) values ('T22R', 'دفاية', 100, 300) returning id`)).id;
+  await q(`select public.rpc_receive_purchase($1, 10, 100, 'seed')`, [R]);
+  const sale = async (items) => (await one(
+    `select public.rpc_admin_walk_in_sale(null, null, $1, 'cash', 0, $2, null) as id`,
+    [JSON.stringify(items), randomUUID()])).id;
+  const price = async (id) => Number((await one(`select unit_price_snapshot as p from public.sale_items where sale_id = $1`, [id])).p);
+  const cash0 = await till('cash');
+  await as(ADMIN);
+  const up = await sale([{ product_id: R, quantity: 1, unit_price: 350 }]);
+  ok('a higher price is charged', await price(up) === 350);
+  const down = await sale([{ product_id: R, quantity: 2, unit_price: 250.5 }]);
+  ok('a lower price is charged', await price(down) === 250.5);
+  ok('the till gets what was charged', await till('cash') === cash0 + 350 + 501);
+  await as(ADMIN);
+  const plain = await sale([{ product_id: R, quantity: 1 }]);
+  ok('no price sent = the catalogue price, as before', await price(plain) === 300);
+  ok('cost snapshot stays the real cost', Number((await one(`select unit_cost_snapshot as c from public.sale_items where sale_id = $1`, [down])).c) === 100);
+  ok('a zero price is refused', /INVALID_AMOUNT/.test(await err(
+    `select public.rpc_admin_walk_in_sale(null, null, $1, 'cash', 0, $2, null)`,
+    [JSON.stringify([{ product_id: R, quantity: 1, unit_price: 0 }]), randomUUID()])));
+}
+
 finish();

@@ -9,8 +9,13 @@ class CartLine {
   final String productName;
 
   /// What one unit is charged: the register's display price for a stock
-  /// product, or the price agreed with the customer for a service.
+  /// product unless re-priced at the counter, or the price agreed with the
+  /// customer for a service.
   final double unitPrice;
+
+  /// The price the product was rung up at, before any change at the
+  /// counter (0082). Equal to [unitPrice] for a service.
+  final double listPrice;
 
   /// How many the warehouse had when the line was added — the most this
   /// line can be raised to. Not used for a service.
@@ -22,29 +27,38 @@ class CartLine {
     required this.productId,
     required this.productName,
     required this.unitPrice,
+    double? listPrice,
     required this.available,
     required this.quantity,
     this.isService = false,
-  });
+  }) : listPrice = listPrice ?? unitPrice;
 
   double get lineTotal => quantity * unitPrice;
 
-  CartLine withQuantity(int quantity) => CartLine(
+  /// Re-priced at the counter, up or down.
+  bool get priceChanged => !isService && unitPrice != listPrice;
+
+  CartLine _copy({int? quantity, double? unitPrice}) => CartLine(
     productId: productId,
     productName: productName,
-    unitPrice: unitPrice,
+    unitPrice: unitPrice ?? this.unitPrice,
+    listPrice: listPrice,
     available: available,
-    quantity: quantity,
+    quantity: quantity ?? this.quantity,
     isService: isService,
   );
 
-  /// The line as sent to rpc_admin_walk_in_sale. Only a service carries its
-  /// price — for a stock product the server charges the catalogue price, so
-  /// the register can never re-price it (see [SaleLineInput]).
+  CartLine withQuantity(int quantity) => _copy(quantity: quantity);
+
+  CartLine withPrice(double unitPrice) => _copy(unitPrice: unitPrice);
+
+  /// The line as sent to rpc_admin_walk_in_sale. A service always carries
+  /// its price; a stock product only when it was re-priced — otherwise the
+  /// server charges its price today (offer included), as it always has.
   SaleLineInput toSaleInput() => SaleLineInput(
     productId: productId,
     quantity: quantity,
-    unitPrice: isService ? unitPrice : null,
+    unitPrice: isService || priceChanged ? unitPrice : null,
   );
 }
 
@@ -119,6 +133,14 @@ class WalkInCart {
     if (!line.isService && next > line.available) return LineChange.overStock;
     _lines[i] = line.withQuantity(next);
     return LineChange.updated;
+  }
+
+  /// Charges [price] per unit on [line] instead of its list price. The line
+  /// is found by identity, so two service lines of the same product stay
+  /// apart.
+  void setPrice(CartLine line, double price) {
+    final i = _lines.indexWhere((l) => identical(l, line));
+    if (i >= 0) _lines[i] = line.withPrice(price);
   }
 
   List<SaleLineInput> toSaleInputs() => [

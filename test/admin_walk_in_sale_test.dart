@@ -239,6 +239,46 @@ void main() {
     expect(field.controller!.text, isNot(contains('x')));
   });
 
+  testWidgets('a line can be re-priced up or down before confirming', (
+    tester,
+  ) async {
+    final repo = _FakeSalesRepo();
+    await _pump(tester, repo);
+    await tester.tap(find.text('مكواة بخار'));
+    await tester.tap(find.text('قاعدة مكواة'));
+    await tester.pump();
+    await _openCart(tester);
+
+    // Tapping the line opens its price.
+    await tester.tap(find.text('مكواة بخار').last);
+    await tester.pumpAndSettle();
+    await tester.enterText(find.widgetWithText(TextField, 'سعر القطعة'), '0');
+    await tester.tap(find.text('حفظ'));
+    await tester.pump();
+    expect(find.text('أدخل سعرًا صحيحًا'), findsOneWidget);
+    await tester.enterText(find.widgetWithText(TextField, 'سعر القطعة'), '90');
+    await tester.tap(find.text('حفظ'));
+    await tester.pumpAndSettle();
+    expect(
+      find.textContaining('بدل ${Formatters.currency(100)}'),
+      findsOneWidget,
+    );
+
+    await tester.tap(find.text('قاعدة مكواة').last);
+    await tester.pumpAndSettle();
+    await tester.enterText(find.widgetWithText(TextField, 'سعر القطعة'), '55');
+    await tester.tap(find.text('حفظ'));
+    await tester.pumpAndSettle();
+
+    expect(find.text(_confirmLabel(145)), findsOneWidget);
+    await tester.tap(_confirmButton());
+    await tester.pumpAndSettle();
+    expect(
+      repo.calls.single.items.map((i) => (i.productId, i.unitPrice)).toList(),
+      [('p1', 90.0), ('p2', 55.0)],
+    );
+  });
+
   testWidgets('a discount above the total is refused, nothing is sent', (
     tester,
   ) async {

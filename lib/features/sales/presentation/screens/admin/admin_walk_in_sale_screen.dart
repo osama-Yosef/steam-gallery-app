@@ -16,6 +16,7 @@ import '../../state/line_change.dart';
 import '../../state/walk_in_cart.dart';
 import '../../widgets/walk_in/add_service_dialog.dart';
 import '../../widgets/walk_in/register_product_grid.dart';
+import '../../widgets/walk_in/line_price_dialog.dart';
 import '../../widgets/walk_in/walk_in_checkout_bar.dart';
 import '../../widgets/walk_in/walk_in_customer_header.dart';
 import '../../widgets/walk_in_invoices_list.dart';
@@ -109,6 +110,12 @@ class _AdminWalkInSaleScreenState extends ConsumerState<AdminWalkInSaleScreen>
       _snack('المتاح بالمخزن ${line.available} فقط');
     }
     setState(() {});
+  }
+
+  Future<void> _editPrice(CartLine line) async {
+    final price = await showLinePriceDialog(context, line);
+    if (price == null || !mounted) return;
+    setState(() => _cart.setPrice(line, price));
   }
 
   Future<void> _addService() async {
@@ -228,6 +235,7 @@ class _AdminWalkInSaleScreenState extends ConsumerState<AdminWalkInSaleScreen>
               onDiscountChanged: () => setState(() {}),
               onPaymentMethodChanged: (m) => setState(() => _paymentMethod = m),
               onChangeQuantity: _changeQuantity,
+              onEditPrice: _editPrice,
               onSubmit: _submit,
             ),
     );

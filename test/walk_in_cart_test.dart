@@ -42,6 +42,33 @@ OutboxEntry _queuedSale(Map<String, int> items) => OutboxEntry(
 
 void main() {
   group('WalkInCart', () {
+    test('a re-priced line charges and sends its new price (0082)', () {
+      final cart = WalkInCart();
+      cart.addProduct(_item('a', 5, 100));
+      cart.addProduct(_item('a', 5, 100));
+      cart.addProduct(_item('b', 5, 40));
+      expect(cart.toSaleInputs().map((i) => i.unitPrice), [
+        null,
+        null,
+      ], reason: 'untouched lines leave the price to the server');
+
+      cart.setPrice(cart.lines.first, 85);
+      expect(cart.lines.first.priceChanged, isTrue);
+      expect(cart.lines.first.listPrice, 100);
+      expect(cart.subtotal, 2 * 85 + 40);
+      expect(cart.toSaleInputs().map((i) => i.unitPrice), [85, null]);
+
+      cart.setPrice(cart.lines.last, 55);
+      expect(cart.subtotal, 2 * 85 + 55, reason: 'or above the list price');
+
+      // Quantity changes keep the new price; back to the list price sends none.
+      cart.changeQuantity('a', 1);
+      expect(cart.lines.first.unitPrice, 85);
+      cart.setPrice(cart.lines.first, 100);
+      expect(cart.lines.first.priceChanged, isFalse);
+      expect(cart.toSaleInputs().first.unitPrice, isNull);
+    });
+
     test('adding the same product twice is one line of two', () {
       final cart = WalkInCart();
       cart.addProduct(_item('a', 5, 10));

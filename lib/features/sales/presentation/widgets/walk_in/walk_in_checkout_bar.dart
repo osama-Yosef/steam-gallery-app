@@ -18,6 +18,9 @@ class WalkInCheckoutBar extends StatelessWidget {
   final VoidCallback onDiscountChanged;
   final ValueChanged<PaymentMethod> onPaymentMethodChanged;
   final void Function(CartLine line, int delta) onChangeQuantity;
+
+  /// Tapping a line re-prices it (0082).
+  final ValueChanged<CartLine> onEditPrice;
   final VoidCallback onSubmit;
 
   const WalkInCheckoutBar({
@@ -31,6 +34,7 @@ class WalkInCheckoutBar extends StatelessWidget {
     required this.onDiscountChanged,
     required this.onPaymentMethodChanged,
     required this.onChangeQuantity,
+    required this.onEditPrice,
     required this.onSubmit,
   });
 
@@ -64,10 +68,35 @@ class WalkInCheckoutBar extends StatelessWidget {
                         dense: true,
                         contentPadding: EdgeInsets.zero,
                         title: Text(line.productName),
-                        subtitle: Text(
-                          '${line.quantity} × '
-                          '${Formatters.currency(line.unitPrice)}'
-                          '${line.isService ? ' · خدمة' : ''}',
+                        onTap: () => onEditPrice(line),
+                        subtitle: Text.rich(
+                          TextSpan(
+                            children: [
+                              TextSpan(
+                                text:
+                                    '${line.quantity} × '
+                                    '${Formatters.currency(line.unitPrice)}',
+                                style: line.priceChanged
+                                    ? TextStyle(
+                                        color: theme.colorScheme.primary,
+                                        fontWeight: FontWeight.bold,
+                                      )
+                                    : null,
+                              ),
+                              if (line.priceChanged)
+                                TextSpan(
+                                  text:
+                                      ' (بدل ${Formatters.currency(line.listPrice)})',
+                                ),
+                              if (line.isService)
+                                const TextSpan(text: ' · خدمة'),
+                              const TextSpan(text: '  '),
+                              const WidgetSpan(
+                                alignment: PlaceholderAlignment.middle,
+                                child: Icon(Iconsax.edit_2_copy, size: 14),
+                              ),
+                            ],
+                          ),
                         ),
                         trailing: Row(
                           mainAxisSize: MainAxisSize.min,
