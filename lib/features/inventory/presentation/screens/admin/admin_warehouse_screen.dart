@@ -9,10 +9,13 @@ import '../../../../../core/widgets/state_views.dart';
 import '../../../data/models/warehouse_stock_item.dart';
 import '../../providers/inventory_providers.dart';
 
-/// Admin-only (0046) — sales no longer sees the warehouse at all, so this
-/// screen dropped the isSales branching it used to need.
+/// The main warehouse — admin and sales (0083) alike.
+///
+/// [lowStockOnly] (the sales dashboard's "منتجات منخفضة" tile) lists just
+/// the products at or under their minimum.
 class AdminWarehouseScreen extends ConsumerStatefulWidget {
-  const AdminWarehouseScreen({super.key});
+  final bool lowStockOnly;
+  const AdminWarehouseScreen({this.lowStockOnly = false, super.key});
 
   @override
   ConsumerState<AdminWarehouseScreen> createState() =>
@@ -77,9 +80,12 @@ class _AdminWarehouseScreenState extends ConsumerState<AdminWarehouseScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final stockAsync = ref.watch(
+    final allStockAsync = ref.watch(
       warehouseStockProvider(search: _search.isEmpty ? null : _search),
     );
+    final stockAsync = widget.lowStockOnly
+        ? allStockAsync.whenData((items) => [...items.where((i) => i.isLow)])
+        : allStockAsync;
     final totalValue = stockAsync.value?.fold<double>(
       0,
       (sum, i) => sum + i.value,
@@ -87,7 +93,7 @@ class _AdminWarehouseScreenState extends ConsumerState<AdminWarehouseScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('المخزن الرئيسي'),
+        title: Text(widget.lowStockOnly ? 'منتجات منخفضة' : 'المخزن الرئيسي'),
         actions: [
           IconButton(
             icon: const Icon(Iconsax.receipt_2_copy),
@@ -168,9 +174,11 @@ class _AdminWarehouseScreenState extends ConsumerState<AdminWarehouseScreen> {
               data: (items) {
                 if (items.isEmpty) {
                   return EmptyView(
-                    message: 'لا توجد أصناف بالمخزن',
+                    message: widget.lowStockOnly
+                        ? 'لا توجد منتجات منخفضة'
+                        : 'لا توجد أصناف بالمخزن',
                     icon: Iconsax.buildings_2_copy,
-                    action: _search.isNotEmpty
+                    action: _search.isNotEmpty || widget.lowStockOnly
                         ? null
                         : OutlinedButton.icon(
                             onPressed: () async {

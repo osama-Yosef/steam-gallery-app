@@ -43,14 +43,26 @@ abstract final class AppColors {
   // Light "glass": near-opaque white fills + a faint navy hairline.
   static const glassFill = Color(0xC7FFFFFF); // ~78% white
   static const glassFillStrong = Color(0xEBFFFFFF); // ~92% white
-  static const glassBorder = Color(0x1F244A61); // ~12% navy
+  // A solid, clearly visible outline around every card and panel: the old
+  // 12% navy hairline disappeared on most screens.
+  static const glassBorder = cardBorder;
   static const glassHighlight = Color(0xF2FFFFFF);
+
+  /// Opaque stand-ins for the translucent colours above, for SafeGraphics
+  /// (old graphics cards that draw see-through colours as nothing).
+  static const safeBorder = cardBorder;
+
+  /// The outline drawn around every card, panel and field.
+  static const cardBorder = Color(0xFF8A9DA8);
+  static const safeIndicator = Color(0xFFD9ECEF);
 
   static const surface = Color(0xFFFFFFFF);
   static const surfaceHigh = Color(0xFFFFFFFF);
-  static const border = Color(0x1F244A61);
-  static const textPrimary = Color(0xFF16323F);
-  static const textSecondary = Color(0xFF5B7280);
+  static const border = cardBorder;
+
+  // Near-black text everywhere: the old navy/grey read too faint.
+  static const textPrimary = Color(0xFF0A0A0A);
+  static const textSecondary = Color(0xFF262626);
 
   /// Soft shadow for raised surfaces on the light background.
   static const shadow = Color(0x1A16323F);

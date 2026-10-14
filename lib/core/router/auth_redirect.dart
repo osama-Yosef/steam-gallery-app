@@ -49,6 +49,7 @@ String? resolveAuthRedirect({
   AppUser? user,
   required bool requireVerifiedPhone,
   required bool passwordRecoveryInProgress,
+  String query = '',
 }) {
   if (!hasSession) {
     return _publicRoutes.contains(location) ? null : Routes.login;
@@ -90,8 +91,58 @@ String? resolveAuthRedirect({
   // A role only ever sees its own area. Hiding the navigation isn't enough:
   // on web a URL can be typed straight in.
   final areaRole = _areaRole(location);
-  if (areaRole != null && areaRole != user.role) return home;
+  if (areaRole != null && areaRole != user.role) {
+    // The admin screens sales shares link to admin paths: send each to its
+    // /sales twin instead of bouncing home.
+    if (user.role == AppRole.sales && areaRole == AppRole.admin) {
+      final twin = salesPathFor(location, query: query);
+      if (twin != null) return twin;
+    }
+    return home;
+  }
 
+  return null;
+}
+
+/// Admin path prefixes the sales role shares, and where they live under
+/// /sales. Longest first, so `/admin/expenses/categories` is never taken
+/// for `/admin/expenses`.
+const _salesTwins = <(String, String?)>[
+  // Expense categories are admin-only (RLS).
+  ('/admin/expenses/categories', null),
+  ('/admin/expenses', '/sales/sections/cashbox/expenses'),
+  ('/admin/cashbox', '/sales/sections/cashbox'),
+  ('/admin/warehouse', '/sales/sections/warehouse'),
+  ('/admin/technicians', '/sales/sections/technicians'),
+  ('/admin/products', '/sales/sections/products'),
+  ('/admin/categories', '/sales/sections/categories'),
+  ('/admin/employees', '/sales/sections/employees'),
+  ('/admin/customers', '/sales/sections/customers'),
+  ('/admin/wallets', '/sales/sections/wallets'),
+  ('/admin/marketing', '/sales/sections/marketing'),
+  ('/admin/instapay', '/sales/sections/instapay'),
+  ('/admin/sales-returns', '/sales/sections/sales-returns'),
+  ('/admin/orders', '/sales/orders'),
+  ('/admin/sync', '/sales/sync'),
+  ('/admin/month-sales', '/sales/month-sales'),
+];
+
+/// The /sales page showing what [adminPath] shows to admin, or null when
+/// sales has no such page (users, reports, settings...).
+String? salesPathFor(String adminPath, {String query = ''}) {
+  String withQuery(String path) => query.isEmpty ? path : '$path?$query';
+
+  if (adminPath == Routes.adminWalkInSale) {
+    return Uri.splitQueryString(query)['tab'] == 'invoices'
+        ? Routes.salesTodayInvoices
+        : Routes.salesSale;
+  }
+  for (final (prefix, twin) in _salesTwins) {
+    if (adminPath == prefix || adminPath.startsWith('$prefix/')) {
+      if (twin == null) return null;
+      return withQuery(twin + adminPath.substring(prefix.length));
+    }
+  }
   return null;
 }
 

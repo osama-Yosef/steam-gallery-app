@@ -31,6 +31,7 @@ import '../../features/customer_account/presentation/screens/admin/admin_custome
 import '../../features/dashboard/presentation/screens/admin_dashboard_screen.dart';
 import '../../features/home/presentation/screens/admin_home_screen.dart';
 import '../../features/home/presentation/screens/customer_account_screen.dart';
+import '../../features/home/presentation/screens/sales_home_screen.dart';
 import '../../features/inventory/presentation/screens/admin/admin_issue_stock_screen.dart';
 import '../../features/inventory/presentation/screens/admin/admin_stock_movements_screen.dart';
 import '../../features/inventory/presentation/screens/admin/admin_technician_bag_detail_screen.dart';
@@ -72,6 +73,7 @@ import '../../features/reports/presentation/screens/admin_report_detail_screen.d
 import '../../features/reports/presentation/screens/admin_reports_home_screen.dart';
 import '../../features/sales/presentation/screens/admin/admin_sale_return_detail_screen.dart';
 import '../../features/sales/presentation/screens/admin/admin_sales_returns_screen.dart';
+import '../../features/sales/presentation/screens/admin/admin_month_sales_screen.dart';
 import '../../features/sales/presentation/screens/admin/admin_walk_in_sale_screen.dart';
 import '../../features/storefront/presentation/screens/admin/admin_banner_editor_screen.dart';
 import '../../features/storefront/presentation/screens/admin/admin_marketing_screen.dart';
@@ -173,6 +175,7 @@ GoRouter appRouter(Ref ref) {
 
       return resolveAuthRedirect(
         location: state.matchedLocation,
+        query: state.uri.query,
         hasSession:
             ref.read(supabaseClientProvider).auth.currentSession != null,
         profileStatus: status,
@@ -262,6 +265,10 @@ GoRouter appRouter(Ref ref) {
                       showInvoices:
                           state.uri.queryParameters['tab'] == 'invoices',
                     ),
+                  ),
+                  GoRoute(
+                    path: 'month-sales',
+                    builder: (_, _) => const AdminMonthSalesScreen(),
                   ),
                   GoRoute(
                     path: 'sync',
@@ -596,12 +603,11 @@ GoRouter appRouter(Ref ref) {
         ],
       ),
 
-      // Sales — floating glass bottom nav (0046), branch order matches
-      // SalesShell._items: بيع مباشر (home/landing) / الطلبات / الأقسام.
-      // Reuses several admin screens directly (they have no role check of
-      // their own — see migration 0044 for the actual authorization
-      // boundary); products and the warehouse are NOT reachable at all
-      // under this shell (0046 hides them from sales entirely).
+      // Sales — floating glass bottom nav, branch order matches
+      // SalesShell._items: لوحة التحكم + الأقسام (landing) / بيع مباشر /
+      // الطلبات. Reuses the admin screens directly (they have no role check
+      // of their own — RLS and the RPCs are the boundary, see 0083); their
+      // links to admin paths are sent here by salesPathFor.
       StatefulShellRoute.indexedStack(
         builder: (_, _, shell) => SalesShell(navigationShell: shell),
         branches: [
@@ -609,39 +615,36 @@ GoRouter appRouter(Ref ref) {
             routes: [
               GoRoute(
                 path: Routes.salesHome,
-                builder: (_, _) => const AdminWalkInSaleScreen(),
+                builder: (_, _) => const SalesHomeScreen(),
                 routes: [
                   GoRoute(
                     path: 'sync',
                     builder: (_, _) => const OfflineSyncScreen(),
                   ),
-                ],
-              ),
-            ],
-          ),
-          StatefulShellBranch(
-            routes: [
-              GoRoute(
-                path: Routes.salesOrders,
-                builder: (_, _) => const AdminOrdersListScreen(),
-                routes: [
-                  // Before ':id', which would otherwise match it.
+                  // The dashboard tiles' own pages.
                   GoRoute(
-                    path: 'history',
-                    builder: (_, _) => const AdminOrdersHistoryScreen(),
+                    path: 'invoices',
+                    builder: (_, _) =>
+                        const AdminWalkInSaleScreen(showInvoices: true),
                   ),
                   GoRoute(
-                    path: ':id',
-                    builder: (_, state) => AdminOrderDetailScreen(
-                      orderId: state.pathParameters['id']!,
-                    ),
+                    path: 'month-sales',
+                    builder: (_, _) => const AdminMonthSalesScreen(),
+                  ),
+                  GoRoute(
+                    path: 'today-expenses',
+                    builder: (_, _) =>
+                        const AdminExpensesListScreen(todayOnly: true),
+                  ),
+                  GoRoute(
+                    path: 'low-stock',
+                    builder: (_, _) =>
+                        const AdminWarehouseScreen(lowStockOnly: true),
                   ),
                 ],
               ),
-            ],
-          ),
-          StatefulShellBranch(
-            routes: [
+              // Sections live on the home tab now (under the dashboard), so their
+              // pages stack on it.
               GoRoute(
                 path: Routes.salesSections,
                 builder: (_, _) => const SalesSectionsScreen(),
@@ -719,6 +722,204 @@ GoRouter appRouter(Ref ref) {
                         builder: (_, _) => const AdminCashTransferScreen(),
                       ),
                     ],
+                  ),
+                  // Same sub-paths as /admin/warehouse/..., so salesPathFor
+                  // only swaps the prefix.
+                  GoRoute(
+                    path: 'warehouse',
+                    builder: (_, _) => const AdminWarehouseScreen(),
+                    routes: [
+                      GoRoute(
+                        path: 'purchases',
+                        builder: (_, state) => AdminPurchaseInvoicesScreen(
+                          supplierId: state.uri.queryParameters['supplier'],
+                          supplierName: state.uri.queryParameters['name'],
+                        ),
+                        routes: [
+                          GoRoute(
+                            path: 'new',
+                            builder: (_, _) =>
+                                const AdminPurchaseInvoiceFormScreen(),
+                          ),
+                          GoRoute(
+                            path: ':id',
+                            builder: (_, state) =>
+                                AdminPurchaseInvoiceDetailScreen(
+                                  invoiceId: state.pathParameters['id']!,
+                                ),
+                          ),
+                        ],
+                      ),
+                      GoRoute(
+                        path: 'suppliers',
+                        builder: (_, _) => const AdminSuppliersScreen(),
+                      ),
+                      GoRoute(
+                        path: 'issue',
+                        builder: (_, _) => const AdminIssueStockScreen(),
+                      ),
+                      GoRoute(
+                        path: 'opening-stock',
+                        builder: (_, _) => const AdminOpeningStockScreen(),
+                      ),
+                      GoRoute(
+                        path: 'movements',
+                        builder: (_, _) => const AdminStockMovementsScreen(),
+                      ),
+                      GoRoute(
+                        path: 'bags',
+                        builder: (_, _) => const AdminTechnicianBagListScreen(),
+                        routes: [
+                          GoRoute(
+                            path: ':id',
+                            builder: (_, state) =>
+                                AdminTechnicianBagDetailScreen(
+                                  technicianId: state.pathParameters['id']!,
+                                ),
+                          ),
+                        ],
+                      ),
+                      GoRoute(
+                        path: 'counts',
+                        builder: (_, _) =>
+                            const AdminInventoryCountsListScreen(),
+                        routes: [
+                          GoRoute(
+                            path: ':id',
+                            builder: (_, state) =>
+                                AdminInventoryCountDetailScreen(
+                                  countId: state.pathParameters['id']!,
+                                ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  GoRoute(
+                    path: 'technicians/:id/account',
+                    builder: (_, state) => TechnicianAccountScreen(
+                      technicianId: state.pathParameters['id']!,
+                    ),
+                    routes: [
+                      GoRoute(
+                        path: 'supply',
+                        builder: (_, state) => TechnicianSupplyScreen(
+                          technicianId: state.pathParameters['id']!,
+                        ),
+                      ),
+                      GoRoute(
+                        path: 'history',
+                        builder: (_, state) => TechnicianAccountHistoryScreen(
+                          technicianId: state.pathParameters['id']!,
+                        ),
+                      ),
+                    ],
+                  ),
+                  GoRoute(
+                    path: 'products',
+                    builder: (_, _) => const AdminProductListScreen(),
+                    routes: [
+                      GoRoute(
+                        path: 'new',
+                        builder: (_, _) => const AdminProductFormScreen(),
+                      ),
+                      GoRoute(
+                        path: 'price-list',
+                        builder: (_, _) => const AdminPriceListScreen(),
+                      ),
+                      GoRoute(
+                        path: ':id/edit',
+                        builder: (_, state) => AdminProductFormScreen(
+                          productId: state.pathParameters['id'],
+                        ),
+                      ),
+                    ],
+                  ),
+                  GoRoute(
+                    path: 'categories',
+                    builder: (_, _) => const AdminCategoryListScreen(),
+                  ),
+                  GoRoute(
+                    path: 'employees',
+                    builder: (_, _) => const AdminEmployeesScreen(),
+                    routes: [
+                      // Before ':id', which would otherwise match them.
+                      GoRoute(
+                        path: 'new',
+                        builder: (_, _) => const AdminEmployeeFormScreen(),
+                      ),
+                      GoRoute(
+                        path: 'attendance',
+                        builder: (_, _) => const AdminAttendanceScreen(),
+                      ),
+                      GoRoute(
+                        path: ':id',
+                        builder: (_, state) => AdminEmployeeDetailScreen(
+                          employeeId: state.pathParameters['id']!,
+                        ),
+                        routes: [
+                          GoRoute(
+                            path: 'edit',
+                            builder: (_, state) => AdminEmployeeFormScreen(
+                              employeeId: state.pathParameters['id'],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  GoRoute(
+                    path: 'customers',
+                    builder: (_, _) => const AdminCustomersListScreen(),
+                    routes: [
+                      GoRoute(
+                        path: ':id',
+                        builder: (_, state) => AdminCustomerAccountDetailScreen(
+                          customerId: state.pathParameters['id']!,
+                        ),
+                        routes: [
+                          GoRoute(
+                            path: 'payment',
+                            builder: (_, state) => AdminCustomerPaymentScreen(
+                              customerId: state.pathParameters['id']!,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  GoRoute(
+                    path: 'wallets',
+                    builder: (_, _) => const AdminWalletsListScreen(),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: Routes.salesSale,
+                builder: (_, _) => const AdminWalkInSaleScreen(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: Routes.salesOrders,
+                builder: (_, _) => const AdminOrdersListScreen(),
+                routes: [
+                  // Before ':id', which would otherwise match it.
+                  GoRoute(
+                    path: 'history',
+                    builder: (_, _) => const AdminOrdersHistoryScreen(),
+                  ),
+                  GoRoute(
+                    path: ':id',
+                    builder: (_, state) => AdminOrderDetailScreen(
+                      orderId: state.pathParameters['id']!,
+                    ),
                   ),
                 ],
               ),

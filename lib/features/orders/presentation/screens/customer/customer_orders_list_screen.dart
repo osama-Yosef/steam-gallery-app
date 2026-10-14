@@ -113,6 +113,7 @@ class _OrderTile extends StatelessWidget {
                         ),
                         decoration: BoxDecoration(
                           color: color.withValues(alpha: 0.16),
+                          border: Border.all(color: color),
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: Text(

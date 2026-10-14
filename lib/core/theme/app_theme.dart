@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'app_colors.dart';
+import 'safe_graphics.dart';
 
 /// Single light theme for every role (Mokoji identity: paper background,
 /// navy text, teal actions). GlassBackground paints a soft gradient +
@@ -23,17 +24,26 @@ abstract final class AppTheme {
   static const _font = 'Cairo';
 
   static ThemeData light() {
+    // Old graphics cards (see SafeGraphics) draw see-through colours and
+    // shadows as nothing: there every fill, border and backdrop is opaque.
+    final safe = SafeGraphics.enabled;
+    final fill = safe ? AppColors.surface : AppColors.glassFill;
+    final fillStrong = safe ? AppColors.surface : AppColors.glassFillStrong;
+    final hairline = safe ? AppColors.safeBorder : AppColors.glassBorder;
+    final backdrop = safe ? AppColors.bgTop : Colors.transparent;
+    final double raised = safe ? 0 : 2;
     final scheme =
         ColorScheme.fromSeed(
           seedColor: AppColors.primary,
           brightness: Brightness.light,
           surface: AppColors.surface,
           onSurface: AppColors.textPrimary,
+          onSurfaceVariant: AppColors.textSecondary,
           error: AppColors.danger,
         ).copyWith(
           primary: AppColors.primary,
           secondary: AppColors.accent,
-          outline: AppColors.border,
+          outline: safe ? AppColors.safeBorder : AppColors.border,
           surfaceContainerHighest: AppColors.surfaceHigh,
         );
 
@@ -52,7 +62,7 @@ abstract final class AppTheme {
       brightness: Brightness.light,
       fontFamily: _font,
       colorScheme: scheme,
-      scaffoldBackgroundColor: Colors.transparent,
+      scaffoldBackgroundColor: backdrop,
       // NOT transparent: canvasColor backs popup/dropdown menus (Dropdown
       // menus, PopupMenuButton, etc.) — transparent here left dropdown
       // options with no surface behind them, overlapping the form beneath
@@ -60,21 +70,31 @@ abstract final class AppTheme {
       // (for GlassBackground to show through) comes from
       // scaffoldBackgroundColor above, which doesn't have this problem.
       canvasColor: AppColors.surfaceHigh,
+      // Body text one weight above Regular so it reads clearly.
       textTheme: textTheme.copyWith(
         bodySmall: textTheme.bodySmall?.copyWith(
           color: AppColors.textSecondary,
+          fontWeight: FontWeight.w500,
         ),
         bodyMedium: textTheme.bodyMedium?.copyWith(
           color: AppColors.textSecondary,
+          fontWeight: FontWeight.w500,
+        ),
+        bodyLarge: textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w500),
+        titleMedium: textTheme.titleMedium?.copyWith(
+          fontWeight: FontWeight.w600,
+        ),
+        titleSmall: textTheme.titleSmall?.copyWith(
+          fontWeight: FontWeight.w600,
         ),
       ),
-      dividerTheme: const DividerThemeData(
-        color: AppColors.border,
+      dividerTheme: DividerThemeData(
+        color: safe ? AppColors.safeBorder : AppColors.border,
         space: 1,
         thickness: 1,
       ),
-      appBarTheme: const AppBarTheme(
-        backgroundColor: Colors.transparent,
+      appBarTheme: AppBarTheme(
+        backgroundColor: backdrop,
         foregroundColor: AppColors.textPrimary,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
@@ -85,21 +105,25 @@ abstract final class AppTheme {
       inputDecorationTheme: InputDecorationTheme(
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: AppColors.glassBorder),
+          borderSide: BorderSide(color: hairline),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: AppColors.glassBorder),
+          borderSide: BorderSide(color: hairline),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
           borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
         ),
         filled: true,
-        fillColor: AppColors.glassFill,
+        fillColor: fill,
         hintStyle: const TextStyle(
           fontFamily: _font,
           color: AppColors.textSecondary,
+        ),
+        labelStyle: const TextStyle(
+          fontFamily: _font,
+          color: AppColors.textPrimary,
         ),
       ),
       // Filled surfaces carrying white labels use the deepest teal for
@@ -109,7 +133,7 @@ abstract final class AppTheme {
           backgroundColor: AppColors.primaryDark,
           foregroundColor: Colors.white,
           padding: const EdgeInsets.symmetric(vertical: 14),
-          elevation: 2,
+          elevation: raised,
           shadowColor: AppColors.primaryDark.withValues(alpha: 0.3),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
@@ -121,7 +145,7 @@ abstract final class AppTheme {
           backgroundColor: AppColors.primaryDark,
           foregroundColor: Colors.white,
           padding: const EdgeInsets.symmetric(vertical: 14),
-          elevation: 2,
+          elevation: raised,
           shadowColor: AppColors.primaryDark.withValues(alpha: 0.3),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
@@ -131,7 +155,7 @@ abstract final class AppTheme {
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
           foregroundColor: AppColors.textPrimary,
-          side: const BorderSide(color: AppColors.glassBorder),
+          side: BorderSide(color: hairline),
           padding: const EdgeInsets.symmetric(vertical: 14),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
@@ -142,20 +166,20 @@ abstract final class AppTheme {
         style: TextButton.styleFrom(foregroundColor: AppColors.primary),
       ),
       cardTheme: CardThemeData(
-        color: AppColors.glassFill,
+        color: fill,
         elevation: 0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
-          side: const BorderSide(color: AppColors.glassBorder),
+          side: BorderSide(color: hairline, width: 1.2),
         ),
       ),
       chipTheme: ChipThemeData(
-        backgroundColor: AppColors.glassFillStrong,
+        backgroundColor: fillStrong,
         labelStyle: const TextStyle(
           fontFamily: _font,
           color: AppColors.textPrimary,
         ),
-        side: const BorderSide(color: AppColors.glassBorder),
+        side: BorderSide(color: hairline),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       ),
       listTileTheme: const ListTileThemeData(
@@ -165,7 +189,10 @@ abstract final class AppTheme {
       iconTheme: const IconThemeData(color: AppColors.textSecondary),
       dialogTheme: DialogThemeData(
         backgroundColor: AppColors.surfaceHigh,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: BorderSide(color: hairline),
+        ),
       ),
       bottomSheetTheme: const BottomSheetThemeData(
         backgroundColor: AppColors.surfaceHigh,
@@ -176,7 +203,9 @@ abstract final class AppTheme {
       navigationBarTheme: NavigationBarThemeData(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        indicatorColor: AppColors.primary.withValues(alpha: 0.14),
+        indicatorColor: safe
+            ? AppColors.safeIndicator
+            : AppColors.primary.withValues(alpha: 0.14),
         labelTextStyle: WidgetStateProperty.resolveWith(
           (states) => TextStyle(
             fontFamily: _font,
@@ -197,8 +226,8 @@ abstract final class AppTheme {
       floatingActionButtonTheme: FloatingActionButtonThemeData(
         backgroundColor: AppColors.primaryDark,
         foregroundColor: Colors.white,
-        elevation: 3,
-        highlightElevation: 6,
+        elevation: safe ? 0 : 3,
+        highlightElevation: safe ? 0 : 6,
       ),
     );
   }

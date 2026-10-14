@@ -11,9 +11,11 @@ import 'core/firebase/push_notification_service.dart';
 import 'core/offline/offline_http_client.dart';
 import 'core/offline/offline_store.dart';
 import 'core/offline/outbox.dart';
+import 'core/theme/safe_graphics.dart';
 import 'features/auth/presentation/providers/auth_providers.dart';
 
-Future<void> main() async {
+Future<void> main(List<String> args) async {
+  SafeGraphics.init(args);
   WidgetsFlutterBinding.ensureInitialized();
 
   // Firebase (phone-auth proof + push) is wired for Android/iOS only — it

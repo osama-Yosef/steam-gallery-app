@@ -15,12 +15,30 @@ abstract final class Routes {
   static const adminHome = '/admin';
   static const adminSections = '/admin/sections';
 
-  // Sales role (0046) — a restricted staff area: direct walk-in sale (the
-  // landing tab), orders, marketing, InstaPay review, cashbox withdrawal.
-  // No products, no warehouse, no reports, no cashbox ledger/deposit, no
-  // customers/users/audit-log.
+  // Sales role — its own dashboard (the landing tab), direct walk-in sale,
+  // orders, and the back office the same as admin (0083): cashbox,
+  // warehouse, purchase invoices, suppliers, products, price list,
+  // employees, customers, wallets. No reports, users, settings, service
+  // areas, maintenance management or audit log.
+  //
+  // The admin screens it shares link to admin paths; for a sales user the
+  // router sends each one to its /sales twin (see salesPathFor).
   static const salesHome = '/sales';
+  static const salesSale = '/sales/sale';
+  static const salesTodayInvoices = '/sales/invoices';
+  static const salesTodayExpenses = '/sales/today-expenses';
+  static const salesMonthSales = '/sales/month-sales';
+  static const salesLowStock = '/sales/low-stock';
   static const salesSections = '/sales/sections';
+  static const salesWarehouse = '/sales/sections/warehouse';
+  static const salesTechnicianBags = '/sales/sections/warehouse/bags';
+  static const salesPurchaseInvoices = '/sales/sections/warehouse/purchases';
+  static const salesSuppliers = '/sales/sections/warehouse/suppliers';
+  static const salesProducts = '/sales/sections/products';
+  static const salesPriceList = '/sales/sections/products/price-list';
+  static const salesEmployees = '/sales/sections/employees';
+  static const salesCustomers = '/sales/sections/customers';
+  static const salesWallets = '/sales/sections/wallets';
   static const salesOrders = '/sales/orders';
   static String salesOrderDetail(String id) => '/sales/orders/$id';
   static const salesOrdersHistory = '/sales/orders/history';
@@ -95,6 +113,7 @@ abstract final class Routes {
   static const adminOrdersHistory = '/admin/orders/history';
   static const adminInstapayReview = '/admin/instapay';
   static const adminSalesReturns = '/admin/sales-returns';
+  static const adminMonthSales = '/admin/month-sales';
   static String adminSaleReturnDetail(String id) => '/admin/sales-returns/$id';
 
   // Maintenance (Module 4)

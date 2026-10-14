@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
+import '../theme/safe_graphics.dart';
 import 'gradient_box.dart';
 
 /// App-wide backdrop: a soft paper-to-teal gradient with a few large, soft
@@ -19,6 +20,10 @@ class GlassBackground extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Old graphics cards (see SafeGraphics): a flat, opaque paper colour.
+    if (SafeGraphics.enabled) {
+      return ColoredBox(color: AppColors.bgTop, child: child);
+    }
     final size = MediaQuery.sizeOf(context);
     return Stack(
       fit: StackFit.expand,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../theme/safe_graphics.dart';
 
 /// A box filled with [gradient], drawn over a plain [fallback] fill of the
 /// same shape.
@@ -14,6 +15,9 @@ class GradientBox extends StatelessWidget {
   final BoxShape shape;
   final BorderRadiusGeometry? borderRadius;
   final List<BoxShadow>? boxShadow;
+
+  /// Drawn on top, over the gradient.
+  final BoxBorder? border;
   final double? width;
   final double? height;
   final EdgeInsetsGeometry? padding;
@@ -25,6 +29,7 @@ class GradientBox extends StatelessWidget {
     this.shape = BoxShape.rectangle,
     this.borderRadius,
     this.boxShadow,
+    this.border,
     this.width,
     this.height,
     this.padding,
@@ -36,6 +41,21 @@ class GradientBox extends StatelessWidget {
   Widget build(BuildContext context) {
     Widget? content = child;
     if (padding != null) content = Padding(padding: padding!, child: content);
+    if (SafeGraphics.enabled) {
+      return SizedBox(
+        width: width,
+        height: height,
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: fallback,
+            shape: shape,
+            borderRadius: borderRadius,
+            border: border,
+          ),
+          child: content,
+        ),
+      );
+    }
     return SizedBox(
       width: width,
       height: height,
@@ -51,6 +71,7 @@ class GradientBox extends StatelessWidget {
             gradient: gradient,
             shape: shape,
             borderRadius: borderRadius,
+            border: border,
           ),
           child: content,
         ),

@@ -5,13 +5,18 @@ import '../../../inventory/data/models/warehouse_stock_item.dart';
 /// walk-in sales still waiting in the offline queue ([queuedSales], i.e.
 /// `outbox.pendingOf('walk_in_sale')`) already taken off — so selling
 /// offline can't oversell what the cached stock list shows.
+///
+/// [technicianId] is the bag being sold from (null = the main warehouse):
+/// only queued sales from that same place are taken off.
 List<WarehouseStockItem> registerStock(
   List<WarehouseStockItem> warehouse,
   List<WarehouseStockItem> assemblies, {
   required List<OutboxEntry> queuedSales,
+  String? technicianId,
 }) {
   final reserved = <String, int>{};
   for (final entry in queuedSales) {
+    if (entry.params['p_technician_id'] != technicianId) continue;
     final items = entry.params['p_items'];
     if (items is! List) continue;
     for (final item in items) {

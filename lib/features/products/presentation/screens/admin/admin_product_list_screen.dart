@@ -11,8 +11,8 @@ import '../../../../../core/widgets/state_views.dart';
 import '../../../data/models/product.dart';
 import '../../../presentation/providers/product_providers.dart';
 
-/// Admin-only (0046) — sales no longer sees products or the warehouse at
-/// all, so this screen dropped the isSales branching it used to need.
+/// Admin and sales (0083) alike; for sales its admin links are sent to the
+/// /sales twins by salesPathFor.
 class AdminProductListScreen extends ConsumerStatefulWidget {
   const AdminProductListScreen({super.key});
 
@@ -240,6 +240,7 @@ class _ProductTile extends StatelessWidget {
                         ),
                         decoration: BoxDecoration(
                           color: color.withValues(alpha: 0.16),
+                          border: Border.all(color: color),
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: Text(

@@ -62,7 +62,7 @@ class AppException implements Exception {
     final code = error.code;
     switch (code) {
       case 'weak_password':
-        return 'كلمة المرور غير صالحة (٨ أحرف على الأقل)';
+        return 'كلمة المرور غير صالحة (8 أحرف على الأقل)';
       case 'same_password':
         return 'كلمة المرور الجديدة لازم تختلف عن القديمة';
       case 'over_request_rate_limit' ||

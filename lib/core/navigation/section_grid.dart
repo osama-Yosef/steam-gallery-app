@@ -21,16 +21,22 @@ class SectionItem {
 /// The tile grid shared by the admin and sales "الأقسام" pages.
 class SectionGrid extends StatelessWidget {
   final List<SectionItem> sections;
-  const SectionGrid({required this.sections, super.key});
+
+  /// Laid out inside another scrolling page (the sales home, under its
+  /// dashboard) instead of being the page itself.
+  final bool embedded;
+  const SectionGrid({required this.sections, this.embedded = false, super.key});
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(16),
+      padding: embedded ? EdgeInsets.zero : const EdgeInsets.all(16),
       child: LayoutBuilder(
         builder: (context, c) {
           final columns = (c.maxWidth / 190).floor().clamp(2, 6);
           return GridView(
+            shrinkWrap: embedded,
+            physics: embedded ? const NeverScrollableScrollPhysics() : null,
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: columns,
               mainAxisSpacing: 14,

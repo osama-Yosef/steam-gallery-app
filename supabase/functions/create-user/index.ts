@@ -7,6 +7,8 @@
 // sign-up for these roles (see docs/04-security-architecture.md §1); only an
 // existing admin may call this, authenticated with their own normal user
 // JWT (passed in the Authorization header exactly like any other request).
+// Admin and sales may also create a customer (role "customer", password
+// optional) — the register adds one to sell to them on credit (0084).
 //
 // Every account in this system (customer, technician, sales, admin) logs in
 // with phone + password (see docs/01-system-analysis.md §9, A1) — no email,
@@ -16,9 +18,9 @@
 // Request body:
 //   {
 //     "phone": string,        // local Egyptian format, e.g. "01012345678"
-//     "password": string,
+//     "password": string,     // optional for a customer
 //     "full_name": string,
-//     "role": "technician" | "sales" | "admin",
+//     "role": "customer" | "technician" | "sales" | "admin",
 //     "employee_code"?: string   // technician only, auto-generated if omitted
 //   }
 
@@ -51,18 +53,27 @@ Deno.serve(async (req) => {
       .select("role")
       .eq("id", userRes.user.id)
       .single();
-    if (profileErr || callerProfile?.role !== "admin") {
-      return json({ error: "forbidden: admin only" }, 403);
+    const callerRole = callerProfile?.role;
+    if (profileErr || (callerRole !== "admin" && callerRole !== "sales")) {
+      return json({ error: "forbidden: admin or sales only" }, 403);
     }
 
     // 2) Validate payload
     const body = await req.json();
-    const { phone, password, full_name, role, employee_code } = body ?? {};
-    if (!phone || !password || !full_name || !role) {
+    const { phone, full_name, role, employee_code } = body ?? {};
+    let { password } = body ?? {};
+    if (!phone || !full_name || !role) {
       return json({ error: "missing required fields" }, 400);
     }
-    if (role !== "technician" && role !== "sales" && role !== "admin") {
-      return json({ error: "role must be technician, sales, or admin" }, 400);
+    // Staff accounts: admin only. A customer can also be added by sales, at
+    // the register, to sell to them on credit (0084).
+    if (role === "customer") {
+      // They sign in later with "forgot password"; nobody needs this one.
+      password ??= crypto.randomUUID();
+    } else if (callerRole !== "admin") {
+      return json({ error: "forbidden: admin only" }, 403);
+    } else if (role !== "technician" && role !== "sales" && role !== "admin") {
+      return json({ error: "role must be customer, technician, sales, or admin" }, 400);
     }
     if (typeof password !== "string" || password.length < 8) {
       return json({ error: "password must be at least 8 characters" }, 400);

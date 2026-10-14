@@ -4,19 +4,18 @@ import '../offline/offline_widgets.dart';
 import '../router/route_names.dart';
 import 'glass_bottom_nav.dart';
 
-/// Floating glass pill bottom nav for the sales role (0046) — same shape as
-/// [CustomerShell], replacing the old collapsible sidebar. Sales only gets
-/// three tabs: البيع المباشر is the landing tab (sales must always default
-/// to selling, not a dashboard), الطلبات, and الأقسام (marketing, InstaPay
-/// review, cashbox withdrawal — everything that doesn't need its own tab).
+/// Floating glass pill bottom nav for the sales role — same shape as
+/// [CustomerShell]. Three tabs: لوحة التحكم (the landing tab — the
+/// dashboard with the sections under it: warehouse, products, employees,
+/// customers...), بيع مباشر, and الطلبات.
 class SalesShell extends StatelessWidget {
   final StatefulNavigationShell navigationShell;
   const SalesShell({required this.navigationShell, super.key});
 
   static const _items = <GlassNavItem>[
+    (icon: Icons.dashboard_rounded, label: 'لوحة التحكم'),
     (icon: Icons.point_of_sale_rounded, label: 'بيع مباشر'),
     (icon: Icons.receipt_long_rounded, label: 'الطلبات'),
-    (icon: Icons.apps_rounded, label: 'الأقسام'),
   ];
 
   @override

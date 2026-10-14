@@ -14,7 +14,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$DashboardSummary {
 
- double get cashboxBalance; double get todayRevenue; double get todayNetProfit; double get monthRevenue; double get monthNetProfit; double get monthExpenses; int get pendingOrdersCount; int get activeMaintenanceCount; int get activeTechniciansCount; int get lowStockCount; double get customerDebtsTotal; double get technicianDuesTotal; double get warehouseStockValue;// Phase 15 — money held in customer wallets is a liability, not
+ double get cashboxBalance; double get todayRevenue; double get todayNetProfit; double get monthRevenue; double get monthNetProfit; double get monthExpenses; double get todayExpenses; int get pendingOrdersCount; int get activeMaintenanceCount; int get activeTechniciansCount; int get lowStockCount; double get customerDebtsTotal; double get technicianDuesTotal; double get warehouseStockValue;// Phase 15 — money held in customer wallets is a liability, not
 // revenue; invisible everywhere else (wallet top-ups never touch
 // cashbox_balances).
  double get walletLiabilityTotal;
@@ -28,16 +28,16 @@ $DashboardSummaryCopyWith<DashboardSummary> get copyWith => _$DashboardSummaryCo
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is DashboardSummary&&(identical(other.cashboxBalance, cashboxBalance) || other.cashboxBalance == cashboxBalance)&&(identical(other.todayRevenue, todayRevenue) || other.todayRevenue == todayRevenue)&&(identical(other.todayNetProfit, todayNetProfit) || other.todayNetProfit == todayNetProfit)&&(identical(other.monthRevenue, monthRevenue) || other.monthRevenue == monthRevenue)&&(identical(other.monthNetProfit, monthNetProfit) || other.monthNetProfit == monthNetProfit)&&(identical(other.monthExpenses, monthExpenses) || other.monthExpenses == monthExpenses)&&(identical(other.pendingOrdersCount, pendingOrdersCount) || other.pendingOrdersCount == pendingOrdersCount)&&(identical(other.activeMaintenanceCount, activeMaintenanceCount) || other.activeMaintenanceCount == activeMaintenanceCount)&&(identical(other.activeTechniciansCount, activeTechniciansCount) || other.activeTechniciansCount == activeTechniciansCount)&&(identical(other.lowStockCount, lowStockCount) || other.lowStockCount == lowStockCount)&&(identical(other.customerDebtsTotal, customerDebtsTotal) || other.customerDebtsTotal == customerDebtsTotal)&&(identical(other.technicianDuesTotal, technicianDuesTotal) || other.technicianDuesTotal == technicianDuesTotal)&&(identical(other.warehouseStockValue, warehouseStockValue) || other.warehouseStockValue == warehouseStockValue)&&(identical(other.walletLiabilityTotal, walletLiabilityTotal) || other.walletLiabilityTotal == walletLiabilityTotal));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is DashboardSummary&&(identical(other.cashboxBalance, cashboxBalance) || other.cashboxBalance == cashboxBalance)&&(identical(other.todayRevenue, todayRevenue) || other.todayRevenue == todayRevenue)&&(identical(other.todayNetProfit, todayNetProfit) || other.todayNetProfit == todayNetProfit)&&(identical(other.monthRevenue, monthRevenue) || other.monthRevenue == monthRevenue)&&(identical(other.monthNetProfit, monthNetProfit) || other.monthNetProfit == monthNetProfit)&&(identical(other.monthExpenses, monthExpenses) || other.monthExpenses == monthExpenses)&&(identical(other.todayExpenses, todayExpenses) || other.todayExpenses == todayExpenses)&&(identical(other.pendingOrdersCount, pendingOrdersCount) || other.pendingOrdersCount == pendingOrdersCount)&&(identical(other.activeMaintenanceCount, activeMaintenanceCount) || other.activeMaintenanceCount == activeMaintenanceCount)&&(identical(other.activeTechniciansCount, activeTechniciansCount) || other.activeTechniciansCount == activeTechniciansCount)&&(identical(other.lowStockCount, lowStockCount) || other.lowStockCount == lowStockCount)&&(identical(other.customerDebtsTotal, customerDebtsTotal) || other.customerDebtsTotal == customerDebtsTotal)&&(identical(other.technicianDuesTotal, technicianDuesTotal) || other.technicianDuesTotal == technicianDuesTotal)&&(identical(other.warehouseStockValue, warehouseStockValue) || other.warehouseStockValue == warehouseStockValue)&&(identical(other.walletLiabilityTotal, walletLiabilityTotal) || other.walletLiabilityTotal == walletLiabilityTotal));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,cashboxBalance,todayRevenue,todayNetProfit,monthRevenue,monthNetProfit,monthExpenses,pendingOrdersCount,activeMaintenanceCount,activeTechniciansCount,lowStockCount,customerDebtsTotal,technicianDuesTotal,warehouseStockValue,walletLiabilityTotal);
+int get hashCode => Object.hash(runtimeType,cashboxBalance,todayRevenue,todayNetProfit,monthRevenue,monthNetProfit,monthExpenses,todayExpenses,pendingOrdersCount,activeMaintenanceCount,activeTechniciansCount,lowStockCount,customerDebtsTotal,technicianDuesTotal,warehouseStockValue,walletLiabilityTotal);
 
 @override
 String toString() {
-  return 'DashboardSummary(cashboxBalance: $cashboxBalance, todayRevenue: $todayRevenue, todayNetProfit: $todayNetProfit, monthRevenue: $monthRevenue, monthNetProfit: $monthNetProfit, monthExpenses: $monthExpenses, pendingOrdersCount: $pendingOrdersCount, activeMaintenanceCount: $activeMaintenanceCount, activeTechniciansCount: $activeTechniciansCount, lowStockCount: $lowStockCount, customerDebtsTotal: $customerDebtsTotal, technicianDuesTotal: $technicianDuesTotal, warehouseStockValue: $warehouseStockValue, walletLiabilityTotal: $walletLiabilityTotal)';
+  return 'DashboardSummary(cashboxBalance: $cashboxBalance, todayRevenue: $todayRevenue, todayNetProfit: $todayNetProfit, monthRevenue: $monthRevenue, monthNetProfit: $monthNetProfit, monthExpenses: $monthExpenses, todayExpenses: $todayExpenses, pendingOrdersCount: $pendingOrdersCount, activeMaintenanceCount: $activeMaintenanceCount, activeTechniciansCount: $activeTechniciansCount, lowStockCount: $lowStockCount, customerDebtsTotal: $customerDebtsTotal, technicianDuesTotal: $technicianDuesTotal, warehouseStockValue: $warehouseStockValue, walletLiabilityTotal: $walletLiabilityTotal)';
 }
 
 
@@ -48,7 +48,7 @@ abstract mixin class $DashboardSummaryCopyWith<$Res>  {
   factory $DashboardSummaryCopyWith(DashboardSummary value, $Res Function(DashboardSummary) _then) = _$DashboardSummaryCopyWithImpl;
 @useResult
 $Res call({
- double cashboxBalance, double todayRevenue, double todayNetProfit, double monthRevenue, double monthNetProfit, double monthExpenses, int pendingOrdersCount, int activeMaintenanceCount, int activeTechniciansCount, int lowStockCount, double customerDebtsTotal, double technicianDuesTotal, double warehouseStockValue, double walletLiabilityTotal
+ double cashboxBalance, double todayRevenue, double todayNetProfit, double monthRevenue, double monthNetProfit, double monthExpenses, double todayExpenses, int pendingOrdersCount, int activeMaintenanceCount, int activeTechniciansCount, int lowStockCount, double customerDebtsTotal, double technicianDuesTotal, double warehouseStockValue, double walletLiabilityTotal
 });
 
 
@@ -65,7 +65,7 @@ class _$DashboardSummaryCopyWithImpl<$Res>
 
 /// Create a copy of DashboardSummary
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? cashboxBalance = null,Object? todayRevenue = null,Object? todayNetProfit = null,Object? monthRevenue = null,Object? monthNetProfit = null,Object? monthExpenses = null,Object? pendingOrdersCount = null,Object? activeMaintenanceCount = null,Object? activeTechniciansCount = null,Object? lowStockCount = null,Object? customerDebtsTotal = null,Object? technicianDuesTotal = null,Object? warehouseStockValue = null,Object? walletLiabilityTotal = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? cashboxBalance = null,Object? todayRevenue = null,Object? todayNetProfit = null,Object? monthRevenue = null,Object? monthNetProfit = null,Object? monthExpenses = null,Object? todayExpenses = null,Object? pendingOrdersCount = null,Object? activeMaintenanceCount = null,Object? activeTechniciansCount = null,Object? lowStockCount = null,Object? customerDebtsTotal = null,Object? technicianDuesTotal = null,Object? warehouseStockValue = null,Object? walletLiabilityTotal = null,}) {
   return _then(_self.copyWith(
 cashboxBalance: null == cashboxBalance ? _self.cashboxBalance : cashboxBalance // ignore: cast_nullable_to_non_nullable
 as double,todayRevenue: null == todayRevenue ? _self.todayRevenue : todayRevenue // ignore: cast_nullable_to_non_nullable
@@ -73,6 +73,7 @@ as double,todayNetProfit: null == todayNetProfit ? _self.todayNetProfit : todayN
 as double,monthRevenue: null == monthRevenue ? _self.monthRevenue : monthRevenue // ignore: cast_nullable_to_non_nullable
 as double,monthNetProfit: null == monthNetProfit ? _self.monthNetProfit : monthNetProfit // ignore: cast_nullable_to_non_nullable
 as double,monthExpenses: null == monthExpenses ? _self.monthExpenses : monthExpenses // ignore: cast_nullable_to_non_nullable
+as double,todayExpenses: null == todayExpenses ? _self.todayExpenses : todayExpenses // ignore: cast_nullable_to_non_nullable
 as double,pendingOrdersCount: null == pendingOrdersCount ? _self.pendingOrdersCount : pendingOrdersCount // ignore: cast_nullable_to_non_nullable
 as int,activeMaintenanceCount: null == activeMaintenanceCount ? _self.activeMaintenanceCount : activeMaintenanceCount // ignore: cast_nullable_to_non_nullable
 as int,activeTechniciansCount: null == activeTechniciansCount ? _self.activeTechniciansCount : activeTechniciansCount // ignore: cast_nullable_to_non_nullable
@@ -166,10 +167,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( double cashboxBalance,  double todayRevenue,  double todayNetProfit,  double monthRevenue,  double monthNetProfit,  double monthExpenses,  int pendingOrdersCount,  int activeMaintenanceCount,  int activeTechniciansCount,  int lowStockCount,  double customerDebtsTotal,  double technicianDuesTotal,  double warehouseStockValue,  double walletLiabilityTotal)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( double cashboxBalance,  double todayRevenue,  double todayNetProfit,  double monthRevenue,  double monthNetProfit,  double monthExpenses,  double todayExpenses,  int pendingOrdersCount,  int activeMaintenanceCount,  int activeTechniciansCount,  int lowStockCount,  double customerDebtsTotal,  double technicianDuesTotal,  double warehouseStockValue,  double walletLiabilityTotal)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _DashboardSummary() when $default != null:
-return $default(_that.cashboxBalance,_that.todayRevenue,_that.todayNetProfit,_that.monthRevenue,_that.monthNetProfit,_that.monthExpenses,_that.pendingOrdersCount,_that.activeMaintenanceCount,_that.activeTechniciansCount,_that.lowStockCount,_that.customerDebtsTotal,_that.technicianDuesTotal,_that.warehouseStockValue,_that.walletLiabilityTotal);case _:
+return $default(_that.cashboxBalance,_that.todayRevenue,_that.todayNetProfit,_that.monthRevenue,_that.monthNetProfit,_that.monthExpenses,_that.todayExpenses,_that.pendingOrdersCount,_that.activeMaintenanceCount,_that.activeTechniciansCount,_that.lowStockCount,_that.customerDebtsTotal,_that.technicianDuesTotal,_that.warehouseStockValue,_that.walletLiabilityTotal);case _:
   return orElse();
 
 }
@@ -187,10 +188,10 @@ return $default(_that.cashboxBalance,_that.todayRevenue,_that.todayNetProfit,_th
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( double cashboxBalance,  double todayRevenue,  double todayNetProfit,  double monthRevenue,  double monthNetProfit,  double monthExpenses,  int pendingOrdersCount,  int activeMaintenanceCount,  int activeTechniciansCount,  int lowStockCount,  double customerDebtsTotal,  double technicianDuesTotal,  double warehouseStockValue,  double walletLiabilityTotal)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( double cashboxBalance,  double todayRevenue,  double todayNetProfit,  double monthRevenue,  double monthNetProfit,  double monthExpenses,  double todayExpenses,  int pendingOrdersCount,  int activeMaintenanceCount,  int activeTechniciansCount,  int lowStockCount,  double customerDebtsTotal,  double technicianDuesTotal,  double warehouseStockValue,  double walletLiabilityTotal)  $default,) {final _that = this;
 switch (_that) {
 case _DashboardSummary():
-return $default(_that.cashboxBalance,_that.todayRevenue,_that.todayNetProfit,_that.monthRevenue,_that.monthNetProfit,_that.monthExpenses,_that.pendingOrdersCount,_that.activeMaintenanceCount,_that.activeTechniciansCount,_that.lowStockCount,_that.customerDebtsTotal,_that.technicianDuesTotal,_that.warehouseStockValue,_that.walletLiabilityTotal);case _:
+return $default(_that.cashboxBalance,_that.todayRevenue,_that.todayNetProfit,_that.monthRevenue,_that.monthNetProfit,_that.monthExpenses,_that.todayExpenses,_that.pendingOrdersCount,_that.activeMaintenanceCount,_that.activeTechniciansCount,_that.lowStockCount,_that.customerDebtsTotal,_that.technicianDuesTotal,_that.warehouseStockValue,_that.walletLiabilityTotal);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -207,10 +208,10 @@ return $default(_that.cashboxBalance,_that.todayRevenue,_that.todayNetProfit,_th
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( double cashboxBalance,  double todayRevenue,  double todayNetProfit,  double monthRevenue,  double monthNetProfit,  double monthExpenses,  int pendingOrdersCount,  int activeMaintenanceCount,  int activeTechniciansCount,  int lowStockCount,  double customerDebtsTotal,  double technicianDuesTotal,  double warehouseStockValue,  double walletLiabilityTotal)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( double cashboxBalance,  double todayRevenue,  double todayNetProfit,  double monthRevenue,  double monthNetProfit,  double monthExpenses,  double todayExpenses,  int pendingOrdersCount,  int activeMaintenanceCount,  int activeTechniciansCount,  int lowStockCount,  double customerDebtsTotal,  double technicianDuesTotal,  double warehouseStockValue,  double walletLiabilityTotal)?  $default,) {final _that = this;
 switch (_that) {
 case _DashboardSummary() when $default != null:
-return $default(_that.cashboxBalance,_that.todayRevenue,_that.todayNetProfit,_that.monthRevenue,_that.monthNetProfit,_that.monthExpenses,_that.pendingOrdersCount,_that.activeMaintenanceCount,_that.activeTechniciansCount,_that.lowStockCount,_that.customerDebtsTotal,_that.technicianDuesTotal,_that.warehouseStockValue,_that.walletLiabilityTotal);case _:
+return $default(_that.cashboxBalance,_that.todayRevenue,_that.todayNetProfit,_that.monthRevenue,_that.monthNetProfit,_that.monthExpenses,_that.todayExpenses,_that.pendingOrdersCount,_that.activeMaintenanceCount,_that.activeTechniciansCount,_that.lowStockCount,_that.customerDebtsTotal,_that.technicianDuesTotal,_that.warehouseStockValue,_that.walletLiabilityTotal);case _:
   return null;
 
 }
@@ -222,7 +223,7 @@ return $default(_that.cashboxBalance,_that.todayRevenue,_that.todayNetProfit,_th
 
 
 class _DashboardSummary implements DashboardSummary {
-  const _DashboardSummary({required this.cashboxBalance, required this.todayRevenue, required this.todayNetProfit, required this.monthRevenue, required this.monthNetProfit, required this.monthExpenses, required this.pendingOrdersCount, required this.activeMaintenanceCount, required this.activeTechniciansCount, required this.lowStockCount, required this.customerDebtsTotal, required this.technicianDuesTotal, required this.warehouseStockValue, required this.walletLiabilityTotal});
+  const _DashboardSummary({required this.cashboxBalance, required this.todayRevenue, required this.todayNetProfit, required this.monthRevenue, required this.monthNetProfit, required this.monthExpenses, required this.todayExpenses, required this.pendingOrdersCount, required this.activeMaintenanceCount, required this.activeTechniciansCount, required this.lowStockCount, required this.customerDebtsTotal, required this.technicianDuesTotal, required this.warehouseStockValue, required this.walletLiabilityTotal});
   
 
 @override final  double cashboxBalance;
@@ -231,6 +232,7 @@ class _DashboardSummary implements DashboardSummary {
 @override final  double monthRevenue;
 @override final  double monthNetProfit;
 @override final  double monthExpenses;
+@override final  double todayExpenses;
 @override final  int pendingOrdersCount;
 @override final  int activeMaintenanceCount;
 @override final  int activeTechniciansCount;
@@ -253,16 +255,16 @@ _$DashboardSummaryCopyWith<_DashboardSummary> get copyWith => __$DashboardSummar
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _DashboardSummary&&(identical(other.cashboxBalance, cashboxBalance) || other.cashboxBalance == cashboxBalance)&&(identical(other.todayRevenue, todayRevenue) || other.todayRevenue == todayRevenue)&&(identical(other.todayNetProfit, todayNetProfit) || other.todayNetProfit == todayNetProfit)&&(identical(other.monthRevenue, monthRevenue) || other.monthRevenue == monthRevenue)&&(identical(other.monthNetProfit, monthNetProfit) || other.monthNetProfit == monthNetProfit)&&(identical(other.monthExpenses, monthExpenses) || other.monthExpenses == monthExpenses)&&(identical(other.pendingOrdersCount, pendingOrdersCount) || other.pendingOrdersCount == pendingOrdersCount)&&(identical(other.activeMaintenanceCount, activeMaintenanceCount) || other.activeMaintenanceCount == activeMaintenanceCount)&&(identical(other.activeTechniciansCount, activeTechniciansCount) || other.activeTechniciansCount == activeTechniciansCount)&&(identical(other.lowStockCount, lowStockCount) || other.lowStockCount == lowStockCount)&&(identical(other.customerDebtsTotal, customerDebtsTotal) || other.customerDebtsTotal == customerDebtsTotal)&&(identical(other.technicianDuesTotal, technicianDuesTotal) || other.technicianDuesTotal == technicianDuesTotal)&&(identical(other.warehouseStockValue, warehouseStockValue) || other.warehouseStockValue == warehouseStockValue)&&(identical(other.walletLiabilityTotal, walletLiabilityTotal) || other.walletLiabilityTotal == walletLiabilityTotal));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _DashboardSummary&&(identical(other.cashboxBalance, cashboxBalance) || other.cashboxBalance == cashboxBalance)&&(identical(other.todayRevenue, todayRevenue) || other.todayRevenue == todayRevenue)&&(identical(other.todayNetProfit, todayNetProfit) || other.todayNetProfit == todayNetProfit)&&(identical(other.monthRevenue, monthRevenue) || other.monthRevenue == monthRevenue)&&(identical(other.monthNetProfit, monthNetProfit) || other.monthNetProfit == monthNetProfit)&&(identical(other.monthExpenses, monthExpenses) || other.monthExpenses == monthExpenses)&&(identical(other.todayExpenses, todayExpenses) || other.todayExpenses == todayExpenses)&&(identical(other.pendingOrdersCount, pendingOrdersCount) || other.pendingOrdersCount == pendingOrdersCount)&&(identical(other.activeMaintenanceCount, activeMaintenanceCount) || other.activeMaintenanceCount == activeMaintenanceCount)&&(identical(other.activeTechniciansCount, activeTechniciansCount) || other.activeTechniciansCount == activeTechniciansCount)&&(identical(other.lowStockCount, lowStockCount) || other.lowStockCount == lowStockCount)&&(identical(other.customerDebtsTotal, customerDebtsTotal) || other.customerDebtsTotal == customerDebtsTotal)&&(identical(other.technicianDuesTotal, technicianDuesTotal) || other.technicianDuesTotal == technicianDuesTotal)&&(identical(other.warehouseStockValue, warehouseStockValue) || other.warehouseStockValue == warehouseStockValue)&&(identical(other.walletLiabilityTotal, walletLiabilityTotal) || other.walletLiabilityTotal == walletLiabilityTotal));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,cashboxBalance,todayRevenue,todayNetProfit,monthRevenue,monthNetProfit,monthExpenses,pendingOrdersCount,activeMaintenanceCount,activeTechniciansCount,lowStockCount,customerDebtsTotal,technicianDuesTotal,warehouseStockValue,walletLiabilityTotal);
+int get hashCode => Object.hash(runtimeType,cashboxBalance,todayRevenue,todayNetProfit,monthRevenue,monthNetProfit,monthExpenses,todayExpenses,pendingOrdersCount,activeMaintenanceCount,activeTechniciansCount,lowStockCount,customerDebtsTotal,technicianDuesTotal,warehouseStockValue,walletLiabilityTotal);
 
 @override
 String toString() {
-  return 'DashboardSummary(cashboxBalance: $cashboxBalance, todayRevenue: $todayRevenue, todayNetProfit: $todayNetProfit, monthRevenue: $monthRevenue, monthNetProfit: $monthNetProfit, monthExpenses: $monthExpenses, pendingOrdersCount: $pendingOrdersCount, activeMaintenanceCount: $activeMaintenanceCount, activeTechniciansCount: $activeTechniciansCount, lowStockCount: $lowStockCount, customerDebtsTotal: $customerDebtsTotal, technicianDuesTotal: $technicianDuesTotal, warehouseStockValue: $warehouseStockValue, walletLiabilityTotal: $walletLiabilityTotal)';
+  return 'DashboardSummary(cashboxBalance: $cashboxBalance, todayRevenue: $todayRevenue, todayNetProfit: $todayNetProfit, monthRevenue: $monthRevenue, monthNetProfit: $monthNetProfit, monthExpenses: $monthExpenses, todayExpenses: $todayExpenses, pendingOrdersCount: $pendingOrdersCount, activeMaintenanceCount: $activeMaintenanceCount, activeTechniciansCount: $activeTechniciansCount, lowStockCount: $lowStockCount, customerDebtsTotal: $customerDebtsTotal, technicianDuesTotal: $technicianDuesTotal, warehouseStockValue: $warehouseStockValue, walletLiabilityTotal: $walletLiabilityTotal)';
 }
 
 
@@ -273,7 +275,7 @@ abstract mixin class _$DashboardSummaryCopyWith<$Res> implements $DashboardSumma
   factory _$DashboardSummaryCopyWith(_DashboardSummary value, $Res Function(_DashboardSummary) _then) = __$DashboardSummaryCopyWithImpl;
 @override @useResult
 $Res call({
- double cashboxBalance, double todayRevenue, double todayNetProfit, double monthRevenue, double monthNetProfit, double monthExpenses, int pendingOrdersCount, int activeMaintenanceCount, int activeTechniciansCount, int lowStockCount, double customerDebtsTotal, double technicianDuesTotal, double warehouseStockValue, double walletLiabilityTotal
+ double cashboxBalance, double todayRevenue, double todayNetProfit, double monthRevenue, double monthNetProfit, double monthExpenses, double todayExpenses, int pendingOrdersCount, int activeMaintenanceCount, int activeTechniciansCount, int lowStockCount, double customerDebtsTotal, double technicianDuesTotal, double warehouseStockValue, double walletLiabilityTotal
 });
 
 
@@ -290,7 +292,7 @@ class __$DashboardSummaryCopyWithImpl<$Res>
 
 /// Create a copy of DashboardSummary
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? cashboxBalance = null,Object? todayRevenue = null,Object? todayNetProfit = null,Object? monthRevenue = null,Object? monthNetProfit = null,Object? monthExpenses = null,Object? pendingOrdersCount = null,Object? activeMaintenanceCount = null,Object? activeTechniciansCount = null,Object? lowStockCount = null,Object? customerDebtsTotal = null,Object? technicianDuesTotal = null,Object? warehouseStockValue = null,Object? walletLiabilityTotal = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? cashboxBalance = null,Object? todayRevenue = null,Object? todayNetProfit = null,Object? monthRevenue = null,Object? monthNetProfit = null,Object? monthExpenses = null,Object? todayExpenses = null,Object? pendingOrdersCount = null,Object? activeMaintenanceCount = null,Object? activeTechniciansCount = null,Object? lowStockCount = null,Object? customerDebtsTotal = null,Object? technicianDuesTotal = null,Object? warehouseStockValue = null,Object? walletLiabilityTotal = null,}) {
   return _then(_DashboardSummary(
 cashboxBalance: null == cashboxBalance ? _self.cashboxBalance : cashboxBalance // ignore: cast_nullable_to_non_nullable
 as double,todayRevenue: null == todayRevenue ? _self.todayRevenue : todayRevenue // ignore: cast_nullable_to_non_nullable
@@ -298,6 +300,7 @@ as double,todayNetProfit: null == todayNetProfit ? _self.todayNetProfit : todayN
 as double,monthRevenue: null == monthRevenue ? _self.monthRevenue : monthRevenue // ignore: cast_nullable_to_non_nullable
 as double,monthNetProfit: null == monthNetProfit ? _self.monthNetProfit : monthNetProfit // ignore: cast_nullable_to_non_nullable
 as double,monthExpenses: null == monthExpenses ? _self.monthExpenses : monthExpenses // ignore: cast_nullable_to_non_nullable
+as double,todayExpenses: null == todayExpenses ? _self.todayExpenses : todayExpenses // ignore: cast_nullable_to_non_nullable
 as double,pendingOrdersCount: null == pendingOrdersCount ? _self.pendingOrdersCount : pendingOrdersCount // ignore: cast_nullable_to_non_nullable
 as int,activeMaintenanceCount: null == activeMaintenanceCount ? _self.activeMaintenanceCount : activeMaintenanceCount // ignore: cast_nullable_to_non_nullable
 as int,activeTechniciansCount: null == activeTechniciansCount ? _self.activeTechniciansCount : activeTechniciansCount // ignore: cast_nullable_to_non_nullable

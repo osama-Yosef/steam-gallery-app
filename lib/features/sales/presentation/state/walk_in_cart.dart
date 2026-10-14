@@ -55,10 +55,13 @@ class CartLine {
   /// The line as sent to rpc_admin_walk_in_sale. A service always carries
   /// its price; a stock product only when it was re-priced — otherwise the
   /// server charges its price today (offer included), as it always has.
-  SaleLineInput toSaleInput() => SaleLineInput(
+  ///
+  /// [pinPrice] sends the shown price for every line — a bag sale's grid
+  /// shows the catalogue price, which is what it must charge.
+  SaleLineInput toSaleInput({bool pinPrice = false}) => SaleLineInput(
     productId: productId,
     quantity: quantity,
-    unitPrice: isService || priceChanged ? unitPrice : null,
+    unitPrice: pinPrice || isService || priceChanged ? unitPrice : null,
   );
 }
 
@@ -143,8 +146,8 @@ class WalkInCart {
     if (i >= 0) _lines[i] = line.withPrice(price);
   }
 
-  List<SaleLineInput> toSaleInputs() => [
-    for (final l in _lines) l.toSaleInput(),
+  List<SaleLineInput> toSaleInputs({bool pinPrices = false}) => [
+    for (final l in _lines) l.toSaleInput(pinPrice: pinPrices),
   ];
 
   void clear() => _lines.clear();

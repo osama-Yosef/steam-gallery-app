@@ -2,7 +2,8 @@ import 'package:intl/intl.dart';
 
 abstract final class Formatters {
   static final _currency = NumberFormat.currency(
-    locale: 'ar_EG',
+    // 'ar', not 'ar_EG': the shop reads every number in English digits.
+    locale: 'ar',
     symbol: 'ج.م',
     decimalDigits: 2,
   );

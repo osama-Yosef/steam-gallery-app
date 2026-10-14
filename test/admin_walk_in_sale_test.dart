@@ -7,8 +7,13 @@ import 'package:steam_gallery_app/core/errors/app_exception.dart';
 import 'package:steam_gallery_app/core/offline/outbox.dart';
 import 'package:steam_gallery_app/core/theme/app_theme.dart';
 import 'package:steam_gallery_app/core/utils/formatters.dart';
+import 'package:steam_gallery_app/features/customer_account/data/models/customer_account_summary.dart';
+import 'package:steam_gallery_app/features/customer_account/presentation/providers/customer_account_providers.dart';
+import 'package:steam_gallery_app/features/inventory/data/models/technician_bag_stock_item.dart';
 import 'package:steam_gallery_app/features/inventory/data/models/warehouse_stock_item.dart';
 import 'package:steam_gallery_app/features/inventory/presentation/providers/inventory_providers.dart';
+import 'package:steam_gallery_app/features/maintenance/data/models/technician_option.dart';
+import 'package:steam_gallery_app/features/maintenance/presentation/providers/maintenance_providers.dart';
 import 'package:steam_gallery_app/features/products/data/models/product.dart';
 import 'package:steam_gallery_app/features/products/presentation/providers/product_providers.dart';
 import 'package:steam_gallery_app/features/sales/data/models/sale_line_input.dart';
@@ -47,6 +52,9 @@ typedef _SaleCall = ({
   double discount,
   String clientRequestId,
   String? notes,
+  String? customerId,
+  double? paidAmount,
+  String? technicianId,
 });
 
 class _FakeSalesRepo implements SalesRepository {
@@ -63,6 +71,9 @@ class _FakeSalesRepo implements SalesRepository {
     required double discount,
     required String clientRequestId,
     String? notes,
+    String? customerId,
+    double? paidAmount,
+    String? technicianId,
   }) async {
     calls.add((
       customerName: customerName,
@@ -72,6 +83,9 @@ class _FakeSalesRepo implements SalesRepository {
       discount: discount,
       clientRequestId: clientRequestId,
       notes: notes,
+      customerId: customerId,
+      paidAmount: paidAmount,
+      technicianId: technicianId,
     ));
     if (error != null) throw error!;
     return result;
@@ -119,6 +133,34 @@ Future<void> _pump(
         assemblyStockProvider.overrideWith((ref) async => [_kit]),
         serviceProductsProvider.overrideWith((ref) async => [_service]),
         walkInSalesProvider.overrideWith((ref) async => <Sale>[]),
+        assignableTechniciansProvider.overrideWith(
+          (ref) async => const [
+            TechnicianOption(id: 't1', fullName: 'حسن', employeeCode: 'T-1'),
+          ],
+        ),
+        technicianBagStockProvider('t1').overrideWith(
+          (ref) async => const [
+            TechnicianBagStockItem(
+              productId: 'p9',
+              productName: 'سخان',
+              sku: 'BAG-9',
+              quantity: 3,
+              costPrice: 50,
+              sellingPrice: 120,
+            ),
+          ],
+        ),
+        customerAccountsProvider().overrideWith(
+          (ref) async => const [
+            CustomerAccountSummary(
+              customerId: 'c1',
+              customerName: 'عم سيد',
+              totalPurchases: 0,
+              totalPaid: 0,
+              remainingBalance: 0,
+            ),
+          ],
+        ),
       ],
       child: MaterialApp(
         theme: AppTheme.light(),
@@ -457,6 +499,34 @@ void main() {
           warehouseStockProvider().overrideWith((ref) async => [_iron]),
           assemblyStockProvider.overrideWith((ref) async => []),
           walkInSalesProvider.overrideWith((ref) async => <Sale>[]),
+          assignableTechniciansProvider.overrideWith(
+            (ref) async => const [
+              TechnicianOption(id: 't1', fullName: 'حسن', employeeCode: 'T-1'),
+            ],
+          ),
+          technicianBagStockProvider('t1').overrideWith(
+            (ref) async => const [
+              TechnicianBagStockItem(
+                productId: 'p9',
+                productName: 'سخان',
+                sku: 'BAG-9',
+                quantity: 3,
+                costPrice: 50,
+                sellingPrice: 120,
+              ),
+            ],
+          ),
+          customerAccountsProvider().overrideWith(
+            (ref) async => const [
+              CustomerAccountSummary(
+                customerId: 'c1',
+                customerName: 'عم سيد',
+                totalPurchases: 0,
+                totalPaid: 0,
+                remainingBalance: 0,
+              ),
+            ],
+          ),
         ],
         child: MaterialApp(
           theme: AppTheme.light(),
@@ -468,5 +538,122 @@ void main() {
     expect(find.text('لا توجد فواتير اليوم'), findsOneWidget);
     // The checkout bar belongs to the sale tab only.
     expect(_confirmButton(), findsNothing);
+  });
+
+  group('credit and part payment (0084)', () {
+    testWidgets('آجل asks for a customer first, then goes on their account', (
+      tester,
+    ) async {
+      final repo = _FakeSalesRepo();
+      await _pump(tester, repo);
+      await tester.tap(find.text('مكواة بخار'));
+      await tester.pump();
+      await tester.tap(find.text('آجل'));
+      await tester.pumpAndSettle();
+      expect(
+        find.text('بيع آجل · ${Formatters.currency(100)}'),
+        findsOneWidget,
+      );
+
+      await tester.tap(_confirmButton());
+      await tester.pumpAndSettle();
+      expect(repo.calls, isEmpty, reason: 'no customer yet');
+      expect(find.text('اختيار عميل'), findsOneWidget, reason: 'picker opens');
+
+      await tester.tap(find.text('عم سيد'));
+      await tester.pumpAndSettle();
+      expect(find.text('عم سيد'), findsOneWidget, reason: 'shown as chosen');
+
+      await tester.tap(_confirmButton());
+      await tester.pumpAndSettle();
+      expect(repo.calls, hasLength(1));
+      final call = repo.calls.single;
+      expect(call.paymentMethod, PaymentMethod.deferred);
+      expect(call.customerId, 'c1');
+      expect(call.paidAmount, isNull);
+      expect(call.technicianId, isNull);
+    });
+
+    testWidgets('جزئي sends what is paid now', (tester) async {
+      final repo = _FakeSalesRepo();
+      await _pump(tester, repo);
+      await tester.tap(find.text('عميل مسجل'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('عم سيد'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('مكواة بخار'));
+      await tester.pump();
+      await tester.tap(find.text('جزئي'));
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.widgetWithText(TextField, 'المدفوع الآن'),
+        '40',
+      );
+      await tester.pump();
+      expect(
+        find.text(
+          'مدفوع ${Formatters.currency(40)} · الباقي ${Formatters.currency(60)}',
+        ),
+        findsOneWidget,
+      );
+
+      await tester.tap(_confirmButton());
+      await tester.pumpAndSettle();
+      final call = repo.calls.single;
+      expect(call.paymentMethod, PaymentMethod.cash);
+      expect(call.customerId, 'c1');
+      expect(call.paidAmount, 40);
+    });
+
+    testWidgets('جزئي refuses paying all of it or nothing', (tester) async {
+      final repo = _FakeSalesRepo();
+      await _pump(tester, repo);
+      await tester.tap(find.text('عميل مسجل'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('عم سيد'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('مكواة بخار'));
+      await tester.pump();
+      await tester.tap(find.text('جزئي'));
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.widgetWithText(TextField, 'المدفوع الآن'),
+        '100',
+      );
+      await tester.tap(_confirmButton());
+      await tester.pumpAndSettle();
+      expect(repo.calls, isEmpty);
+      expect(
+        find.text('المدفوع لازم يكون أكبر من صفر وأقل من الإجمالي'),
+        findsOneWidget,
+      );
+    });
+  });
+
+  testWidgets('sells from a technician\'s bag at its shown price', (
+    tester,
+  ) async {
+    final repo = _FakeSalesRepo();
+    await _pump(tester, repo);
+    await tester.tap(find.text('مكواة بخار'));
+    await tester.pump();
+
+    await tester.tap(find.text('المخزن الرئيسي'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('شنطة حسن').last);
+    await tester.pumpAndSettle();
+    expect(find.text('مكواة بخار'), findsNothing, reason: 'the bag only');
+    expect(find.text('سخان'), findsOneWidget);
+    expect(find.textContaining('السلة ('), findsNothing, reason: 'emptied');
+
+    await tester.tap(find.text('سخان'));
+    await tester.pump();
+    await tester.tap(_confirmButton());
+    await tester.pumpAndSettle();
+    final call = repo.calls.single;
+    expect(call.technicianId, 't1');
+    expect(call.items.single.productId, 'p9');
+    expect(call.items.single.unitPrice, 120, reason: 'pinned');
   });
 }

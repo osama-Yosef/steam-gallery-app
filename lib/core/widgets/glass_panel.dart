@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
+import '../theme/safe_graphics.dart';
 
 /// A frosted-glass surface: translucent white fill + a light 1px border + a
 /// soft shadow. Used for the navigation chrome (sidebar / bottom nav) and
@@ -28,6 +29,20 @@ class GlassPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Old graphics cards (see SafeGraphics): opaque white, a solid border,
+    // no gradient and no shadow.
+    if (SafeGraphics.enabled) {
+      return Container(
+        padding: padding,
+        clipBehavior: Clip.antiAlias,
+        decoration: BoxDecoration(
+          color: gradient == null ? AppColors.surface : gradient!.colors.last,
+          borderRadius: borderRadius,
+          border: Border.all(color: AppColors.safeBorder, width: 1.2),
+        ),
+        child: Material(type: MaterialType.transparency, child: child),
+      );
+    }
     return Container(
       padding: padding,
       clipBehavior: Clip.antiAlias,
@@ -35,7 +50,7 @@ class GlassPanel extends StatelessWidget {
         color: gradient == null ? fill : null,
         gradient: gradient,
         borderRadius: borderRadius,
-        border: Border.all(color: AppColors.glassBorder, width: 1),
+        border: Border.all(color: AppColors.glassBorder, width: 1.2),
         boxShadow: const [
           BoxShadow(
             color: AppColors.shadow,

@@ -10,18 +10,35 @@ import '../../../../auth/data/models/app_user.dart';
 import '../../../../auth/presentation/providers/auth_providers.dart';
 import '../../providers/cashbox_providers.dart';
 
+/// [todayOnly] (the sales dashboard's "مصاريف اليوم" tile) lists just the
+/// expenses dated today.
 class AdminExpensesListScreen extends ConsumerWidget {
-  const AdminExpensesListScreen({super.key});
+  final bool todayOnly;
+  const AdminExpensesListScreen({this.todayOnly = false, super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final expensesAsync = ref.watch(expensesProvider);
+    final now = DateTime.now();
+    final expensesAsync = todayOnly
+        ? ref
+              .watch(expensesProvider)
+              .whenData(
+                (all) => [
+                  ...all.where(
+                    (e) =>
+                        e.expenseDate.year == now.year &&
+                        e.expenseDate.month == now.month &&
+                        e.expenseDate.day == now.day,
+                  ),
+                ],
+              )
+        : ref.watch(expensesProvider);
     final isSales =
         ref.watch(currentUserProfileProvider).value?.role == AppRole.sales;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('المصروفات'),
+        title: Text(todayOnly ? 'مصاريف اليوم' : 'المصروفات'),
         actions: [
           // Categories are admin-only (RLS); sales just uses them.
           if (!isSales)
@@ -50,8 +67,10 @@ class AdminExpensesListScreen extends ConsumerWidget {
         ),
         data: (expenses) {
           if (expenses.isEmpty) {
-            return const EmptyView(
-              message: 'لا توجد مصروفات بعد',
+            return EmptyView(
+              message: todayOnly
+                  ? 'لا توجد مصروفات اليوم'
+                  : 'لا توجد مصروفات بعد',
               icon: Iconsax.receipt_text_copy,
             );
           }

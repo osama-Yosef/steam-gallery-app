@@ -248,4 +248,75 @@ void main() {
       expect(_redirect('/administrator', user: _user()), isNull);
     });
   });
+
+  group('sales follows admin links to its own pages', () {
+    final sales = _user(role: AppRole.sales);
+    String? go(String path, {String query = ''}) => resolveAuthRedirect(
+      location: path,
+      query: query,
+      hasSession: true,
+      profileStatus: ProfileStatus.ready,
+      user: sales,
+      requireVerifiedPhone: false,
+      passwordRecoveryInProgress: false,
+    );
+
+    test('the back office keeps its sub-path under /sales', () {
+      expect(go(Routes.adminWarehouse), Routes.salesWarehouse);
+      expect(
+        go(Routes.adminPurchaseInvoiceDetail('7')),
+        '/sales/sections/warehouse/purchases/7',
+      );
+      expect(go(Routes.adminTechnicianBags), Routes.salesTechnicianBags);
+      expect(
+        go(Routes.adminTechnicianAccountSupply('t1')),
+        '/sales/sections/technicians/t1/account/supply',
+      );
+      expect(go(Routes.adminProductEdit('p1')), '/sales/sections/products/p1/edit');
+      expect(go(Routes.adminPriceList), Routes.salesPriceList);
+      expect(go(Routes.adminCategories), '/sales/sections/categories');
+      expect(go(Routes.adminEmployeeEdit('e1')), '/sales/sections/employees/e1/edit');
+      expect(go(Routes.adminCustomerPayment('c1')), '/sales/sections/customers/c1/payment');
+      expect(go(Routes.adminWallets), Routes.salesWallets);
+      expect(go(Routes.adminExpenseNew), Routes.salesExpenseNew);
+      expect(go(Routes.adminCashDeposit), Routes.salesCashDeposit);
+      expect(go(Routes.adminOrderDetail('o1')), Routes.salesOrderDetail('o1'));
+    });
+
+    test('the query string comes along', () {
+      expect(
+        go(Routes.adminPurchaseInvoices, query: 'supplier=s1&name=x'),
+        '${Routes.salesPurchaseInvoices}?supplier=s1&name=x',
+      );
+    });
+
+    test('the walk-in register and its invoice history', () {
+      expect(go(Routes.adminWalkInSale), Routes.salesSale);
+      expect(
+        go(Routes.adminWalkInSale, query: 'tab=invoices'),
+        Routes.salesTodayInvoices,
+      );
+    });
+
+    test('admin-only pages still send sales home', () {
+      for (final path in [
+        Routes.adminUsers,
+        Routes.adminReports,
+        Routes.adminAuditLog,
+        Routes.adminServiceAreas,
+        Routes.adminMaintenance,
+        Routes.adminExpenseCategories,
+        Routes.adminHome,
+      ]) {
+        expect(go(path), Routes.salesHome, reason: path);
+      }
+    });
+
+    test('other roles get no such translation', () {
+      expect(
+        _redirect(Routes.adminWarehouse, user: _user(role: AppRole.technician)),
+        Routes.technicianHome,
+      );
+    });
+  });
 }

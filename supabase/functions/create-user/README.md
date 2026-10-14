@@ -1,6 +1,6 @@
 # Edge Function: `create-user`
 
-The only place `SUPABASE_SERVICE_ROLE_KEY` is used anywhere in this system. Creates a **technician** or **admin** account (phone + password). Customers self-register from the app and never touch this function.
+The only place `SUPABASE_SERVICE_ROLE_KEY` is used anywhere in this system. Creates a **technician**, **sales** or **admin** account (phone + password) — admin only. Admin and sales can also create a **customer** (`"role": "customer"`, password optional) from the walk-in register, to sell to them on credit (migration 0084); everyone else self-registers from the app.
 
 ## Deploy
 

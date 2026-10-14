@@ -40,9 +40,11 @@ class DashboardOverview extends ConsumerWidget {
             label: 'رصيد الخزنة',
             value: MoneyText(
               s.cashboxBalance,
-              style: Theme.of(
-                context,
-              ).textTheme.headlineSmall?.copyWith(color: Colors.white),
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                color: Colors.white,
+                fontSize: 30,
+                fontWeight: FontWeight.bold,
+              ),
             ),
             onTap: () => context.push(Routes.adminCashbox),
             highlight: true,
@@ -77,7 +79,7 @@ class DashboardOverview extends ConsumerWidget {
                     icon: Iconsax.calendar_1_copy,
                     colors: const [Color(0xFF6D8CFF), Color(0xFF3B5BFF)],
                     label: 'مبيعات اليوم',
-                    value: MoneyText(s.todayRevenue),
+                    value: MoneyText(s.todayRevenue, style: _kpiValue(context)),
                     // Opens the walk-in register on its invoice history,
                     // where each of today's invoices can be edited.
                     onTap: () => context.push(Routes.adminWalkInInvoices),
@@ -86,19 +88,29 @@ class DashboardOverview extends ConsumerWidget {
                     icon: Iconsax.trend_up_copy,
                     colors: const [Color(0xFF34D399), Color(0xFF059669)],
                     label: 'صافي ربح اليوم',
-                    value: MoneyText(s.todayNetProfit, colorBySign: true),
+                    value: MoneyText(
+                      s.todayNetProfit,
+                      colorBySign: true,
+                      style: _kpiValue(context),
+                    ),
                   ),
                   _KpiCard(
                     icon: Iconsax.calendar_copy,
                     colors: const [Color(0xFF6D8CFF), Color(0xFF3B5BFF)],
                     label: 'مبيعات الشهر',
-                    value: MoneyText(s.monthRevenue),
+                    value: MoneyText(s.monthRevenue, style: _kpiValue(context)),
+                    // Every invoice of the month, in full.
+                    onTap: () => context.push(Routes.adminMonthSales),
                   ),
                   _KpiCard(
                     icon: Iconsax.chart_success_copy,
                     colors: const [Color(0xFF34D399), Color(0xFF059669)],
                     label: 'صافي ربح الشهر',
-                    value: MoneyText(s.monthNetProfit, colorBySign: true),
+                    value: MoneyText(
+                      s.monthNetProfit,
+                      colorBySign: true,
+                      style: _kpiValue(context),
+                    ),
                   ),
                   _KpiCard(
                     icon: Iconsax.receipt_text_copy,
@@ -106,7 +118,7 @@ class DashboardOverview extends ConsumerWidget {
                     label: 'طلبات جديدة',
                     value: Text(
                       '${s.pendingOrdersCount}',
-                      style: Theme.of(context).textTheme.headlineSmall,
+                      style: _kpiValue(context),
                     ),
                     onTap: () => context.push(Routes.adminOrders),
                   ),
@@ -116,7 +128,7 @@ class DashboardOverview extends ConsumerWidget {
                     label: 'صيانات نشطة',
                     value: Text(
                       '${s.activeMaintenanceCount}',
-                      style: Theme.of(context).textTheme.headlineSmall,
+                      style: _kpiValue(context),
                     ),
                     onTap: () => context.push(Routes.adminMaintenance),
                   ),
@@ -126,7 +138,7 @@ class DashboardOverview extends ConsumerWidget {
                     label: 'منتجات منخفضة',
                     value: Text(
                       '${s.lowStockCount}',
-                      style: Theme.of(context).textTheme.headlineSmall,
+                      style: _kpiValue(context),
                     ),
                     onTap: () => context.push(Routes.adminWarehouse),
                   ),
@@ -136,42 +148,57 @@ class DashboardOverview extends ConsumerWidget {
                     label: 'الصنايعية النشطون',
                     value: Text(
                       '${s.activeTechniciansCount}',
-                      style: Theme.of(context).textTheme.headlineSmall,
+                      style: _kpiValue(context),
                     ),
                   ),
                   _KpiCard(
                     icon: Iconsax.people_copy,
                     colors: const [Color(0xFFF48FB1), Color(0xFFEC407A)],
                     label: 'ديون العملاء',
-                    value: MoneyText(s.customerDebtsTotal),
+                    value: MoneyText(
+                      s.customerDebtsTotal,
+                      style: _kpiValue(context),
+                    ),
                     onTap: () => context.push(Routes.adminCustomers),
                   ),
                   _KpiCard(
                     icon: Iconsax.card_receive_copy,
                     colors: const [Color(0xFF9575CD), Color(0xFF5E35B1)],
                     label: 'مستحقات الصنايعية',
-                    value: MoneyText(s.technicianDuesTotal),
+                    value: MoneyText(
+                      s.technicianDuesTotal,
+                      style: _kpiValue(context),
+                    ),
                     onTap: () => context.push(Routes.adminTechnicianBags),
                   ),
                   _KpiCard(
                     icon: Iconsax.buildings_2_copy,
                     colors: const [Color(0xFF34D399), Color(0xFF10B981)],
                     label: 'قيمة المخزون',
-                    value: MoneyText(s.warehouseStockValue),
+                    value: MoneyText(
+                      s.warehouseStockValue,
+                      style: _kpiValue(context),
+                    ),
                     onTap: () => context.push(Routes.adminWarehouse),
                   ),
                   _KpiCard(
                     icon: Iconsax.card_remove_copy,
                     colors: const [Color(0xFFFF7A7A), Color(0xFFDC2626)],
                     label: 'مصروفات الشهر',
-                    value: MoneyText(s.monthExpenses),
+                    value: MoneyText(
+                      s.monthExpenses,
+                      style: _kpiValue(context),
+                    ),
                     onTap: () => context.push(Routes.adminExpenses),
                   ),
                   _KpiCard(
                     icon: Iconsax.wallet_2_copy,
                     colors: const [Color(0xFF64B5F6), Color(0xFF1976D2)],
                     label: 'أرصدة محافظ العملاء',
-                    value: MoneyText(s.walletLiabilityTotal),
+                    value: MoneyText(
+                      s.walletLiabilityTotal,
+                      style: _kpiValue(context),
+                    ),
                     onTap: () => context.push(Routes.adminWallets),
                   ),
                 ],
@@ -208,6 +235,121 @@ class DashboardOverview extends ConsumerWidget {
             onPressed: () => context.push(Routes.adminReports),
             icon: const Icon(Iconsax.chart_2_copy),
             label: const Text('التقارير التفصيلية'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// The sales role's landing page: the figures a shop floor runs on,
+/// each opening the page behind it.
+class SalesDashboardOverview extends ConsumerWidget {
+  const SalesDashboardOverview({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final summaryAsync = ref.watch(dashboardSummaryProvider);
+
+    return summaryAsync.when(
+      loading: () => const SizedBox(height: 300, child: LoadingView()),
+      error: (e, _) => SizedBox(
+        height: 220,
+        child: ErrorView(
+          message: 'تعذَّر تحميل بيانات اللوحة',
+          onRetry: () => ref.invalidate(dashboardSummaryProvider),
+        ),
+      ),
+      data: (s) => Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _KpiCard(
+            icon: Iconsax.wallet_money_copy,
+            colors: const [AppColors.brandTeal, AppColors.primaryDark],
+            label: 'رصيد الخزنة',
+            value: MoneyText(
+              s.cashboxBalance,
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                color: Colors.white,
+                fontSize: 30,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            onTap: () => context.push(Routes.salesCashbox),
+            highlight: true,
+          ),
+          const SizedBox(height: 14),
+          LayoutBuilder(
+            builder: (context, c) {
+              // Same sizing as the admin grid above.
+              final columns = (c.maxWidth / 210).floor().clamp(2, 6);
+              return GridView(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: columns,
+                  mainAxisSpacing: 14,
+                  crossAxisSpacing: 14,
+                  mainAxisExtent: 168,
+                ),
+                children: [
+                  _KpiCard(
+                    icon: Iconsax.calendar_1_copy,
+                    colors: const [Color(0xFF6D8CFF), Color(0xFF3B5BFF)],
+                    label: 'مبيعات اليوم',
+                    value: MoneyText(s.todayRevenue, style: _kpiValue(context)),
+                    onTap: () => context.push(Routes.salesTodayInvoices),
+                  ),
+                  _KpiCard(
+                    icon: Iconsax.calendar_copy,
+                    colors: const [Color(0xFF6D8CFF), Color(0xFF3B5BFF)],
+                    label: 'مبيعات الشهر',
+                    value: MoneyText(s.monthRevenue, style: _kpiValue(context)),
+                    onTap: () => context.push(Routes.salesMonthSales),
+                  ),
+                  _KpiCard(
+                    icon: Iconsax.card_remove_copy,
+                    colors: const [Color(0xFFFF7A7A), Color(0xFFDC2626)],
+                    label: 'مصاريف اليوم',
+                    value: MoneyText(
+                      s.todayExpenses,
+                      style: _kpiValue(context),
+                    ),
+                    onTap: () => context.push(Routes.salesTodayExpenses),
+                  ),
+                  _KpiCard(
+                    icon: Iconsax.card_receive_copy,
+                    colors: const [Color(0xFF9575CD), Color(0xFF5E35B1)],
+                    label: 'مستحقات الصنايعية',
+                    value: MoneyText(
+                      s.technicianDuesTotal,
+                      style: _kpiValue(context),
+                    ),
+                    onTap: () => context.push(Routes.salesTechnicianBags),
+                  ),
+                  _KpiCard(
+                    icon: Iconsax.warning_2_copy,
+                    colors: const [Color(0xFFFF8A65), Color(0xFFE64A19)],
+                    label: 'منتجات منخفضة',
+                    value: Text(
+                      '${s.lowStockCount}',
+                      style: _kpiValue(context),
+                    ),
+                    onTap: () => context.push(Routes.salesLowStock),
+                  ),
+                  _KpiCard(
+                    icon: Iconsax.people_copy,
+                    colors: const [Color(0xFFF48FB1), Color(0xFFEC407A)],
+                    label: 'ديون العملاء',
+                    value: MoneyText(
+                      s.customerDebtsTotal,
+                      style: _kpiValue(context),
+                    ),
+                    onTap: () => context.push(Routes.salesCustomers),
+                  ),
+                ],
+              );
+            },
           ),
         ],
       ),
@@ -359,6 +501,8 @@ class _HighlightCard extends StatelessWidget {
           onTap: onTap,
           child: GradientBox(
             fallback: colors.last,
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: AppColors.cardBorder, width: 1.2),
             gradient: LinearGradient(
               colors: colors,
               begin: Alignment.topLeft,
@@ -408,3 +552,8 @@ class _HighlightCard extends StatelessWidget {
     );
   }
 }
+
+/// The figure on a dashboard card: big and bold so it reads at a glance.
+TextStyle? _kpiValue(BuildContext context) => Theme.of(
+  context,
+).textTheme.headlineSmall?.copyWith(fontSize: 26, fontWeight: FontWeight.bold);

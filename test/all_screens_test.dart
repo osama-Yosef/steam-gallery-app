@@ -66,6 +66,11 @@ Future<void> _open(
     isNot('/splash'),
     reason: 'stuck on splash',
   );
+  expect(
+    container.read(appRouterProvider).state.matchedLocation,
+    Uri.parse(location).path,
+    reason: 'redirected away instead of opening the screen',
+  );
   final errors = find.byType(ErrorView);
   expect(
     errors,

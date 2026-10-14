@@ -27,6 +27,14 @@ abstract class UsersAdminRepository {
     required AppRole role,
     String? employeeCode,
   });
+
+  /// A customer added at the register to sell to on credit (0084) — admin
+  /// or sales, through the same Edge Function. No password: they sign in
+  /// later with "forgot password". Returns the new customer's id.
+  Future<String> createCustomer({
+    required String localPhone,
+    required String fullName,
+  });
 }
 
 class SupabaseUsersAdminRepository implements UsersAdminRepository {
@@ -93,19 +101,28 @@ class SupabaseUsersAdminRepository implements UsersAdminRepository {
     required String fullName,
     required AppRole role,
     String? employeeCode,
-  }) async {
+  }) => _createUser({
+    'phone': localPhone,
+    'password': password,
+    'full_name': fullName,
+    'role': role.name,
+    if (employeeCode != null && employeeCode.isNotEmpty)
+      'employee_code': employeeCode,
+  });
+
+  @override
+  Future<String> createCustomer({
+    required String localPhone,
+    required String fullName,
+  }) => _createUser({
+    'phone': localPhone,
+    'full_name': fullName,
+    'role': AppRole.customer.name,
+  });
+
+  Future<String> _createUser(Map<String, dynamic> body) async {
     try {
-      final res = await _client.functions.invoke(
-        'create-user',
-        body: {
-          'phone': localPhone,
-          'password': password,
-          'full_name': fullName,
-          'role': role.name,
-          if (employeeCode != null && employeeCode.isNotEmpty)
-            'employee_code': employeeCode,
-        },
-      );
+      final res = await _client.functions.invoke('create-user', body: body);
       final data = res.data;
       if (data is Map && data['error'] != null) {
         throw AppException(_createUserErrorAr(data['error'].toString()));
@@ -124,9 +141,10 @@ class SupabaseUsersAdminRepository implements UsersAdminRepository {
   static String _createUserErrorAr(String? code) => switch (code) {
     'phone_already_registered' => 'هذا الرقم مسجَّل بالفعل',
     'unauthorized' ||
-    'forbidden: admin only' => 'ليست لديك صلاحية لإنشاء حسابات',
+    'forbidden: admin only' ||
+    'forbidden: admin or sales only' => 'ليست لديك صلاحية لإنشاء حسابات',
     'password must be at least 8 characters' =>
-      'كلمة المرور يجب أن تكون ٨ أحرف على الأقل',
+      'كلمة المرور يجب أن تكون 8 أحرف على الأقل',
     _ => 'تعذَّر إنشاء الحساب. حاول مرة أخرى.',
   };
 }

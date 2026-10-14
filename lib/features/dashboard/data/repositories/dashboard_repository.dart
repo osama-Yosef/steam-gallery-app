@@ -92,12 +92,12 @@ class SupabaseDashboardRepository implements DashboardRepository {
         }
       }
 
-      double monthExpenses = 0;
+      double monthExpenses = 0, todayExpenses = 0;
       for (final row in expenseRows) {
         final date = DateTime.parse(row['expense_date'] as String);
-        if (isThisMonth(date)) {
-          monthExpenses += (row['amount'] as num).toDouble();
-        }
+        final amount = (row['amount'] as num).toDouble();
+        if (isThisMonth(date)) monthExpenses += amount;
+        if (isToday(date)) todayExpenses += amount;
       }
 
       double customerDebts = 0;
@@ -119,6 +119,7 @@ class SupabaseDashboardRepository implements DashboardRepository {
         monthRevenue: monthRevenue,
         monthNetProfit: monthRevenue - monthCogs - monthExpenses,
         monthExpenses: monthExpenses,
+        todayExpenses: todayExpenses,
         pendingOrdersCount: pendingOrders.length,
         activeMaintenanceCount: activeMaintenance.length,
         activeTechniciansCount: activeTechnicians.length,

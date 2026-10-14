@@ -24,6 +24,16 @@ abstract class SalesRepository {
     required double discount,
     required String clientRequestId,
     String? notes,
+
+    /// A registered customer — required when [paidAmount] is less than the
+    /// total (آجل / جزئي): the rest goes on their account (0084).
+    String? customerId,
+
+    /// What is paid now; null = the whole total. Ignored for آجل.
+    double? paidAmount,
+
+    /// Sell out of this technician's bag instead of the main warehouse.
+    String? technicianId,
   });
 
   /// The invoice's current content, one line per product (0075).
@@ -102,6 +112,9 @@ class SupabaseSalesRepository implements SalesRepository {
     required double discount,
     required String clientRequestId,
     String? notes,
+    String? customerId,
+    double? paidAmount,
+    String? technicianId,
   }) {
     final count = items.fold<int>(0, (sum, i) => sum + i.quantity);
     return _outbox.submit(
@@ -114,6 +127,11 @@ class SupabaseSalesRepository implements SalesRepository {
         'p_discount': discount,
         'p_client_request_id': clientRequestId,
         'p_notes': notes,
+        // Only when used, so a plain sale still goes through on a database
+        // that predates 0084.
+        'p_customer_id': ?customerId,
+        'p_paid_amount': ?paidAmount,
+        'p_technician_id': ?technicianId,
       },
       label:
           'بيع مباشر · $count قطعة'

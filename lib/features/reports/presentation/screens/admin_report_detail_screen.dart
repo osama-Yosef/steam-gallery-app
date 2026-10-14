@@ -99,7 +99,7 @@ class _AdminReportDetailScreenState
             color: Colors.white,
             child: DefaultTextStyle(
               style: const TextStyle(
-                color: Colors.black87,
+                color: Colors.black,
                 fontFamily: 'Cairo',
               ),
               child: Column(
@@ -128,14 +128,14 @@ class _AdminReportDetailScreenState
                                 style: const TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
-                                  color: Colors.black87,
+                                  color: Colors.black,
                                 ),
                               ),
                               Text(
                                 '${Formatters.date(range.from)} — ${Formatters.date(range.to.subtract(const Duration(days: 1)))}',
                                 style: const TextStyle(
                                   fontSize: 12,
-                                  color: Colors.black54,
+                                  color: Color(0xFF262626),
                                 ),
                               ),
                             ],

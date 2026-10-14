@@ -482,6 +482,7 @@ class _MaintenanceCard extends StatelessWidget {
           colors: [AppColors.brandNavy, AppColors.primaryDark],
         ),
         borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppColors.cardBorder, width: 1.2),
         child: Row(
           children: [
             const Icon(

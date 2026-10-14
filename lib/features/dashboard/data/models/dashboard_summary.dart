@@ -11,6 +11,7 @@ abstract class DashboardSummary with _$DashboardSummary {
     required double monthRevenue,
     required double monthNetProfit,
     required double monthExpenses,
+    required double todayExpenses,
     required int pendingOrdersCount,
     required int activeMaintenanceCount,
     required int activeTechniciansCount,
