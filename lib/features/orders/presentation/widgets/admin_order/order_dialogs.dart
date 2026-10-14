@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../cashbox/presentation/widgets/cashbox_kind_selector.dart';
 import '../../../../technician_account/data/models/sale.dart';
+import '../../../../../core/utils/formatters.dart';
 import '../../../../../core/utils/input_formatters.dart';
 
 /// Asks for the shipping fee to propose to the customer (0065). Returns the
@@ -10,7 +11,7 @@ Future<double?> askShippingFee(BuildContext context, double? currentFee) {
   // Not disposed here: the dialog's field is still on screen during the
   // closing animation, after this function has its answer.
   final amountCtrl = TextEditingController(
-    text: currentFee == null ? '' : currentFee.toStringAsFixed(2),
+    text: currentFee == null ? '' : Formatters.plain(currentFee),
   );
   return showDialog<double>(
     context: context,
@@ -86,7 +87,7 @@ Future<({double amount, PaymentMethod method})?> askOrderPayment(
   required double remaining,
 }) async {
   final amountCtrl = TextEditingController(
-    text: remaining > 0 ? remaining.toStringAsFixed(2) : '',
+    text: remaining > 0 ? Formatters.plain(remaining) : '',
   );
   var method = PaymentMethod.cash;
   final result = await showDialog<({double amount, PaymentMethod method})>(

@@ -76,11 +76,11 @@ class _AdminPaySalaryScreenState extends ConsumerState<AdminPaySalaryScreen> {
       final earned = p.baseSalary - p.absenceDeduction;
       setState(() {
         _preview = p;
-        _absenceCtrl.text = p.absenceDeduction.toStringAsFixed(2);
+        _absenceCtrl.text = Formatters.plain(p.absenceDeduction);
         _bonusCtrl.text = '0';
-        _advanceCtrl.text = math
-            .max(0, math.min(p.advanceBalance, earned))
-            .toStringAsFixed(2);
+        _advanceCtrl.text = Formatters.plain(
+          math.max(0, math.min(p.advanceBalance, earned)),
+        );
       });
     } catch (e) {
       if (mounted) setState(() => _previewError = e);

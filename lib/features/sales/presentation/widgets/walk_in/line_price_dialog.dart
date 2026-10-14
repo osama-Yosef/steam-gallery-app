@@ -23,7 +23,7 @@ class _LinePriceDialog extends StatefulWidget {
 
 class _LinePriceDialogState extends State<_LinePriceDialog> {
   late final _ctrl = TextEditingController(
-    text: widget.line.unitPrice.toStringAsFixed(2),
+    text: Formatters.plain(widget.line.unitPrice),
   );
   String? _error;
 

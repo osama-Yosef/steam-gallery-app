@@ -124,5 +124,10 @@ void main() {
 
   test('amounts are written in English digits', () {
     expect(Formatters.currency(1234.5), contains('1,234.50'));
+    // Whole amounts carry no .00.
+    expect(Formatters.currency(1500), contains('1,500'));
+    expect(Formatters.currency(1500), isNot(contains('.00')));
+    expect(Formatters.plain(1500), '1500');
+    expect(Formatters.plain(12.5), '12.50');
   });
 }

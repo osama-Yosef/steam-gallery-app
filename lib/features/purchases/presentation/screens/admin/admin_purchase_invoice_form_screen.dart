@@ -119,7 +119,7 @@ class _AdminPurchaseInvoiceFormScreenState
       text: existing?.quantity.toString() ?? '1',
     );
     final costCtrl = TextEditingController(
-      text: (existing?.unitCost ?? product!.costPrice).toStringAsFixed(2),
+      text: Formatters.plain(existing?.unitCost ?? product!.costPrice),
     );
     final name = existing?.productName ?? product!.name;
     final ok = await showDialog<bool>(

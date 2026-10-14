@@ -20,7 +20,7 @@ Future<void> showPaySupplierDialog(
   required double maxAmount,
   String? invoiceId,
 }) async {
-  final amountCtrl = TextEditingController(text: maxAmount.toStringAsFixed(2));
+  final amountCtrl = TextEditingController(text: Formatters.plain(maxAmount));
   final notesCtrl = TextEditingController();
   var kind = CashboxKind.cash;
   // One key per dialog: pressing "سداد" twice on a flaky connection must not

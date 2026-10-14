@@ -204,7 +204,7 @@ void main() {
           )
           .controller!
           .text,
-      '250.00',
+      '250',
     );
   });
 

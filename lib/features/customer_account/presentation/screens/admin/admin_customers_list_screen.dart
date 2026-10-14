@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import '../../../../../core/router/route_names.dart';
+import '../../../../../core/utils/formatters.dart';
 import '../../../../../core/widgets/money_text.dart';
 import '../../../../../core/widgets/state_views.dart';
 import '../../providers/customer_account_providers.dart';
@@ -81,7 +82,7 @@ class _AdminCustomersListScreenState
                       ),
                       title: Text(a.customerName),
                       subtitle: Text(
-                        'إجمالي المشتريات: ${a.totalPurchases.toStringAsFixed(2)} ج.م',
+                        'إجمالي المشتريات: ${Formatters.currency(a.totalPurchases)}',
                       ),
                       trailing: MoneyText(
                         a.remainingBalance,

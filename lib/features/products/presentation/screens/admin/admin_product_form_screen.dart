@@ -208,7 +208,7 @@ class _AdminProductFormScreenState
       }
       // An assembly's cost is its components' — kept in sync here so the
       // cost validator (must be > 0) has a real number to check.
-      _costCtrl.text = _componentsCost.toStringAsFixed(2);
+      _costCtrl.text = Formatters.plain(_componentsCost);
     }
     if (!_formKey.currentState!.validate()) return;
     setState(() => _saving = true);

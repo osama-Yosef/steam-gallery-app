@@ -437,7 +437,7 @@ class _TechnicianSaleScreenState extends ConsumerState<TechnicianSaleScreen> {
               labelText: 'المبلغ المحصَّل',
               suffixIcon: TextButton(
                 onPressed: () => setState(
-                  () => _paidAmountCtrl.text = _total.toStringAsFixed(2),
+                  () => _paidAmountCtrl.text = Formatters.plain(_total),
                 ),
                 child: const Text('دفع الكل'),
               ),

@@ -63,7 +63,7 @@ class _AdminSaleInvoiceScreenState
           .read(outboxProvider)
           .pendingOf('sale_edit', refId: sale.id),
     );
-    _discountCtrl.text = draft.initialDiscount.toStringAsFixed(2);
+    _discountCtrl.text = Formatters.plain(draft.initialDiscount);
     return _draft = draft;
   }
 

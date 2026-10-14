@@ -89,7 +89,7 @@ class _AdminOpeningStockScreenState
   Future<bool> _editLine(_OpeningLine line) async {
     final qtyCtrl = TextEditingController(text: line.quantity.toString());
     final costCtrl = TextEditingController(
-      text: line.unitCost.toStringAsFixed(2),
+      text: Formatters.plain(line.unitCost),
     );
     final ok = await showDialog<bool>(
       context: context,

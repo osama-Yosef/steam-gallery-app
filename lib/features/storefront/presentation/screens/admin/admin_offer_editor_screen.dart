@@ -72,7 +72,7 @@ class _AdminOfferEditorScreenState
         }
         for (final p in products) {
           _selectedProducts[p.productId] = TextEditingController(
-            text: p.offerPrice?.toStringAsFixed(2) ?? '',
+            text: p.offerPrice == null ? '' : Formatters.plain(p.offerPrice!),
           );
         }
         _loaded = true;

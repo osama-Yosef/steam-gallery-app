@@ -45,7 +45,9 @@ class _EmployeeFormState extends ConsumerState<_EmployeeForm> {
   late final _phoneCtrl = TextEditingController(text: widget.employee?.phone);
   late final _jobCtrl = TextEditingController(text: widget.employee?.jobTitle);
   late final _salaryCtrl = TextEditingController(
-    text: widget.employee?.monthlySalary.toStringAsFixed(2),
+    text: widget.employee == null
+        ? null
+        : Formatters.plain(widget.employee!.monthlySalary),
   );
   late final _notesCtrl = TextEditingController(text: widget.employee?.notes);
   late DateTime? _hireDate = widget.employee?.hireDate;

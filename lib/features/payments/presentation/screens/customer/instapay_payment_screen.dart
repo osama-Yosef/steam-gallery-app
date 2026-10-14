@@ -124,9 +124,7 @@ class _InstapayPaymentScreenState extends ConsumerState<InstapayPaymentScreen> {
                 }
                 final remaining = orderAsync.value?.remaining;
                 if (_amountCtrl.text.isEmpty && remaining != null) {
-                  _amountCtrl.text = remaining
-                      .toStringAsFixed(2)
-                      .replaceFirst(RegExp(r'\.?0+$'), '');
+                  _amountCtrl.text = Formatters.plain(remaining);
                 }
                 return ListView(
                   padding: const EdgeInsets.all(16),
