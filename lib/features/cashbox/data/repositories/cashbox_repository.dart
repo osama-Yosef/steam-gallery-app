@@ -73,6 +73,20 @@ abstract class CashboxRepository {
     required double amount,
     String? notes,
   });
+
+  /// One expense by id — opened from a till movement.
+  Future<Expense> getExpense(String id);
+
+  /// Corrects a recorded expense (admin/sales). A higher amount comes out
+  /// of the till it was paid from, a lower one goes back into it. Online
+  /// only. See rpc_edit_expense (0087).
+  Future<void> editExpense({
+    required String expenseId,
+    required String categoryId,
+    required double amount,
+    required DateTime expenseDate,
+    String? notes,
+  });
 }
 
 class SupabaseCashboxRepository implements CashboxRepository {
@@ -165,7 +179,7 @@ class SupabaseCashboxRepository implements CashboxRepository {
       final rows = await _client
           .from('expenses')
           .select(
-            'id, expense_number, amount, expense_date, notes, created_at, expense_categories(name)',
+            'id, expense_number, category_id, amount, expense_date, notes, created_at, expense_categories(name)',
           )
           .order('created_at', ascending: false)
           .limit(limit);
@@ -273,4 +287,45 @@ class SupabaseCashboxRepository implements CashboxRepository {
     kind: 'cashbox',
     viaReplay: true,
   );
+
+  @override
+  Future<Expense> getExpense(String id) async {
+    try {
+      final row = await _client
+          .from('expenses')
+          .select(
+            'id, expense_number, category_id, amount, expense_date, notes, created_at, expense_categories(name)',
+          )
+          .eq('id', id)
+          .single();
+      return Expense.fromRow(row);
+    } catch (e) {
+      throw AppException.from(e);
+    }
+  }
+
+  @override
+  Future<void> editExpense({
+    required String expenseId,
+    required String categoryId,
+    required double amount,
+    required DateTime expenseDate,
+    String? notes,
+  }) async {
+    try {
+      await _client.rpc(
+        'rpc_edit_expense',
+        params: {
+          'p_expense_id': expenseId,
+          'p_category_id': categoryId,
+          'p_amount': amount,
+          'p_expense_date': expenseDate.toIso8601String().substring(0, 10),
+          'p_notes': notes,
+        },
+      );
+      _outbox.markServerChanged();
+    } catch (e) {
+      throw AppException.from(e);
+    }
+  }
 }

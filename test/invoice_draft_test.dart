@@ -155,4 +155,44 @@ void main() {
       CashboxKind.wallet,
     );
   });
+
+  test('a stock line sends no price unless it was re-priced (0087)', () {
+    expect(_iron.toEditJson(), {'product_id': 'iron', 'quantity': 2});
+    final d = _draft()..setPrice('iron', 120);
+    final iron = d.lines.firstWhere((l) => l.productId == 'iron');
+    expect(iron.toEditJson(), {
+      'product_id': 'iron',
+      'quantity': 2,
+      'unit_price': 120.0,
+      'reprice': true,
+    });
+    expect(d.subtotal, 2 * 120 + 50);
+  });
+
+  test('a re-priced line keeps its price through the offline queue', () {
+    final d = _draft()..setPrice('base', 45);
+    final queued = OutboxEntry(
+      id: 'e1',
+      rpc: 'rpc_admin_edit_sale',
+      params: const {},
+      viaReplay: false,
+      label: '',
+      kind: 'sale_edit',
+      refId: 's1',
+      userId: 'u1',
+      createdAt: DateTime(2026),
+      meta: {
+        'lines': d.lines.map((l) => l.toJson()).toList(),
+        'discount': 10,
+      },
+    );
+    final reopened = InvoiceDraft.open(
+      _sale(),
+      const [_iron, _base],
+      pendingEdits: [queued],
+    );
+    final base = reopened.lines.firstWhere((l) => l.productId == 'base');
+    expect(base.unitPrice, 45);
+    expect(base.repriced, isTrue);
+  });
 }

@@ -148,6 +148,20 @@ class AppException implements Exception {
     ('SALE_NOT_RETURNABLE', 'الفاتورة دي اترجعت أو اتلغت بالفعل'),
     ('SALE_NOT_FOUND', 'الفاتورة غير موجودة'),
     ('NOT_A_WALK_IN_SALE', 'دي فاتورة صنايعي ومش ممكن تتعدل من هنا'),
+    // Technician invoices and expenses edited (0087).
+    ('NOT_A_TECHNICIAN_SALE', 'دي فاتورة بيع مباشر — عدلها من فواتير البيع'),
+    ('ASSEMBLY_NOT_IN_BAG', 'صنف التجميع مش بيتباع من الشنطة'),
+    ('EXPENSE_IS_PAYROLL', 'ده مصروف مرتب موظف ومش ممكن يتعدل من هنا'),
+    ('EXPENSE_NOT_FOUND', 'المصروف غير موجود'),
+    // Limits on a technician's edits (0088).
+    (
+      'EDIT_WINDOW_EXPIRED',
+      'عدّى أكتر من 3 أيام على الفاتورة — التعديل دلوقتي من الأدمن بس',
+    ),
+    (
+      'TECHNICIAN_DUE_NEGATIVE',
+      'مينفعش — الصنايعي ورّد فلوس الفاتورة دي، والتعديل هيخلي المطلوب توريده بالسالب',
+    ),
     (
       'ASSEMBLY_HAS_NO_COMPONENTS',
       'صنف التجميع ده مالوش مكونات — حدد مكوناته الأول',

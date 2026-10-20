@@ -58,6 +58,10 @@ abstract class CashTransaction with _$CashTransaction {
     String? referenceType,
     String? notes,
     required DateTime createdAt,
+
+    /// The sale, order, expense... the movement belongs to (by
+    /// [referenceType]) — opened from its details.
+    String? referenceId,
   }) = _CashTransaction;
 
   factory CashTransaction.fromRow(Map<String, dynamic> row) => CashTransaction(
@@ -68,5 +72,6 @@ abstract class CashTransaction with _$CashTransaction {
     referenceType: row['reference_type'] as String?,
     notes: row['notes'] as String?,
     createdAt: DateTime.parse(row['created_at'] as String),
+    referenceId: row['reference_id'] as String?,
   );
 }

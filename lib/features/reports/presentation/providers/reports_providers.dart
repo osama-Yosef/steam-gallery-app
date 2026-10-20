@@ -45,6 +45,12 @@ Future<InventoryReport> inventoryReport(Ref ref, DateTime from, DateTime to) {
   return ref.watch(reportsRepositoryProvider).getInventoryReport(from, to);
 }
 
+@riverpod
+Future<EmployeesReport> employeesReport(Ref ref, DateTime from, DateTime to) {
+  ref.cacheFor();
+  return ref.watch(reportsRepositoryProvider).getEmployeesReport(from, to);
+}
+
 typedef ReportRange = ({DateTime from, DateTime to});
 
 /// Shared "من/إلى" filter across every report screen — defaults to

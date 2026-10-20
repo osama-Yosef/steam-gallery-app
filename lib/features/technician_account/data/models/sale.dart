@@ -67,6 +67,9 @@ abstract class Sale with _$Sale {
     required double paidAmount,
     required SaleStatus status,
     required DateTime createdAt,
+
+    /// The technician who sold it; null for a register (walk-in) sale.
+    String? technicianId,
   }) = _Sale;
 
   factory Sale.fromRow(Map<String, dynamic> row) => Sale(
@@ -81,5 +84,6 @@ abstract class Sale with _$Sale {
     paidAmount: (row['paid_amount'] as num).toDouble(),
     status: saleStatusFromString(row['status'] as String),
     createdAt: DateTime.parse(row['created_at'] as String),
+    technicianId: row['technician_id'] as String?,
   );
 }

@@ -8,6 +8,7 @@ abstract class ReportsRepository {
   Future<OrdersProfitReport> getOrdersProfitReport(DateTime from, DateTime to);
   Future<ExpensesReport> getExpensesReport(DateTime from, DateTime to);
   Future<InventoryReport> getInventoryReport(DateTime from, DateTime to);
+  Future<EmployeesReport> getEmployeesReport(DateTime from, DateTime to);
 }
 
 class SupabaseReportsRepository implements ReportsRepository {
@@ -289,6 +290,85 @@ class SupabaseReportsRepository implements ReportsRepository {
             )
             .toList(),
       );
+    } catch (e) {
+      throw AppException.from(e);
+    }
+  }
+
+  @override
+  Future<EmployeesReport> getEmployeesReport(DateTime from, DateTime to) async {
+    String day(DateTime d) => d.toIso8601String().split('T').first;
+    try {
+      final (employees, attendance, advances, payrolls) = await (
+        _client
+            .from('employee_balances')
+            .select(
+              'employee_id, full_name, job_title, monthly_salary, is_active, advance_balance',
+            )
+            .order('full_name'),
+        _client
+            .from('employee_attendance')
+            .select('employee_id, status')
+            .gte('work_date', day(from))
+            .lt('work_date', day(to)),
+        _client
+            .from('employee_advances')
+            .select('employee_id, amount')
+            .gte('advance_date', day(from))
+            .lt('advance_date', day(to)),
+        // A salary counts in the period it was paid in.
+        _client
+            .from('employee_payrolls')
+            .select('employee_id, net_amount')
+            .gte('created_at', _iso(from))
+            .lt('created_at', _iso(to)),
+      ).wait;
+
+      final days = <String, Map<String, int>>{};
+      for (final a in attendance) {
+        final byStatus = days.putIfAbsent(a['employee_id'] as String, () => {});
+        final status = a['status'] as String;
+        byStatus[status] = (byStatus[status] ?? 0) + 1;
+      }
+      final advanced = <String, double>{};
+      for (final a in advances) {
+        final id = a['employee_id'] as String;
+        advanced[id] = (advanced[id] ?? 0) + (a['amount'] as num).toDouble();
+      }
+      final paid = <String, double>{};
+      for (final p in payrolls) {
+        final id = p['employee_id'] as String;
+        paid[id] = (paid[id] ?? 0) + (p['net_amount'] as num).toDouble();
+      }
+
+      final rows = <EmployeeReportRow>[];
+      for (final e in employees) {
+        final id = e['employee_id'] as String;
+        final isActive = e['is_active'] as bool;
+        final d = days[id] ?? const {};
+        final row = EmployeeReportRow(
+          name: e['full_name'] as String,
+          jobTitle: e['job_title'] as String?,
+          monthlySalary: (e['monthly_salary'] as num).toDouble(),
+          isActive: isActive,
+          presentDays: d['present'] ?? 0,
+          lateDays: d['late'] ?? 0,
+          absentDays: d['absent'] ?? 0,
+          leaveDays: d['leave'] ?? 0,
+          advances: advanced[id] ?? 0,
+          salariesPaid: paid[id] ?? 0,
+          advanceBalance: (e['advance_balance'] as num).toDouble(),
+        );
+        // A stopped employee only shows when something happened in the
+        // period or they still owe advances.
+        final touched =
+            d.isNotEmpty ||
+            row.advances > 0 ||
+            row.salariesPaid > 0 ||
+            row.advanceBalance > 0;
+        if (isActive || touched) rows.add(row);
+      }
+      return EmployeesReport(rows: rows);
     } catch (e) {
       throw AppException.from(e);
     }

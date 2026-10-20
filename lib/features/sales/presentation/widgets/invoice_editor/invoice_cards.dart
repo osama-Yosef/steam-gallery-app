@@ -70,12 +70,16 @@ class InvoiceLinesCard extends StatelessWidget {
   final void Function(String productId, int delta) onChangeQuantity;
   final ValueChanged<String> onRemove;
 
+  /// Tapping a line while editable changes its price (0087).
+  final ValueChanged<InvoiceLine>? onEditPrice;
+
   const InvoiceLinesCard({
     super.key,
     required this.lines,
     required this.editable,
     required this.onChangeQuantity,
     required this.onRemove,
+    this.onEditPrice,
   });
 
   @override
@@ -95,11 +99,36 @@ class InvoiceLinesCard extends StatelessWidget {
           for (final l in lines)
             ListTile(
               title: Text(l.productName),
-              subtitle: Text(
-                '${Formatters.currency(l.unitPrice)}'
-                '${l.isService ? ' · خدمة' : ''}'
-                '${l.isAssembly ? ' · صنف تجميع' : ''}'
-                '  =  ${Formatters.currency(l.lineTotal)}',
+              onTap: editable && onEditPrice != null
+                  ? () => onEditPrice!(l)
+                  : null,
+              subtitle: Text.rich(
+                TextSpan(
+                  children: [
+                    TextSpan(
+                      text: Formatters.currency(l.unitPrice),
+                      style: l.repriced
+                          ? TextStyle(
+                              color: theme.colorScheme.primary,
+                              fontWeight: FontWeight.bold,
+                            )
+                          : null,
+                    ),
+                    TextSpan(
+                      text:
+                          '${l.isService ? ' · خدمة' : ''}'
+                          '${l.isAssembly ? ' · صنف تجميع' : ''}'
+                          '  =  ${Formatters.currency(l.lineTotal)}',
+                    ),
+                    if (editable && onEditPrice != null) ...[
+                      const TextSpan(text: '  '),
+                      const WidgetSpan(
+                        alignment: PlaceholderAlignment.middle,
+                        child: Icon(Iconsax.edit_2_copy, size: 14),
+                      ),
+                    ],
+                  ],
+                ),
               ),
               trailing: editable
                   ? Row(

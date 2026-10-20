@@ -56,7 +56,7 @@ final class TechnicianAccountRepositoryProvider
 }
 
 String _$technicianAccountRepositoryHash() =>
-    r'4c7d0056d61a99402423b3d6158e280ac420fd16';
+    r'a7144fa8ccf8ef0829cb74e18381ede5f2c4478b';
 
 @ProviderFor(technicianAccountSummary)
 const technicianAccountSummaryProvider = TechnicianAccountSummaryFamily._();

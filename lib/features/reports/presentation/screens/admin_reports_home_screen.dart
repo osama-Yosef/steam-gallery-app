@@ -24,6 +24,12 @@ const reportTypes = <(String type, String label, IconData icon, Color color)>[
     Color(0xFF0EA5E9),
   ),
   ('customers', 'تقرير العملاء', Iconsax.people_copy, Color(0xFFEC4899)),
+  (
+    'employees',
+    'تقرير الموظفين',
+    Iconsax.profile_2user_copy,
+    Color(0xFF14B8A6),
+  ),
 ];
 
 class AdminReportsHomeScreen extends ConsumerWidget {

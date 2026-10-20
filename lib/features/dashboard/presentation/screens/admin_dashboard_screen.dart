@@ -201,6 +201,17 @@ class DashboardOverview extends ConsumerWidget {
                     ),
                     onTap: () => context.push(Routes.adminWallets),
                   ),
+                  _KpiCard(
+                    icon: Iconsax.truck_copy,
+                    colors: const [Color(0xFFA1887F), Color(0xFF6D4C41)],
+                    label: 'ديون الموردين',
+                    value: MoneyText(
+                      s.supplierDebtsTotal,
+                      style: _kpiValue(context),
+                    ),
+                    // Every supplier with what is still owed to them.
+                    onTap: () => context.push(Routes.adminSuppliers),
+                  ),
                 ],
               );
             },

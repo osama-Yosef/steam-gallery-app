@@ -55,7 +55,7 @@ final class InventoryCountRepositoryProvider
 }
 
 String _$inventoryCountRepositoryHash() =>
-    r'8d48f673eba5704e2dded6193c744daa347de343';
+    r'c08ac98f73456b171e61e94a8db74652edf952d6';
 
 @ProviderFor(inventoryCounts)
 const inventoryCountsProvider = InventoryCountsProvider._();

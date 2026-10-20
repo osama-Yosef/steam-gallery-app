@@ -12,6 +12,9 @@ abstract class Expense with _$Expense {
     required DateTime expenseDate,
     String? notes,
     required DateTime createdAt,
+
+    /// For editing it (0087).
+    String? categoryId,
   }) = _Expense;
 
   factory Expense.fromRow(Map<String, dynamic> row) {
@@ -24,6 +27,7 @@ abstract class Expense with _$Expense {
       expenseDate: DateTime.parse(row['expense_date'] as String),
       notes: row['notes'] as String?,
       createdAt: DateTime.parse(row['created_at'] as String),
+      categoryId: row['category_id'] as String?,
     );
   }
 }

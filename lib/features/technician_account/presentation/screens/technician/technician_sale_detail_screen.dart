@@ -4,8 +4,18 @@ import 'package:iconsax_flutter/iconsax_flutter.dart';
 import '../../../../../core/utils/formatters.dart';
 import '../../../../../core/widgets/money_text.dart';
 import '../../../../../core/widgets/state_views.dart';
+import '../../../../auth/data/models/app_user.dart';
+import '../../../../auth/presentation/providers/auth_providers.dart';
 import '../../../data/models/sale.dart';
 import '../../providers/technician_account_providers.dart';
+import 'technician_sale_edit_screen.dart';
+
+/// How long a technician can change his own invoice; the server enforces
+/// the same limit (0088).
+const technicianEditWindow = Duration(days: 3);
+
+bool technicianCanStillEdit(Sale sale, {DateTime? now}) =>
+    (now ?? DateTime.now()).difference(sale.createdAt) < technicianEditWindow;
 
 class TechnicianSaleDetailScreen extends ConsumerWidget {
   final String saleId;
@@ -15,9 +25,35 @@ class TechnicianSaleDetailScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final saleAsync = ref.watch(technicianSaleDetailProvider(saleId));
     final itemsAsync = ref.watch(saleItemsProvider(saleId));
+    final me = ref.watch(currentUserProfileProvider).value;
+    final sale = saleAsync.value;
+    // Admin can change it any time; the technician who made it, for 3 days
+    // (0087/0088).
+    final canEdit =
+        sale != null &&
+        sale.status == SaleStatus.completed &&
+        sale.technicianId != null &&
+        (me?.role == AppRole.admin ||
+            (me?.role == AppRole.technician &&
+                me?.id == sale.technicianId &&
+                technicianCanStillEdit(sale)));
 
     return Scaffold(
-      appBar: AppBar(title: const Text('تفاصيل البيع')),
+      appBar: AppBar(
+        title: const Text('تفاصيل البيع'),
+        actions: [
+          if (canEdit)
+            IconButton(
+              tooltip: 'تعديل / حذف الفاتورة',
+              icon: const Icon(Iconsax.edit_2_copy),
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => TechnicianSaleEditScreen(saleId: saleId),
+                ),
+              ),
+            ),
+        ],
+      ),
       body: saleAsync.when(
         loading: () => const LoadingView(),
         error: (e, _) => const ErrorView(message: 'تعذَّر تحميل البيع'),
@@ -56,15 +92,18 @@ class TechnicianSaleDetailScreen extends ConsumerWidget {
                   child: Center(child: CircularProgressIndicator()),
                 ),
                 error: (e, _) => const Text('تعذَّر تحميل الأصناف'),
+                // What is on the invoice now: an edit takes lines back.
                 data: (items) => Column(
                   children: [
-                    for (final item in items)
+                    for (final item in items.where(
+                      (i) => i.remainingQuantity > 0,
+                    ))
                       ListTile(
                         title: Text(item.productNameSnapshot),
                         subtitle: Text(
-                          '${item.quantity} × ${Formatters.currency(item.unitPriceSnapshot)}',
+                          '${item.remainingQuantity} × ${Formatters.currency(item.unitPriceSnapshot)}',
                         ),
-                        trailing: MoneyText(item.lineTotal),
+                        trailing: MoneyText(item.remainingTotal),
                       ),
                   ],
                 ),
@@ -76,6 +115,28 @@ class TechnicianSaleDetailScreen extends ConsumerWidget {
               _summaryRow(context, 'المبلغ المحصَّل', sale.paidAmount),
               const SizedBox(height: 8),
               Text('طريقة الدفع: ${paymentMethodLabelAr(sale.paymentMethod)}'),
+              if (!canEdit &&
+                  me?.role == AppRole.technician &&
+                  sale.status == SaleStatus.completed &&
+                  !technicianCanStillEdit(sale)) ...[
+                const SizedBox(height: 16),
+                Text(
+                  'عدّى أكتر من 3 أيام على الفاتورة — لو محتاجة تعديل كلّم الأدمن',
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+              ],
+              if (canEdit) ...[
+                const SizedBox(height: 16),
+                OutlinedButton.icon(
+                  onPressed: () => Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => TechnicianSaleEditScreen(saleId: saleId),
+                    ),
+                  ),
+                  icon: const Icon(Iconsax.edit_2_copy),
+                  label: const Text('تعديل أو حذف الفاتورة'),
+                ),
+              ],
             ],
           );
         },

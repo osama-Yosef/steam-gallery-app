@@ -54,7 +54,7 @@ final class PaymentRepositoryProvider
   }
 }
 
-String _$paymentRepositoryHash() => r'48fa88f0792ceebc763bdfa6398195b905f2c9c6';
+String _$paymentRepositoryHash() => r'bdc8a22130c7ed938a1da75ddb8d0c6cf7db650f';
 
 @ProviderFor(instapayDetails)
 const instapayDetailsProvider = InstapayDetailsProvider._();

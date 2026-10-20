@@ -9,6 +9,7 @@ import '../../../../../core/widgets/state_views.dart';
 import '../../../../auth/data/models/app_user.dart';
 import '../../../../auth/presentation/providers/auth_providers.dart';
 import '../../providers/cashbox_providers.dart';
+import 'admin_edit_expense_screen.dart';
 
 /// [todayOnly] (the sales dashboard's "مصاريف اليوم" tile) lists just the
 /// expenses dated today.
@@ -88,6 +89,15 @@ class AdminExpensesListScreen extends ConsumerWidget {
                       (e.notes != null ? ' · ${e.notes}' : ''),
                 ),
                 trailing: MoneyText(-e.amount, colorBySign: true),
+                // Tap to correct it (0087).
+                onTap: () async {
+                  await Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => AdminEditExpenseScreen(expense: e),
+                    ),
+                  );
+                  ref.invalidate(expensesProvider);
+                },
               );
             },
           );

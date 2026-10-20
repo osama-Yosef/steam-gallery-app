@@ -107,3 +107,47 @@ class InventoryReport {
     required this.movementsByType,
   });
 }
+
+/// One employee over the report's period: attendance, advances taken and
+/// salaries paid in it, and the advances still owed today.
+class EmployeeReportRow {
+  final String name;
+  final String? jobTitle;
+  final double monthlySalary;
+  final bool isActive;
+  final int presentDays;
+  final int lateDays;
+  final int absentDays;
+  final int leaveDays;
+  final double advances;
+  final double salariesPaid;
+  final double advanceBalance;
+
+  const EmployeeReportRow({
+    required this.name,
+    required this.jobTitle,
+    required this.monthlySalary,
+    required this.isActive,
+    required this.presentDays,
+    required this.lateDays,
+    required this.absentDays,
+    required this.leaveDays,
+    required this.advances,
+    required this.salariesPaid,
+    required this.advanceBalance,
+  });
+}
+
+class EmployeesReport {
+  final List<EmployeeReportRow> rows;
+
+  const EmployeesReport({required this.rows});
+
+  double get totalMonthlySalaries => rows
+      .where((r) => r.isActive)
+      .fold(0, (s, r) => s + r.monthlySalary);
+  double get totalAdvances => rows.fold(0, (s, r) => s + r.advances);
+  double get totalSalariesPaid => rows.fold(0, (s, r) => s + r.salariesPaid);
+  double get totalAdvanceBalance =>
+      rows.fold(0, (s, r) => s + r.advanceBalance);
+}

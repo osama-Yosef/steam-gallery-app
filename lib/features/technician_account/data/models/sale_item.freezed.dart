@@ -14,7 +14,9 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$SaleItem {
 
- String get id; String get productNameSnapshot; int get quantity; double get unitPriceSnapshot; double get discount; double get lineTotal;
+ String get id; String get productNameSnapshot; int get quantity; double get unitPriceSnapshot; double get discount; double get lineTotal;/// How much of the line was taken back — returned, or replaced by a
+/// re-priced line when the invoice was edited (0087).
+ int get returnedQuantity;
 /// Create a copy of SaleItem
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -25,16 +27,16 @@ $SaleItemCopyWith<SaleItem> get copyWith => _$SaleItemCopyWithImpl<SaleItem>(thi
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is SaleItem&&(identical(other.id, id) || other.id == id)&&(identical(other.productNameSnapshot, productNameSnapshot) || other.productNameSnapshot == productNameSnapshot)&&(identical(other.quantity, quantity) || other.quantity == quantity)&&(identical(other.unitPriceSnapshot, unitPriceSnapshot) || other.unitPriceSnapshot == unitPriceSnapshot)&&(identical(other.discount, discount) || other.discount == discount)&&(identical(other.lineTotal, lineTotal) || other.lineTotal == lineTotal));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is SaleItem&&(identical(other.id, id) || other.id == id)&&(identical(other.productNameSnapshot, productNameSnapshot) || other.productNameSnapshot == productNameSnapshot)&&(identical(other.quantity, quantity) || other.quantity == quantity)&&(identical(other.unitPriceSnapshot, unitPriceSnapshot) || other.unitPriceSnapshot == unitPriceSnapshot)&&(identical(other.discount, discount) || other.discount == discount)&&(identical(other.lineTotal, lineTotal) || other.lineTotal == lineTotal)&&(identical(other.returnedQuantity, returnedQuantity) || other.returnedQuantity == returnedQuantity));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,productNameSnapshot,quantity,unitPriceSnapshot,discount,lineTotal);
+int get hashCode => Object.hash(runtimeType,id,productNameSnapshot,quantity,unitPriceSnapshot,discount,lineTotal,returnedQuantity);
 
 @override
 String toString() {
-  return 'SaleItem(id: $id, productNameSnapshot: $productNameSnapshot, quantity: $quantity, unitPriceSnapshot: $unitPriceSnapshot, discount: $discount, lineTotal: $lineTotal)';
+  return 'SaleItem(id: $id, productNameSnapshot: $productNameSnapshot, quantity: $quantity, unitPriceSnapshot: $unitPriceSnapshot, discount: $discount, lineTotal: $lineTotal, returnedQuantity: $returnedQuantity)';
 }
 
 
@@ -45,7 +47,7 @@ abstract mixin class $SaleItemCopyWith<$Res>  {
   factory $SaleItemCopyWith(SaleItem value, $Res Function(SaleItem) _then) = _$SaleItemCopyWithImpl;
 @useResult
 $Res call({
- String id, String productNameSnapshot, int quantity, double unitPriceSnapshot, double discount, double lineTotal
+ String id, String productNameSnapshot, int quantity, double unitPriceSnapshot, double discount, double lineTotal, int returnedQuantity
 });
 
 
@@ -62,7 +64,7 @@ class _$SaleItemCopyWithImpl<$Res>
 
 /// Create a copy of SaleItem
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? productNameSnapshot = null,Object? quantity = null,Object? unitPriceSnapshot = null,Object? discount = null,Object? lineTotal = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? productNameSnapshot = null,Object? quantity = null,Object? unitPriceSnapshot = null,Object? discount = null,Object? lineTotal = null,Object? returnedQuantity = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,productNameSnapshot: null == productNameSnapshot ? _self.productNameSnapshot : productNameSnapshot // ignore: cast_nullable_to_non_nullable
@@ -70,7 +72,8 @@ as String,quantity: null == quantity ? _self.quantity : quantity // ignore: cast
 as int,unitPriceSnapshot: null == unitPriceSnapshot ? _self.unitPriceSnapshot : unitPriceSnapshot // ignore: cast_nullable_to_non_nullable
 as double,discount: null == discount ? _self.discount : discount // ignore: cast_nullable_to_non_nullable
 as double,lineTotal: null == lineTotal ? _self.lineTotal : lineTotal // ignore: cast_nullable_to_non_nullable
-as double,
+as double,returnedQuantity: null == returnedQuantity ? _self.returnedQuantity : returnedQuantity // ignore: cast_nullable_to_non_nullable
+as int,
   ));
 }
 
@@ -155,10 +158,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String productNameSnapshot,  int quantity,  double unitPriceSnapshot,  double discount,  double lineTotal)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String productNameSnapshot,  int quantity,  double unitPriceSnapshot,  double discount,  double lineTotal,  int returnedQuantity)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _SaleItem() when $default != null:
-return $default(_that.id,_that.productNameSnapshot,_that.quantity,_that.unitPriceSnapshot,_that.discount,_that.lineTotal);case _:
+return $default(_that.id,_that.productNameSnapshot,_that.quantity,_that.unitPriceSnapshot,_that.discount,_that.lineTotal,_that.returnedQuantity);case _:
   return orElse();
 
 }
@@ -176,10 +179,10 @@ return $default(_that.id,_that.productNameSnapshot,_that.quantity,_that.unitPric
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String productNameSnapshot,  int quantity,  double unitPriceSnapshot,  double discount,  double lineTotal)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String productNameSnapshot,  int quantity,  double unitPriceSnapshot,  double discount,  double lineTotal,  int returnedQuantity)  $default,) {final _that = this;
 switch (_that) {
 case _SaleItem():
-return $default(_that.id,_that.productNameSnapshot,_that.quantity,_that.unitPriceSnapshot,_that.discount,_that.lineTotal);case _:
+return $default(_that.id,_that.productNameSnapshot,_that.quantity,_that.unitPriceSnapshot,_that.discount,_that.lineTotal,_that.returnedQuantity);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -196,10 +199,10 @@ return $default(_that.id,_that.productNameSnapshot,_that.quantity,_that.unitPric
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String productNameSnapshot,  int quantity,  double unitPriceSnapshot,  double discount,  double lineTotal)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String productNameSnapshot,  int quantity,  double unitPriceSnapshot,  double discount,  double lineTotal,  int returnedQuantity)?  $default,) {final _that = this;
 switch (_that) {
 case _SaleItem() when $default != null:
-return $default(_that.id,_that.productNameSnapshot,_that.quantity,_that.unitPriceSnapshot,_that.discount,_that.lineTotal);case _:
+return $default(_that.id,_that.productNameSnapshot,_that.quantity,_that.unitPriceSnapshot,_that.discount,_that.lineTotal,_that.returnedQuantity);case _:
   return null;
 
 }
@@ -210,8 +213,8 @@ return $default(_that.id,_that.productNameSnapshot,_that.quantity,_that.unitPric
 /// @nodoc
 
 
-class _SaleItem implements SaleItem {
-  const _SaleItem({required this.id, required this.productNameSnapshot, required this.quantity, required this.unitPriceSnapshot, required this.discount, required this.lineTotal});
+class _SaleItem extends SaleItem {
+  const _SaleItem({required this.id, required this.productNameSnapshot, required this.quantity, required this.unitPriceSnapshot, required this.discount, required this.lineTotal, this.returnedQuantity = 0}): super._();
   
 
 @override final  String id;
@@ -220,6 +223,9 @@ class _SaleItem implements SaleItem {
 @override final  double unitPriceSnapshot;
 @override final  double discount;
 @override final  double lineTotal;
+/// How much of the line was taken back — returned, or replaced by a
+/// re-priced line when the invoice was edited (0087).
+@override@JsonKey() final  int returnedQuantity;
 
 /// Create a copy of SaleItem
 /// with the given fields replaced by the non-null parameter values.
@@ -231,16 +237,16 @@ _$SaleItemCopyWith<_SaleItem> get copyWith => __$SaleItemCopyWithImpl<_SaleItem>
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SaleItem&&(identical(other.id, id) || other.id == id)&&(identical(other.productNameSnapshot, productNameSnapshot) || other.productNameSnapshot == productNameSnapshot)&&(identical(other.quantity, quantity) || other.quantity == quantity)&&(identical(other.unitPriceSnapshot, unitPriceSnapshot) || other.unitPriceSnapshot == unitPriceSnapshot)&&(identical(other.discount, discount) || other.discount == discount)&&(identical(other.lineTotal, lineTotal) || other.lineTotal == lineTotal));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SaleItem&&(identical(other.id, id) || other.id == id)&&(identical(other.productNameSnapshot, productNameSnapshot) || other.productNameSnapshot == productNameSnapshot)&&(identical(other.quantity, quantity) || other.quantity == quantity)&&(identical(other.unitPriceSnapshot, unitPriceSnapshot) || other.unitPriceSnapshot == unitPriceSnapshot)&&(identical(other.discount, discount) || other.discount == discount)&&(identical(other.lineTotal, lineTotal) || other.lineTotal == lineTotal)&&(identical(other.returnedQuantity, returnedQuantity) || other.returnedQuantity == returnedQuantity));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,productNameSnapshot,quantity,unitPriceSnapshot,discount,lineTotal);
+int get hashCode => Object.hash(runtimeType,id,productNameSnapshot,quantity,unitPriceSnapshot,discount,lineTotal,returnedQuantity);
 
 @override
 String toString() {
-  return 'SaleItem(id: $id, productNameSnapshot: $productNameSnapshot, quantity: $quantity, unitPriceSnapshot: $unitPriceSnapshot, discount: $discount, lineTotal: $lineTotal)';
+  return 'SaleItem(id: $id, productNameSnapshot: $productNameSnapshot, quantity: $quantity, unitPriceSnapshot: $unitPriceSnapshot, discount: $discount, lineTotal: $lineTotal, returnedQuantity: $returnedQuantity)';
 }
 
 
@@ -251,7 +257,7 @@ abstract mixin class _$SaleItemCopyWith<$Res> implements $SaleItemCopyWith<$Res>
   factory _$SaleItemCopyWith(_SaleItem value, $Res Function(_SaleItem) _then) = __$SaleItemCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String productNameSnapshot, int quantity, double unitPriceSnapshot, double discount, double lineTotal
+ String id, String productNameSnapshot, int quantity, double unitPriceSnapshot, double discount, double lineTotal, int returnedQuantity
 });
 
 
@@ -268,7 +274,7 @@ class __$SaleItemCopyWithImpl<$Res>
 
 /// Create a copy of SaleItem
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? productNameSnapshot = null,Object? quantity = null,Object? unitPriceSnapshot = null,Object? discount = null,Object? lineTotal = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? productNameSnapshot = null,Object? quantity = null,Object? unitPriceSnapshot = null,Object? discount = null,Object? lineTotal = null,Object? returnedQuantity = null,}) {
   return _then(_SaleItem(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,productNameSnapshot: null == productNameSnapshot ? _self.productNameSnapshot : productNameSnapshot // ignore: cast_nullable_to_non_nullable
@@ -276,7 +282,8 @@ as String,quantity: null == quantity ? _self.quantity : quantity // ignore: cast
 as int,unitPriceSnapshot: null == unitPriceSnapshot ? _self.unitPriceSnapshot : unitPriceSnapshot // ignore: cast_nullable_to_non_nullable
 as double,discount: null == discount ? _self.discount : discount // ignore: cast_nullable_to_non_nullable
 as double,lineTotal: null == lineTotal ? _self.lineTotal : lineTotal // ignore: cast_nullable_to_non_nullable
-as double,
+as double,returnedQuantity: null == returnedQuantity ? _self.returnedQuantity : returnedQuantity // ignore: cast_nullable_to_non_nullable
+as int,
   ));
 }
 

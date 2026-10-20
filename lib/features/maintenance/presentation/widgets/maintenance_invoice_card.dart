@@ -52,19 +52,22 @@ class MaintenanceInvoiceCard extends ConsumerWidget {
                   error: (_, _) => const Text('تعذَّر تحميل بنود الفاتورة'),
                   data: (items) => Column(
                     children: [
-                      for (final item in items)
+                      // What is on the invoice now (an edit takes lines back).
+                      for (final item in items.where(
+                        (i) => i.remainingQuantity > 0,
+                      ))
                         Padding(
                           padding: const EdgeInsets.symmetric(vertical: 4),
                           child: Row(
                             children: [
                               Expanded(
                                 child: Text(
-                                  item.quantity > 1
-                                      ? '${item.productNameSnapshot} × ${item.quantity}'
+                                  item.remainingQuantity > 1
+                                      ? '${item.productNameSnapshot} × ${item.remainingQuantity}'
                                       : item.productNameSnapshot,
                                 ),
                               ),
-                              Text(Formatters.currency(item.lineTotal)),
+                              Text(Formatters.currency(item.remainingTotal)),
                             ],
                           ),
                         ),

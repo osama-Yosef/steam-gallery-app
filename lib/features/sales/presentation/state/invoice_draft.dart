@@ -109,6 +109,13 @@ class InvoiceDraft {
   void remove(String productId) =>
       _lines.removeWhere((l) => l.productId == productId);
 
+  /// Charges [price] per unit of [productId] — all of it, when saved.
+  void setPrice(String productId, double price) {
+    final i = _lines.indexWhere((l) => l.productId == productId);
+    if (i < 0) return;
+    _lines[i] = _lines[i].copyWith(unitPrice: price, repriced: true);
+  }
+
   /// Why the draft can't be saved with [discount], or null when it can.
   String? saveProblem(double discount) {
     if (_lines.isEmpty) {

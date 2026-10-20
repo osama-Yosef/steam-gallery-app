@@ -14,7 +14,8 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$Expense {
 
- String get id; int get expenseNumber; String get categoryName; double get amount; DateTime get expenseDate; String? get notes; DateTime get createdAt;
+ String get id; int get expenseNumber; String get categoryName; double get amount; DateTime get expenseDate; String? get notes; DateTime get createdAt;/// For editing it (0087).
+ String? get categoryId;
 /// Create a copy of Expense
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -25,16 +26,16 @@ $ExpenseCopyWith<Expense> get copyWith => _$ExpenseCopyWithImpl<Expense>(this as
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Expense&&(identical(other.id, id) || other.id == id)&&(identical(other.expenseNumber, expenseNumber) || other.expenseNumber == expenseNumber)&&(identical(other.categoryName, categoryName) || other.categoryName == categoryName)&&(identical(other.amount, amount) || other.amount == amount)&&(identical(other.expenseDate, expenseDate) || other.expenseDate == expenseDate)&&(identical(other.notes, notes) || other.notes == notes)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Expense&&(identical(other.id, id) || other.id == id)&&(identical(other.expenseNumber, expenseNumber) || other.expenseNumber == expenseNumber)&&(identical(other.categoryName, categoryName) || other.categoryName == categoryName)&&(identical(other.amount, amount) || other.amount == amount)&&(identical(other.expenseDate, expenseDate) || other.expenseDate == expenseDate)&&(identical(other.notes, notes) || other.notes == notes)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.categoryId, categoryId) || other.categoryId == categoryId));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,expenseNumber,categoryName,amount,expenseDate,notes,createdAt);
+int get hashCode => Object.hash(runtimeType,id,expenseNumber,categoryName,amount,expenseDate,notes,createdAt,categoryId);
 
 @override
 String toString() {
-  return 'Expense(id: $id, expenseNumber: $expenseNumber, categoryName: $categoryName, amount: $amount, expenseDate: $expenseDate, notes: $notes, createdAt: $createdAt)';
+  return 'Expense(id: $id, expenseNumber: $expenseNumber, categoryName: $categoryName, amount: $amount, expenseDate: $expenseDate, notes: $notes, createdAt: $createdAt, categoryId: $categoryId)';
 }
 
 
@@ -45,7 +46,7 @@ abstract mixin class $ExpenseCopyWith<$Res>  {
   factory $ExpenseCopyWith(Expense value, $Res Function(Expense) _then) = _$ExpenseCopyWithImpl;
 @useResult
 $Res call({
- String id, int expenseNumber, String categoryName, double amount, DateTime expenseDate, String? notes, DateTime createdAt
+ String id, int expenseNumber, String categoryName, double amount, DateTime expenseDate, String? notes, DateTime createdAt, String? categoryId
 });
 
 
@@ -62,7 +63,7 @@ class _$ExpenseCopyWithImpl<$Res>
 
 /// Create a copy of Expense
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? expenseNumber = null,Object? categoryName = null,Object? amount = null,Object? expenseDate = null,Object? notes = freezed,Object? createdAt = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? expenseNumber = null,Object? categoryName = null,Object? amount = null,Object? expenseDate = null,Object? notes = freezed,Object? createdAt = null,Object? categoryId = freezed,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,expenseNumber: null == expenseNumber ? _self.expenseNumber : expenseNumber // ignore: cast_nullable_to_non_nullable
@@ -71,7 +72,8 @@ as String,amount: null == amount ? _self.amount : amount // ignore: cast_nullabl
 as double,expenseDate: null == expenseDate ? _self.expenseDate : expenseDate // ignore: cast_nullable_to_non_nullable
 as DateTime,notes: freezed == notes ? _self.notes : notes // ignore: cast_nullable_to_non_nullable
 as String?,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
-as DateTime,
+as DateTime,categoryId: freezed == categoryId ? _self.categoryId : categoryId // ignore: cast_nullable_to_non_nullable
+as String?,
   ));
 }
 
@@ -156,10 +158,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  int expenseNumber,  String categoryName,  double amount,  DateTime expenseDate,  String? notes,  DateTime createdAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  int expenseNumber,  String categoryName,  double amount,  DateTime expenseDate,  String? notes,  DateTime createdAt,  String? categoryId)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Expense() when $default != null:
-return $default(_that.id,_that.expenseNumber,_that.categoryName,_that.amount,_that.expenseDate,_that.notes,_that.createdAt);case _:
+return $default(_that.id,_that.expenseNumber,_that.categoryName,_that.amount,_that.expenseDate,_that.notes,_that.createdAt,_that.categoryId);case _:
   return orElse();
 
 }
@@ -177,10 +179,10 @@ return $default(_that.id,_that.expenseNumber,_that.categoryName,_that.amount,_th
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  int expenseNumber,  String categoryName,  double amount,  DateTime expenseDate,  String? notes,  DateTime createdAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  int expenseNumber,  String categoryName,  double amount,  DateTime expenseDate,  String? notes,  DateTime createdAt,  String? categoryId)  $default,) {final _that = this;
 switch (_that) {
 case _Expense():
-return $default(_that.id,_that.expenseNumber,_that.categoryName,_that.amount,_that.expenseDate,_that.notes,_that.createdAt);case _:
+return $default(_that.id,_that.expenseNumber,_that.categoryName,_that.amount,_that.expenseDate,_that.notes,_that.createdAt,_that.categoryId);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -197,10 +199,10 @@ return $default(_that.id,_that.expenseNumber,_that.categoryName,_that.amount,_th
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  int expenseNumber,  String categoryName,  double amount,  DateTime expenseDate,  String? notes,  DateTime createdAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  int expenseNumber,  String categoryName,  double amount,  DateTime expenseDate,  String? notes,  DateTime createdAt,  String? categoryId)?  $default,) {final _that = this;
 switch (_that) {
 case _Expense() when $default != null:
-return $default(_that.id,_that.expenseNumber,_that.categoryName,_that.amount,_that.expenseDate,_that.notes,_that.createdAt);case _:
+return $default(_that.id,_that.expenseNumber,_that.categoryName,_that.amount,_that.expenseDate,_that.notes,_that.createdAt,_that.categoryId);case _:
   return null;
 
 }
@@ -212,7 +214,7 @@ return $default(_that.id,_that.expenseNumber,_that.categoryName,_that.amount,_th
 
 
 class _Expense implements Expense {
-  const _Expense({required this.id, required this.expenseNumber, required this.categoryName, required this.amount, required this.expenseDate, this.notes, required this.createdAt});
+  const _Expense({required this.id, required this.expenseNumber, required this.categoryName, required this.amount, required this.expenseDate, this.notes, required this.createdAt, this.categoryId});
   
 
 @override final  String id;
@@ -222,6 +224,8 @@ class _Expense implements Expense {
 @override final  DateTime expenseDate;
 @override final  String? notes;
 @override final  DateTime createdAt;
+/// For editing it (0087).
+@override final  String? categoryId;
 
 /// Create a copy of Expense
 /// with the given fields replaced by the non-null parameter values.
@@ -233,16 +237,16 @@ _$ExpenseCopyWith<_Expense> get copyWith => __$ExpenseCopyWithImpl<_Expense>(thi
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Expense&&(identical(other.id, id) || other.id == id)&&(identical(other.expenseNumber, expenseNumber) || other.expenseNumber == expenseNumber)&&(identical(other.categoryName, categoryName) || other.categoryName == categoryName)&&(identical(other.amount, amount) || other.amount == amount)&&(identical(other.expenseDate, expenseDate) || other.expenseDate == expenseDate)&&(identical(other.notes, notes) || other.notes == notes)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Expense&&(identical(other.id, id) || other.id == id)&&(identical(other.expenseNumber, expenseNumber) || other.expenseNumber == expenseNumber)&&(identical(other.categoryName, categoryName) || other.categoryName == categoryName)&&(identical(other.amount, amount) || other.amount == amount)&&(identical(other.expenseDate, expenseDate) || other.expenseDate == expenseDate)&&(identical(other.notes, notes) || other.notes == notes)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.categoryId, categoryId) || other.categoryId == categoryId));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,expenseNumber,categoryName,amount,expenseDate,notes,createdAt);
+int get hashCode => Object.hash(runtimeType,id,expenseNumber,categoryName,amount,expenseDate,notes,createdAt,categoryId);
 
 @override
 String toString() {
-  return 'Expense(id: $id, expenseNumber: $expenseNumber, categoryName: $categoryName, amount: $amount, expenseDate: $expenseDate, notes: $notes, createdAt: $createdAt)';
+  return 'Expense(id: $id, expenseNumber: $expenseNumber, categoryName: $categoryName, amount: $amount, expenseDate: $expenseDate, notes: $notes, createdAt: $createdAt, categoryId: $categoryId)';
 }
 
 
@@ -253,7 +257,7 @@ abstract mixin class _$ExpenseCopyWith<$Res> implements $ExpenseCopyWith<$Res> {
   factory _$ExpenseCopyWith(_Expense value, $Res Function(_Expense) _then) = __$ExpenseCopyWithImpl;
 @override @useResult
 $Res call({
- String id, int expenseNumber, String categoryName, double amount, DateTime expenseDate, String? notes, DateTime createdAt
+ String id, int expenseNumber, String categoryName, double amount, DateTime expenseDate, String? notes, DateTime createdAt, String? categoryId
 });
 
 
@@ -270,7 +274,7 @@ class __$ExpenseCopyWithImpl<$Res>
 
 /// Create a copy of Expense
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? expenseNumber = null,Object? categoryName = null,Object? amount = null,Object? expenseDate = null,Object? notes = freezed,Object? createdAt = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? expenseNumber = null,Object? categoryName = null,Object? amount = null,Object? expenseDate = null,Object? notes = freezed,Object? createdAt = null,Object? categoryId = freezed,}) {
   return _then(_Expense(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,expenseNumber: null == expenseNumber ? _self.expenseNumber : expenseNumber // ignore: cast_nullable_to_non_nullable
@@ -279,7 +283,8 @@ as String,amount: null == amount ? _self.amount : amount // ignore: cast_nullabl
 as double,expenseDate: null == expenseDate ? _self.expenseDate : expenseDate // ignore: cast_nullable_to_non_nullable
 as DateTime,notes: freezed == notes ? _self.notes : notes // ignore: cast_nullable_to_non_nullable
 as String?,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
-as DateTime,
+as DateTime,categoryId: freezed == categoryId ? _self.categoryId : categoryId // ignore: cast_nullable_to_non_nullable
+as String?,
   ));
 }
 

@@ -19,6 +19,7 @@ import '../../state/register_stock.dart';
 import '../../widgets/invoice_editor/invoice_cards.dart';
 import '../../widgets/invoice_editor/invoice_dialogs.dart';
 import '../../widgets/invoice_editor/invoice_item_picker.dart';
+import '../../widgets/walk_in/line_price_dialog.dart';
 
 /// A walk-in invoice opened from the history: add a product, remove one,
 /// change quantities or the discount, or delete the whole invoice. Saving
@@ -91,6 +92,22 @@ class _AdminSaleInvoiceScreenState
     final change = _draft!.add(line, stock);
     if (change == LineChange.overStock) _snack('المتاح بالمخزن لا يكفي');
     setState(() {});
+  }
+
+  /// Charges more or less per unit than the invoice does (0087).
+  Future<void> _editPrice(InvoiceLine line, List<InvoiceLine> serverLines) async {
+    final original = serverLines
+        .where((l) => l.productId == line.productId)
+        .firstOrNull;
+    final listPrice = original?.unitPrice ?? line.unitPrice;
+    final price = await showPriceDialog(
+      context,
+      name: line.productName,
+      price: line.unitPrice,
+      listPrice: listPrice,
+    );
+    if (price == null || !mounted) return;
+    setState(() => _draft!.setPrice(line.productId, price));
   }
 
   Future<void> _save(Sale sale) async {
@@ -176,9 +193,13 @@ class _AdminSaleInvoiceScreenState
     final warehouse = ref.watch(warehouseStockProvider()).value ?? const [];
     final assemblies = ref.watch(assemblyStockProvider).value ?? const [];
 
-    final sale = salesAsync.value
-        ?.where((s) => s.id == widget.saleId)
-        .firstOrNull;
+    // An invoice older than the history list (opened from a till's
+    // movements, say) is fetched on its own.
+    final sale =
+        salesAsync.value?.where((s) => s.id == widget.saleId).firstOrNull ??
+        (salesAsync.hasValue
+            ? ref.watch(saleByIdProvider(widget.saleId)).value
+            : null);
     final serverLines = linesAsync.value;
     if (sale == null || serverLines == null) {
       return Scaffold(
@@ -254,6 +275,7 @@ class _AdminSaleInvoiceScreenState
                 onChangeQuantity: (id, delta) =>
                     _changeQuantity(id, delta, stock),
                 onRemove: (id) => setState(() => draft.remove(id)),
+                onEditPrice: (l) => _editPrice(l, serverLines),
               ),
               const SizedBox(height: 12),
               InvoiceTotalsCard(

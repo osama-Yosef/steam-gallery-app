@@ -55,7 +55,7 @@ final class StorefrontRepositoryProvider
 }
 
 String _$storefrontRepositoryHash() =>
-    r'2375cceabb48f918a4ddce3093f19af4fa01738e';
+    r'67604269e9265d225220410ea9e4cc0642671538';
 
 @ProviderFor(customerHome)
 const customerHomeProvider = CustomerHomeProvider._();

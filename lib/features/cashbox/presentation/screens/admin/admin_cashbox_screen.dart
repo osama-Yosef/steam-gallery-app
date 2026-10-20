@@ -12,6 +12,7 @@ import '../../../../auth/presentation/providers/auth_providers.dart';
 import '../../../data/models/cash_transaction.dart';
 import '../../../data/models/cashbox_balance.dart';
 import '../../providers/cashbox_providers.dart';
+import '../../widgets/cash_transaction_sheet.dart';
 import '../../widgets/cashbox_kind_selector.dart';
 
 /// Four clearly distinct colours so the kind of money movement reads at a
@@ -176,7 +177,18 @@ class _AdminCashboxScreenState extends ConsumerState<AdminCashboxScreen> {
                             for (final b in balances)
                               SizedBox(
                                 width: w,
-                                child: _BalanceCard(balance: b),
+                                // Tap a till for its movements only; tap
+                                // it again for all of them.
+                                child: _BalanceCard(
+                                  balance: b,
+                                  selected: _cashboxFilter == b.cashboxId,
+                                  onTap: () => setState(
+                                    () => _cashboxFilter =
+                                        _cashboxFilter == b.cashboxId
+                                        ? null
+                                        : b.cashboxId,
+                                  ),
+                                ),
                               ),
                           ],
                         );
@@ -205,7 +217,9 @@ class _AdminCashboxScreenState extends ConsumerState<AdminCashboxScreen> {
               children: [
                 Expanded(
                   child: Text(
-                    'كل الحركات المالية',
+                    _cashboxFilter == null
+                        ? 'كل الحركات المالية'
+                        : 'حركات ${_tillName(balancesAsync.value, _cashboxFilter!)}',
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                 ),
@@ -244,7 +258,21 @@ class _AdminCashboxScreenState extends ConsumerState<AdminCashboxScreen> {
                 return ListView.builder(
                   padding: const EdgeInsets.fromLTRB(0, 8, 0, 88),
                   itemCount: txns.length,
-                  itemBuilder: (context, i) => _TxnTile(txn: txns[i]),
+                  itemBuilder: (context, i) => _TxnTile(
+                    txn: txns[i],
+                    onTap: () async {
+                      await showCashTransactionSheet(
+                        context,
+                        txn: txns[i],
+                        tillName: _tillName(
+                          balancesAsync.value,
+                          txns[i].cashboxId,
+                        ),
+                      );
+                      ref.invalidate(cashboxBalancesProvider);
+                      ref.invalidate(cashTransactionsProvider);
+                    },
+                  ),
                 );
               },
             ),
@@ -255,15 +283,35 @@ class _AdminCashboxScreenState extends ConsumerState<AdminCashboxScreen> {
   }
 }
 
+String _tillName(List<CashboxBalance>? balances, String cashboxId) {
+  final b = balances?.where((b) => b.cashboxId == cashboxId).firstOrNull;
+  return b == null ? 'الخزنة' : cashboxKindLabelAr(b.kind);
+}
+
 class _BalanceCard extends StatelessWidget {
   final CashboxBalance balance;
-  const _BalanceCard({required this.balance});
+  final bool selected;
+  final VoidCallback? onTap;
+  const _BalanceCard({
+    required this.balance,
+    this.selected = false,
+    this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Card(
       margin: EdgeInsets.zero,
-      child: Padding(
+      clipBehavior: Clip.antiAlias,
+      shape: selected
+          ? RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+              side: const BorderSide(color: AppColors.primary, width: 2),
+            )
+          : null,
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
         child: Column(
           children: [
@@ -285,6 +333,7 @@ class _BalanceCard extends StatelessWidget {
             ),
           ],
         ),
+        ),
       ),
     );
   }
@@ -295,7 +344,10 @@ class _BalanceCard extends StatelessWidget {
 /// kind of movement (income/deposit/withdrawal/expense) read at a glance.
 class _TxnTile extends StatelessWidget {
   final CashTransaction txn;
-  const _TxnTile({required this.txn});
+
+  /// Opens the movement's details.
+  final VoidCallback? onTap;
+  const _TxnTile({required this.txn, this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -306,7 +358,9 @@ class _TxnTile extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         child: Material(
           color: color.withValues(alpha: 0.08),
-          child: Padding(
+          child: InkWell(
+            onTap: onTap,
+            child: Padding(
             padding: const EdgeInsets.all(14),
             child: Row(
               children: [
@@ -352,6 +406,7 @@ class _TxnTile extends StatelessWidget {
                 ),
               ],
             ),
+          ),
           ),
         ),
       ),

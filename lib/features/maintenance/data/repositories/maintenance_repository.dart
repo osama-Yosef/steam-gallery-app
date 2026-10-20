@@ -345,9 +345,16 @@ class SupabaseMaintenanceRepository implements MaintenanceRepository {
     try {
       final rows = await _client
           .from('technicians')
-          .select('id, employee_code, users!technicians_id_fkey(full_name)')
+          .select(
+            'id, employee_code, users!technicians_id_fkey(full_name, role)',
+          )
           .eq('is_active', true);
-      return rows.map(TechnicianOption.fromRow).toList();
+      // Someone moved to another role keeps their technicians row (0087
+      // turns it inactive; this also covers a database without 0087).
+      return rows
+          .where((r) => (r['users'] as Map?)?['role'] == 'technician')
+          .map(TechnicianOption.fromRow)
+          .toList();
     } catch (e) {
       throw AppException.from(e);
     }

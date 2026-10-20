@@ -1,5 +1,6 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../core/errors/app_exception.dart';
+import '../../../sales/data/models/invoice_line.dart';
 import '../../../sales/data/models/sale_line_input.dart';
 import '../models/sale.dart';
 import '../models/sale_item.dart';
@@ -59,6 +60,21 @@ abstract class TechnicianAccountRepository {
     required bool approve,
     String? reason,
   });
+
+  /// Sets a technician's invoice to exactly [items] and [discount]: stock
+  /// goes back to / comes out of his bag, the difference lands on his
+  /// account (a deferred sale: on the customer's). The sale's own
+  /// technician or admin; online only. See rpc_edit_technician_sale (0087).
+  Future<void> editSale({
+    required String saleId,
+    required List<InvoiceLine> items,
+    required double discount,
+  });
+
+  /// Cancels a technician's invoice: everything back into the bag and its
+  /// money off his (or the customer's) account. See
+  /// rpc_delete_technician_sale (0087).
+  Future<void> deleteSale({required String saleId, required String reason});
 }
 
 class SupabaseTechnicianAccountRepository
@@ -259,6 +275,44 @@ class SupabaseTechnicianAccountRepository
         },
       );
       // Stock, tills and prices shown elsewhere refetch on this.
+      _outbox.markServerChanged();
+    } catch (e) {
+      throw AppException.from(e);
+    }
+  }
+
+  @override
+  Future<void> editSale({
+    required String saleId,
+    required List<InvoiceLine> items,
+    required double discount,
+  }) async {
+    try {
+      await _client.rpc(
+        'rpc_edit_technician_sale',
+        params: {
+          'p_sale_id': saleId,
+          'p_items': items.map((l) => l.toEditJson()).toList(),
+          'p_discount': discount,
+          'p_reason': 'تعديل فاتورة',
+        },
+      );
+      _outbox.markServerChanged();
+    } catch (e) {
+      throw AppException.from(e);
+    }
+  }
+
+  @override
+  Future<void> deleteSale({
+    required String saleId,
+    required String reason,
+  }) async {
+    try {
+      await _client.rpc(
+        'rpc_delete_technician_sale',
+        params: {'p_sale_id': saleId, 'p_reason': reason},
+      );
       _outbox.markServerChanged();
     } catch (e) {
       throw AppException.from(e);

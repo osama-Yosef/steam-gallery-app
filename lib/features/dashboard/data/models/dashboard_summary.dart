@@ -23,6 +23,8 @@ abstract class DashboardSummary with _$DashboardSummary {
     // revenue; invisible everywhere else (wallet top-ups never touch
     // cashbox_balances).
     required double walletLiabilityTotal,
+    // Unpaid purchase invoices across all suppliers (supplier_balances).
+    @Default(0) double supplierDebtsTotal,
   }) = _DashboardSummary;
 }
 

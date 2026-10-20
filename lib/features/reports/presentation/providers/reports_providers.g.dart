@@ -451,6 +451,85 @@ final class InventoryReportFamily extends $Family
   String toString() => r'inventoryReportProvider';
 }
 
+@ProviderFor(employeesReport)
+const employeesReportProvider = EmployeesReportFamily._();
+
+final class EmployeesReportProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<EmployeesReport>,
+          EmployeesReport,
+          FutureOr<EmployeesReport>
+        >
+    with $FutureModifier<EmployeesReport>, $FutureProvider<EmployeesReport> {
+  const EmployeesReportProvider._({
+    required EmployeesReportFamily super.from,
+    required (DateTime, DateTime) super.argument,
+  }) : super(
+         retry: null,
+         name: r'employeesReportProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
+  @override
+  String debugGetCreateSourceHash() => _$employeesReportHash();
+
+  @override
+  String toString() {
+    return r'employeesReportProvider'
+        ''
+        '$argument';
+  }
+
+  @$internal
+  @override
+  $FutureProviderElement<EmployeesReport> $createElement(
+    $ProviderPointer pointer,
+  ) => $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<EmployeesReport> create(Ref ref) {
+    final argument = this.argument as (DateTime, DateTime);
+    return employeesReport(ref, argument.$1, argument.$2);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is EmployeesReportProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$employeesReportHash() => r'35f6a3cf474596b79ec513d8073738f225d3b18f';
+
+final class EmployeesReportFamily extends $Family
+    with
+        $FunctionalFamilyOverride<
+          FutureOr<EmployeesReport>,
+          (DateTime, DateTime)
+        > {
+  const EmployeesReportFamily._()
+    : super(
+        retry: null,
+        name: r'employeesReportProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  EmployeesReportProvider call(DateTime from, DateTime to) =>
+      EmployeesReportProvider._(argument: (from, to), from: this);
+
+  @override
+  String toString() => r'employeesReportProvider';
+}
+
 /// Shared "من/إلى" filter across every report screen — defaults to
 /// "this month so far". `to` is always exclusive (see repository's `.lt`).
 

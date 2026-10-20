@@ -413,6 +413,70 @@ class _AdminReportDetailScreenState
           },
         );
 
+      case 'employees':
+        final async = ref.watch(employeesReportProvider(range.from, range.to));
+        return async.when(
+          loading: () => const LoadingView(),
+          error: (e, _) => const ErrorView(message: 'تعذَّر تحميل التقرير'),
+          data: (r) {
+            if (r.rows.isEmpty) {
+              return const EmptyView(message: 'لا يوجد موظفين');
+            }
+            return ListView(
+              padding: const EdgeInsets.all(16),
+              children: [
+                _row(
+                  context,
+                  'إجمالي المرتبات الشهرية',
+                  r.totalMonthlySalaries,
+                ),
+                _row(context, 'مرتبات اتصرفت في الفترة', r.totalSalariesPaid),
+                _row(context, 'سلف في الفترة', r.totalAdvances),
+                _row(
+                  context,
+                  'سلف لسه على الموظفين',
+                  r.totalAdvanceBalance,
+                  bold: true,
+                  highlight: r.totalAdvanceBalance > 0,
+                  color: color,
+                ),
+                const Divider(height: 32),
+                for (final e in r.rows) ...[
+                  Text(
+                    e.jobTitle == null || e.jobTitle!.isEmpty
+                        ? e.name
+                        : '${e.name} · ${e.jobTitle}',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  if (!e.isActive)
+                    const Text(
+                      'موقوف',
+                      style: TextStyle(color: AppColors.danger),
+                    ),
+                  _row(context, 'المرتب الشهري', e.monthlySalary),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 6),
+                    child: Text(
+                      'حضور ${e.presentDays} · تأخير ${e.lateDays} · '
+                      'غياب ${e.absentDays} · إجازة ${e.leaveDays}',
+                    ),
+                  ),
+                  _row(context, 'مرتبات اتصرفت', e.salariesPaid),
+                  _row(context, 'سلف في الفترة', e.advances),
+                  _row(
+                    context,
+                    'سلف لسه عليه',
+                    e.advanceBalance,
+                    highlight: e.advanceBalance > 0,
+                    color: color,
+                  ),
+                  const Divider(),
+                ],
+              ],
+            );
+          },
+        );
+
       default:
         return const SizedBox.shrink();
     }
@@ -568,6 +632,27 @@ class _AdminReportDetailScreenState
         for (final c in list) {
           buffer.writeln(
             '${c.customerName} — متبقي: ${Formatters.currency(c.remainingBalance)}',
+          );
+        }
+      case 'employees':
+        final r = await ref.read(
+          employeesReportProvider(range.from, range.to).future,
+        );
+        buffer
+          ..writeln(
+            'مرتبات اتصرفت: ${Formatters.currency(r.totalSalariesPaid)}',
+          )
+          ..writeln('سلف في الفترة: ${Formatters.currency(r.totalAdvances)}')
+          ..writeln(
+            'سلف لسه على الموظفين: ${Formatters.currency(r.totalAdvanceBalance)}',
+          )
+          ..writeln();
+        for (final e in r.rows) {
+          buffer.writeln(
+            '${e.name} — حضور ${e.presentDays}، غياب ${e.absentDays}، '
+            'مرتب اتصرف ${Formatters.currency(e.salariesPaid)}، '
+            'سلف ${Formatters.currency(e.advances)}، '
+            'عليه ${Formatters.currency(e.advanceBalance)}',
           );
         }
     }

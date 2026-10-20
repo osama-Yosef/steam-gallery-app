@@ -4,6 +4,9 @@ import 'package:iconsax_flutter/iconsax_flutter.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/utils/formatters.dart';
 import '../../../../../core/widgets/state_views.dart';
+import '../../../../auth/data/models/app_user.dart';
+import '../../../../auth/presentation/providers/auth_providers.dart';
+import '../../../../technician_account/presentation/screens/technician/technician_sale_edit_screen.dart';
 import '../../../data/month_invoices.dart';
 import 'admin_sale_invoice_screen.dart';
 
@@ -106,7 +109,12 @@ class _AdminMonthSalesScreenState extends ConsumerState<AdminMonthSalesScreen> {
               itemCount: header.length + shown.length,
               itemBuilder: (context, i) => i < header.length
                   ? header[i]
-                  : _InvoiceCard(invoice: shown[i - header.length]),
+                  : _InvoiceCard(
+                      invoice: shown[i - header.length],
+                      isAdmin:
+                          ref.watch(currentUserProfileProvider).value?.role ==
+                          AppRole.admin,
+                    ),
             ),
           );
         },
@@ -180,7 +188,10 @@ class _Summary extends StatelessWidget {
 
 class _InvoiceCard extends StatelessWidget {
   final MonthInvoice invoice;
-  const _InvoiceCard({required this.invoice});
+
+  /// Admin can also open a technician's invoice to edit it (0087).
+  final bool isAdmin;
+  const _InvoiceCard({required this.invoice, this.isAdmin = false});
 
   @override
   Widget build(BuildContext context) {
@@ -303,14 +314,17 @@ class _InvoiceCard extends StatelessWidget {
               const SizedBox(height: 4),
               Text('ملاحظات: ${i.notes}', style: small),
             ],
-            if (i.source == InvoiceSource.walkIn) ...[
+            if (i.source == InvoiceSource.walkIn ||
+                (i.source == InvoiceSource.technician && isAdmin)) ...[
               const SizedBox(height: 6),
               Align(
                 alignment: AlignmentDirectional.centerEnd,
                 child: TextButton.icon(
                   onPressed: () => Navigator.of(context).push(
                     MaterialPageRoute<void>(
-                      builder: (_) => AdminSaleInvoiceScreen(saleId: i.id),
+                      builder: (_) => i.source == InvoiceSource.walkIn
+                          ? AdminSaleInvoiceScreen(saleId: i.id)
+                          : TechnicianSaleEditScreen(saleId: i.id),
                     ),
                   ),
                   icon: const Icon(Iconsax.edit_2_copy, size: 18),
