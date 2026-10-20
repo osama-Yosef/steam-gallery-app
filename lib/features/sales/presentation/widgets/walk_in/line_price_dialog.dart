@@ -6,16 +6,46 @@ import '../../state/walk_in_cart.dart';
 /// Asks for the price per unit to charge on [line] — more or less than its
 /// list price (0082). Null if cancelled; the list price is offered back.
 Future<double?> showLinePriceDialog(BuildContext context, CartLine line) =>
-    showDialog<double>(
-      context: context,
-      builder: (_) => _LinePriceDialog(line: line),
+    showPriceDialog(
+      context,
+      name: line.productName,
+      price: line.unitPrice,
+      listPrice: line.listPrice,
+      canReset: line.priceChanged,
     );
+
+/// The same question for any line: [price] is what it is charged now,
+/// [listPrice] the product's own price. Used by the register and by a
+/// technician selling from his bag (0086).
+Future<double?> showPriceDialog(
+  BuildContext context, {
+  required String name,
+  required double price,
+  required double listPrice,
+  bool? canReset,
+}) => showDialog<double>(
+  context: context,
+  builder: (_) => _LinePriceDialog(
+    name: name,
+    price: price,
+    listPrice: listPrice,
+    canReset: canReset ?? price != listPrice,
+  ),
+);
 
 /// A widget of its own so the text controller lives exactly as long as the
 /// dialog, closing animation included.
 class _LinePriceDialog extends StatefulWidget {
-  final CartLine line;
-  const _LinePriceDialog({required this.line});
+  final String name;
+  final double price;
+  final double listPrice;
+  final bool canReset;
+  const _LinePriceDialog({
+    required this.name,
+    required this.price,
+    required this.listPrice,
+    required this.canReset,
+  });
 
   @override
   State<_LinePriceDialog> createState() => _LinePriceDialogState();
@@ -23,7 +53,7 @@ class _LinePriceDialog extends StatefulWidget {
 
 class _LinePriceDialogState extends State<_LinePriceDialog> {
   late final _ctrl = TextEditingController(
-    text: Formatters.plain(widget.line.unitPrice),
+    text: Formatters.plain(widget.price),
   );
   String? _error;
 
@@ -44,9 +74,8 @@ class _LinePriceDialogState extends State<_LinePriceDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final line = widget.line;
     return AlertDialog(
-      title: Text(line.productName),
+      title: Text(widget.name),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -63,13 +92,13 @@ class _LinePriceDialogState extends State<_LinePriceDialog> {
             onSubmitted: (_) => _save(),
           ),
           const SizedBox(height: 8),
-          Text('السعر الأصلي ${Formatters.currency(line.listPrice)}'),
+          Text('السعر الأصلي ${Formatters.currency(widget.listPrice)}'),
         ],
       ),
       actions: [
-        if (line.priceChanged)
+        if (widget.canReset)
           TextButton(
-            onPressed: () => Navigator.of(context).pop(line.listPrice),
+            onPressed: () => Navigator.of(context).pop(widget.listPrice),
             child: const Text('رجّع السعر الأصلي'),
           ),
         TextButton(

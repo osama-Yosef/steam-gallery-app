@@ -239,6 +239,12 @@ ok('Test 9 style: approving twice posts once (amount due 0)', (await due()) === 
 ok('approving twice credits the till once', (await cash()) === cashBeforeSupply + 100);
 await as(ADMIN);
 ok('rejecting an approved supply refused', (await err(`select public.rpc_admin_review_technician_supply($1, false, 'no')`, [S1]))?.includes('SUPPLY_NOT_PENDING'));
+// 0085: nothing left to remit, so nothing can be remitted.
+await as(ADMIN);
+ok('a supply above what is due is refused',
+  (await err(`select public.rpc_technician_supply($1, 10, 'admin recorded')`, [TECH]))?.includes('INVALID_AMOUNT'));
+await asSuper();
+await q(`insert into public.technician_account_transactions (technician_id, transaction_type, amount, notes) values ($1, 'adjustment', 10, 'test')`, [TECH]);
 const cashBeforeAdminSupply = await cash();
 await as(ADMIN);
 await q(`select public.rpc_technician_supply($1, 10, 'admin recorded')`, [TECH]);

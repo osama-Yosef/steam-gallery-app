@@ -13,6 +13,7 @@ import '../../../../inventory/presentation/providers/inventory_providers.dart';
 import '../../../../products/data/models/product.dart';
 import '../../../../products/presentation/providers/product_providers.dart';
 import '../../../../sales/data/models/sale_line_input.dart';
+import '../../../../sales/presentation/widgets/walk_in/line_price_dialog.dart';
 import '../../../data/models/sale.dart';
 import '../../providers/technician_account_providers.dart';
 
@@ -20,9 +21,13 @@ class _SaleLine {
   final String productId;
   final String productName;
 
-  /// For a service this is the price agreed with the customer for THIS sale,
-  /// not a catalogue price.
-  final double sellingPrice;
+  /// What is charged per unit on THIS sale: the catalogue price to start
+  /// with, changed up or down by tapping the line (0086). For a service it is
+  /// the price agreed with the customer.
+  double sellingPrice;
+
+  /// The product's own price, shown next to a changed one.
+  final double listPrice;
   final int available;
   final bool isService;
   int quantity;
@@ -33,13 +38,15 @@ class _SaleLine {
     required this.available,
     required this.quantity,
     this.isService = false,
-  });
+  }) : listPrice = sellingPrice;
 
   double get lineTotal => quantity * sellingPrice;
 
-  /// Only a service carries an explicit price to the server; for a stock
-  /// product the catalogue price is authoritative (see SaleLineInput).
-  double? get unitPrice => isService ? sellingPrice : null;
+  bool get priceChanged => !isService && sellingPrice != listPrice;
+
+  /// A service always carries its price; a stock product only once it was
+  /// changed, otherwise the server charges the catalogue price (0086).
+  double? get unitPrice => isService || priceChanged ? sellingPrice : null;
 }
 
 class TechnicianSaleScreen extends ConsumerStatefulWidget {
@@ -94,6 +101,19 @@ class _TechnicianSaleScreenState extends ConsumerState<TechnicianSaleScreen> {
   }
 
   double get _subtotal => _lines.fold<double>(0, (sum, l) => sum + l.lineTotal);
+
+  Future<void> _editPrice(_SaleLine line) async {
+    final price = await showPriceDialog(
+      context,
+      name: line.productName,
+      price: line.sellingPrice,
+      listPrice: line.listPrice,
+      canReset: line.priceChanged,
+    );
+    if (price == null || !mounted) return;
+    setState(() => line.sellingPrice = price);
+  }
+
   double get _discount => double.tryParse(_discountCtrl.text) ?? 0;
   double get _total => _subtotal - _discount;
 
@@ -362,8 +382,32 @@ class _TechnicianSaleScreenState extends ConsumerState<TechnicianSaleScreen> {
           for (final line in _lines)
             ListTile(
               title: Text(line.productName),
-              subtitle: Text(
-                '${line.quantity} × ${Formatters.currency(line.sellingPrice)}',
+              // Tap to charge more or less than the catalogue price (0086).
+              onTap: () => _editPrice(line),
+              subtitle: Text.rich(
+                TextSpan(
+                  children: [
+                    TextSpan(
+                      text:
+                          '${line.quantity} × ${Formatters.currency(line.sellingPrice)}',
+                      style: line.priceChanged
+                          ? TextStyle(
+                              color: Theme.of(context).colorScheme.primary,
+                              fontWeight: FontWeight.bold,
+                            )
+                          : null,
+                    ),
+                    if (line.priceChanged)
+                      TextSpan(
+                        text: ' (بدل ${Formatters.currency(line.listPrice)})',
+                      ),
+                    const TextSpan(text: '  '),
+                    const WidgetSpan(
+                      alignment: PlaceholderAlignment.middle,
+                      child: Icon(Iconsax.edit_2_copy, size: 14),
+                    ),
+                  ],
+                ),
               ),
               trailing: Row(
                 mainAxisSize: MainAxisSize.min,

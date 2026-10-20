@@ -234,6 +234,56 @@ void main() {
     expect(find.text('افتح'), findsOneWidget, reason: 'closed after the sale');
   });
 
+  testWidgets('tapping a line re-prices it, up or down (0086)', (
+    tester,
+  ) async {
+    final repo = _FakeRepo();
+    await _open(tester, repo);
+    await _addFromBag(tester, qty: '2'); // مكواة 2 × 100
+
+    await tester.tap(find.text('مكواة'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.widgetWithText(TextField, 'سعر القطعة'), '130');
+    await tester.tap(find.text('حفظ'));
+    await tester.pumpAndSettle();
+    expect(
+      find.textContaining('(بدل ${Formatters.currency(100)})'),
+      findsOneWidget,
+    );
+    expect(find.text(Formatters.currency(260)), findsWidgets);
+
+    await tester.tap(find.text('دفع الكل'));
+    await tester.pump();
+    await tester.tap(find.text('تأكيد البيع'));
+    await tester.pumpAndSettle();
+    expect(repo.calls.single.items.single.unitPrice, 130);
+    expect(repo.calls.single.paid, 260);
+  });
+
+  testWidgets('the original price can be put back', (tester) async {
+    final repo = _FakeRepo();
+    await _open(tester, repo);
+    await _addFromBag(tester, qty: '1');
+    await tester.tap(find.text('مكواة'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.widgetWithText(TextField, 'سعر القطعة'), '80');
+    await tester.tap(find.text('حفظ'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('مكواة'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('رجّع السعر الأصلي'));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('بدل'), findsNothing);
+
+    await tester.tap(find.text('تأكيد البيع'));
+    await tester.pumpAndSettle();
+    expect(
+      repo.calls.single.items.single.unitPrice,
+      isNull,
+      reason: 'unchanged: the server charges the catalogue price',
+    );
+  });
+
   testWidgets('a service carries its agreed price', (tester) async {
     final repo = _FakeRepo();
     await _open(tester, repo);
