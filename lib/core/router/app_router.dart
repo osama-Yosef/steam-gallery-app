@@ -979,6 +979,13 @@ GoRouter appRouter(Ref ref) {
                       ),
                     ],
                   ),
+                  GoRoute(
+                    path: 'count/:id',
+                    builder: (_, state) => AdminInventoryCountDetailScreen(
+                      countId: state.pathParameters['id']!,
+                      technicianView: true,
+                    ),
+                  ),
                 ],
               ),
             ],

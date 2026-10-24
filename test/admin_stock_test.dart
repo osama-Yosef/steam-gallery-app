@@ -63,6 +63,10 @@ class _FakeCountRepo implements InventoryCountRepository {
   @override
   Future<void> completeCount(String countId) async => completed++;
 
+  int submitted = 0;
+  @override
+  Future<void> submitCount(String countId) async => submitted++;
+
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
@@ -203,6 +207,8 @@ void main() {
     List overrides(
       _FakeCountRepo repo, {
       InventoryCountStatus status = InventoryCountStatus.draft,
+      bool isBag = false,
+      DateTime? submittedAt,
     }) => [
       inventoryCountRepositoryProvider.overrideWithValue(repo),
       inventoryCountDetailProvider('k1').overrideWith(
@@ -211,6 +217,9 @@ void main() {
           countNumber: 3,
           status: status,
           startedAt: DateTime(2026, 10, 1),
+          isBag: isBag,
+          technicianName: isBag ? 'محمود' : null,
+          submittedAt: submittedAt,
         ),
       ),
       inventoryCountItemsProvider('k1').overrideWith(
@@ -227,7 +236,7 @@ void main() {
         const AdminInventoryCountDetailScreen(countId: 'k1'),
         overrides(_FakeCountRepo()),
       );
-      expect(find.text('1 / 2 مُدخَل'), findsOneWidget);
+      expect(find.text('1 / 2 مُدخَل · عجز: 1'), findsOneWidget);
       expect(find.text('8 (-2)'), findsOneWidget);
     });
 
@@ -252,9 +261,10 @@ void main() {
       expect(repo.saved, isEmpty, reason: 'no reason given yet');
 
       await tester.enterText(
-        find.widgetWithText(TextField, 'سبب الفرق (مطلوب)'),
+        find.widgetWithText(TextField, 'سبب الزيادة (مطلوب)'),
         'وصل زيادة',
       );
+      await tester.pump();
       await tester.tap(find.text('حفظ'));
       await tester.pumpAndSettle();
       expect(repo.saved.single, (itemId: 'b', qty: 7, reason: 'وصل زيادة'));
@@ -300,6 +310,68 @@ void main() {
       await tester.tap(find.text('فلتر'));
       await tester.pumpAndSettle();
       expect(find.text('حفظ'), findsNothing, reason: 'no edit dialog');
+    });
+
+    testWidgets('technician sends his bag count, he can\'t approve it', (
+      tester,
+    ) async {
+      final repo = _FakeCountRepo();
+      await _pushed(
+        tester,
+        const AdminInventoryCountDetailScreen(
+          countId: 'k1',
+          technicianView: true,
+        ),
+        overrides(repo, isBag: true),
+      );
+      expect(find.text('جرد شنطة محمود'), findsOneWidget);
+      expect(find.textContaining('عجز: 1'), findsOneWidget);
+      expect(find.text('اعتماد الجرد'), findsNothing);
+      await tester.tap(find.text('إرسال للمراجعة'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('تأكيد'));
+      await tester.pumpAndSettle();
+      expect(repo.submitted, 1);
+    });
+
+    testWidgets('a sent bag count is read-only for the technician', (
+      tester,
+    ) async {
+      await _pushed(
+        tester,
+        const AdminInventoryCountDetailScreen(
+          countId: 'k1',
+          technicianView: true,
+        ),
+        overrides(
+          _FakeCountRepo(),
+          isBag: true,
+          submittedAt: DateTime(2026, 10, 2),
+        ),
+      );
+      expect(find.text('بانتظار الاعتماد'), findsOneWidget);
+      expect(find.text('إرسال للمراجعة'), findsNothing);
+      expect(find.text('إضافة صنف مش في القائمة'), findsNothing);
+      await tester.tap(find.text('فلتر'));
+      await tester.pumpAndSettle();
+      expect(find.text('حفظ'), findsNothing, reason: 'no edit dialog');
+    });
+
+    testWidgets('admin approves a bag count the technician sent', (
+      tester,
+    ) async {
+      final repo = _FakeCountRepo();
+      await _pushed(
+        tester,
+        const AdminInventoryCountDetailScreen(countId: 'k1'),
+        overrides(repo, isBag: true, submittedAt: DateTime(2026, 10, 2)),
+      );
+      expect(find.text('الصنايعي بعت الجرد — راجعه واعتمده'), findsOneWidget);
+      await tester.tap(find.text('اعتماد الجرد'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('تأكيد'));
+      await tester.pumpAndSettle();
+      expect(repo.completed, 1);
     });
   });
 }

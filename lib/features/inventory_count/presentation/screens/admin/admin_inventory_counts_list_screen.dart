@@ -8,7 +8,6 @@ import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/utils/formatters.dart';
 import '../../../../../core/widgets/confirm_dialog.dart';
 import '../../../../../core/widgets/state_views.dart';
-import '../../../data/models/inventory_count.dart';
 import '../../providers/inventory_count_providers.dart';
 
 class AdminInventoryCountsListScreen extends ConsumerStatefulWidget {
@@ -89,11 +88,16 @@ class _AdminInventoryCountsListScreenState
               final c = counts[i];
               return ListTile(
                 leading: CircleAvatar(child: Text('#${c.countNumber}')),
-                title: const Text('جرد المخزن الرئيسي'),
+                title: Text(c.title),
                 subtitle: Text(
-                  '${inventoryCountStatusLabelAr(c.status)} · ${Formatters.dateTime(c.startedAt)}',
+                  '${c.statusLabelAr} · ${Formatters.dateTime(c.startedAt)}',
                 ),
-                trailing: c.status == InventoryCountStatus.draft
+                trailing: c.awaitsApproval
+                    ? const Icon(
+                        Iconsax.clock_copy,
+                        color: AppColors.warning,
+                      )
+                    : c.isDraft
                     ? const Icon(Iconsax.edit_2_copy)
                     : const Icon(
                         Iconsax.tick_circle_copy,

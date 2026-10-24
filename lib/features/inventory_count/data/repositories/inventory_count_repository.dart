@@ -11,8 +11,20 @@ abstract class InventoryCountRepository {
 
   Future<List<InventoryCountItem>> getCountItems(String countId);
 
-  /// v1 only supports counting the main warehouse — see docs/02-database-design.md.
   Future<String> startWarehouseCount();
+
+  /// Starts — or reopens the open — count of a technician's bag (0089).
+  Future<String> startBagCount(String technicianId);
+
+  /// A product found that the count has no line for (a surplus). Returns
+  /// the line's id.
+  Future<String> addItem({required String countId, required String productId});
+
+  /// Products that can be added to a count as a surplus.
+  Future<List<({String id, String name, String sku})>> getCountableProducts();
+
+  /// The technician sends his own bag count for review.
+  Future<void> submitCount(String countId);
 
   Future<void> saveItem({
     required String itemId,
@@ -36,7 +48,9 @@ class SupabaseInventoryCountRepository implements InventoryCountRepository {
           .from('inventory_counts')
           .select()
           .order('started_at', ascending: false);
-      return rows.map(InventoryCount.fromRow).toList();
+      return await _withTechnicianNames(
+        rows.map(InventoryCount.fromRow).toList(),
+      );
     } catch (e) {
       throw AppException.from(e);
     }
@@ -50,9 +64,36 @@ class SupabaseInventoryCountRepository implements InventoryCountRepository {
           .select()
           .eq('id', countId)
           .maybeSingle();
-      return row == null ? null : InventoryCount.fromRow(row);
+      if (row == null) return null;
+      return (await _withTechnicianNames([InventoryCount.fromRow(row)])).single;
     } catch (e) {
       throw AppException.from(e);
+    }
+  }
+
+  /// inventory_counts.location_id has no foreign key to embed through, so
+  /// bag counts get their technician's name from technician_bags. A failure
+  /// here only loses the name.
+  Future<List<InventoryCount>> _withTechnicianNames(
+    List<InventoryCount> counts,
+  ) async {
+    if (!counts.any((c) => c.isBag)) return counts;
+    try {
+      final rows = await _client
+          .from('technician_bags')
+          .select('id, technicians(users!technicians_id_fkey(full_name))');
+      final nameByBag = {
+        for (final r in rows)
+          r['id'] as String:
+              ((r['technicians'] as Map?)?['users'] as Map?)?['full_name']
+                  as String?,
+      };
+      return [
+        for (final c in counts)
+          c.isBag ? c.copyWith(technicianName: nameByBag[c.locationId]) : c,
+      ];
+    } catch (_) {
+      return counts;
     }
   }
 
@@ -91,6 +132,70 @@ class SupabaseInventoryCountRepository implements InventoryCountRepository {
         },
       );
       return countId as String;
+    } catch (e) {
+      throw AppException.from(e);
+    }
+  }
+
+  @override
+  Future<String> startBagCount(String technicianId) async {
+    try {
+      final countId = await _client.rpc(
+        'rpc_start_bag_count',
+        params: {'p_technician_id': technicianId},
+      );
+      return countId as String;
+    } catch (e) {
+      throw AppException.from(e);
+    }
+  }
+
+  @override
+  Future<String> addItem({
+    required String countId,
+    required String productId,
+  }) async {
+    try {
+      final itemId = await _client.rpc(
+        'rpc_add_inventory_count_item',
+        params: {'p_count_id': countId, 'p_product_id': productId},
+      );
+      return itemId as String;
+    } catch (e) {
+      throw AppException.from(e);
+    }
+  }
+
+  @override
+  Future<List<({String id, String name, String sku})>>
+  getCountableProducts() async {
+    try {
+      final rows = await _client
+          .from('products')
+          .select('id, name, sku')
+          .eq('is_active', true)
+          .eq('is_assembly', false)
+          .order('name');
+      return [
+        for (final r in rows)
+          (
+            id: r['id'] as String,
+            name: r['name'] as String,
+            sku: r['sku'] as String,
+          ),
+      ];
+    } catch (e) {
+      throw AppException.from(e);
+    }
+  }
+
+  @override
+  Future<void> submitCount(String countId) async {
+    try {
+      await _client.rpc(
+        'rpc_submit_inventory_count',
+        params: {'p_count_id': countId},
+      );
     } catch (e) {
       throw AppException.from(e);
     }

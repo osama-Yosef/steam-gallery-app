@@ -315,6 +315,13 @@ class AppException implements Exception {
     ('SUPPLY_NOT_FOUND', 'التوريد غير موجود'),
     ('SUPPLY_NOT_PENDING', 'تمت مراجعة هذا التوريد بالفعل'),
     ('COUNT_NOT_DRAFT', 'الجرد مُعتمَد بالفعل ولا يمكن تعديله'),
+    // Bag counts (0089).
+    (
+      'COUNT_ALREADY_SUBMITTED',
+      'الجرد اتبعت للمراجعة — التعديل دلوقتي من الأدمن أو المبيعات',
+    ),
+    ('COUNT_REASON_REQUIRED', 'اكتب سبب العجز أو الزيادة'),
+    ('COUNT_INCOMPLETE', 'ادخل الكمية الفعلية لكل الأصناف قبل الإرسال'),
     (
       'ITEM_NOT_FOUND_OR_COUNT_CLOSED',
       'لا يمكن تعديل هذا الصنف بعد اعتماد الجرد',

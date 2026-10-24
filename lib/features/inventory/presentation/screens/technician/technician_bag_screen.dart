@@ -6,6 +6,7 @@ import '../../../../../core/router/route_names.dart';
 import '../../../../auth/presentation/providers/auth_providers.dart';
 import '../../../../technician_account/presentation/providers/technician_account_providers.dart';
 import '../../providers/inventory_providers.dart';
+import '../../widgets/bag_count_button.dart';
 import '../../widgets/bag_stock_body.dart';
 
 class TechnicianBagScreen extends ConsumerWidget {
@@ -19,6 +20,11 @@ class TechnicianBagScreen extends ConsumerWidget {
       appBar: AppBar(
         title: const Text('شنطتي'),
         actions: [
+          if (profile != null)
+            BagCountButton(
+              technicianId: profile.id,
+              routeFor: Routes.technicianBagCount,
+            ),
           IconButton(
             icon: const Icon(Iconsax.receipt_text_copy),
             tooltip: 'سجل مبيعاتي',

@@ -165,6 +165,10 @@ abstract final class Routes {
     return Uri.parse(technicianBagSell).replace(queryParameters: q).toString();
   }
 
+  /// The technician's own bag count (0089).
+  static String technicianBagCount(String countId) =>
+      '/technician/bag/count/$countId';
+
   static const technicianSales = '/technician/bag/sales';
   static String technicianSaleDetail(String id) => '/technician/bag/sales/$id';
   static const technicianAccount = '/technician/account';
