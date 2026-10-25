@@ -41,6 +41,12 @@ abstract class TechnicianAccountRepository {
     required String clientRequestId,
     String? notes,
     String? maintenanceRequestId,
+
+    /// Paid straight into the shop's bank / e-wallet account (0090): booked
+    /// to that till and not owed by the technician. [paidAmount] is only
+    /// the cash he collected.
+    double transferAmount = 0,
+    double walletAmount = 0,
   });
 
   Future<void> recordSupply({
@@ -196,6 +202,8 @@ class SupabaseTechnicianAccountRepository
     required String clientRequestId,
     String? notes,
     String? maintenanceRequestId,
+    double transferAmount = 0,
+    double walletAmount = 0,
   }) async {
     try {
       final saleId = await _client.rpc(
@@ -212,6 +220,8 @@ class SupabaseTechnicianAccountRepository
           'p_client_request_id': clientRequestId,
           'p_notes': notes,
           'p_maintenance_request_id': maintenanceRequestId,
+          'p_transfer_amount': transferAmount,
+          'p_wallet_amount': walletAmount,
         },
       );
       // Stock, tills and prices shown elsewhere refetch on this.

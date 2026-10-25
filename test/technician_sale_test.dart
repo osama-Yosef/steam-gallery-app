@@ -41,6 +41,8 @@ typedef _Call = ({
   PaymentMethod method,
   double discount,
   double paid,
+  double transfer,
+  double wallet,
   String requestId,
   String? maintenanceRequestId,
 });
@@ -61,6 +63,8 @@ class _FakeRepo implements TechnicianAccountRepository {
     required String clientRequestId,
     String? notes,
     String? maintenanceRequestId,
+    double transferAmount = 0,
+    double walletAmount = 0,
   }) async {
     calls.add((
       technicianId: technicianId,
@@ -69,6 +73,8 @@ class _FakeRepo implements TechnicianAccountRepository {
       method: paymentMethod,
       discount: discount,
       paid: paidAmount,
+      transfer: transferAmount,
+      wallet: walletAmount,
       requestId: clientRequestId,
       maintenanceRequestId: maintenanceRequestId,
     ));
@@ -335,6 +341,86 @@ void main() {
     await tester.tap(find.text('تأكيد البيع'));
     await tester.pumpAndSettle();
     expect(repo.calls[1].requestId, repo.calls[0].requestId);
+  });
+
+  Future<void> payBy(WidgetTester tester, String mode) async {
+    // The payment dropdown, showing its current choice.
+    await tester.tap(find.text('نقدًا'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(mode).last);
+    await tester.pumpAndSettle();
+  }
+
+  testWidgets('a bank transfer goes to the shop, not on the technician '
+      '(0090)', (tester) async {
+    final repo = _FakeRepo();
+    await _open(tester, repo);
+    await _addFromBag(tester, qty: '2'); // 200
+    await payBy(tester, 'تحويل بنكي');
+    expect(find.widgetWithText(TextFormField, 'المبلغ المحصَّل'), findsNothing);
+    expect(find.textContaining('مش هتتحسب عليك'), findsOneWidget);
+    await tester.tap(find.text('تأكيد البيع'));
+    await tester.pumpAndSettle();
+    final call = repo.calls.single;
+    expect(call.method, PaymentMethod.transfer);
+    expect(call.transfer, 200);
+    expect(call.paid, 0, reason: 'he collected no cash');
+  });
+
+  testWidgets('a wallet transfer goes to the shop\'s wallet', (tester) async {
+    final repo = _FakeRepo();
+    await _open(tester, repo);
+    await _addFromBag(tester, qty: '1'); // 100
+    await payBy(tester, 'تحويل محفظة');
+    await tester.tap(find.text('تأكيد البيع'));
+    await tester.pumpAndSettle();
+    final call = repo.calls.single;
+    expect(call.method, PaymentMethod.wallet);
+    expect((call.wallet, call.transfer, call.paid), (100.0, 0.0, 0.0));
+  });
+
+  testWidgets('split: part transfer, part cash in his hand', (tester) async {
+    final repo = _FakeRepo();
+    await _open(tester, repo);
+    await _addFromBag(tester, qty: '2'); // 200
+    await payBy(tester, 'أكتر من طريقة');
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'تحويل بنكي'),
+      '120',
+    );
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'نقدي (حصّلته بإيدك)'),
+      '50',
+    );
+    await tester.pump();
+    expect(
+      find.text('الباقي على العميل: ${Formatters.currency(30)}'),
+      findsOneWidget,
+    );
+    await tester.tap(find.text('تأكيد البيع'));
+    await tester.pumpAndSettle();
+    final call = repo.calls.single;
+    expect((call.transfer, call.wallet, call.paid), (120.0, 0.0, 50.0));
+    expect(call.method, PaymentMethod.cash);
+  });
+
+  testWidgets('split can\'t add up to more than the total', (tester) async {
+    final repo = _FakeRepo();
+    await _open(tester, repo);
+    await _addFromBag(tester, qty: '1'); // 100
+    await payBy(tester, 'أكتر من طريقة');
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'تحويل محفظة'),
+      '80',
+    );
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'نقدي (حصّلته بإيدك)'),
+      '30',
+    );
+    await tester.tap(find.text('تأكيد البيع'));
+    await tester.pumpAndSettle();
+    expect(find.text('المبلغ المدفوع أكبر من إجمالي الفاتورة'), findsOneWidget);
+    expect(repo.calls, isEmpty);
   });
 
   testWidgets('money fields take only money', (tester) async {

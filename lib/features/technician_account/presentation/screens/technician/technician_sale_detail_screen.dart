@@ -112,7 +112,17 @@ class TechnicianSaleDetailScreen extends ConsumerWidget {
               _summaryRow(context, 'الإجمالي الفرعي', sale.subtotal),
               _summaryRow(context, 'الخصم', sale.discount),
               _summaryRow(context, 'الإجمالي', sale.total, emphasize: true),
-              _summaryRow(context, 'المبلغ المحصَّل', sale.paidAmount),
+              _summaryRow(context, 'المدفوع', sale.paidAmount),
+              // Transfers went straight to the shop (0090); only the cash
+              // is the technician's to remit.
+              if (sale.transferAmount > 0)
+                _summaryRow(context, 'تحويل بنكي للمحل', sale.transferAmount),
+              if (sale.walletAmount > 0)
+                _summaryRow(context, 'تحويل محفظة للمحل', sale.walletAmount),
+              if (sale.transferAmount > 0 || sale.walletAmount > 0)
+                _summaryRow(context, 'نقدي مع الصنايعي', sale.cashAmount),
+              if (sale.total - sale.paidAmount > 0.001)
+                _summaryRow(context, 'الباقي', sale.total - sale.paidAmount),
               const SizedBox(height: 8),
               Text('طريقة الدفع: ${paymentMethodLabelAr(sale.paymentMethod)}'),
               if (!canEdit &&

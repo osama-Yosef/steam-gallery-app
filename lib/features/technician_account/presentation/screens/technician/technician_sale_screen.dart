@@ -49,6 +49,18 @@ class _SaleLine {
   double? get unitPrice => isService || priceChanged ? sellingPrice : null;
 }
 
+/// How the customer paid (0090). A bank / wallet transfer goes straight
+/// into the shop's account, so the technician enters no amount for it and
+/// doesn't owe it; [split] is part transfer, part cash in his hand.
+enum _PayMode { cash, transfer, wallet, split }
+
+String _payModeLabel(_PayMode m) => switch (m) {
+  _PayMode.cash => 'نقدًا',
+  _PayMode.transfer => 'تحويل بنكي',
+  _PayMode.wallet => 'تحويل محفظة',
+  _PayMode.split => 'أكتر من طريقة',
+};
+
 class TechnicianSaleScreen extends ConsumerStatefulWidget {
   /// When set, this sale is the invoice for a finished maintenance job: it is
   /// linked to that request so the customer can see what was done and what it
@@ -77,9 +89,11 @@ class _TechnicianSaleScreenState extends ConsumerState<TechnicianSaleScreen> {
   final _customerPhoneCtrl = TextEditingController();
   final _discountCtrl = TextEditingController(text: '0');
   final _paidAmountCtrl = TextEditingController();
+  final _transferCtrl = TextEditingController();
+  final _walletCtrl = TextEditingController();
   final _notesCtrl = TextEditingController();
   final List<_SaleLine> _lines = [];
-  PaymentMethod _paymentMethod = PaymentMethod.cash;
+  _PayMode _payMode = _PayMode.cash;
   bool _submitting = false;
 
   @override
@@ -96,6 +110,8 @@ class _TechnicianSaleScreenState extends ConsumerState<TechnicianSaleScreen> {
     _customerPhoneCtrl.dispose();
     _discountCtrl.dispose();
     _paidAmountCtrl.dispose();
+    _transferCtrl.dispose();
+    _walletCtrl.dispose();
     _notesCtrl.dispose();
     super.dispose();
   }
@@ -116,6 +132,33 @@ class _TechnicianSaleScreenState extends ConsumerState<TechnicianSaleScreen> {
 
   double get _discount => double.tryParse(_discountCtrl.text) ?? 0;
   double get _total => _subtotal - _discount;
+
+  double _amount(TextEditingController c) => double.tryParse(c.text) ?? 0;
+
+  /// (cash he collected, bank transfer, wallet transfer) for the chosen mode.
+  ({double cash, double transfer, double wallet}) get _payment =>
+      switch (_payMode) {
+        _PayMode.cash => (
+          cash: _amount(_paidAmountCtrl),
+          transfer: 0,
+          wallet: 0,
+        ),
+        _PayMode.transfer => (cash: 0, transfer: _total, wallet: 0),
+        _PayMode.wallet => (cash: 0, transfer: 0, wallet: _total),
+        _PayMode.split => (
+          cash: _amount(_paidAmountCtrl),
+          transfer: _amount(_transferCtrl),
+          wallet: _amount(_walletCtrl),
+        ),
+      };
+
+  PaymentMethod get _paymentMethod {
+    final p = _payment;
+    if (p.cash > 0 || (p.transfer == 0 && p.wallet == 0)) {
+      return PaymentMethod.cash;
+    }
+    return p.transfer >= p.wallet ? PaymentMethod.transfer : PaymentMethod.wallet;
+  }
 
   Future<void> _addLine(List<TechnicianBagStockItem> bag) async {
     final available = bag.where(
@@ -289,7 +332,13 @@ class _TechnicianSaleScreenState extends ConsumerState<TechnicianSaleScreen> {
       );
       return;
     }
-    final paidAmount = double.tryParse(_paidAmountCtrl.text) ?? 0;
+    final payment = _payment;
+    if (payment.cash + payment.transfer + payment.wallet > _total + 0.001) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('المبلغ المدفوع أكبر من إجمالي الفاتورة')),
+      );
+      return;
+    }
     setState(() => _submitting = true);
     try {
       await ref
@@ -313,7 +362,9 @@ class _TechnicianSaleScreenState extends ConsumerState<TechnicianSaleScreen> {
                 .toList(),
             paymentMethod: _paymentMethod,
             discount: _discount,
-            paidAmount: paidAmount,
+            paidAmount: payment.cash,
+            transferAmount: payment.transfer,
+            walletAmount: payment.wallet,
             clientRequestId: _clientRequestId,
             notes: _notesCtrl.text.trim().isEmpty
                 ? null
@@ -329,6 +380,78 @@ class _TechnicianSaleScreenState extends ConsumerState<TechnicianSaleScreen> {
       }
     } finally {
       if (mounted) setState(() => _submitting = false);
+    }
+  }
+
+  Widget _moneyField(
+    TextEditingController ctrl,
+    String label, {
+    bool payAllButton = false,
+  }) => TextFormField(
+    controller: ctrl,
+    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+    inputFormatters: [moneyInputFormatter],
+    onChanged: (_) => setState(() {}),
+    decoration: InputDecoration(
+      labelText: label,
+      suffixIcon: payAllButton
+          ? TextButton(
+              onPressed: () =>
+                  setState(() => ctrl.text = Formatters.plain(_total)),
+              child: const Text('دفع الكل'),
+            )
+          : null,
+    ),
+  );
+
+  List<Widget> _paymentFields() {
+    final note = Theme.of(context).textTheme.bodySmall?.copyWith(
+      color: Theme.of(context).colorScheme.primary,
+    );
+    switch (_payMode) {
+      case _PayMode.cash:
+        return [
+          _moneyField(_paidAmountCtrl, 'المبلغ المحصَّل', payAllButton: true),
+        ];
+      case _PayMode.transfer:
+      case _PayMode.wallet:
+        final where = _payMode == _PayMode.transfer
+            ? 'حساب البنك'
+            : 'المحفظة';
+        return [
+          Text(
+            'العميل حوّل ${Formatters.currency(_total)} على $where — '
+            'هتتسجل في حساب المحل على طول، ومش هتتحسب عليك في المطلوب توريده.',
+            style: note,
+          ),
+        ];
+      case _PayMode.split:
+        final p = _payment;
+        final rest = _total - p.cash - p.transfer - p.wallet;
+        return [
+          _moneyField(_transferCtrl, 'تحويل بنكي'),
+          const SizedBox(height: 12),
+          _moneyField(_walletCtrl, 'تحويل محفظة'),
+          const SizedBox(height: 12),
+          _moneyField(_paidAmountCtrl, 'نقدي (حصّلته بإيدك)'),
+          const SizedBox(height: 8),
+          Text(
+            'التحويلات بتتسجل في حساب المحل على طول — '
+            'اللي عليك توريده النقدي بس (${Formatters.currency(p.cash)}).',
+            style: note,
+          ),
+          if (rest.abs() > 0.001) ...[
+            const SizedBox(height: 4),
+            Text(
+              rest > 0
+                  ? 'الباقي على العميل: ${Formatters.currency(rest)}'
+                  : 'المدفوع أكبر من الإجمالي بـ ${Formatters.currency(-rest)}',
+              style: TextStyle(
+                color: rest > 0 ? null : Theme.of(context).colorScheme.error,
+              ),
+            ),
+          ],
+        ];
     }
   }
 
@@ -437,21 +560,6 @@ class _TechnicianSaleScreenState extends ConsumerState<TechnicianSaleScreen> {
             decoration: const InputDecoration(labelText: 'رقم الهاتف'),
           ),
           const Divider(height: 32),
-          DropdownButtonFormField<PaymentMethod>(
-            initialValue: _paymentMethod,
-            isExpanded: true,
-            decoration: const InputDecoration(labelText: 'طريقة الدفع'),
-            items: offeredPaymentMethods
-                .map(
-                  (m) => DropdownMenuItem(
-                    value: m,
-                    child: Text(paymentMethodLabelAr(m)),
-                  ),
-                )
-                .toList(),
-            onChanged: (m) => setState(() => _paymentMethod = m!),
-          ),
-          const SizedBox(height: 12),
           TextFormField(
             controller: _discountCtrl,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
@@ -473,20 +581,18 @@ class _TechnicianSaleScreenState extends ConsumerState<TechnicianSaleScreen> {
             ],
           ),
           const SizedBox(height: 12),
-          TextFormField(
-            controller: _paidAmountCtrl,
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            inputFormatters: [moneyInputFormatter],
-            decoration: InputDecoration(
-              labelText: 'المبلغ المحصَّل',
-              suffixIcon: TextButton(
-                onPressed: () => setState(
-                  () => _paidAmountCtrl.text = Formatters.plain(_total),
-                ),
-                child: const Text('دفع الكل'),
-              ),
-            ),
+          DropdownButtonFormField<_PayMode>(
+            initialValue: _payMode,
+            isExpanded: true,
+            decoration: const InputDecoration(labelText: 'طريقة الدفع'),
+            items: [
+              for (final m in _PayMode.values)
+                DropdownMenuItem(value: m, child: Text(_payModeLabel(m))),
+            ],
+            onChanged: (m) => setState(() => _payMode = m!),
           ),
+          const SizedBox(height: 12),
+          ..._paymentFields(),
           const SizedBox(height: 16),
           TextFormField(
             controller: _notesCtrl,

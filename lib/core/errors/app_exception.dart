@@ -315,6 +315,15 @@ class AppException implements Exception {
     ('SUPPLY_NOT_FOUND', 'التوريد غير موجود'),
     ('SUPPLY_NOT_PENDING', 'تمت مراجعة هذا التوريد بالفعل'),
     ('COUNT_NOT_DRAFT', 'الجرد مُعتمَد بالفعل ولا يمكن تعديله'),
+    // Transfers straight to the shop on a technician's invoice (0090).
+    (
+      'TOTAL_BELOW_DIRECT_PAYMENT',
+      'مينفعش الفاتورة تقل عن المبلغ اللي العميل حوّله',
+    ),
+    (
+      'DIRECT_PAYMENT_ADMIN_ONLY',
+      'الفاتورة دي عليها تحويل للمحل — حذفها من الأدمن بس',
+    ),
     // Bag counts (0089).
     (
       'COUNT_ALREADY_SUBMITTED',

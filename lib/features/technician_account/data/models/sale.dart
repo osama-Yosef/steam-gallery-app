@@ -70,7 +70,18 @@ abstract class Sale with _$Sale {
 
     /// The technician who sold it; null for a register (walk-in) sale.
     String? technicianId,
+
+    /// Paid by the customer straight into the shop's bank / e-wallet
+    /// account (0090) — part of [paidAmount], never in the technician's
+    /// hands.
+    @Default(0) double transferAmount,
+    @Default(0) double walletAmount,
   }) = _Sale;
+
+  const Sale._();
+
+  /// What the technician collected in cash himself.
+  double get cashAmount => paidAmount - transferAmount - walletAmount;
 
   factory Sale.fromRow(Map<String, dynamic> row) => Sale(
     id: row['id'] as String,
@@ -85,5 +96,7 @@ abstract class Sale with _$Sale {
     status: saleStatusFromString(row['status'] as String),
     createdAt: DateTime.parse(row['created_at'] as String),
     technicianId: row['technician_id'] as String?,
+    transferAmount: (row['transfer_amount'] as num?)?.toDouble() ?? 0,
+    walletAmount: (row['wallet_amount'] as num?)?.toDouble() ?? 0,
   );
 }
