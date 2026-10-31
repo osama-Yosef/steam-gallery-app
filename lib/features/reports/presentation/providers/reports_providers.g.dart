@@ -530,6 +530,90 @@ final class EmployeesReportFamily extends $Family
   String toString() => r'employeesReportProvider';
 }
 
+/// [month] is the first day of the month.
+
+@ProviderFor(monthReport)
+const monthReportProvider = MonthReportFamily._();
+
+/// [month] is the first day of the month.
+
+final class MonthReportProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<MonthReport>,
+          MonthReport,
+          FutureOr<MonthReport>
+        >
+    with $FutureModifier<MonthReport>, $FutureProvider<MonthReport> {
+  /// [month] is the first day of the month.
+  const MonthReportProvider._({
+    required MonthReportFamily super.from,
+    required DateTime super.argument,
+  }) : super(
+         retry: null,
+         name: r'monthReportProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
+  @override
+  String debugGetCreateSourceHash() => _$monthReportHash();
+
+  @override
+  String toString() {
+    return r'monthReportProvider'
+        ''
+        '($argument)';
+  }
+
+  @$internal
+  @override
+  $FutureProviderElement<MonthReport> $createElement(
+    $ProviderPointer pointer,
+  ) => $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<MonthReport> create(Ref ref) {
+    final argument = this.argument as DateTime;
+    return monthReport(ref, argument);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is MonthReportProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$monthReportHash() => r'4b61ce0ce4381b1800452c6ee95356d61744ea0a';
+
+/// [month] is the first day of the month.
+
+final class MonthReportFamily extends $Family
+    with $FunctionalFamilyOverride<FutureOr<MonthReport>, DateTime> {
+  const MonthReportFamily._()
+    : super(
+        retry: null,
+        name: r'monthReportProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  /// [month] is the first day of the month.
+
+  MonthReportProvider call(DateTime month) =>
+      MonthReportProvider._(argument: month, from: this);
+
+  @override
+  String toString() => r'monthReportProvider';
+}
+
 /// Shared "من/إلى" filter across every report screen — defaults to
 /// "this month so far". `to` is always exclusive (see repository's `.lt`).
 

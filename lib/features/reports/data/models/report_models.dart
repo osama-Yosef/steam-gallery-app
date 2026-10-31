@@ -108,6 +108,88 @@ class InventoryReport {
   });
 }
 
+/// The whole month on one page (rpc_month_report, 0092). Debts and stock are
+/// as of now, whichever month was asked for.
+class MonthReport {
+  final DateTime month;
+  final double sales;
+  final double salesWalkIn;
+  final double salesTechnician;
+  final double salesOnline;
+  final int invoices;
+  final double cost;
+  final double grossProfit;
+  final double expenses;
+  final List<ExpenseCategoryTotal> expenseCategories;
+  final double netProfit;
+  final double purchases;
+  final int purchaseInvoices;
+  final double supplierPayments;
+  final double supplierDebt;
+  final List<({String name, double balance})> supplierDebts;
+  final double stockWarehouse;
+  final double stockBags;
+
+  const MonthReport({
+    required this.month,
+    required this.sales,
+    required this.salesWalkIn,
+    required this.salesTechnician,
+    required this.salesOnline,
+    required this.invoices,
+    required this.cost,
+    required this.grossProfit,
+    required this.expenses,
+    required this.expenseCategories,
+    required this.netProfit,
+    required this.purchases,
+    required this.purchaseInvoices,
+    required this.supplierPayments,
+    required this.supplierDebt,
+    required this.supplierDebts,
+    required this.stockWarehouse,
+    required this.stockBags,
+  });
+
+  double get stockTotal => stockWarehouse + stockBags;
+
+  factory MonthReport.fromRpc(Map<String, dynamic> j) {
+    double n(String key) => (j[key] as num).toDouble();
+    return MonthReport(
+      month: DateTime.parse(j['month'] as String),
+      sales: n('sales'),
+      salesWalkIn: n('sales_walk_in'),
+      salesTechnician: n('sales_technician'),
+      salesOnline: n('sales_online'),
+      invoices: (j['invoices'] as num).toInt(),
+      cost: n('cost'),
+      grossProfit: n('gross_profit'),
+      expenses: n('expenses'),
+      expenseCategories: [
+        for (final c in j['expense_categories'] as List)
+          ExpenseCategoryTotal(
+            categoryName: c['name'] as String,
+            total: (c['total'] as num).toDouble(),
+          ),
+      ],
+      netProfit: n('net_profit'),
+      purchases: n('purchases'),
+      purchaseInvoices: (j['purchase_invoices'] as num).toInt(),
+      supplierPayments: n('supplier_payments'),
+      supplierDebt: n('supplier_debt'),
+      supplierDebts: [
+        for (final s in j['supplier_debts'] as List)
+          (
+            name: s['name'] as String,
+            balance: (s['balance'] as num).toDouble(),
+          ),
+      ],
+      stockWarehouse: n('stock_warehouse'),
+      stockBags: n('stock_bags'),
+    );
+  }
+}
+
 /// One employee over the report's period: attendance, advances taken and
 /// salaries paid in it, and the advances still owed today.
 class EmployeeReportRow {
@@ -143,9 +225,8 @@ class EmployeesReport {
 
   const EmployeesReport({required this.rows});
 
-  double get totalMonthlySalaries => rows
-      .where((r) => r.isActive)
-      .fold(0, (s, r) => s + r.monthlySalary);
+  double get totalMonthlySalaries =>
+      rows.where((r) => r.isActive).fold(0, (s, r) => s + r.monthlySalary);
   double get totalAdvances => rows.fold(0, (s, r) => s + r.advances);
   double get totalSalariesPaid => rows.fold(0, (s, r) => s + r.salariesPaid);
   double get totalAdvanceBalance =>

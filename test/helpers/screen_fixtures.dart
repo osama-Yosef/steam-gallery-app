@@ -35,6 +35,7 @@ const List<Screen> screens = [
   (role: AppRole.admin, location: '/admin/sales-returns'),
   (role: AppRole.admin, location: '/admin/sales-returns/$saleId'),
   (role: AppRole.admin, location: '/admin/reports'),
+  (role: AppRole.admin, location: '/admin/reports/month'),
   (role: AppRole.admin, location: '/admin/reports/sales'),
   (role: AppRole.admin, location: '/admin/reports/profit'),
   (role: AppRole.admin, location: '/admin/reports/orders_profit'),

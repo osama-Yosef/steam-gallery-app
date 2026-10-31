@@ -33,6 +33,14 @@ class _AdminReportDetailScreenState
   final _boundaryKey = GlobalKey();
   bool _exporting = false;
 
+  /// The month report picks a month, not the shared date range.
+  DateTime _month = DateTime(DateTime.now().year, DateTime.now().month);
+  bool get _isMonth => reportType == 'month';
+
+  String _periodLabel(ReportRange range) => _isMonth
+      ? Formatters.month(_month)
+      : '${Formatters.date(range.from)} — ${Formatters.date(range.to.subtract(const Duration(days: 1)))}';
+
   String get reportType => widget.reportType;
 
   (String, String, IconData, Color) get _meta =>
@@ -98,10 +106,7 @@ class _AdminReportDetailScreenState
           child: Material(
             color: Colors.white,
             child: DefaultTextStyle(
-              style: const TextStyle(
-                color: Colors.black,
-                fontFamily: 'Cairo',
-              ),
+              style: const TextStyle(color: Colors.black, fontFamily: 'Cairo'),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
@@ -132,7 +137,7 @@ class _AdminReportDetailScreenState
                                 ),
                               ),
                               Text(
-                                '${Formatters.date(range.from)} — ${Formatters.date(range.to.subtract(const Duration(days: 1)))}',
+                                _periodLabel(range),
                                 style: const TextStyle(
                                   fontSize: 12,
                                   color: Color(0xFF262626),
@@ -161,6 +166,9 @@ class _AdminReportDetailScreenState
     Color color,
   ) {
     switch (reportType) {
+      case 'month':
+        return _monthBody(context, color);
+
       case 'sales':
         final async = ref.watch(salesReportProvider(range.from, range.to));
         return async.when(
@@ -482,6 +490,113 @@ class _AdminReportDetailScreenState
     }
   }
 
+  void _shiftMonth(int by) =>
+      setState(() => _month = DateTime(_month.year, _month.month + by));
+
+  Widget _monthBody(BuildContext context, Color color) {
+    final now = DateTime.now();
+    final isCurrent = _month.year == now.year && _month.month == now.month;
+    final titleStyle = Theme.of(
+      context,
+    ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold);
+    Widget section(String title) => Padding(
+      padding: const EdgeInsets.only(top: 20, bottom: 4),
+      child: Text(title, style: titleStyle),
+    );
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Row(
+          children: [
+            IconButton(
+              icon: const Icon(Iconsax.arrow_right_3_copy),
+              tooltip: 'الشهر السابق',
+              onPressed: () => _shiftMonth(-1),
+            ),
+            Expanded(
+              child: Text(
+                Formatters.month(_month),
+                textAlign: TextAlign.center,
+                style: titleStyle,
+              ),
+            ),
+            IconButton(
+              icon: const Icon(Iconsax.arrow_left_2_copy),
+              tooltip: 'الشهر التالي',
+              onPressed: isCurrent ? null : () => _shiftMonth(1),
+            ),
+          ],
+        ),
+        Expanded(
+          child: ref
+              .watch(monthReportProvider(_month))
+              .when(
+                loading: () => const LoadingView(),
+                error: (e, _) => ErrorView(
+                  message: 'تعذَّر تحميل التقرير',
+                  onRetry: () => ref.invalidate(monthReportProvider(_month)),
+                ),
+                data: (r) => ListView(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                  children: [
+                    section('المبيعات (${r.invoices} فاتورة)'),
+                    _row(context, 'بيع مباشر', r.salesWalkIn),
+                    _row(context, 'مبيعات الصنايعية', r.salesTechnician),
+                    _row(context, 'طلبات أونلاين', r.salesOnline),
+                    _row(context, 'مبيعات الشهر', r.sales, bold: true),
+                    _row(context, 'تكلفة المبيعات', r.cost, bold: true),
+                    section('المصروفات'),
+                    for (final c in r.expenseCategories)
+                      _row(context, c.categoryName, c.total),
+                    _row(context, 'مصاريف الشهر', r.expenses, bold: true),
+                    section('الموردين'),
+                    _row(
+                      context,
+                      'مشتريات الشهر (${r.purchaseInvoices} فاتورة)',
+                      r.purchases,
+                    ),
+                    _row(context, 'دفعات الشهر', r.supplierPayments),
+                    section('دلوقتي'),
+                    for (final s in r.supplierDebts)
+                      _row(context, s.name, s.balance),
+                    _row(
+                      context,
+                      'باقي ديون علينا',
+                      r.supplierDebt,
+                      bold: true,
+                    ),
+                    _row(context, 'جرد المخزن', r.stockWarehouse),
+                    _row(context, 'بضاعة في شنط الصنايعية', r.stockBags),
+                    _row(
+                      context,
+                      'إجمالي البضاعة بالتكلفة',
+                      r.stockTotal,
+                      bold: true,
+                    ),
+                    const Divider(height: 32),
+                    _row(
+                      context,
+                      'إجمالي الأرباح (المبيعات − التكلفة)',
+                      r.grossProfit,
+                      bold: true,
+                    ),
+                    _row(
+                      context,
+                      'الأرباح الصافية (بعد المصاريف)',
+                      r.netProfit,
+                      bold: true,
+                      highlight: true,
+                      color: color,
+                    ),
+                  ],
+                ),
+              ),
+        ),
+      ],
+    );
+  }
+
   Widget _row(
     BuildContext context,
     String label,
@@ -565,12 +680,35 @@ class _AdminReportDetailScreenState
   ) async {
     final buffer = StringBuffer()
       ..writeln(_meta.$2)
-      ..writeln(
-        '${Formatters.date(range.from)} — ${Formatters.date(range.to.subtract(const Duration(days: 1)))}',
-      )
+      ..writeln(_periodLabel(range))
       ..writeln();
 
     switch (reportType) {
+      case 'month':
+        final r = await ref.read(monthReportProvider(_month).future);
+        String c(double v) => Formatters.currency(v);
+        buffer
+          ..writeln('مبيعات الشهر: ${c(r.sales)} (${r.invoices} فاتورة)')
+          ..writeln('  بيع مباشر: ${c(r.salesWalkIn)}')
+          ..writeln('  مبيعات الصنايعية: ${c(r.salesTechnician)}')
+          ..writeln('  طلبات أونلاين: ${c(r.salesOnline)}')
+          ..writeln('تكلفة المبيعات: ${c(r.cost)}')
+          ..writeln('مصاريف الشهر: ${c(r.expenses)}');
+        for (final e in r.expenseCategories) {
+          buffer.writeln('  ${e.categoryName}: ${c(e.total)}');
+        }
+        buffer
+          ..writeln('مشتريات الشهر: ${c(r.purchases)}')
+          ..writeln('دفعات الشهر: ${c(r.supplierPayments)}')
+          ..writeln('باقي ديون علينا: ${c(r.supplierDebt)}');
+        for (final s in r.supplierDebts) {
+          buffer.writeln('  ${s.name}: ${c(s.balance)}');
+        }
+        buffer
+          ..writeln('جرد المخزن: ${c(r.stockWarehouse)}')
+          ..writeln('بضاعة في شنط الصنايعية: ${c(r.stockBags)}')
+          ..writeln('إجمالي الأرباح: ${c(r.grossProfit)}')
+          ..writeln('الأرباح الصافية: ${c(r.netProfit)}');
       case 'sales':
         final r = await ref.read(
           salesReportProvider(range.from, range.to).future,

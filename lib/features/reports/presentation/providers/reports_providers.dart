@@ -51,6 +51,14 @@ Future<EmployeesReport> employeesReport(Ref ref, DateTime from, DateTime to) {
   return ref.watch(reportsRepositoryProvider).getEmployeesReport(from, to);
 }
 
+/// [month] is the first day of the month.
+@riverpod
+Future<MonthReport> monthReport(Ref ref, DateTime month) {
+  ref.cacheFor();
+  ref.refreshOnServerChange();
+  return ref.watch(reportsRepositoryProvider).getMonthReport(month);
+}
+
 typedef ReportRange = ({DateTime from, DateTime to});
 
 /// Shared "من/إلى" filter across every report screen — defaults to

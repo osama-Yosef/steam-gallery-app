@@ -7,6 +7,12 @@ import '../../../../core/utils/formatters.dart';
 import '../providers/reports_providers.dart';
 
 const reportTypes = <(String type, String label, IconData icon, Color color)>[
+  (
+    'month',
+    'التقرير الشامل للشهر',
+    Iconsax.calendar_tick_copy,
+    Color(0xFF0F766E),
+  ),
   ('sales', 'تقرير المبيعات', Iconsax.card_pos_copy, Color(0xFF3B5BFF)),
   ('profit', 'تقرير الأرباح', Iconsax.trend_up_copy, Color(0xFF10B981)),
   (

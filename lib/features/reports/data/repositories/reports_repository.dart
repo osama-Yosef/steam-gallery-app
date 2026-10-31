@@ -9,6 +9,9 @@ abstract class ReportsRepository {
   Future<ExpensesReport> getExpensesReport(DateTime from, DateTime to);
   Future<InventoryReport> getInventoryReport(DateTime from, DateTime to);
   Future<EmployeesReport> getEmployeesReport(DateTime from, DateTime to);
+
+  /// The month containing [month], worked out on the server (0092).
+  Future<MonthReport> getMonthReport(DateTime month);
 }
 
 class SupabaseReportsRepository implements ReportsRepository {
@@ -369,6 +372,21 @@ class SupabaseReportsRepository implements ReportsRepository {
         if (isActive || touched) rows.add(row);
       }
       return EmployeesReport(rows: rows);
+    } catch (e) {
+      throw AppException.from(e);
+    }
+  }
+
+  @override
+  Future<MonthReport> getMonthReport(DateTime month) async {
+    final y = month.year.toString().padLeft(4, '0');
+    final m = month.month.toString().padLeft(2, '0');
+    try {
+      final res = await _client.rpc(
+        'rpc_month_report',
+        params: {'p_month': '$y-$m-01'},
+      );
+      return MonthReport.fromRpc((res as Map).cast<String, dynamic>());
     } catch (e) {
       throw AppException.from(e);
     }
