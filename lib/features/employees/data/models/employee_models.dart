@@ -117,6 +117,7 @@ abstract class EmployeePayroll with _$EmployeePayroll {
     required CashboxKind kind,
     String? notes,
     required DateTime createdAt,
+    String? employeeId,
   }) = _EmployeePayroll;
 
   const EmployeePayroll._();
@@ -137,6 +138,7 @@ abstract class EmployeePayroll with _$EmployeePayroll {
     kind: cashboxKindFromString(row['kind'] as String),
     notes: row['notes'] as String?,
     createdAt: DateTime.parse(row['created_at'] as String),
+    employeeId: row['employee_id'] as String?,
   );
 }
 

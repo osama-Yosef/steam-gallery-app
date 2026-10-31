@@ -500,3 +500,87 @@ final class EmployeePayrollsFamily extends $Family
   @override
   String toString() => r'employeePayrollsProvider';
 }
+
+/// The salary an expense was booked for, or null for an ordinary expense.
+
+@ProviderFor(payrollForExpense)
+const payrollForExpenseProvider = PayrollForExpenseFamily._();
+
+/// The salary an expense was booked for, or null for an ordinary expense.
+
+final class PayrollForExpenseProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<EmployeePayroll?>,
+          EmployeePayroll?,
+          FutureOr<EmployeePayroll?>
+        >
+    with $FutureModifier<EmployeePayroll?>, $FutureProvider<EmployeePayroll?> {
+  /// The salary an expense was booked for, or null for an ordinary expense.
+  const PayrollForExpenseProvider._({
+    required PayrollForExpenseFamily super.from,
+    required String super.argument,
+  }) : super(
+         retry: null,
+         name: r'payrollForExpenseProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
+  @override
+  String debugGetCreateSourceHash() => _$payrollForExpenseHash();
+
+  @override
+  String toString() {
+    return r'payrollForExpenseProvider'
+        ''
+        '($argument)';
+  }
+
+  @$internal
+  @override
+  $FutureProviderElement<EmployeePayroll?> $createElement(
+    $ProviderPointer pointer,
+  ) => $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<EmployeePayroll?> create(Ref ref) {
+    final argument = this.argument as String;
+    return payrollForExpense(ref, argument);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is PayrollForExpenseProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$payrollForExpenseHash() => r'6a33972d36727fc045fca67543545f2faec54d6d';
+
+/// The salary an expense was booked for, or null for an ordinary expense.
+
+final class PayrollForExpenseFamily extends $Family
+    with $FunctionalFamilyOverride<FutureOr<EmployeePayroll?>, String> {
+  const PayrollForExpenseFamily._()
+    : super(
+        retry: null,
+        name: r'payrollForExpenseProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  /// The salary an expense was booked for, or null for an ordinary expense.
+
+  PayrollForExpenseProvider call(String expenseId) =>
+      PayrollForExpenseProvider._(argument: expenseId, from: this);
+
+  @override
+  String toString() => r'payrollForExpenseProvider';
+}

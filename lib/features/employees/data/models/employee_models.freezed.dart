@@ -840,7 +840,7 @@ as String?,
 /// @nodoc
 mixin _$EmployeePayroll {
 
- String get id; int get payrollNumber; DateTime get periodMonth; double get baseSalary; int get absentDays; double get absenceDeduction; double get bonus; double get advanceDeduction; double get netAmount; CashboxKind get kind; String? get notes; DateTime get createdAt;
+ String get id; int get payrollNumber; DateTime get periodMonth; double get baseSalary; int get absentDays; double get absenceDeduction; double get bonus; double get advanceDeduction; double get netAmount; CashboxKind get kind; String? get notes; DateTime get createdAt; String? get employeeId;
 /// Create a copy of EmployeePayroll
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -851,16 +851,16 @@ $EmployeePayrollCopyWith<EmployeePayroll> get copyWith => _$EmployeePayrollCopyW
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is EmployeePayroll&&(identical(other.id, id) || other.id == id)&&(identical(other.payrollNumber, payrollNumber) || other.payrollNumber == payrollNumber)&&(identical(other.periodMonth, periodMonth) || other.periodMonth == periodMonth)&&(identical(other.baseSalary, baseSalary) || other.baseSalary == baseSalary)&&(identical(other.absentDays, absentDays) || other.absentDays == absentDays)&&(identical(other.absenceDeduction, absenceDeduction) || other.absenceDeduction == absenceDeduction)&&(identical(other.bonus, bonus) || other.bonus == bonus)&&(identical(other.advanceDeduction, advanceDeduction) || other.advanceDeduction == advanceDeduction)&&(identical(other.netAmount, netAmount) || other.netAmount == netAmount)&&(identical(other.kind, kind) || other.kind == kind)&&(identical(other.notes, notes) || other.notes == notes)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is EmployeePayroll&&(identical(other.id, id) || other.id == id)&&(identical(other.payrollNumber, payrollNumber) || other.payrollNumber == payrollNumber)&&(identical(other.periodMonth, periodMonth) || other.periodMonth == periodMonth)&&(identical(other.baseSalary, baseSalary) || other.baseSalary == baseSalary)&&(identical(other.absentDays, absentDays) || other.absentDays == absentDays)&&(identical(other.absenceDeduction, absenceDeduction) || other.absenceDeduction == absenceDeduction)&&(identical(other.bonus, bonus) || other.bonus == bonus)&&(identical(other.advanceDeduction, advanceDeduction) || other.advanceDeduction == advanceDeduction)&&(identical(other.netAmount, netAmount) || other.netAmount == netAmount)&&(identical(other.kind, kind) || other.kind == kind)&&(identical(other.notes, notes) || other.notes == notes)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.employeeId, employeeId) || other.employeeId == employeeId));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,payrollNumber,periodMonth,baseSalary,absentDays,absenceDeduction,bonus,advanceDeduction,netAmount,kind,notes,createdAt);
+int get hashCode => Object.hash(runtimeType,id,payrollNumber,periodMonth,baseSalary,absentDays,absenceDeduction,bonus,advanceDeduction,netAmount,kind,notes,createdAt,employeeId);
 
 @override
 String toString() {
-  return 'EmployeePayroll(id: $id, payrollNumber: $payrollNumber, periodMonth: $periodMonth, baseSalary: $baseSalary, absentDays: $absentDays, absenceDeduction: $absenceDeduction, bonus: $bonus, advanceDeduction: $advanceDeduction, netAmount: $netAmount, kind: $kind, notes: $notes, createdAt: $createdAt)';
+  return 'EmployeePayroll(id: $id, payrollNumber: $payrollNumber, periodMonth: $periodMonth, baseSalary: $baseSalary, absentDays: $absentDays, absenceDeduction: $absenceDeduction, bonus: $bonus, advanceDeduction: $advanceDeduction, netAmount: $netAmount, kind: $kind, notes: $notes, createdAt: $createdAt, employeeId: $employeeId)';
 }
 
 
@@ -871,7 +871,7 @@ abstract mixin class $EmployeePayrollCopyWith<$Res>  {
   factory $EmployeePayrollCopyWith(EmployeePayroll value, $Res Function(EmployeePayroll) _then) = _$EmployeePayrollCopyWithImpl;
 @useResult
 $Res call({
- String id, int payrollNumber, DateTime periodMonth, double baseSalary, int absentDays, double absenceDeduction, double bonus, double advanceDeduction, double netAmount, CashboxKind kind, String? notes, DateTime createdAt
+ String id, int payrollNumber, DateTime periodMonth, double baseSalary, int absentDays, double absenceDeduction, double bonus, double advanceDeduction, double netAmount, CashboxKind kind, String? notes, DateTime createdAt, String? employeeId
 });
 
 
@@ -888,7 +888,7 @@ class _$EmployeePayrollCopyWithImpl<$Res>
 
 /// Create a copy of EmployeePayroll
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? payrollNumber = null,Object? periodMonth = null,Object? baseSalary = null,Object? absentDays = null,Object? absenceDeduction = null,Object? bonus = null,Object? advanceDeduction = null,Object? netAmount = null,Object? kind = null,Object? notes = freezed,Object? createdAt = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? payrollNumber = null,Object? periodMonth = null,Object? baseSalary = null,Object? absentDays = null,Object? absenceDeduction = null,Object? bonus = null,Object? advanceDeduction = null,Object? netAmount = null,Object? kind = null,Object? notes = freezed,Object? createdAt = null,Object? employeeId = freezed,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,payrollNumber: null == payrollNumber ? _self.payrollNumber : payrollNumber // ignore: cast_nullable_to_non_nullable
@@ -902,7 +902,8 @@ as double,netAmount: null == netAmount ? _self.netAmount : netAmount // ignore: 
 as double,kind: null == kind ? _self.kind : kind // ignore: cast_nullable_to_non_nullable
 as CashboxKind,notes: freezed == notes ? _self.notes : notes // ignore: cast_nullable_to_non_nullable
 as String?,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
-as DateTime,
+as DateTime,employeeId: freezed == employeeId ? _self.employeeId : employeeId // ignore: cast_nullable_to_non_nullable
+as String?,
   ));
 }
 
@@ -987,10 +988,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  int payrollNumber,  DateTime periodMonth,  double baseSalary,  int absentDays,  double absenceDeduction,  double bonus,  double advanceDeduction,  double netAmount,  CashboxKind kind,  String? notes,  DateTime createdAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  int payrollNumber,  DateTime periodMonth,  double baseSalary,  int absentDays,  double absenceDeduction,  double bonus,  double advanceDeduction,  double netAmount,  CashboxKind kind,  String? notes,  DateTime createdAt,  String? employeeId)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _EmployeePayroll() when $default != null:
-return $default(_that.id,_that.payrollNumber,_that.periodMonth,_that.baseSalary,_that.absentDays,_that.absenceDeduction,_that.bonus,_that.advanceDeduction,_that.netAmount,_that.kind,_that.notes,_that.createdAt);case _:
+return $default(_that.id,_that.payrollNumber,_that.periodMonth,_that.baseSalary,_that.absentDays,_that.absenceDeduction,_that.bonus,_that.advanceDeduction,_that.netAmount,_that.kind,_that.notes,_that.createdAt,_that.employeeId);case _:
   return orElse();
 
 }
@@ -1008,10 +1009,10 @@ return $default(_that.id,_that.payrollNumber,_that.periodMonth,_that.baseSalary,
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  int payrollNumber,  DateTime periodMonth,  double baseSalary,  int absentDays,  double absenceDeduction,  double bonus,  double advanceDeduction,  double netAmount,  CashboxKind kind,  String? notes,  DateTime createdAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  int payrollNumber,  DateTime periodMonth,  double baseSalary,  int absentDays,  double absenceDeduction,  double bonus,  double advanceDeduction,  double netAmount,  CashboxKind kind,  String? notes,  DateTime createdAt,  String? employeeId)  $default,) {final _that = this;
 switch (_that) {
 case _EmployeePayroll():
-return $default(_that.id,_that.payrollNumber,_that.periodMonth,_that.baseSalary,_that.absentDays,_that.absenceDeduction,_that.bonus,_that.advanceDeduction,_that.netAmount,_that.kind,_that.notes,_that.createdAt);case _:
+return $default(_that.id,_that.payrollNumber,_that.periodMonth,_that.baseSalary,_that.absentDays,_that.absenceDeduction,_that.bonus,_that.advanceDeduction,_that.netAmount,_that.kind,_that.notes,_that.createdAt,_that.employeeId);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -1028,10 +1029,10 @@ return $default(_that.id,_that.payrollNumber,_that.periodMonth,_that.baseSalary,
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  int payrollNumber,  DateTime periodMonth,  double baseSalary,  int absentDays,  double absenceDeduction,  double bonus,  double advanceDeduction,  double netAmount,  CashboxKind kind,  String? notes,  DateTime createdAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  int payrollNumber,  DateTime periodMonth,  double baseSalary,  int absentDays,  double absenceDeduction,  double bonus,  double advanceDeduction,  double netAmount,  CashboxKind kind,  String? notes,  DateTime createdAt,  String? employeeId)?  $default,) {final _that = this;
 switch (_that) {
 case _EmployeePayroll() when $default != null:
-return $default(_that.id,_that.payrollNumber,_that.periodMonth,_that.baseSalary,_that.absentDays,_that.absenceDeduction,_that.bonus,_that.advanceDeduction,_that.netAmount,_that.kind,_that.notes,_that.createdAt);case _:
+return $default(_that.id,_that.payrollNumber,_that.periodMonth,_that.baseSalary,_that.absentDays,_that.absenceDeduction,_that.bonus,_that.advanceDeduction,_that.netAmount,_that.kind,_that.notes,_that.createdAt,_that.employeeId);case _:
   return null;
 
 }
@@ -1043,7 +1044,7 @@ return $default(_that.id,_that.payrollNumber,_that.periodMonth,_that.baseSalary,
 
 
 class _EmployeePayroll extends EmployeePayroll {
-  const _EmployeePayroll({required this.id, required this.payrollNumber, required this.periodMonth, required this.baseSalary, required this.absentDays, required this.absenceDeduction, required this.bonus, required this.advanceDeduction, required this.netAmount, required this.kind, this.notes, required this.createdAt}): super._();
+  const _EmployeePayroll({required this.id, required this.payrollNumber, required this.periodMonth, required this.baseSalary, required this.absentDays, required this.absenceDeduction, required this.bonus, required this.advanceDeduction, required this.netAmount, required this.kind, this.notes, required this.createdAt, this.employeeId}): super._();
   
 
 @override final  String id;
@@ -1058,6 +1059,7 @@ class _EmployeePayroll extends EmployeePayroll {
 @override final  CashboxKind kind;
 @override final  String? notes;
 @override final  DateTime createdAt;
+@override final  String? employeeId;
 
 /// Create a copy of EmployeePayroll
 /// with the given fields replaced by the non-null parameter values.
@@ -1069,16 +1071,16 @@ _$EmployeePayrollCopyWith<_EmployeePayroll> get copyWith => __$EmployeePayrollCo
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _EmployeePayroll&&(identical(other.id, id) || other.id == id)&&(identical(other.payrollNumber, payrollNumber) || other.payrollNumber == payrollNumber)&&(identical(other.periodMonth, periodMonth) || other.periodMonth == periodMonth)&&(identical(other.baseSalary, baseSalary) || other.baseSalary == baseSalary)&&(identical(other.absentDays, absentDays) || other.absentDays == absentDays)&&(identical(other.absenceDeduction, absenceDeduction) || other.absenceDeduction == absenceDeduction)&&(identical(other.bonus, bonus) || other.bonus == bonus)&&(identical(other.advanceDeduction, advanceDeduction) || other.advanceDeduction == advanceDeduction)&&(identical(other.netAmount, netAmount) || other.netAmount == netAmount)&&(identical(other.kind, kind) || other.kind == kind)&&(identical(other.notes, notes) || other.notes == notes)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _EmployeePayroll&&(identical(other.id, id) || other.id == id)&&(identical(other.payrollNumber, payrollNumber) || other.payrollNumber == payrollNumber)&&(identical(other.periodMonth, periodMonth) || other.periodMonth == periodMonth)&&(identical(other.baseSalary, baseSalary) || other.baseSalary == baseSalary)&&(identical(other.absentDays, absentDays) || other.absentDays == absentDays)&&(identical(other.absenceDeduction, absenceDeduction) || other.absenceDeduction == absenceDeduction)&&(identical(other.bonus, bonus) || other.bonus == bonus)&&(identical(other.advanceDeduction, advanceDeduction) || other.advanceDeduction == advanceDeduction)&&(identical(other.netAmount, netAmount) || other.netAmount == netAmount)&&(identical(other.kind, kind) || other.kind == kind)&&(identical(other.notes, notes) || other.notes == notes)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.employeeId, employeeId) || other.employeeId == employeeId));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,payrollNumber,periodMonth,baseSalary,absentDays,absenceDeduction,bonus,advanceDeduction,netAmount,kind,notes,createdAt);
+int get hashCode => Object.hash(runtimeType,id,payrollNumber,periodMonth,baseSalary,absentDays,absenceDeduction,bonus,advanceDeduction,netAmount,kind,notes,createdAt,employeeId);
 
 @override
 String toString() {
-  return 'EmployeePayroll(id: $id, payrollNumber: $payrollNumber, periodMonth: $periodMonth, baseSalary: $baseSalary, absentDays: $absentDays, absenceDeduction: $absenceDeduction, bonus: $bonus, advanceDeduction: $advanceDeduction, netAmount: $netAmount, kind: $kind, notes: $notes, createdAt: $createdAt)';
+  return 'EmployeePayroll(id: $id, payrollNumber: $payrollNumber, periodMonth: $periodMonth, baseSalary: $baseSalary, absentDays: $absentDays, absenceDeduction: $absenceDeduction, bonus: $bonus, advanceDeduction: $advanceDeduction, netAmount: $netAmount, kind: $kind, notes: $notes, createdAt: $createdAt, employeeId: $employeeId)';
 }
 
 
@@ -1089,7 +1091,7 @@ abstract mixin class _$EmployeePayrollCopyWith<$Res> implements $EmployeePayroll
   factory _$EmployeePayrollCopyWith(_EmployeePayroll value, $Res Function(_EmployeePayroll) _then) = __$EmployeePayrollCopyWithImpl;
 @override @useResult
 $Res call({
- String id, int payrollNumber, DateTime periodMonth, double baseSalary, int absentDays, double absenceDeduction, double bonus, double advanceDeduction, double netAmount, CashboxKind kind, String? notes, DateTime createdAt
+ String id, int payrollNumber, DateTime periodMonth, double baseSalary, int absentDays, double absenceDeduction, double bonus, double advanceDeduction, double netAmount, CashboxKind kind, String? notes, DateTime createdAt, String? employeeId
 });
 
 
@@ -1106,7 +1108,7 @@ class __$EmployeePayrollCopyWithImpl<$Res>
 
 /// Create a copy of EmployeePayroll
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? payrollNumber = null,Object? periodMonth = null,Object? baseSalary = null,Object? absentDays = null,Object? absenceDeduction = null,Object? bonus = null,Object? advanceDeduction = null,Object? netAmount = null,Object? kind = null,Object? notes = freezed,Object? createdAt = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? payrollNumber = null,Object? periodMonth = null,Object? baseSalary = null,Object? absentDays = null,Object? absenceDeduction = null,Object? bonus = null,Object? advanceDeduction = null,Object? netAmount = null,Object? kind = null,Object? notes = freezed,Object? createdAt = null,Object? employeeId = freezed,}) {
   return _then(_EmployeePayroll(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,payrollNumber: null == payrollNumber ? _self.payrollNumber : payrollNumber // ignore: cast_nullable_to_non_nullable
@@ -1120,7 +1122,8 @@ as double,netAmount: null == netAmount ? _self.netAmount : netAmount // ignore: 
 as double,kind: null == kind ? _self.kind : kind // ignore: cast_nullable_to_non_nullable
 as CashboxKind,notes: freezed == notes ? _self.notes : notes // ignore: cast_nullable_to_non_nullable
 as String?,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
-as DateTime,
+as DateTime,employeeId: freezed == employeeId ? _self.employeeId : employeeId // ignore: cast_nullable_to_non_nullable
+as String?,
   ));
 }
 

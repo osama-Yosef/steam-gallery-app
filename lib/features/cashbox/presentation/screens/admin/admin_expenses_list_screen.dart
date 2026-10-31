@@ -34,8 +34,9 @@ class AdminExpensesListScreen extends ConsumerWidget {
                 ],
               )
         : ref.watch(expensesProvider);
-    final isSales =
-        ref.watch(currentUserProfileProvider).value?.role == AppRole.sales;
+    final role = ref.watch(currentUserProfileProvider).value?.role;
+    final isSales = role == AppRole.sales;
+    final isAdmin = role == AppRole.admin;
 
     return Scaffold(
       appBar: AppBar(
@@ -89,15 +90,17 @@ class AdminExpensesListScreen extends ConsumerWidget {
                       (e.notes != null ? ' · ${e.notes}' : ''),
                 ),
                 trailing: MoneyText(-e.amount, colorBySign: true),
-                // Tap to correct it (0087).
-                onTap: () async {
-                  await Navigator.of(context).push(
-                    MaterialPageRoute<void>(
-                      builder: (_) => AdminEditExpenseScreen(expense: e),
-                    ),
-                  );
-                  ref.invalidate(expensesProvider);
-                },
+                // Tap to correct or delete it: admin only (0091).
+                onTap: !isAdmin
+                    ? null
+                    : () async {
+                        await Navigator.of(context).push(
+                          MaterialPageRoute<void>(
+                            builder: (_) => AdminEditExpenseScreen(expense: e),
+                          ),
+                        );
+                        ref.invalidate(expensesProvider);
+                      },
               );
             },
           );

@@ -207,8 +207,10 @@ console.log('\n== Editing an expense ==');
   ok('recorded 100', await till('cash') === cash0 - 100);
 
   await as(SALES);
+  ok('sales can\'t change it (0091)', /FORBIDDEN/.test(await err(`select public.rpc_edit_expense($1, null, 150, null, null)`, [X]) ?? ''));
+  await as(ADMIN);
   let e = await err(`select public.rpc_edit_expense($1, null, 150, null, 'فاتورة كهرباء')`, [X]);
-  ok('sales raises it to 150', !e, e);
+  ok('admin raises it to 150', !e, e);
   ok('drawer −50 more', await till('cash') === cash0 - 150);
   await asSuper();
   let x = await one(`select * from public.expenses where id = $1`, [X]);

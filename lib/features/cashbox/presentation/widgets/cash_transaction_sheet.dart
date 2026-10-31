@@ -6,6 +6,8 @@ import '../../../../core/errors/app_exception.dart';
 import '../../../../core/router/route_names.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../../core/widgets/money_text.dart';
+import '../../../auth/data/models/app_user.dart';
+import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../../sales/presentation/screens/admin/admin_sale_invoice_screen.dart';
 import '../../data/models/cash_transaction.dart';
 import '../providers/cashbox_providers.dart';
@@ -38,6 +40,10 @@ class _CashTransactionSheet extends ConsumerWidget {
     final id = txn.referenceId;
     if (id == null) return null;
     final nav = Navigator.of(context);
+    // Only admin corrects an expense (0091).
+    final isAdmin =
+        ref.read(currentUserProfileProvider).value?.role == AppRole.admin;
+    if (txn.referenceType == 'expense' && !isAdmin) return null;
     return switch (txn.referenceType) {
       'sale' => (
         'فتح الفاتورة',

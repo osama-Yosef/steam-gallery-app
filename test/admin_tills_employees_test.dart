@@ -15,6 +15,7 @@ import 'package:steam_gallery_app/features/employees/data/models/employee_models
 import 'package:steam_gallery_app/features/employees/data/repositories/employees_repository.dart';
 import 'package:steam_gallery_app/features/employees/presentation/providers/employees_providers.dart';
 import 'package:steam_gallery_app/features/employees/presentation/screens/admin_attendance_screen.dart';
+import 'package:steam_gallery_app/features/employees/presentation/screens/admin_edit_payroll_screen.dart';
 import 'package:steam_gallery_app/features/employees/presentation/screens/admin_pay_salary_screen.dart';
 import 'package:steam_gallery_app/features/technician_account/data/models/sale.dart';
 
@@ -129,6 +130,28 @@ class _FakeEmployeesRepo implements EmployeesRepository {
     Map<String, AttendanceStatus> marks, {
     Set<String> cleared = const {},
   }) async => attendance.add(marks);
+
+  final edits = <({double absence, double bonus, double advance})>[];
+  final deleted = <String>[];
+
+  @override
+  Future<void> editPayroll({
+    required String payrollId,
+    required double absenceDeduction,
+    required double bonus,
+    required double advanceDeduction,
+    String? notes,
+  }) async => edits.add((
+    absence: absenceDeduction,
+    bonus: bonus,
+    advance: advanceDeduction,
+  ));
+
+  @override
+  Future<void> deletePayroll({
+    required String payrollId,
+    String? reason,
+  }) async => deleted.add(payrollId);
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
@@ -337,6 +360,72 @@ void main() {
         employeesRepositoryProvider.overrideWithValue(repo),
       ]);
       expect(find.text('مرتب الشهر ده اتصرف قبل كدا'), findsOneWidget);
+    });
+  });
+
+  group('تعديل مرتب اتصرف', () {
+    final payroll = EmployeePayroll(
+      id: 'p1',
+      payrollNumber: 1,
+      periodMonth: DateTime(2026, 10),
+      baseSalary: 6000,
+      absentDays: 0,
+      absenceDeduction: 0,
+      bonus: 0,
+      advanceDeduction: 1000,
+      netAmount: 5000,
+      kind: CashboxKind.main,
+      createdAt: DateTime(2026, 10, 31),
+    );
+
+    Future<void> openIt(WidgetTester tester, _FakeEmployeesRepo repo) => _open(
+      tester,
+      AdminEditPayrollScreen(
+        payroll: payroll,
+        employee: _employee.copyWith(advanceBalance: 0),
+      ),
+      [employeesRepositoryProvider.overrideWithValue(repo)],
+    );
+
+    testWidgets('taking a wrong advance deduction off pays the difference', (
+      tester,
+    ) async {
+      final repo = _FakeEmployeesRepo();
+      await openIt(tester, repo);
+      await tester.enterText(
+        find.widgetWithText(TextField, 'خصم من السلف'),
+        '0',
+      );
+      await tester.pumpAndSettle();
+      expect(find.textContaining('هيتخصم'), findsOneWidget);
+      await tester.tap(find.text('حفظ التعديل'));
+      await tester.pumpAndSettle();
+      expect(repo.edits.single, (absence: 0.0, bonus: 0.0, advance: 0.0));
+    });
+
+    testWidgets('can\'t deduct more than he owes', (tester) async {
+      final repo = _FakeEmployeesRepo();
+      await openIt(tester, repo);
+      await tester.enterText(
+        find.widgetWithText(TextField, 'خصم من السلف'),
+        '1500',
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('خصم السلف أكبر من السلف اللي عليه'), findsOneWidget);
+      await tester.tap(find.text('حفظ التعديل'));
+      await tester.pumpAndSettle();
+      expect(repo.edits, isEmpty);
+    });
+
+    testWidgets('cancelling asks first', (tester) async {
+      final repo = _FakeEmployeesRepo();
+      await openIt(tester, repo);
+      await tester.tap(find.byTooltip('إلغاء المرتب'));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('تقدر تصرف الشهر ده من جديد'), findsOneWidget);
+      await tester.tap(find.text('إلغاء المرتب').last);
+      await tester.pumpAndSettle();
+      expect(repo.deleted, ['p1']);
     });
   });
 }

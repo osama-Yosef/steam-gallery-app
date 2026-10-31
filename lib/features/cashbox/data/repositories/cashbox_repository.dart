@@ -77,9 +77,9 @@ abstract class CashboxRepository {
   /// One expense by id — opened from a till movement.
   Future<Expense> getExpense(String id);
 
-  /// Corrects a recorded expense (admin/sales). A higher amount comes out
-  /// of the till it was paid from, a lower one goes back into it. Online
-  /// only. See rpc_edit_expense (0087).
+  /// Corrects a recorded expense (admin only, 0091). A higher amount comes
+  /// out of the till it was paid from, a lower one goes back into it.
+  /// Online only. See rpc_edit_expense (0087).
   Future<void> editExpense({
     required String expenseId,
     required String categoryId,
@@ -87,6 +87,10 @@ abstract class CashboxRepository {
     required DateTime expenseDate,
     String? notes,
   });
+
+  /// Removes an expense; its money goes back to its till (admin only,
+  /// 0091). A salary's expense is cancelled from the salary instead.
+  Future<void> deleteExpense({required String expenseId, String? reason});
 }
 
 class SupabaseCashboxRepository implements CashboxRepository {
@@ -322,6 +326,22 @@ class SupabaseCashboxRepository implements CashboxRepository {
           'p_expense_date': expenseDate.toIso8601String().substring(0, 10),
           'p_notes': notes,
         },
+      );
+      _outbox.markServerChanged();
+    } catch (e) {
+      throw AppException.from(e);
+    }
+  }
+
+  @override
+  Future<void> deleteExpense({
+    required String expenseId,
+    String? reason,
+  }) async {
+    try {
+      await _client.rpc(
+        'rpc_delete_expense',
+        params: {'p_expense_id': expenseId, 'p_reason': reason},
       );
       _outbox.markServerChanged();
     } catch (e) {

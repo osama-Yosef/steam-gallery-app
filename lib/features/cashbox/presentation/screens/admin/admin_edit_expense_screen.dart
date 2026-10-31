@@ -5,14 +5,18 @@ import '../../../../../core/errors/app_exception.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/utils/formatters.dart';
 import '../../../../../core/utils/input_formatters.dart';
+import '../../../../../core/widgets/confirm_dialog.dart';
 import '../../../../../core/widgets/state_views.dart';
+import '../../../../employees/data/models/employee_models.dart';
+import '../../../../employees/presentation/providers/employees_providers.dart';
+import '../../../../employees/presentation/screens/admin_edit_payroll_screen.dart';
 import '../../../data/models/expense.dart';
 import '../../../data/models/expense_category.dart';
 import '../../providers/cashbox_providers.dart';
 
-/// Corrects a recorded expense — its amount, category, date or note
-/// (admin and sales, 0087). The difference comes out of, or goes back
-/// into, the till the expense was paid from.
+/// Corrects or deletes a recorded expense — admin only (0091). The
+/// difference comes out of, or goes back into, the till the expense was
+/// paid from. A salary's expense is corrected through the salary.
 class AdminEditExpenseScreen extends ConsumerStatefulWidget {
   final Expense expense;
   const AdminEditExpenseScreen({super.key, required this.expense});
@@ -81,8 +85,42 @@ class _AdminEditExpenseScreenState
       Navigator.of(context).pop();
     } catch (e) {
       if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(AppException.from(e).messageAr)));
+      }
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
+  }
+
+  Future<void> _delete() async {
+    final e = widget.expense;
+    final confirmed = await showConfirmDialog(
+      context,
+      title: 'حذف المصروف',
+      message:
+          'هيتشال مصروف #${e.expenseNumber} من التقارير، '
+          'ويرجع ${Formatters.currency(e.amount)} للخزنة اللي اتدفع منها.',
+      confirmLabel: 'حذف',
+      isDangerous: true,
+    );
+    if (!confirmed) return;
+    setState(() => _saving = true);
+    try {
+      await ref.read(cashboxRepositoryProvider).deleteExpense(expenseId: e.id);
+      ref.invalidate(expensesProvider);
+      ref.invalidate(cashboxBalancesProvider);
+      ref.invalidate(cashTransactionsProvider);
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('تم حذف المصروف')));
+      Navigator.of(context).pop();
+    } catch (err) {
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppException.from(e).messageAr)),
+          SnackBar(content: Text(AppException.from(err).messageAr)),
         );
       }
     } finally {
@@ -90,14 +128,70 @@ class _AdminEditExpenseScreenState
     }
   }
 
+  /// A salary's expense: it is corrected from the salary itself, which
+  /// also moves the money and the advance deduction.
+  Widget _salaryBody(EmployeePayroll payroll) => ListView(
+    padding: const EdgeInsets.all(16),
+    children: [
+      Card(
+        child: ListTile(
+          leading: const Icon(Iconsax.wallet_check_copy),
+          title: Text(widget.expense.notes ?? 'مرتب موظف'),
+          subtitle: Text(
+            'المستحق ${Formatters.currency(widget.expense.amount)}'
+            ' · الصافي المصروف ${Formatters.currency(payroll.netAmount)}'
+            '${payroll.advanceDeduction > 0 ? ' · خصم سلف ${Formatters.currency(payroll.advanceDeduction)}' : ''}',
+          ),
+        ),
+      ),
+      const SizedBox(height: 12),
+      const Text('ده مصروف مرتب، بيتعدل أو يتلغي من المرتب نفسه.'),
+      const SizedBox(height: 16),
+      FilledButton.icon(
+        onPressed: () async {
+          final nav = Navigator.of(context);
+          final changed = await nav.push<bool>(
+            MaterialPageRoute(
+              builder: (_) => AdminEditPayrollLoader(payroll: payroll),
+            ),
+          );
+          if (changed == true && mounted) nav.pop();
+        },
+        icon: const Icon(Iconsax.edit_copy),
+        label: const Text('تعديل المرتب'),
+      ),
+    ],
+  );
+
   @override
   Widget build(BuildContext context) {
     final e = widget.expense;
+    final payrollAsync = ref.watch(payrollForExpenseProvider(e.id));
+    final payroll = payrollAsync.value;
+    if (payrollAsync.isLoading) {
+      return Scaffold(appBar: AppBar(), body: const LoadingView());
+    }
+    if (payroll != null) {
+      return Scaffold(
+        appBar: AppBar(title: Text('مصروف #${e.expenseNumber}')),
+        body: _salaryBody(payroll),
+      );
+    }
+
     final categoriesAsync = ref.watch(expenseCategoriesProvider);
     final diff = _amount - e.amount;
 
     return Scaffold(
-      appBar: AppBar(title: Text('تعديل مصروف #${e.expenseNumber}')),
+      appBar: AppBar(
+        title: Text('تعديل مصروف #${e.expenseNumber}'),
+        actions: [
+          IconButton(
+            icon: const Icon(Iconsax.trash_copy),
+            tooltip: 'حذف المصروف',
+            onPressed: _saving ? null : _delete,
+          ),
+        ],
+      ),
       body: categoriesAsync.when(
         loading: () => const LoadingView(),
         error: (_, _) => ErrorView(
@@ -138,8 +232,7 @@ class _AdminEditExpenseScreenState
                   ),
                   inputFormatters: [moneyInputFormatter],
                   decoration: const InputDecoration(labelText: 'المبلغ'),
-                  validator: (_) =>
-                      _amount <= 0 ? 'أدخل مبلغًا صحيحًا' : null,
+                  validator: (_) => _amount <= 0 ? 'أدخل مبلغًا صحيحًا' : null,
                   onChanged: (_) => setState(() {}),
                 ),
                 if (diff.abs() >= 0.005)

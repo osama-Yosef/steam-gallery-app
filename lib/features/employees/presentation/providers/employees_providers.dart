@@ -59,3 +59,9 @@ Future<List<EmployeePayroll>> employeePayrolls(Ref ref, String employeeId) {
   ref.refreshOnServerChange();
   return ref.watch(employeesRepositoryProvider).getPayrolls(employeeId);
 }
+
+/// The salary an expense was booked for, or null for an ordinary expense.
+@riverpod
+Future<EmployeePayroll?> payrollForExpense(Ref ref, String expenseId) {
+  return ref.watch(employeesRepositoryProvider).getPayrollForExpense(expenseId);
+}

@@ -7,14 +7,18 @@ import '../../../../core/offline/offline_widgets.dart';
 import '../../../../core/router/route_names.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../../core/utils/input_formatters.dart';
+import '../../../../core/widgets/confirm_dialog.dart';
 import '../../../../core/widgets/money_text.dart';
 import '../../../../core/widgets/state_views.dart';
+import '../../../auth/data/models/app_user.dart';
+import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../../cashbox/data/models/cashbox_balance.dart';
 import '../../../cashbox/presentation/providers/cashbox_providers.dart';
 import '../../../cashbox/presentation/widgets/cashbox_kind_selector.dart';
 import '../../data/models/employee_models.dart';
 import '../providers/employees_providers.dart';
 import 'admin_attendance_screen.dart';
+import 'admin_edit_payroll_screen.dart';
 import 'admin_pay_salary_screen.dart';
 
 /// One employee: salary and advance balance up top, then their attendance
@@ -91,8 +95,8 @@ class AdminEmployeeDetailScreen extends ConsumerWidget {
             body: TabBarView(
               children: [
                 _AttendanceTab(employeeId: employeeId),
-                _AdvancesTab(employeeId: employeeId),
-                _PayrollsTab(employeeId: employeeId),
+                _AdvancesTab(employee: employee),
+                _PayrollsTab(employee: employee),
               ],
             ),
           ),
@@ -420,14 +424,161 @@ class _AttendanceTabState extends ConsumerState<_AttendanceTab> {
   }
 }
 
+/// Corrects an advance or removes it (admin only, 0091). True if changed.
+Future<bool> showEditAdvanceDialog(
+  BuildContext context,
+  WidgetRef ref,
+  Employee employee,
+  EmployeeAdvance advance,
+) async {
+  final amountCtrl = TextEditingController(
+    text: Formatters.plain(advance.amount),
+  );
+  final notesCtrl = TextEditingController(text: advance.notes ?? '');
+  var date = advance.advanceDate;
+  String? error;
+  var saving = false;
+  final repo = ref.read(employeesRepositoryProvider);
+
+  final done = await showDialog<bool>(
+    context: context,
+    builder: (ctx) => StatefulBuilder(
+      builder: (ctx, setDialogState) {
+        Future<void> run(Future<void> Function() action) async {
+          setDialogState(() {
+            error = null;
+            saving = true;
+          });
+          try {
+            await action();
+            if (ctx.mounted) Navigator.of(ctx).pop(true);
+          } catch (e) {
+            setDialogState(() {
+              saving = false;
+              error = AppException.from(e).messageAr;
+            });
+          }
+        }
+
+        return AlertDialog(
+          title: Text('سلفة ${employee.fullName}'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                TextField(
+                  controller: amountCtrl,
+                  autofocus: true,
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
+                  inputFormatters: [moneyInputFormatter],
+                  decoration: InputDecoration(
+                    labelText: 'المبلغ',
+                    helperText:
+                        'الفرق بيتحرك من ${cashboxKindLabelAr(advance.kind)}',
+                    errorText: error,
+                    errorMaxLines: 3,
+                  ),
+                ),
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: const Text('التاريخ'),
+                  subtitle: Text(Formatters.date(date)),
+                  trailing: const Icon(Iconsax.calendar_copy),
+                  onTap: () async {
+                    final picked = await showDatePicker(
+                      context: ctx,
+                      initialDate: date,
+                      firstDate: DateTime(2020),
+                      lastDate: DateTime.now(),
+                    );
+                    if (picked != null) setDialogState(() => date = picked);
+                  },
+                ),
+                TextField(
+                  controller: notesCtrl,
+                  decoration: const InputDecoration(
+                    labelText: 'ملاحظات (اختياري)',
+                  ),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: saving
+                  ? null
+                  : () async {
+                      final confirmed = await showConfirmDialog(
+                        ctx,
+                        title: 'حذف السلفة',
+                        message:
+                            'هيرجع ${Formatters.currency(advance.amount)} لـ${cashboxKindLabelAr(advance.kind)}.',
+                        confirmLabel: 'حذف',
+                        isDangerous: true,
+                      );
+                      if (!confirmed) return;
+                      await run(
+                        () => repo.deleteAdvance(advanceId: advance.id),
+                      );
+                    },
+              child: const Text('حذف'),
+            ),
+            TextButton(
+              onPressed: saving ? null : () => Navigator.of(ctx).pop(false),
+              child: const Text('إلغاء'),
+            ),
+            FilledButton(
+              onPressed: saving
+                  ? null
+                  : () {
+                      final amount = double.tryParse(amountCtrl.text);
+                      if (amount == null || amount <= 0) {
+                        setDialogState(() => error = 'أدخل مبلغًا صحيحًا');
+                        return;
+                      }
+                      final notes = notesCtrl.text.trim();
+                      run(
+                        () => repo.editAdvance(
+                          advanceId: advance.id,
+                          amount: amount,
+                          date: date,
+                          notes: notes.isEmpty ? null : notes,
+                        ),
+                      );
+                    },
+              child: const Text('حفظ'),
+            ),
+          ],
+        );
+      },
+    ),
+  );
+  amountCtrl.dispose();
+  notesCtrl.dispose();
+  return done == true;
+}
+
 class _AdvancesTab extends ConsumerWidget {
-  final String employeeId;
-  const _AdvancesTab({required this.employeeId});
+  final Employee employee;
+  const _AdvancesTab({required this.employee});
+
+  void _refresh(WidgetRef ref) {
+    ref.invalidate(employeeProvider(employee.id));
+    ref.invalidate(employeesProvider);
+    ref.invalidate(employeeAdvancesProvider(employee.id));
+    ref.invalidate(cashboxBalancesProvider);
+    ref.invalidate(cashTransactionsProvider);
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final isAdmin =
+        ref.watch(currentUserProfileProvider).value?.role == AppRole.admin;
     return ref
-        .watch(employeeAdvancesProvider(employeeId))
+        .watch(employeeAdvancesProvider(employee.id))
         .when(
           loading: () => const LoadingView(),
           error: (e, _) => const ErrorView(message: 'تعذَّر تحميل السلف'),
@@ -452,6 +603,18 @@ class _AdvancesTab extends ConsumerWidget {
                         (a.notes == null ? '' : ' · ${a.notes}'),
                   ),
                   trailing: MoneyText(a.amount),
+                  onTap: !isAdmin
+                      ? null
+                      : () async {
+                          if (await showEditAdvanceDialog(
+                            context,
+                            ref,
+                            employee,
+                            a,
+                          )) {
+                            _refresh(ref);
+                          }
+                        },
                 );
               },
             );
@@ -461,13 +624,15 @@ class _AdvancesTab extends ConsumerWidget {
 }
 
 class _PayrollsTab extends ConsumerWidget {
-  final String employeeId;
-  const _PayrollsTab({required this.employeeId});
+  final Employee employee;
+  const _PayrollsTab({required this.employee});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final isAdmin =
+        ref.watch(currentUserProfileProvider).value?.role == AppRole.admin;
     return ref
-        .watch(employeePayrollsProvider(employeeId))
+        .watch(employeePayrollsProvider(employee.id))
         .when(
           loading: () => const LoadingView(),
           error: (e, _) => const ErrorView(message: 'تعذَّر تحميل المرتبات'),
@@ -500,6 +665,16 @@ class _PayrollsTab extends ConsumerWidget {
                   ),
                   isThreeLine: p.notes != null,
                   trailing: MoneyText(p.netAmount),
+                  onTap: !isAdmin
+                      ? null
+                      : () => Navigator.of(context).push(
+                          MaterialPageRoute<void>(
+                            builder: (_) => AdminEditPayrollScreen(
+                              payroll: p,
+                              employee: employee,
+                            ),
+                          ),
+                        ),
                 );
               },
             );

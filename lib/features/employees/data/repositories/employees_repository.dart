@@ -74,6 +74,34 @@ abstract class EmployeesRepository {
     required CashboxKind kind,
     String? notes,
   });
+
+  /// The salary an expense was booked for, if it was. See 0091.
+  Future<EmployeePayroll?> getPayrollForExpense(String expenseId);
+
+  /// Admin only (0091). The difference in the net moves through the till
+  /// the salary was paid from, and the "مرتبات" expense follows what was
+  /// earned. Online only.
+  Future<void> editPayroll({
+    required String payrollId,
+    required double absenceDeduction,
+    required double bonus,
+    required double advanceDeduction,
+    String? notes,
+  });
+
+  /// Cancels a paid salary: the net goes back to its till, the expense goes
+  /// and what was deducted is owed again; the month can be paid again.
+  Future<void> deletePayroll({required String payrollId, String? reason});
+
+  /// Admin only (0091). Can't drop below what salaries already deducted.
+  Future<void> editAdvance({
+    required String advanceId,
+    required double amount,
+    required DateTime date,
+    String? notes,
+  });
+
+  Future<void> deleteAdvance({required String advanceId, String? reason});
 }
 
 class SupabaseEmployeesRepository implements EmployeesRepository {
@@ -302,4 +330,69 @@ class SupabaseEmployeesRepository implements EmployeesRepository {
     kind: 'cashbox',
     viaReplay: true,
   );
+
+  @override
+  Future<EmployeePayroll?> getPayrollForExpense(String expenseId) async {
+    try {
+      final row = await _client
+          .from('employee_payrolls')
+          .select()
+          .eq('expense_id', expenseId)
+          .maybeSingle();
+      return row == null ? null : EmployeePayroll.fromRow(row);
+    } catch (e) {
+      throw AppException.from(e);
+    }
+  }
+
+  Future<void> _correct(String rpc, Map<String, dynamic> params) async {
+    try {
+      await _client.rpc(rpc, params: params);
+      _outbox.markServerChanged();
+    } catch (e) {
+      throw AppException.from(e);
+    }
+  }
+
+  @override
+  Future<void> editPayroll({
+    required String payrollId,
+    required double absenceDeduction,
+    required double bonus,
+    required double advanceDeduction,
+    String? notes,
+  }) => _correct('rpc_edit_payroll', {
+    'p_payroll_id': payrollId,
+    'p_absence_deduction': absenceDeduction,
+    'p_bonus': bonus,
+    'p_advance_deduction': advanceDeduction,
+    'p_notes': notes,
+  });
+
+  @override
+  Future<void> deletePayroll({required String payrollId, String? reason}) =>
+      _correct('rpc_delete_payroll', {
+        'p_payroll_id': payrollId,
+        'p_reason': reason,
+      });
+
+  @override
+  Future<void> editAdvance({
+    required String advanceId,
+    required double amount,
+    required DateTime date,
+    String? notes,
+  }) => _correct('rpc_edit_advance', {
+    'p_advance_id': advanceId,
+    'p_amount': amount,
+    'p_advance_date': _day(date),
+    'p_notes': notes,
+  });
+
+  @override
+  Future<void> deleteAdvance({required String advanceId, String? reason}) =>
+      _correct('rpc_delete_advance', {
+        'p_advance_id': advanceId,
+        'p_reason': reason,
+      });
 }

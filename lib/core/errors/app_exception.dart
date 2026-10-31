@@ -151,8 +151,15 @@ class AppException implements Exception {
     // Technician invoices and expenses edited (0087).
     ('NOT_A_TECHNICIAN_SALE', 'دي فاتورة بيع مباشر — عدلها من فواتير البيع'),
     ('ASSEMBLY_NOT_IN_BAG', 'صنف التجميع مش بيتباع من الشنطة'),
-    ('EXPENSE_IS_PAYROLL', 'ده مصروف مرتب موظف ومش ممكن يتعدل من هنا'),
+    ('EXPENSE_IS_PAYROLL', 'ده مصروف مرتب موظف — عدّله من مرتب الموظف'),
     ('EXPENSE_NOT_FOUND', 'المصروف غير موجود'),
+    // Corrections by the admin (0091).
+    ('PAYROLL_NOT_FOUND', 'المرتب غير موجود'),
+    ('ADVANCE_NOT_FOUND', 'السلفة غير موجودة'),
+    (
+      'ADVANCE_ALREADY_DEDUCTED',
+      'السلفة دي اتخصمت من مرتب — عدّل خصم السلف في المرتب الأول',
+    ),
     // Limits on a technician's edits (0088).
     (
       'EDIT_WINDOW_EXPIRED',
