@@ -100,6 +100,14 @@ class SupabaseInventoryCountRepository implements InventoryCountRepository {
   @override
   Future<List<InventoryCountItem>> getCountItems(String countId) async {
     try {
+      // Lines not counted yet take today's stock (0095). Best effort: an
+      // older database, or a count that is closed, just shows what it has.
+      try {
+        await _client.rpc(
+          'rpc_refresh_inventory_count',
+          params: {'p_count_id': countId},
+        );
+      } catch (_) {}
       final rows = await _client
           .from('inventory_count_items')
           .select(
