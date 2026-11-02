@@ -14,12 +14,19 @@ abstract class InventoryCountItem with _$InventoryCountItem {
     required int difference,
     String? reason,
     String? notes,
+
+    /// Cost per unit (0096): what an approved count booked it at, today's
+    /// cost price before that.
+    @Default(0) double unitCost,
   }) = _InventoryCountItem;
 
   const InventoryCountItem._();
 
   bool get isCounted => actualQuantity != null;
   bool get hasDifference => difference != 0;
+
+  /// The shortage (negative) or surplus at cost.
+  double get differenceValue => difference * unitCost;
 
   factory InventoryCountItem.fromRow(Map<String, dynamic> row) {
     final product = row['products'] as Map<String, dynamic>;

@@ -90,8 +90,17 @@ class _AdminInventoryCountsListScreenState
                 leading: CircleAvatar(child: Text('#${c.countNumber}')),
                 title: Text(c.title),
                 subtitle: Text(
-                  '${c.statusLabelAr} · ${Formatters.dateTime(c.startedAt)}',
+                  [
+                    c.completedAt != null
+                        ? '${c.statusLabelAr} ${Formatters.dateTime(c.completedAt!)}'
+                        : '${c.statusLabelAr} · بدأ ${Formatters.dateTime(c.startedAt)}',
+                    if (c.values case final v?)
+                      'القيمة ${Formatters.currency(v.countedValue)}'
+                          '${v.shortageCount > 0 ? ' · عجز ${Formatters.currency(v.shortageValue)}' : ''}'
+                          '${v.surplusCount > 0 ? ' · زيادة ${Formatters.currency(v.surplusValue)}' : ''}',
+                  ].join('\n'),
                 ),
+                isThreeLine: c.values != null,
                 trailing: c.awaitsApproval
                     ? const Icon(Iconsax.clock_copy, color: AppColors.warning)
                     : c.isDraft

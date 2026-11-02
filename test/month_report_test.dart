@@ -44,7 +44,15 @@ class _FakeRepo implements ReportsRepository {
   @override
   Future<MonthReport> getMonthReport(DateTime month) async {
     asked.add(month);
-    return MonthReport.fromRpc(_rpc);
+    return MonthReport.fromRpc(
+      _rpc,
+      stockOverMonth: StockValue.pairFromRpc({
+        'start_at': '2026-09-30T21:00:00Z',
+        'end_at': '2026-10-31T22:00:00Z',
+        'start': {'warehouse': 1000, 'bags': 200},
+        'end': {'warehouse': 1350, 'bags': 250},
+      }),
+    );
   }
 
   @override
@@ -99,6 +107,17 @@ void main() {
     }
     expect(find.textContaining('305'), findsOneWidget);
     expect(find.textContaining('155'), findsOneWidget);
+  });
+
+  testWidgets('the stock on the 1st of the month and at its end (0096)', (
+    tester,
+  ) async {
+    await _open(tester);
+    expect(find.text('رصيد المخزن بالتكلفة'), findsOneWidget);
+    expect(find.textContaining('أول الشهر'), findsOneWidget);
+    expect(find.textContaining('1,200'), findsOneWidget);
+    expect(find.textContaining('1,600'), findsOneWidget);
+    expect(find.textContaining('400'), findsWidgets);
   });
 
   testWidgets('moves between months, never past this one', (tester) async {

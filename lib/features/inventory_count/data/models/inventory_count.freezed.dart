@@ -19,7 +19,9 @@ mixin _$InventoryCount {
 /// the warehouse.
  String? get technicianName;/// The technician sent his own bag count for review (0089); it's
 /// read-only for him from then on.
- DateTime? get submittedAt;
+ DateTime? get submittedAt;/// At cost (inventory_count_values, 0096) — filled in by the
+/// repository; null on a database without it.
+ InventoryCountValues? get values;
 /// Create a copy of InventoryCount
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -30,16 +32,16 @@ $InventoryCountCopyWith<InventoryCount> get copyWith => _$InventoryCountCopyWith
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is InventoryCount&&(identical(other.id, id) || other.id == id)&&(identical(other.countNumber, countNumber) || other.countNumber == countNumber)&&(identical(other.status, status) || other.status == status)&&(identical(other.startedAt, startedAt) || other.startedAt == startedAt)&&(identical(other.completedAt, completedAt) || other.completedAt == completedAt)&&(identical(other.notes, notes) || other.notes == notes)&&(identical(other.isBag, isBag) || other.isBag == isBag)&&(identical(other.locationId, locationId) || other.locationId == locationId)&&(identical(other.technicianName, technicianName) || other.technicianName == technicianName)&&(identical(other.submittedAt, submittedAt) || other.submittedAt == submittedAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is InventoryCount&&(identical(other.id, id) || other.id == id)&&(identical(other.countNumber, countNumber) || other.countNumber == countNumber)&&(identical(other.status, status) || other.status == status)&&(identical(other.startedAt, startedAt) || other.startedAt == startedAt)&&(identical(other.completedAt, completedAt) || other.completedAt == completedAt)&&(identical(other.notes, notes) || other.notes == notes)&&(identical(other.isBag, isBag) || other.isBag == isBag)&&(identical(other.locationId, locationId) || other.locationId == locationId)&&(identical(other.technicianName, technicianName) || other.technicianName == technicianName)&&(identical(other.submittedAt, submittedAt) || other.submittedAt == submittedAt)&&(identical(other.values, values) || other.values == values));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,countNumber,status,startedAt,completedAt,notes,isBag,locationId,technicianName,submittedAt);
+int get hashCode => Object.hash(runtimeType,id,countNumber,status,startedAt,completedAt,notes,isBag,locationId,technicianName,submittedAt,values);
 
 @override
 String toString() {
-  return 'InventoryCount(id: $id, countNumber: $countNumber, status: $status, startedAt: $startedAt, completedAt: $completedAt, notes: $notes, isBag: $isBag, locationId: $locationId, technicianName: $technicianName, submittedAt: $submittedAt)';
+  return 'InventoryCount(id: $id, countNumber: $countNumber, status: $status, startedAt: $startedAt, completedAt: $completedAt, notes: $notes, isBag: $isBag, locationId: $locationId, technicianName: $technicianName, submittedAt: $submittedAt, values: $values)';
 }
 
 
@@ -50,7 +52,7 @@ abstract mixin class $InventoryCountCopyWith<$Res>  {
   factory $InventoryCountCopyWith(InventoryCount value, $Res Function(InventoryCount) _then) = _$InventoryCountCopyWithImpl;
 @useResult
 $Res call({
- String id, int countNumber, InventoryCountStatus status, DateTime startedAt, DateTime? completedAt, String? notes, bool isBag, String? locationId, String? technicianName, DateTime? submittedAt
+ String id, int countNumber, InventoryCountStatus status, DateTime startedAt, DateTime? completedAt, String? notes, bool isBag, String? locationId, String? technicianName, DateTime? submittedAt, InventoryCountValues? values
 });
 
 
@@ -67,7 +69,7 @@ class _$InventoryCountCopyWithImpl<$Res>
 
 /// Create a copy of InventoryCount
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? countNumber = null,Object? status = null,Object? startedAt = null,Object? completedAt = freezed,Object? notes = freezed,Object? isBag = null,Object? locationId = freezed,Object? technicianName = freezed,Object? submittedAt = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? countNumber = null,Object? status = null,Object? startedAt = null,Object? completedAt = freezed,Object? notes = freezed,Object? isBag = null,Object? locationId = freezed,Object? technicianName = freezed,Object? submittedAt = freezed,Object? values = freezed,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,countNumber: null == countNumber ? _self.countNumber : countNumber // ignore: cast_nullable_to_non_nullable
@@ -79,7 +81,8 @@ as String?,isBag: null == isBag ? _self.isBag : isBag // ignore: cast_nullable_t
 as bool,locationId: freezed == locationId ? _self.locationId : locationId // ignore: cast_nullable_to_non_nullable
 as String?,technicianName: freezed == technicianName ? _self.technicianName : technicianName // ignore: cast_nullable_to_non_nullable
 as String?,submittedAt: freezed == submittedAt ? _self.submittedAt : submittedAt // ignore: cast_nullable_to_non_nullable
-as DateTime?,
+as DateTime?,values: freezed == values ? _self.values : values // ignore: cast_nullable_to_non_nullable
+as InventoryCountValues?,
   ));
 }
 
@@ -164,10 +167,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  int countNumber,  InventoryCountStatus status,  DateTime startedAt,  DateTime? completedAt,  String? notes,  bool isBag,  String? locationId,  String? technicianName,  DateTime? submittedAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  int countNumber,  InventoryCountStatus status,  DateTime startedAt,  DateTime? completedAt,  String? notes,  bool isBag,  String? locationId,  String? technicianName,  DateTime? submittedAt,  InventoryCountValues? values)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _InventoryCount() when $default != null:
-return $default(_that.id,_that.countNumber,_that.status,_that.startedAt,_that.completedAt,_that.notes,_that.isBag,_that.locationId,_that.technicianName,_that.submittedAt);case _:
+return $default(_that.id,_that.countNumber,_that.status,_that.startedAt,_that.completedAt,_that.notes,_that.isBag,_that.locationId,_that.technicianName,_that.submittedAt,_that.values);case _:
   return orElse();
 
 }
@@ -185,10 +188,10 @@ return $default(_that.id,_that.countNumber,_that.status,_that.startedAt,_that.co
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  int countNumber,  InventoryCountStatus status,  DateTime startedAt,  DateTime? completedAt,  String? notes,  bool isBag,  String? locationId,  String? technicianName,  DateTime? submittedAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  int countNumber,  InventoryCountStatus status,  DateTime startedAt,  DateTime? completedAt,  String? notes,  bool isBag,  String? locationId,  String? technicianName,  DateTime? submittedAt,  InventoryCountValues? values)  $default,) {final _that = this;
 switch (_that) {
 case _InventoryCount():
-return $default(_that.id,_that.countNumber,_that.status,_that.startedAt,_that.completedAt,_that.notes,_that.isBag,_that.locationId,_that.technicianName,_that.submittedAt);case _:
+return $default(_that.id,_that.countNumber,_that.status,_that.startedAt,_that.completedAt,_that.notes,_that.isBag,_that.locationId,_that.technicianName,_that.submittedAt,_that.values);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -205,10 +208,10 @@ return $default(_that.id,_that.countNumber,_that.status,_that.startedAt,_that.co
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  int countNumber,  InventoryCountStatus status,  DateTime startedAt,  DateTime? completedAt,  String? notes,  bool isBag,  String? locationId,  String? technicianName,  DateTime? submittedAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  int countNumber,  InventoryCountStatus status,  DateTime startedAt,  DateTime? completedAt,  String? notes,  bool isBag,  String? locationId,  String? technicianName,  DateTime? submittedAt,  InventoryCountValues? values)?  $default,) {final _that = this;
 switch (_that) {
 case _InventoryCount() when $default != null:
-return $default(_that.id,_that.countNumber,_that.status,_that.startedAt,_that.completedAt,_that.notes,_that.isBag,_that.locationId,_that.technicianName,_that.submittedAt);case _:
+return $default(_that.id,_that.countNumber,_that.status,_that.startedAt,_that.completedAt,_that.notes,_that.isBag,_that.locationId,_that.technicianName,_that.submittedAt,_that.values);case _:
   return null;
 
 }
@@ -220,7 +223,7 @@ return $default(_that.id,_that.countNumber,_that.status,_that.startedAt,_that.co
 
 
 class _InventoryCount extends InventoryCount {
-  const _InventoryCount({required this.id, required this.countNumber, required this.status, required this.startedAt, this.completedAt, this.notes, this.isBag = false, this.locationId, this.technicianName, this.submittedAt}): super._();
+  const _InventoryCount({required this.id, required this.countNumber, required this.status, required this.startedAt, this.completedAt, this.notes, this.isBag = false, this.locationId, this.technicianName, this.submittedAt, this.values}): super._();
   
 
 @override final  String id;
@@ -238,6 +241,9 @@ class _InventoryCount extends InventoryCount {
 /// The technician sent his own bag count for review (0089); it's
 /// read-only for him from then on.
 @override final  DateTime? submittedAt;
+/// At cost (inventory_count_values, 0096) — filled in by the
+/// repository; null on a database without it.
+@override final  InventoryCountValues? values;
 
 /// Create a copy of InventoryCount
 /// with the given fields replaced by the non-null parameter values.
@@ -249,16 +255,16 @@ _$InventoryCountCopyWith<_InventoryCount> get copyWith => __$InventoryCountCopyW
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _InventoryCount&&(identical(other.id, id) || other.id == id)&&(identical(other.countNumber, countNumber) || other.countNumber == countNumber)&&(identical(other.status, status) || other.status == status)&&(identical(other.startedAt, startedAt) || other.startedAt == startedAt)&&(identical(other.completedAt, completedAt) || other.completedAt == completedAt)&&(identical(other.notes, notes) || other.notes == notes)&&(identical(other.isBag, isBag) || other.isBag == isBag)&&(identical(other.locationId, locationId) || other.locationId == locationId)&&(identical(other.technicianName, technicianName) || other.technicianName == technicianName)&&(identical(other.submittedAt, submittedAt) || other.submittedAt == submittedAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _InventoryCount&&(identical(other.id, id) || other.id == id)&&(identical(other.countNumber, countNumber) || other.countNumber == countNumber)&&(identical(other.status, status) || other.status == status)&&(identical(other.startedAt, startedAt) || other.startedAt == startedAt)&&(identical(other.completedAt, completedAt) || other.completedAt == completedAt)&&(identical(other.notes, notes) || other.notes == notes)&&(identical(other.isBag, isBag) || other.isBag == isBag)&&(identical(other.locationId, locationId) || other.locationId == locationId)&&(identical(other.technicianName, technicianName) || other.technicianName == technicianName)&&(identical(other.submittedAt, submittedAt) || other.submittedAt == submittedAt)&&(identical(other.values, values) || other.values == values));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,countNumber,status,startedAt,completedAt,notes,isBag,locationId,technicianName,submittedAt);
+int get hashCode => Object.hash(runtimeType,id,countNumber,status,startedAt,completedAt,notes,isBag,locationId,technicianName,submittedAt,values);
 
 @override
 String toString() {
-  return 'InventoryCount(id: $id, countNumber: $countNumber, status: $status, startedAt: $startedAt, completedAt: $completedAt, notes: $notes, isBag: $isBag, locationId: $locationId, technicianName: $technicianName, submittedAt: $submittedAt)';
+  return 'InventoryCount(id: $id, countNumber: $countNumber, status: $status, startedAt: $startedAt, completedAt: $completedAt, notes: $notes, isBag: $isBag, locationId: $locationId, technicianName: $technicianName, submittedAt: $submittedAt, values: $values)';
 }
 
 
@@ -269,7 +275,7 @@ abstract mixin class _$InventoryCountCopyWith<$Res> implements $InventoryCountCo
   factory _$InventoryCountCopyWith(_InventoryCount value, $Res Function(_InventoryCount) _then) = __$InventoryCountCopyWithImpl;
 @override @useResult
 $Res call({
- String id, int countNumber, InventoryCountStatus status, DateTime startedAt, DateTime? completedAt, String? notes, bool isBag, String? locationId, String? technicianName, DateTime? submittedAt
+ String id, int countNumber, InventoryCountStatus status, DateTime startedAt, DateTime? completedAt, String? notes, bool isBag, String? locationId, String? technicianName, DateTime? submittedAt, InventoryCountValues? values
 });
 
 
@@ -286,7 +292,7 @@ class __$InventoryCountCopyWithImpl<$Res>
 
 /// Create a copy of InventoryCount
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? countNumber = null,Object? status = null,Object? startedAt = null,Object? completedAt = freezed,Object? notes = freezed,Object? isBag = null,Object? locationId = freezed,Object? technicianName = freezed,Object? submittedAt = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? countNumber = null,Object? status = null,Object? startedAt = null,Object? completedAt = freezed,Object? notes = freezed,Object? isBag = null,Object? locationId = freezed,Object? technicianName = freezed,Object? submittedAt = freezed,Object? values = freezed,}) {
   return _then(_InventoryCount(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,countNumber: null == countNumber ? _self.countNumber : countNumber // ignore: cast_nullable_to_non_nullable
@@ -298,7 +304,8 @@ as String?,isBag: null == isBag ? _self.isBag : isBag // ignore: cast_nullable_t
 as bool,locationId: freezed == locationId ? _self.locationId : locationId // ignore: cast_nullable_to_non_nullable
 as String?,technicianName: freezed == technicianName ? _self.technicianName : technicianName // ignore: cast_nullable_to_non_nullable
 as String?,submittedAt: freezed == submittedAt ? _self.submittedAt : submittedAt // ignore: cast_nullable_to_non_nullable
-as DateTime?,
+as DateTime?,values: freezed == values ? _self.values : values // ignore: cast_nullable_to_non_nullable
+as InventoryCountValues?,
   ));
 }
 

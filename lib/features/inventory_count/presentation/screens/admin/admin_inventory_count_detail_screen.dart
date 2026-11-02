@@ -4,7 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import '../../../../../core/errors/app_exception.dart';
 import '../../../../../core/theme/app_colors.dart';
+import '../../../../../core/utils/formatters.dart';
 import '../../../../../core/widgets/confirm_dialog.dart';
+import '../../../../../core/widgets/money_text.dart';
 import '../../../../../core/widgets/state_views.dart';
 import '../../../../inventory/presentation/providers/inventory_providers.dart';
 import '../../../data/models/inventory_count_item.dart';
@@ -32,6 +34,7 @@ class AdminInventoryCountDetailScreen extends ConsumerStatefulWidget {
 class _AdminInventoryCountDetailScreenState
     extends ConsumerState<AdminInventoryCountDetailScreen> {
   bool _busy = false;
+  _Filter _filter = _Filter.all;
 
   void _showError(Object e) {
     if (!mounted) return;
@@ -238,9 +241,16 @@ class _AdminInventoryCountDetailScreenState
               onRetry: () =>
                   ref.invalidate(inventoryCountItemsProvider(widget.countId)),
             ),
-            data: (items) {
-              final shortages = items.where((i) => i.difference < 0).length;
-              final surpluses = items.where((i) => i.difference > 0).length;
+            data: (allItems) {
+              final shortages = allItems.where((i) => i.difference < 0).length;
+              final surpluses = allItems.where((i) => i.difference > 0).length;
+              final items = switch (_filter) {
+                _Filter.all => allItems,
+                _Filter.shortage => [
+                  ...allItems.where((i) => i.difference < 0),
+                ],
+                _Filter.surplus => [...allItems.where((i) => i.difference > 0)],
+              };
               return Column(
                 children: [
                   Padding(
@@ -251,12 +261,31 @@ class _AdminInventoryCountDetailScreenState
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
-                            '${items.where((i) => i.isCounted).length} / ${items.length} مُدخَل'
+                            '${allItems.where((i) => i.isCounted).length} / ${allItems.length} مُدخَل'
                             '${shortages > 0 ? ' · عجز: $shortages' : ''}'
                             '${surpluses > 0 ? ' · زيادة: $surpluses' : ''}',
                             textAlign: TextAlign.end,
                           ),
                         ),
+                      ],
+                    ),
+                  ),
+                  _ValuesCard(items: allItems),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Wrap(
+                      spacing: 8,
+                      children: [
+                        for (final (f, label) in [
+                          (_Filter.all, 'الكل (${allItems.length})'),
+                          (_Filter.shortage, 'العجز ($shortages)'),
+                          (_Filter.surplus, 'الزيادة ($surpluses)'),
+                        ])
+                          ChoiceChip(
+                            label: Text(label),
+                            selected: _filter == f,
+                            onSelected: (_) => setState(() => _filter = f),
+                          ),
                       ],
                     ),
                   ),
@@ -276,7 +305,7 @@ class _AdminInventoryCountDetailScreenState
                       child: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 8),
                         child: TextButton.icon(
-                          onPressed: _busy ? null : () => _addProduct(items),
+                          onPressed: _busy ? null : () => _addProduct(allItems),
                           icon: const Icon(Iconsax.add_square_copy),
                           label: const Text('إضافة صنف مش في القائمة'),
                         ),
@@ -284,7 +313,13 @@ class _AdminInventoryCountDetailScreenState
                     ),
                   Expanded(
                     child: items.isEmpty
-                        ? const EmptyView(message: 'لا توجد أصناف في هذا الجرد')
+                        ? EmptyView(
+                            message: switch (_filter) {
+                              _Filter.all => 'لا توجد أصناف في هذا الجرد',
+                              _Filter.shortage => 'مفيش عجز',
+                              _Filter.surplus => 'مفيش زيادة',
+                            },
+                          )
                         : ListView.separated(
                             padding: const EdgeInsets.only(bottom: 16),
                             itemCount: items.length,
@@ -311,7 +346,7 @@ class _AdminInventoryCountDetailScreenState
                     Padding(
                       padding: const EdgeInsets.all(16),
                       child: FilledButton.icon(
-                        onPressed: _busy ? null : () => _complete(items),
+                        onPressed: _busy ? null : () => _complete(allItems),
                         icon: _busyIcon(Iconsax.tick_circle_copy),
                         label: const Text('اعتماد الجرد'),
                       ),
@@ -321,6 +356,65 @@ class _AdminInventoryCountDetailScreenState
             },
           );
         },
+      ),
+    );
+  }
+}
+
+enum _Filter { all, shortage, surplus }
+
+/// The count at cost: as counted, as the system had it, and between them.
+class _ValuesCard extends StatelessWidget {
+  final List<InventoryCountItem> items;
+  const _ValuesCard({required this.items});
+
+  @override
+  Widget build(BuildContext context) {
+    double sum(double Function(InventoryCountItem) f) =>
+        items.fold(0, (s, i) => s + f(i));
+    final counted = sum(
+      (i) => (i.actualQuantity ?? i.systemQuantity) * i.unitCost,
+    );
+    final system = sum((i) => i.systemQuantity * i.unitCost);
+    final shortage = sum((i) => i.difference < 0 ? -i.differenceValue : 0);
+    final surplus = sum((i) => i.difference > 0 ? i.differenceValue : 0);
+    final net = surplus - shortage;
+
+    Widget cell(String label, double value, {Color? color}) => Expanded(
+      child: Column(
+        children: [
+          Text(label, style: Theme.of(context).textTheme.bodySmall),
+          const SizedBox(height: 4),
+          MoneyText(
+            value,
+            style: Theme.of(context).textTheme.titleSmall?.copyWith(
+              color: color,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
+      ),
+    );
+
+    return Card(
+      margin: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        child: Row(
+          children: [
+            cell('قيمة الجرد', counted),
+            cell('بالنظام', system),
+            cell('العجز', shortage, color: Theme.of(context).colorScheme.error),
+            cell('الزيادة', surplus, color: AppColors.warning),
+            cell(
+              'صافي الفرق',
+              net,
+              color: net < 0
+                  ? Theme.of(context).colorScheme.error
+                  : AppColors.success,
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -337,6 +431,7 @@ class _ItemTile extends StatelessWidget {
       title: Text(item.productName),
       subtitle: Text(
         'SKU: ${item.sku} · بالنظام: ${item.systemQuantity}'
+        '${item.hasDifference && item.unitCost > 0 ? ' · ${item.difference < 0 ? 'عجز' : 'زيادة'} ${Formatters.currency(item.differenceValue.abs())}' : ''}'
         '${item.reason != null ? ' · السبب: ${item.reason}' : ''}',
       ),
       trailing: item.isCounted

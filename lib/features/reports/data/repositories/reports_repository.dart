@@ -378,11 +378,19 @@ class SupabaseReportsRepository implements ReportsRepository {
     final y = month.year.toString().padLeft(4, '0');
     final m = month.month.toString().padLeft(2, '0');
     try {
-      final res = await _client.rpc(
-        'rpc_month_report',
-        params: {'p_month': '$y-$m-01'},
+      final params = {'p_month': '$y-$m-01'};
+      final res = await _client.rpc('rpc_month_report', params: params);
+      ({StockValue start, StockValue end})? stock;
+      try {
+        final s = await _client.rpc('rpc_month_stock', params: params);
+        stock = StockValue.pairFromRpc((s as Map).cast<String, dynamic>());
+      } catch (_) {
+        // A database without 0096: the report still shows, without it.
+      }
+      return MonthReport.fromRpc(
+        (res as Map).cast<String, dynamic>(),
+        stockOverMonth: stock,
       );
-      return MonthReport.fromRpc((res as Map).cast<String, dynamic>());
     } catch (e) {
       throw AppException.from(e);
     }

@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:steam_gallery_app/core/errors/app_exception.dart';
 import 'package:steam_gallery_app/core/theme/app_theme.dart';
+import 'package:steam_gallery_app/core/utils/formatters.dart';
 import 'package:steam_gallery_app/features/inventory/data/models/warehouse_stock_item.dart';
 import 'package:steam_gallery_app/features/inventory/data/repositories/inventory_repository.dart';
 import 'package:steam_gallery_app/features/inventory/presentation/providers/inventory_providers.dart';
@@ -193,7 +194,9 @@ void main() {
       int system, {
       int? actual,
       String? reason,
+      double cost = 0,
     }) => InventoryCountItem(
+      unitCost: cost,
       id: id,
       productId: 'p-$id',
       productName: name,
@@ -224,8 +227,8 @@ void main() {
       ),
       inventoryCountItemsProvider('k1').overrideWith(
         (ref) async => [
-          item('a', 'مكواة', 10, actual: 8, reason: 'تالف'),
-          item('b', 'فلتر', 5),
+          item('a', 'مكواة', 10, actual: 8, reason: 'تالف', cost: 50),
+          item('b', 'فلتر', 5, cost: 20),
         ],
       ),
     ];
@@ -310,6 +313,33 @@ void main() {
       await tester.tap(find.text('فلتر'));
       await tester.pumpAndSettle();
       expect(find.text('حفظ'), findsNothing, reason: 'no edit dialog');
+    });
+
+    testWidgets('the count at cost, and only its shortages on a tap (0096)', (
+      tester,
+    ) async {
+      await _pushed(
+        tester,
+        const AdminInventoryCountDetailScreen(countId: 'k1'),
+        overrides(_FakeCountRepo()),
+      );
+      // Counted 8×50 + 5×20 = 500 against 10×50 + 5×20 = 600: 100 short.
+      expect(find.text('قيمة الجرد'), findsOneWidget);
+      expect(find.textContaining('500'), findsWidgets);
+      expect(find.textContaining('600'), findsWidgets);
+      expect(
+        find.textContaining('عجز ${Formatters.currency(100)}'),
+        findsOneWidget,
+      );
+
+      await tester.tap(find.text('العجز (1)'));
+      await tester.pumpAndSettle();
+      expect(find.text('مكواة'), findsOneWidget);
+      expect(find.text('فلتر'), findsNothing);
+
+      await tester.tap(find.text('الزيادة (0)'));
+      await tester.pumpAndSettle();
+      expect(find.text('مفيش زيادة'), findsOneWidget);
     });
 
     testWidgets('technician sends his bag count, he can\'t approve it', (

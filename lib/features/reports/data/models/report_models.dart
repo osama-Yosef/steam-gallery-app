@@ -108,6 +108,35 @@ class InventoryReport {
   });
 }
 
+/// The stock at cost at one moment: the warehouse and the technicians' bags.
+class StockValue {
+  final DateTime at;
+  final double warehouse;
+  final double bags;
+  const StockValue({
+    required this.at,
+    required this.warehouse,
+    required this.bags,
+  });
+
+  double get total => warehouse + bags;
+
+  static ({StockValue start, StockValue end}) pairFromRpc(
+    Map<String, dynamic> j,
+  ) {
+    StockValue one(String key, String atKey) {
+      final v = (j[key] as Map).cast<String, dynamic>();
+      return StockValue(
+        at: DateTime.parse(j[atKey] as String).toLocal(),
+        warehouse: (v['warehouse'] as num).toDouble(),
+        bags: (v['bags'] as num).toDouble(),
+      );
+    }
+
+    return (start: one('start', 'start_at'), end: one('end', 'end_at'));
+  }
+}
+
 /// The whole month on one page (rpc_month_report, 0092). Debts and stock are
 /// as of now, whichever month was asked for.
 class MonthReport {
@@ -149,11 +178,19 @@ class MonthReport {
     required this.supplierDebts,
     required this.stockWarehouse,
     required this.stockBags,
+    this.stockOverMonth,
   });
+
+  /// The stock at cost on the 1st of the month and at its end (0096) —
+  /// null on a database without rpc_month_stock.
+  final ({StockValue start, StockValue end})? stockOverMonth;
 
   double get stockTotal => stockWarehouse + stockBags;
 
-  factory MonthReport.fromRpc(Map<String, dynamic> j) {
+  factory MonthReport.fromRpc(
+    Map<String, dynamic> j, {
+    ({StockValue start, StockValue end})? stockOverMonth,
+  }) {
     double n(String key) => (j[key] as num).toDouble();
     return MonthReport(
       month: DateTime.parse(j['month'] as String),
@@ -186,6 +223,7 @@ class MonthReport {
       ],
       stockWarehouse: n('stock_warehouse'),
       stockBags: n('stock_bags'),
+      stockOverMonth: stockOverMonth,
     );
   }
 }

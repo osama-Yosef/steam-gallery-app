@@ -14,7 +14,9 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$InventoryCountItem {
 
- String get id; String get productId; String get productName; String get sku; int get systemQuantity; int? get actualQuantity; int get difference; String? get reason; String? get notes;
+ String get id; String get productId; String get productName; String get sku; int get systemQuantity; int? get actualQuantity; int get difference; String? get reason; String? get notes;/// Cost per unit (0096): what an approved count booked it at, today's
+/// cost price before that.
+ double get unitCost;
 /// Create a copy of InventoryCountItem
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -25,16 +27,16 @@ $InventoryCountItemCopyWith<InventoryCountItem> get copyWith => _$InventoryCount
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is InventoryCountItem&&(identical(other.id, id) || other.id == id)&&(identical(other.productId, productId) || other.productId == productId)&&(identical(other.productName, productName) || other.productName == productName)&&(identical(other.sku, sku) || other.sku == sku)&&(identical(other.systemQuantity, systemQuantity) || other.systemQuantity == systemQuantity)&&(identical(other.actualQuantity, actualQuantity) || other.actualQuantity == actualQuantity)&&(identical(other.difference, difference) || other.difference == difference)&&(identical(other.reason, reason) || other.reason == reason)&&(identical(other.notes, notes) || other.notes == notes));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is InventoryCountItem&&(identical(other.id, id) || other.id == id)&&(identical(other.productId, productId) || other.productId == productId)&&(identical(other.productName, productName) || other.productName == productName)&&(identical(other.sku, sku) || other.sku == sku)&&(identical(other.systemQuantity, systemQuantity) || other.systemQuantity == systemQuantity)&&(identical(other.actualQuantity, actualQuantity) || other.actualQuantity == actualQuantity)&&(identical(other.difference, difference) || other.difference == difference)&&(identical(other.reason, reason) || other.reason == reason)&&(identical(other.notes, notes) || other.notes == notes)&&(identical(other.unitCost, unitCost) || other.unitCost == unitCost));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,productId,productName,sku,systemQuantity,actualQuantity,difference,reason,notes);
+int get hashCode => Object.hash(runtimeType,id,productId,productName,sku,systemQuantity,actualQuantity,difference,reason,notes,unitCost);
 
 @override
 String toString() {
-  return 'InventoryCountItem(id: $id, productId: $productId, productName: $productName, sku: $sku, systemQuantity: $systemQuantity, actualQuantity: $actualQuantity, difference: $difference, reason: $reason, notes: $notes)';
+  return 'InventoryCountItem(id: $id, productId: $productId, productName: $productName, sku: $sku, systemQuantity: $systemQuantity, actualQuantity: $actualQuantity, difference: $difference, reason: $reason, notes: $notes, unitCost: $unitCost)';
 }
 
 
@@ -45,7 +47,7 @@ abstract mixin class $InventoryCountItemCopyWith<$Res>  {
   factory $InventoryCountItemCopyWith(InventoryCountItem value, $Res Function(InventoryCountItem) _then) = _$InventoryCountItemCopyWithImpl;
 @useResult
 $Res call({
- String id, String productId, String productName, String sku, int systemQuantity, int? actualQuantity, int difference, String? reason, String? notes
+ String id, String productId, String productName, String sku, int systemQuantity, int? actualQuantity, int difference, String? reason, String? notes, double unitCost
 });
 
 
@@ -62,7 +64,7 @@ class _$InventoryCountItemCopyWithImpl<$Res>
 
 /// Create a copy of InventoryCountItem
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? productId = null,Object? productName = null,Object? sku = null,Object? systemQuantity = null,Object? actualQuantity = freezed,Object? difference = null,Object? reason = freezed,Object? notes = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? productId = null,Object? productName = null,Object? sku = null,Object? systemQuantity = null,Object? actualQuantity = freezed,Object? difference = null,Object? reason = freezed,Object? notes = freezed,Object? unitCost = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,productId: null == productId ? _self.productId : productId // ignore: cast_nullable_to_non_nullable
@@ -73,7 +75,8 @@ as int,actualQuantity: freezed == actualQuantity ? _self.actualQuantity : actual
 as int?,difference: null == difference ? _self.difference : difference // ignore: cast_nullable_to_non_nullable
 as int,reason: freezed == reason ? _self.reason : reason // ignore: cast_nullable_to_non_nullable
 as String?,notes: freezed == notes ? _self.notes : notes // ignore: cast_nullable_to_non_nullable
-as String?,
+as String?,unitCost: null == unitCost ? _self.unitCost : unitCost // ignore: cast_nullable_to_non_nullable
+as double,
   ));
 }
 
@@ -158,10 +161,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String productId,  String productName,  String sku,  int systemQuantity,  int? actualQuantity,  int difference,  String? reason,  String? notes)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String productId,  String productName,  String sku,  int systemQuantity,  int? actualQuantity,  int difference,  String? reason,  String? notes,  double unitCost)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _InventoryCountItem() when $default != null:
-return $default(_that.id,_that.productId,_that.productName,_that.sku,_that.systemQuantity,_that.actualQuantity,_that.difference,_that.reason,_that.notes);case _:
+return $default(_that.id,_that.productId,_that.productName,_that.sku,_that.systemQuantity,_that.actualQuantity,_that.difference,_that.reason,_that.notes,_that.unitCost);case _:
   return orElse();
 
 }
@@ -179,10 +182,10 @@ return $default(_that.id,_that.productId,_that.productName,_that.sku,_that.syste
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String productId,  String productName,  String sku,  int systemQuantity,  int? actualQuantity,  int difference,  String? reason,  String? notes)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String productId,  String productName,  String sku,  int systemQuantity,  int? actualQuantity,  int difference,  String? reason,  String? notes,  double unitCost)  $default,) {final _that = this;
 switch (_that) {
 case _InventoryCountItem():
-return $default(_that.id,_that.productId,_that.productName,_that.sku,_that.systemQuantity,_that.actualQuantity,_that.difference,_that.reason,_that.notes);case _:
+return $default(_that.id,_that.productId,_that.productName,_that.sku,_that.systemQuantity,_that.actualQuantity,_that.difference,_that.reason,_that.notes,_that.unitCost);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -199,10 +202,10 @@ return $default(_that.id,_that.productId,_that.productName,_that.sku,_that.syste
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String productId,  String productName,  String sku,  int systemQuantity,  int? actualQuantity,  int difference,  String? reason,  String? notes)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String productId,  String productName,  String sku,  int systemQuantity,  int? actualQuantity,  int difference,  String? reason,  String? notes,  double unitCost)?  $default,) {final _that = this;
 switch (_that) {
 case _InventoryCountItem() when $default != null:
-return $default(_that.id,_that.productId,_that.productName,_that.sku,_that.systemQuantity,_that.actualQuantity,_that.difference,_that.reason,_that.notes);case _:
+return $default(_that.id,_that.productId,_that.productName,_that.sku,_that.systemQuantity,_that.actualQuantity,_that.difference,_that.reason,_that.notes,_that.unitCost);case _:
   return null;
 
 }
@@ -214,7 +217,7 @@ return $default(_that.id,_that.productId,_that.productName,_that.sku,_that.syste
 
 
 class _InventoryCountItem extends InventoryCountItem {
-  const _InventoryCountItem({required this.id, required this.productId, required this.productName, required this.sku, required this.systemQuantity, this.actualQuantity, required this.difference, this.reason, this.notes}): super._();
+  const _InventoryCountItem({required this.id, required this.productId, required this.productName, required this.sku, required this.systemQuantity, this.actualQuantity, required this.difference, this.reason, this.notes, this.unitCost = 0}): super._();
   
 
 @override final  String id;
@@ -226,6 +229,9 @@ class _InventoryCountItem extends InventoryCountItem {
 @override final  int difference;
 @override final  String? reason;
 @override final  String? notes;
+/// Cost per unit (0096): what an approved count booked it at, today's
+/// cost price before that.
+@override@JsonKey() final  double unitCost;
 
 /// Create a copy of InventoryCountItem
 /// with the given fields replaced by the non-null parameter values.
@@ -237,16 +243,16 @@ _$InventoryCountItemCopyWith<_InventoryCountItem> get copyWith => __$InventoryCo
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _InventoryCountItem&&(identical(other.id, id) || other.id == id)&&(identical(other.productId, productId) || other.productId == productId)&&(identical(other.productName, productName) || other.productName == productName)&&(identical(other.sku, sku) || other.sku == sku)&&(identical(other.systemQuantity, systemQuantity) || other.systemQuantity == systemQuantity)&&(identical(other.actualQuantity, actualQuantity) || other.actualQuantity == actualQuantity)&&(identical(other.difference, difference) || other.difference == difference)&&(identical(other.reason, reason) || other.reason == reason)&&(identical(other.notes, notes) || other.notes == notes));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _InventoryCountItem&&(identical(other.id, id) || other.id == id)&&(identical(other.productId, productId) || other.productId == productId)&&(identical(other.productName, productName) || other.productName == productName)&&(identical(other.sku, sku) || other.sku == sku)&&(identical(other.systemQuantity, systemQuantity) || other.systemQuantity == systemQuantity)&&(identical(other.actualQuantity, actualQuantity) || other.actualQuantity == actualQuantity)&&(identical(other.difference, difference) || other.difference == difference)&&(identical(other.reason, reason) || other.reason == reason)&&(identical(other.notes, notes) || other.notes == notes)&&(identical(other.unitCost, unitCost) || other.unitCost == unitCost));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,productId,productName,sku,systemQuantity,actualQuantity,difference,reason,notes);
+int get hashCode => Object.hash(runtimeType,id,productId,productName,sku,systemQuantity,actualQuantity,difference,reason,notes,unitCost);
 
 @override
 String toString() {
-  return 'InventoryCountItem(id: $id, productId: $productId, productName: $productName, sku: $sku, systemQuantity: $systemQuantity, actualQuantity: $actualQuantity, difference: $difference, reason: $reason, notes: $notes)';
+  return 'InventoryCountItem(id: $id, productId: $productId, productName: $productName, sku: $sku, systemQuantity: $systemQuantity, actualQuantity: $actualQuantity, difference: $difference, reason: $reason, notes: $notes, unitCost: $unitCost)';
 }
 
 
@@ -257,7 +263,7 @@ abstract mixin class _$InventoryCountItemCopyWith<$Res> implements $InventoryCou
   factory _$InventoryCountItemCopyWith(_InventoryCountItem value, $Res Function(_InventoryCountItem) _then) = __$InventoryCountItemCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String productId, String productName, String sku, int systemQuantity, int? actualQuantity, int difference, String? reason, String? notes
+ String id, String productId, String productName, String sku, int systemQuantity, int? actualQuantity, int difference, String? reason, String? notes, double unitCost
 });
 
 
@@ -274,7 +280,7 @@ class __$InventoryCountItemCopyWithImpl<$Res>
 
 /// Create a copy of InventoryCountItem
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? productId = null,Object? productName = null,Object? sku = null,Object? systemQuantity = null,Object? actualQuantity = freezed,Object? difference = null,Object? reason = freezed,Object? notes = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? productId = null,Object? productName = null,Object? sku = null,Object? systemQuantity = null,Object? actualQuantity = freezed,Object? difference = null,Object? reason = freezed,Object? notes = freezed,Object? unitCost = null,}) {
   return _then(_InventoryCountItem(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,productId: null == productId ? _self.productId : productId // ignore: cast_nullable_to_non_nullable
@@ -285,7 +291,8 @@ as int,actualQuantity: freezed == actualQuantity ? _self.actualQuantity : actual
 as int?,difference: null == difference ? _self.difference : difference // ignore: cast_nullable_to_non_nullable
 as int,reason: freezed == reason ? _self.reason : reason // ignore: cast_nullable_to_non_nullable
 as String?,notes: freezed == notes ? _self.notes : notes // ignore: cast_nullable_to_non_nullable
-as String?,
+as String?,unitCost: null == unitCost ? _self.unitCost : unitCost // ignore: cast_nullable_to_non_nullable
+as double,
   ));
 }
 

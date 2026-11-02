@@ -15,6 +15,38 @@ String inventoryCountStatusLabelAr(InventoryCountStatus s) => switch (s) {
   InventoryCountStatus.completed => 'مُعتمَد',
 };
 
+/// What a count is worth at cost (0096): the stock as counted, as the system
+/// had it, and the shortage and surplus between them.
+class InventoryCountValues {
+  final double countedValue;
+  final double systemValue;
+  final double shortageValue;
+  final double surplusValue;
+  final int shortageCount;
+  final int surplusCount;
+
+  const InventoryCountValues({
+    required this.countedValue,
+    required this.systemValue,
+    required this.shortageValue,
+    required this.surplusValue,
+    required this.shortageCount,
+    required this.surplusCount,
+  });
+
+  factory InventoryCountValues.fromRow(Map<String, dynamic> r) {
+    double n(String k) => (r[k] as num? ?? 0).toDouble();
+    return InventoryCountValues(
+      countedValue: n('counted_value'),
+      systemValue: n('system_value'),
+      shortageValue: n('shortage_value'),
+      surplusValue: n('surplus_value'),
+      shortageCount: (r['shortage_count'] as num? ?? 0).toInt(),
+      surplusCount: (r['surplus_count'] as num? ?? 0).toInt(),
+    );
+  }
+}
+
 @freezed
 abstract class InventoryCount with _$InventoryCount {
   const factory InventoryCount({
@@ -36,11 +68,18 @@ abstract class InventoryCount with _$InventoryCount {
     /// The technician sent his own bag count for review (0089); it's
     /// read-only for him from then on.
     DateTime? submittedAt,
+
+    /// At cost (inventory_count_values, 0096) — filled in by the
+    /// repository; null on a database without it.
+    InventoryCountValues? values,
   }) = _InventoryCount;
 
   const InventoryCount._();
 
   bool get isDraft => status == InventoryCountStatus.draft;
+
+  /// The last thing that happened to it: approved, sent, or started.
+  DateTime get lastActivityAt => completedAt ?? submittedAt ?? startedAt;
 
   /// Waiting for admin/sales to approve a technician's count.
   bool get awaitsApproval => isDraft && submittedAt != null;

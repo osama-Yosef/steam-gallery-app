@@ -48,9 +48,13 @@ class SupabaseInventoryCountRepository implements InventoryCountRepository {
           .from('inventory_counts')
           .select()
           .order('started_at', ascending: false);
-      return await _withTechnicianNames(
-        rows.map(InventoryCount.fromRow).toList(),
+      final counts = await _withValues(
+        await _withTechnicianNames(rows.map(InventoryCount.fromRow).toList()),
       );
+      // Newest activity first: a count approved today is at the top even
+      // if it was started weeks ago.
+      return counts
+        ..sort((a, b) => b.lastActivityAt.compareTo(a.lastActivityAt));
     } catch (e) {
       throw AppException.from(e);
     }
@@ -65,9 +69,30 @@ class SupabaseInventoryCountRepository implements InventoryCountRepository {
           .eq('id', countId)
           .maybeSingle();
       if (row == null) return null;
-      return (await _withTechnicianNames([InventoryCount.fromRow(row)])).single;
+      return (await _withValues(
+        await _withTechnicianNames([InventoryCount.fromRow(row)]),
+      )).single;
     } catch (e) {
       throw AppException.from(e);
+    }
+  }
+
+  /// Each count's value at cost (0096). A failure — an older database —
+  /// only loses the figures.
+  Future<List<InventoryCount>> _withValues(List<InventoryCount> counts) async {
+    if (counts.isEmpty) return counts;
+    try {
+      final rows = await _client
+          .from('inventory_count_values')
+          .select()
+          .inFilter('inventory_count_id', [for (final c in counts) c.id]);
+      final byCount = {
+        for (final r in rows)
+          r['inventory_count_id'] as String: InventoryCountValues.fromRow(r),
+      };
+      return [for (final c in counts) c.copyWith(values: byCount[c.id])];
+    } catch (_) {
+      return counts;
     }
   }
 
@@ -114,8 +139,24 @@ class SupabaseInventoryCountRepository implements InventoryCountRepository {
             'id, system_quantity, actual_quantity, difference, reason, notes, products(id, name, sku)',
           )
           .eq('inventory_count_id', countId);
-      final items = rows.map(InventoryCountItem.fromRow).toList()
-        ..sort((a, b) => a.productName.compareTo(b.productName));
+      // Each line's cost (0096); without it the lines show no values.
+      var costs = <String, double>{};
+      try {
+        final costRows = await _client
+            .from('inventory_count_item_values')
+            .select('item_id, unit_cost')
+            .eq('inventory_count_id', countId);
+        costs = {
+          for (final r in costRows)
+            r['item_id'] as String: (r['unit_cost'] as num).toDouble(),
+        };
+      } catch (_) {}
+      final items =
+          rows
+              .map(InventoryCountItem.fromRow)
+              .map((i) => i.copyWith(unitCost: costs[i.id] ?? 0))
+              .toList()
+            ..sort((a, b) => a.productName.compareTo(b.productName));
       return items;
     } catch (e) {
       throw AppException.from(e);

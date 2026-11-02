@@ -557,6 +557,29 @@ class _AdminReportDetailScreenState
                       r.purchases,
                     ),
                     _row(context, 'دفعات الشهر', r.supplierPayments),
+                    if (r.stockOverMonth case final s?) ...[
+                      section('رصيد المخزن بالتكلفة'),
+                      _row(
+                        context,
+                        'أول الشهر (${Formatters.date(s.start.at)})',
+                        s.start.total,
+                      ),
+                      _row(
+                        context,
+                        'آخر الشهر (${Formatters.date(s.end.at)})',
+                        s.end.total,
+                      ),
+                      _row(
+                        context,
+                        'الفرق',
+                        s.end.total - s.start.total,
+                        bold: true,
+                      ),
+                      Text(
+                        'المخزن وشنط الصنايعية مع بعض',
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                    ],
                     section('دلوقتي'),
                     for (final s in r.supplierDebts)
                       _row(context, s.name, s.balance),
@@ -706,7 +729,17 @@ class _AdminReportDetailScreenState
         }
         buffer
           ..writeln('جرد المخزن: ${c(r.stockWarehouse)}')
-          ..writeln('بضاعة في شنط الصنايعية: ${c(r.stockBags)}')
+          ..writeln('بضاعة في شنط الصنايعية: ${c(r.stockBags)}');
+        if (r.stockOverMonth case final s?) {
+          buffer
+            ..writeln(
+              'رصيد المخزن أول الشهر (${Formatters.date(s.start.at)}): ${c(s.start.total)}',
+            )
+            ..writeln(
+              'رصيد المخزن آخر الشهر (${Formatters.date(s.end.at)}): ${c(s.end.total)}',
+            );
+        }
+        buffer
           ..writeln('إجمالي الأرباح: ${c(r.grossProfit)}')
           ..writeln('الأرباح الصافية: ${c(r.netProfit)}');
       case 'sales':
