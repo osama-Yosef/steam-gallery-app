@@ -27,7 +27,10 @@ New-Item -ItemType Directory -Path $stage -Force | Out-Null
 Copy-Item "$release\*" $stage -Recurse -Force
 
 # Newest installed VC runtime; matches whatever this machine compiled with.
-$crt = Get-ChildItem "C:\Program Files\Microsoft Visual Studio\*\*\VC\Redist\MSVC\*\x64\Microsoft.VC*.CRT" -Directory -ErrorAction SilentlyContinue |
+# Build Tools install under Program Files (x86), full Visual Studio under
+# Program Files.
+$crt = Get-ChildItem "C:\Program Files\Microsoft Visual Studio\*\*\VC\Redist\MSVC\*\x64\Microsoft.VC*.CRT",
+                     "C:\Program Files (x86)\Microsoft Visual Studio\*\*\VC\Redist\MSVC\*\x64\Microsoft.VC*.CRT" -Directory -ErrorAction SilentlyContinue |
   Sort-Object FullName | Select-Object -Last 1
 if (-not $crt) { throw "Visual C++ redistributable DLLs not found." }
 foreach ($dll in "msvcp140.dll", "vcruntime140.dll", "vcruntime140_1.dll") {
