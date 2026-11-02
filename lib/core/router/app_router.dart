@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart' show ValueKey;
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import '../../features/backup/presentation/admin_backup_screen.dart';
 import '../../features/audit_log/presentation/screens/admin_audit_log_screen.dart';
 import '../../features/auth/data/models/auth_settings.dart';
 import '../../features/auth/presentation/providers/auth_providers.dart';
@@ -273,6 +274,10 @@ GoRouter appRouter(Ref ref) {
                   GoRoute(
                     path: 'sync',
                     builder: (_, _) => const OfflineSyncScreen(),
+                  ),
+                  GoRoute(
+                    path: 'backup',
+                    builder: (_, _) => const AdminBackupScreen(),
                   ),
                   GoRoute(
                     path: 'instapay',

@@ -276,7 +276,7 @@ class Outbox extends ChangeNotifier {
       _serverChanged.add(null);
       return OutboxResult.done(data);
     } catch (e) {
-      if (isNetworkError(e)) {
+      if (isNetworkError(e) || isExpiredTokenError(e)) {
         await _add(entry);
         return const OutboxResult.queued();
       }
@@ -327,7 +327,7 @@ class Outbox extends ChangeNotifier {
             await _persist();
             notifyListeners();
           } catch (e) {
-            if (isNetworkError(e)) {
+            if (isNetworkError(e) || isExpiredTokenError(e)) {
               reachable = false;
               break;
             }

@@ -9,6 +9,7 @@ import 'app.dart';
 import 'core/config/env.dart';
 import 'core/firebase/push_notification_service.dart';
 import 'core/offline/offline_http_client.dart';
+import 'core/offline/offline_session.dart';
 import 'core/offline/offline_store.dart';
 import 'core/offline/outbox.dart';
 import 'core/theme/safe_graphics.dart';
@@ -40,6 +41,9 @@ Future<void> main(List<String> args) async {
       publishableKey: Env.supabasePublishableKey,
       httpClient: OfflineHttpClient(offlineStore),
     );
+    // Before anything is fetched: an access token that ran out while offline
+    // would otherwise block every request, cached ones included.
+    await OfflineSession(Supabase.instance.client.auth).start();
     outbox = Outbox.supabase(Supabase.instance.client, offlineStore);
     await outbox.start();
   }

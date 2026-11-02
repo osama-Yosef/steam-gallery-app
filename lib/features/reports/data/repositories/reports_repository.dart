@@ -1,6 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../core/errors/app_exception.dart';
 import '../models/report_models.dart';
+import '../sales_totals.dart';
 
 abstract class ReportsRepository {
   Future<SalesReport> getSalesReport(DateTime from, DateTime to);
@@ -22,75 +23,69 @@ class SupabaseReportsRepository implements ReportsRepository {
   /// server as UTC, which shifted every report range by Cairo's 3 hours.
   String _iso(DateTime d) => d.toUtc().toIso8601String();
 
-  /// Shared building block for both the Sales and Profit reports: revenue,
-  /// COGS and item-level discounts from confirmed orders + completed
-  /// technician sales in [from, to). See docs/03-business-logic.md §11.
-  Future<({double revenue, double cogs, double discounts})> _revenueAndCogs(
-    DateTime from,
-    DateTime to,
-  ) async {
-    final orderRows = await _client
-        .from('orders')
-        .select(
-          'discount, order_items(quantity, unit_price_snapshot, unit_cost_snapshot, discount)',
-        )
-        .inFilter('status', [
-          'confirmed',
-          'preparing',
-          'delivered',
-          'completed',
-        ])
-        .gte('created_at', _iso(from))
-        .lt('created_at', _iso(to));
+  /// Shared by the Sales and Profit reports: the counted invoices in
+  /// [from, to) as they stand after their last edit (see [SalesTotals]).
+  Future<SalesTotals> _salesTotals(DateTime from, DateTime to) async {
+    final (sales, orders) = await (
+      _allRows(
+        () => _client
+            .from('sales')
+            .select('id, total, discount')
+            .eq('status', 'completed')
+            .gte('created_at', _iso(from))
+            .lt('created_at', _iso(to))
+            .order('id'),
+      ),
+      _allRows(
+        () => _client
+            .from('orders')
+            .select(
+              'id, total, discount, order_items(quantity, unit_cost_snapshot, discount)',
+            )
+            .inFilter('status', [
+              'confirmed',
+              'preparing',
+              'delivered',
+              'completed',
+            ])
+            .gte('created_at', _iso(from))
+            .lt('created_at', _iso(to))
+            .order('id'),
+      ),
+    ).wait;
 
-    final saleRows = await _client
-        .from('sales')
-        .select(
-          'discount, sale_items(quantity, unit_price_snapshot, unit_cost_snapshot, discount)',
-        )
-        .eq('status', 'completed')
-        .gte('created_at', _iso(from))
-        .lt('created_at', _iso(to));
-
-    double revenue = 0, cogs = 0, discounts = 0;
-
-    void accumulate(List rows, String itemsKey) {
-      for (final row in rows) {
-        final items = (row[itemsKey] as List?) ?? [];
-        for (final item in items) {
-          final qty = (item['quantity'] as num).toInt();
-          final price = (item['unit_price_snapshot'] as num).toDouble();
-          final cost = (item['unit_cost_snapshot'] as num).toDouble();
-          final itemDiscount = (item['discount'] as num).toDouble();
-          revenue += qty * price - itemDiscount;
-          cogs += qty * cost;
-          discounts += itemDiscount;
-        }
-        discounts += (row['discount'] as num? ?? 0).toDouble();
-      }
+    final ids = [for (final s in sales) s['id'] as String];
+    final saleLines = <Map<String, dynamic>>[];
+    for (var i = 0; i < ids.length; i += 100) {
+      final chunk = ids.sublist(i, i + 100 > ids.length ? ids.length : i + 100);
+      saleLines.addAll(
+        await _allRows(
+          () => _client
+              .from('sale_items_with_returns')
+              .select(
+                'id, sale_id, quantity, returned_quantity, unit_price_snapshot, unit_cost_snapshot, discount',
+              )
+              .inFilter('sale_id', chunk)
+              .order('id'),
+        ),
+      );
     }
 
-    accumulate(orderRows, 'order_items');
-    accumulate(saleRows, 'sale_items');
-
-    return (revenue: revenue, cogs: cogs, discounts: discounts);
+    return SalesTotals.from(sales: sales, saleLines: saleLines, orders: orders);
   }
 
-  Future<double> _returnsInRange(DateTime from, DateTime to) async {
-    try {
-      final rows = await _client
-          .from('customer_account_transactions')
-          .select('amount')
-          .eq('transaction_type', 'return_credit')
-          .gte('created_at', _iso(from))
-          .lt('created_at', _iso(to));
-      double total = 0;
-      for (final row in rows) {
-        total += (row['amount'] as num).abs().toDouble();
-      }
-      return total;
-    } catch (e) {
-      throw AppException.from(e);
+  /// Every row of [query], a page at a time: the server returns at most
+  /// 1000 rows per request, which a long range can pass. [query] must be
+  /// ordered on a unique column so pages don't overlap.
+  Future<List<Map<String, dynamic>>> _allRows(
+    PostgrestTransformBuilder<List<Map<String, dynamic>>> Function() query,
+  ) async {
+    const page = 1000;
+    final rows = <Map<String, dynamic>>[];
+    while (true) {
+      final batch = await query().range(rows.length, rows.length + page - 1);
+      rows.addAll(batch);
+      if (batch.length < page) return rows;
     }
   }
 
@@ -107,19 +102,20 @@ class SupabaseReportsRepository implements ReportsRepository {
     return total;
   }
 
+  /// Sales as the invoices stand after their last edit: an edited or
+  /// partly returned invoice counts at what it is now, once. What edits and
+  /// returns took off is shown as [SalesReport.returns], already left out.
   @override
   Future<SalesReport> getSalesReport(DateTime from, DateTime to) async {
     try {
-      final base = await _revenueAndCogs(from, to);
-      final returns = await _returnsInRange(from, to);
-      final netSales = base.revenue - returns;
+      final t = await _salesTotals(from, to);
       return SalesReport(
-        totalSales: base.revenue,
-        cogs: base.cogs,
-        grossProfit: base.revenue - base.cogs,
-        discounts: base.discounts,
-        returns: returns,
-        netSales: netSales,
+        totalSales: t.gross,
+        cogs: t.cost,
+        grossProfit: t.net - t.cost,
+        discounts: t.discounts,
+        returns: t.removed,
+        netSales: t.net,
       );
     } catch (e) {
       throw AppException.from(e);
@@ -129,12 +125,12 @@ class SupabaseReportsRepository implements ReportsRepository {
   @override
   Future<ProfitReport> getProfitReport(DateTime from, DateTime to) async {
     try {
-      final base = await _revenueAndCogs(from, to);
+      final t = await _salesTotals(from, to);
       final expenses = await _expensesInRange(from, to);
-      final gross = base.revenue - base.cogs;
+      final gross = t.net - t.cost;
       return ProfitReport(
-        revenue: base.revenue,
-        cogs: base.cogs,
+        revenue: t.net,
+        cogs: t.cost,
         grossProfit: gross,
         expenses: expenses,
         netProfit: gross - expenses,
@@ -144,7 +140,7 @@ class SupabaseReportsRepository implements ReportsRepository {
     }
   }
 
-  /// Same revenue/COGS shape as [_revenueAndCogs] but scoped to `orders`
+  /// Same revenue/COGS shape as the Sales report but scoped to `orders`
   /// alone (no technician walk-in `sales`), plus how many orders fell in
   /// range — for the "أرباح الطلبات" report (0046), which must read in
   /// isolation from the storefront's technician-sales channel.

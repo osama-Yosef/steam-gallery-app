@@ -49,6 +49,11 @@ class _EmployeeFormState extends ConsumerState<_EmployeeForm> {
         ? null
         : Formatters.plain(widget.employee!.monthlySalary),
   );
+  late final _dailyCtrl = TextEditingController(
+    text: widget.employee == null
+        ? null
+        : Formatters.plain(dailyRateOf(widget.employee!.monthlySalary)),
+  );
   late final _notesCtrl = TextEditingController(text: widget.employee?.notes);
   late DateTime? _hireDate = widget.employee?.hireDate;
   late bool _isActive = widget.employee?.isActive ?? true;
@@ -61,6 +66,7 @@ class _EmployeeFormState extends ConsumerState<_EmployeeForm> {
       _phoneCtrl,
       _jobCtrl,
       _salaryCtrl,
+      _dailyCtrl,
       _notesCtrl,
     ]) {
       c.dispose();
@@ -148,10 +154,36 @@ class _EmployeeFormState extends ConsumerState<_EmployeeForm> {
               ),
               inputFormatters: [moneyInputFormatter],
               decoration: const InputDecoration(labelText: 'المرتب الشهري'),
+              // Typing one fills the other: the month is 26 working days.
+              onChanged: (v) {
+                final n = double.tryParse(v);
+                _dailyCtrl.text = n == null
+                    ? ''
+                    : Formatters.plain(dailyRateOf(n));
+              },
               validator: (v) {
                 final n = double.tryParse(v ?? '');
                 if (n == null || n < 0) return 'أدخل مرتبًا صحيحًا';
                 return null;
+              },
+            ),
+            const SizedBox(height: 8),
+            TextFormField(
+              controller: _dailyCtrl,
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
+              inputFormatters: [moneyInputFormatter],
+              decoration: const InputDecoration(
+                labelText: 'اليومية',
+                helperText:
+                    'الشهر $workDaysPerMonth يوم شغل — تعديل اليومية يغيّر المرتب',
+              ),
+              onChanged: (v) {
+                final n = double.tryParse(v);
+                if (n != null) {
+                  _salaryCtrl.text = Formatters.plain(monthlySalaryOf(n));
+                }
               },
             ),
             const SizedBox(height: 16),

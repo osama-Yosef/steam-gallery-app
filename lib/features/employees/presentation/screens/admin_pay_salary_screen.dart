@@ -16,7 +16,7 @@ import '../../data/models/employee_models.dart';
 import '../providers/employees_providers.dart';
 
 /// Pays one month's salary. The month's attendance suggests the absence
-/// deduction (salary / 30 per absent day) and the advance balance suggests
+/// deduction (salary / 26 per absent day, see dailyRateOf) and the advance balance suggests
 /// what to deduct; both can be changed, and a bonus added, before paying.
 class AdminPaySalaryScreen extends ConsumerStatefulWidget {
   final Employee employee;

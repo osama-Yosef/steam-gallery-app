@@ -205,6 +205,9 @@ abstract final class Routes {
 
   // Offline sync queue (admin and sales shells).
   static const adminSync = '/admin/sync';
+
+  // Full backup / restore (0093), admin only.
+  static const adminBackup = '/admin/backup';
   static const salesSync = '/sales/sync';
 
   // Wallets (Phase 15 — admin financial visibility)

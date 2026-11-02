@@ -38,3 +38,11 @@ bool isNetworkError(Object e) {
       s.contains('XMLHttpRequest error') ||
       s.contains('Failed to fetch');
 }
+
+/// The server refused the access token as expired. Happens when the
+/// connection comes back while [OfflineSession] is still carrying an expired
+/// session: its renewal follows within seconds, so a write is kept and
+/// retried rather than reported as rejected.
+bool isExpiredTokenError(Object e) =>
+    e is PostgrestException &&
+    (e.code == 'PGRST303' || e.message.contains('JWT expired'));

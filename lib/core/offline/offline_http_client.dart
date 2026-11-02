@@ -55,6 +55,13 @@ class OfflineHttpClient extends http.BaseClient {
       final bytes = await streamed.stream.toBytes();
       if (streamed.statusCode >= 200 && streamed.statusCode < 300) {
         unawaited(_save(key, streamed, bytes));
+      } else if (streamed.statusCode == 401 &&
+          utf8.decode(bytes, allowMalformed: true).contains('JWT expired')) {
+        // Back online with a token OfflineSession carried through the
+        // outage; its renewal follows in seconds. Show the last copy
+        // meanwhile rather than an error.
+        final cached = await _load(key);
+        if (cached != null) return cached(request);
       }
       return _response(request, streamed.statusCode, streamed.headers, bytes);
     } catch (e) {

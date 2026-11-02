@@ -159,16 +159,37 @@ abstract class PayrollPreview with _$PayrollPreview {
     required bool alreadyPaid,
   }) = _PayrollPreview;
 
-  factory PayrollPreview.fromRpc(Map<String, dynamic> j) => PayrollPreview(
-    periodMonth: DateTime.parse(j['period_month'] as String),
-    baseSalary: _num(j['base_salary']),
-    presentDays: (j['present_days'] as num).toInt(),
-    absentDays: (j['absent_days'] as num).toInt(),
-    lateDays: (j['late_days'] as num).toInt(),
-    leaveDays: (j['leave_days'] as num).toInt(),
-    dailyRate: _num(j['daily_rate']),
-    absenceDeduction: _num(j['absence_deduction']),
-    advanceBalance: _num(j['advance_balance']),
-    alreadyPaid: j['already_paid'] as bool,
-  );
+  /// The daily rate and absence deduction are worked out here, on the
+  /// shop's 26-day working month — 5,200 a month is 200 a day.
+  /// rpc_payroll_preview (0081) still divides by 30; its own two figures
+  /// are not used.
+  factory PayrollPreview.fromRpc(Map<String, dynamic> j) {
+    final base = _num(j['base_salary']);
+    final absent = (j['absent_days'] as num).toInt();
+    final daily = dailyRateOf(base);
+    final deduction = (daily * absent * 100).roundToDouble() / 100;
+    return PayrollPreview(
+      periodMonth: DateTime.parse(j['period_month'] as String),
+      baseSalary: base,
+      presentDays: (j['present_days'] as num).toInt(),
+      absentDays: absent,
+      lateDays: (j['late_days'] as num).toInt(),
+      leaveDays: (j['leave_days'] as num).toInt(),
+      dailyRate: daily,
+      absenceDeduction: deduction > base ? base : deduction,
+      advanceBalance: _num(j['advance_balance']),
+      alreadyPaid: j['already_paid'] as bool,
+    );
+  }
 }
+
+/// Working days in the shop's month: a day's pay is the salary / 26.
+const workDaysPerMonth = 26;
+
+/// A day's pay for [monthlySalary], to the piaster.
+double dailyRateOf(double monthlySalary) =>
+    (monthlySalary / workDaysPerMonth * 100).roundToDouble() / 100;
+
+/// The monthly salary that pays [dailyRate] a day.
+double monthlySalaryOf(double dailyRate) =>
+    (dailyRate * workDaysPerMonth * 100).roundToDouble() / 100;

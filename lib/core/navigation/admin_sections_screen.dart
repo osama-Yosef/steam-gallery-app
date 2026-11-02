@@ -74,6 +74,12 @@ const _sections = <SectionItem>[
     route: Routes.adminSync,
   ),
   SectionItem(
+    icon: Iconsax.document_download_copy,
+    label: 'النسخ الاحتياطي',
+    colors: [Color(0xFF4DB6AC), Color(0xFF00796B)],
+    route: Routes.adminBackup,
+  ),
+  SectionItem(
     icon: Iconsax.chart_2_copy,
     label: 'التقارير',
     colors: [Color(0xFFA78BFA), Color(0xFF7C3AED)],

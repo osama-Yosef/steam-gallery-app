@@ -181,7 +181,7 @@ class _AdminReportDetailScreenState
               _row(context, 'تكلفة البضاعة المباعة', r.cogs),
               _row(context, 'مجمل الربح', r.grossProfit, bold: true),
               _row(context, 'الخصومات', r.discounts),
-              _row(context, 'المرتجعات', r.returns),
+              _row(context, 'اتشال بالتعديل والمرتجع (مش محسوب)', r.returns),
               const Divider(height: 32),
               _row(
                 context,
@@ -718,7 +718,9 @@ class _AdminReportDetailScreenState
           ..writeln('تكلفة البضاعة: ${Formatters.currency(r.cogs)}')
           ..writeln('مجمل الربح: ${Formatters.currency(r.grossProfit)}')
           ..writeln('الخصومات: ${Formatters.currency(r.discounts)}')
-          ..writeln('المرتجعات: ${Formatters.currency(r.returns)}')
+          ..writeln(
+            'اتشال بالتعديل والمرتجع (مش محسوب): ${Formatters.currency(r.returns)}',
+          )
           ..writeln('صافي المبيعات: ${Formatters.currency(r.netSales)}');
       case 'profit':
         final r = await ref.read(
