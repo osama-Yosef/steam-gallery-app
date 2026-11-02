@@ -157,7 +157,9 @@ class _TechnicianSaleScreenState extends ConsumerState<TechnicianSaleScreen> {
     if (p.cash > 0 || (p.transfer == 0 && p.wallet == 0)) {
       return PaymentMethod.cash;
     }
-    return p.transfer >= p.wallet ? PaymentMethod.transfer : PaymentMethod.wallet;
+    return p.transfer >= p.wallet
+        ? PaymentMethod.transfer
+        : PaymentMethod.wallet;
   }
 
   Future<void> _addLine(List<TechnicianBagStockItem> bag) async {
@@ -415,9 +417,7 @@ class _TechnicianSaleScreenState extends ConsumerState<TechnicianSaleScreen> {
         ];
       case _PayMode.transfer:
       case _PayMode.wallet:
-        final where = _payMode == _PayMode.transfer
-            ? 'حساب البنك'
-            : 'المحفظة';
+        final where = _payMode == _PayMode.transfer ? 'حساب البنك' : 'المحفظة';
         return [
           Text(
             'العميل حوّل ${Formatters.currency(_total)} على $where — '

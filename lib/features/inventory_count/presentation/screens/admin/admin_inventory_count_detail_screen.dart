@@ -167,7 +167,9 @@ class _AdminInventoryCountDetailScreenState
     if (!confirmed) return;
     setState(() => _busy = true);
     try {
-      await ref.read(inventoryCountRepositoryProvider).submitCount(widget.countId);
+      await ref
+          .read(inventoryCountRepositoryProvider)
+          .submitCount(widget.countId);
       ref.invalidate(inventoryCountDetailProvider(widget.countId));
       ref.invalidate(inventoryCountsProvider);
     } catch (e) {
@@ -220,9 +222,7 @@ class _AdminInventoryCountDetailScreenState
     final itemsAsync = ref.watch(inventoryCountItemsProvider(widget.countId));
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(countAsync.value?.title ?? 'تفاصيل الجرد'),
-      ),
+      appBar: AppBar(title: Text(countAsync.value?.title ?? 'تفاصيل الجرد')),
       body: countAsync.when(
         loading: () => const LoadingView(),
         error: (e, _) => const ErrorView(message: 'تعذَّر تحميل الجرد'),

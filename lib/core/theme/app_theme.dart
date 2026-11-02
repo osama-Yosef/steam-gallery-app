@@ -84,9 +84,7 @@ abstract final class AppTheme {
         titleMedium: textTheme.titleMedium?.copyWith(
           fontWeight: FontWeight.w600,
         ),
-        titleSmall: textTheme.titleSmall?.copyWith(
-          fontWeight: FontWeight.w600,
-        ),
+        titleSmall: textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
       ),
       dividerTheme: DividerThemeData(
         color: safe ? AppColors.safeBorder : AppColors.border,

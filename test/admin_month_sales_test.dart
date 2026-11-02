@@ -93,10 +93,7 @@ void main() {
     expect(find.text('فاتورة #1 · بيع مباشر'), findsOneWidget);
     expect(find.textContaining('العميل: أحمد'), findsOneWidget);
     expect(find.text('مكواة'), findsOneWidget);
-    expect(
-      find.text('2 × ${Formatters.currency(100)}'),
-      findsOneWidget,
-    );
+    expect(find.text('2 × ${Formatters.currency(100)}'), findsOneWidget);
     expect(find.textContaining('مرتجع 1'), findsOneWidget);
     expect(find.text('الباقي على العميل'), findsOneWidget);
     expect(find.text('الصنايعي: محمود'), findsOneWidget);

@@ -272,11 +272,20 @@ void main() {
         go(Routes.adminTechnicianAccountSupply('t1')),
         '/sales/sections/technicians/t1/account/supply',
       );
-      expect(go(Routes.adminProductEdit('p1')), '/sales/sections/products/p1/edit');
+      expect(
+        go(Routes.adminProductEdit('p1')),
+        '/sales/sections/products/p1/edit',
+      );
       expect(go(Routes.adminPriceList), Routes.salesPriceList);
       expect(go(Routes.adminCategories), '/sales/sections/categories');
-      expect(go(Routes.adminEmployeeEdit('e1')), '/sales/sections/employees/e1/edit');
-      expect(go(Routes.adminCustomerPayment('c1')), '/sales/sections/customers/c1/payment');
+      expect(
+        go(Routes.adminEmployeeEdit('e1')),
+        '/sales/sections/employees/e1/edit',
+      );
+      expect(
+        go(Routes.adminCustomerPayment('c1')),
+        '/sales/sections/customers/c1/payment',
+      );
       expect(go(Routes.adminWallets), Routes.salesWallets);
       expect(go(Routes.adminExpenseNew), Routes.salesExpenseNew);
       expect(go(Routes.adminCashDeposit), Routes.salesCashDeposit);

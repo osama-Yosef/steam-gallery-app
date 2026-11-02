@@ -39,6 +39,7 @@ import '../../features/inventory/presentation/screens/admin/admin_technician_bag
 import '../../features/inventory/presentation/screens/admin/admin_technician_bag_list_screen.dart';
 import '../../features/inventory/presentation/screens/admin/admin_warehouse_screen.dart';
 import '../../features/inventory/presentation/screens/technician/technician_bag_screen.dart';
+import '../../features/inventory/presentation/screens/technician/technician_bag_transfer_screen.dart';
 import '../../features/inventory_count/presentation/screens/admin/admin_inventory_count_detail_screen.dart';
 import '../../features/inventory_count/presentation/screens/admin/admin_inventory_counts_list_screen.dart';
 import '../../features/locations/presentation/screens/admin/admin_cities_screen.dart';
@@ -971,6 +972,10 @@ GoRouter appRouter(Ref ref) {
                       customerName: state.uri.queryParameters['name'],
                       customerPhone: state.uri.queryParameters['phone'],
                     ),
+                  ),
+                  GoRoute(
+                    path: 'transfer',
+                    builder: (_, _) => const TechnicianBagTransferScreen(),
                   ),
                   GoRoute(
                     path: 'sales',

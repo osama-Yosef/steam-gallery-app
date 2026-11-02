@@ -132,7 +132,10 @@ const List<Screen> screens = [
   (role: AppRole.sales, location: '/sales/sections/warehouse/bags/$techId'),
   (role: AppRole.sales, location: '/sales/sections/warehouse/counts'),
   (role: AppRole.sales, location: '/sales/sections/warehouse/counts/$countId'),
-  (role: AppRole.sales, location: '/sales/sections/technicians/$techId/account'),
+  (
+    role: AppRole.sales,
+    location: '/sales/sections/technicians/$techId/account',
+  ),
   (
     role: AppRole.sales,
     location: '/sales/sections/technicians/$techId/account/supply',

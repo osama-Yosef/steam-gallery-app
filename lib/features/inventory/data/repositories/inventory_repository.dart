@@ -5,6 +5,23 @@ import '../models/stock_movement.dart';
 import '../models/technician_bag_stock_item.dart';
 import '../models/warehouse_stock_item.dart';
 
+/// Which way [InventoryRepository.transferBagStock] moves stock.
+enum BagTransferDirection {
+  toBag('to_bag'),
+  toWarehouse('to_warehouse');
+
+  const BagTransferDirection(this.value);
+  final String value;
+}
+
+/// One product the technician can move, with how many are at the source.
+typedef BagTransferStock = ({
+  String productId,
+  String productName,
+  String sku,
+  int quantity,
+});
+
 abstract class InventoryRepository {
   /// v1 has exactly one (main) warehouse — see docs/02-database-design.md —
   /// so no warehouse_id is needed here or in the RPC calls below.
@@ -32,6 +49,20 @@ abstract class InventoryRepository {
   /// price; null keeps the current one.
   Future<void> addOpeningStock({
     required List<({String productId, int quantity, double? unitCost})> items,
+    String? notes,
+  });
+
+  /// What the technician can pull from the main warehouse (0094): name,
+  /// sku and quantity only — he can't read warehouse_stock itself.
+  Future<List<BagTransferStock>> getWarehouseStockForTechnician();
+
+  /// The signed-in technician moves stock between the main warehouse and
+  /// his own bag (0094), at once, no approval. [clientRequestId] makes a
+  /// retry after a lost response a no-op.
+  Future<void> transferBagStock({
+    required BagTransferDirection direction,
+    required List<({String productId, int quantity})> items,
+    required String clientRequestId,
     String? notes,
   });
 }
@@ -206,6 +237,50 @@ class SupabaseInventoryRepository implements InventoryRepository {
               },
           ],
           'p_notes': notes,
+        },
+      );
+      _outbox.markServerChanged();
+    } catch (e) {
+      throw AppException.from(e);
+    }
+  }
+
+  @override
+  Future<List<BagTransferStock>> getWarehouseStockForTechnician() async {
+    try {
+      final rows = await _client.rpc('rpc_technician_warehouse_stock') as List;
+      return rows
+          .map(
+            (r) => (
+              productId: r['product_id'] as String,
+              productName: r['name'] as String,
+              sku: r['sku'] as String,
+              quantity: (r['quantity'] as num).toInt(),
+            ),
+          )
+          .toList();
+    } catch (e) {
+      throw AppException.from(e);
+    }
+  }
+
+  @override
+  Future<void> transferBagStock({
+    required BagTransferDirection direction,
+    required List<({String productId, int quantity})> items,
+    required String clientRequestId,
+    String? notes,
+  }) async {
+    try {
+      await _client.rpc(
+        'rpc_technician_bag_transfer',
+        params: {
+          'p_direction': direction.value,
+          'p_items': items
+              .map((e) => {'product_id': e.productId, 'quantity': e.quantity})
+              .toList(),
+          'p_notes': notes,
+          'p_client_request_id': clientRequestId,
         },
       );
       _outbox.markServerChanged();

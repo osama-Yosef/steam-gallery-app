@@ -45,9 +45,8 @@ abstract class InventoryCount with _$InventoryCount {
   /// Waiting for admin/sales to approve a technician's count.
   bool get awaitsApproval => isDraft && submittedAt != null;
 
-  String get title => isBag
-      ? 'جرد شنطة ${technicianName ?? 'صنايعي'}'
-      : 'جرد المخزن الرئيسي';
+  String get title =>
+      isBag ? 'جرد شنطة ${technicianName ?? 'صنايعي'}' : 'جرد المخزن الرئيسي';
 
   String get statusLabelAr =>
       awaitsApproval ? 'بانتظار الاعتماد' : inventoryCountStatusLabelAr(status);

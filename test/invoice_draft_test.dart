@@ -181,10 +181,7 @@ void main() {
       refId: 's1',
       userId: 'u1',
       createdAt: DateTime(2026),
-      meta: {
-        'lines': d.lines.map((l) => l.toJson()).toList(),
-        'discount': 10,
-      },
+      meta: {'lines': d.lines.map((l) => l.toJson()).toList(), 'discount': 10},
     );
     final reopened = InvoiceDraft.open(
       _sale(),

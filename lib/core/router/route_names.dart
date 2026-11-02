@@ -146,6 +146,9 @@ abstract final class Routes {
       '/admin/warehouse/bags/$technicianId';
   static const technicianBag = '/technician/bag';
 
+  /// The technician moves stock between the warehouse and his bag (0094).
+  static const technicianBagTransfer = '/technician/bag/transfer';
+
   // Technician Sales & Account (Module 6)
   static const technicianBagSell = '/technician/bag/sell';
 

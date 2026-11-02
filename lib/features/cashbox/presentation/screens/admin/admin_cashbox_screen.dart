@@ -312,27 +312,27 @@ class _BalanceCard extends StatelessWidget {
       child: InkWell(
         onTap: onTap,
         child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
-        child: Column(
-          children: [
-            Icon(cashboxKindIcon(balance.kind), size: 20),
-            const SizedBox(height: 4),
-            Text(
-              cashboxKindLabelAr(balance.kind),
-              style: Theme.of(context).textTheme.bodyMedium,
-              textAlign: TextAlign.center,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-            const SizedBox(height: 4),
-            FittedBox(
-              child: MoneyText(
-                balance.balance,
-                style: Theme.of(context).textTheme.titleMedium,
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+          child: Column(
+            children: [
+              Icon(cashboxKindIcon(balance.kind), size: 20),
+              const SizedBox(height: 4),
+              Text(
+                cashboxKindLabelAr(balance.kind),
+                style: Theme.of(context).textTheme.bodyMedium,
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
-            ),
-          ],
-        ),
+              const SizedBox(height: 4),
+              FittedBox(
+                child: MoneyText(
+                  balance.balance,
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -361,52 +361,52 @@ class _TxnTile extends StatelessWidget {
           child: InkWell(
             onTap: onTap,
             child: Padding(
-            padding: const EdgeInsets.all(14),
-            child: Row(
-              children: [
-                Container(
-                  width: 48,
-                  height: 48,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: color,
+              padding: const EdgeInsets.all(14),
+              child: Row(
+                children: [
+                  Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: color,
+                    ),
+                    child: Icon(
+                      _cashTxnTypeIcon(txn.type),
+                      color: Colors.white,
+                      size: 22,
+                    ),
                   ),
-                  child: Icon(
-                    _cashTxnTypeIcon(txn.type),
-                    color: Colors.white,
-                    size: 22,
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          cashTxnLabelAr(txn),
+                          style: Theme.of(context).textTheme.titleMedium
+                              ?.copyWith(fontWeight: FontWeight.bold),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          Formatters.dateTime(txn.createdAt) +
+                              (txn.notes != null ? ' · ${txn.notes}' : ''),
+                          style: Theme.of(context).textTheme.bodySmall,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        cashTxnLabelAr(txn),
-                        style: Theme.of(context).textTheme.titleMedium
-                            ?.copyWith(fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        Formatters.dateTime(txn.createdAt) +
-                            (txn.notes != null ? ' · ${txn.notes}' : ''),
-                        style: Theme.of(context).textTheme.bodySmall,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
+                  const SizedBox(width: 8),
+                  MoneyText(
+                    txn.amount,
+                    colorBySign: true,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
-                ),
-                const SizedBox(width: 8),
-                MoneyText(
-                  txn.amount,
-                  colorBySign: true,
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
           ),
         ),
       ),

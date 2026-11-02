@@ -25,6 +25,12 @@ class TechnicianBagScreen extends ConsumerWidget {
               technicianId: profile.id,
               routeFor: Routes.technicianBagCount,
             ),
+          if (profile != null)
+            IconButton(
+              icon: const Icon(Iconsax.arrow_swap_copy),
+              tooltip: 'تحويل بين المخزن والشنطة',
+              onPressed: () => context.push(Routes.technicianBagTransfer),
+            ),
           IconButton(
             icon: const Icon(Iconsax.receipt_text_copy),
             tooltip: 'سجل مبيعاتي',

@@ -240,9 +240,7 @@ void main() {
     expect(find.text('افتح'), findsOneWidget, reason: 'closed after the sale');
   });
 
-  testWidgets('tapping a line re-prices it, up or down (0086)', (
-    tester,
-  ) async {
+  testWidgets('tapping a line re-prices it, up or down (0086)', (tester) async {
     final repo = _FakeRepo();
     await _open(tester, repo);
     await _addFromBag(tester, qty: '2'); // مكواة 2 × 100

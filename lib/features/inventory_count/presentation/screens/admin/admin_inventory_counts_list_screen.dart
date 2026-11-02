@@ -93,10 +93,7 @@ class _AdminInventoryCountsListScreenState
                   '${c.statusLabelAr} · ${Formatters.dateTime(c.startedAt)}',
                 ),
                 trailing: c.awaitsApproval
-                    ? const Icon(
-                        Iconsax.clock_copy,
-                        color: AppColors.warning,
-                      )
+                    ? const Icon(Iconsax.clock_copy, color: AppColors.warning)
                     : c.isDraft
                     ? const Icon(Iconsax.edit_2_copy)
                     : const Icon(

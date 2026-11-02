@@ -95,7 +95,10 @@ class _AdminSaleInvoiceScreenState
   }
 
   /// Charges more or less per unit than the invoice does (0087).
-  Future<void> _editPrice(InvoiceLine line, List<InvoiceLine> serverLines) async {
+  Future<void> _editPrice(
+    InvoiceLine line,
+    List<InvoiceLine> serverLines,
+  ) async {
     final original = serverLines
         .where((l) => l.productId == line.productId)
         .firstOrNull;
