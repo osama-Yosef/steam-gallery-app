@@ -10,10 +10,10 @@ import '../../../../technician_account/presentation/screens/technician/technicia
 import '../../../data/month_invoices.dart';
 import 'admin_sale_invoice_screen.dart';
 
-/// "مبيعات الشهر" from the dashboard: every invoice since the 1st — walk-in,
-/// a technician's and online — each shown in full: customer, lines,
-/// discount, paid and what is still owed. Read-only; a sale opens in the
-/// invoice screen for editing.
+/// "مبيعات الشهر" from the dashboard: every invoice of this month, or of
+/// one of the [monthSalesMonthsBack] before it — walk-in, a technician's and
+/// online — each shown in full: customer, lines, discount, paid and what is
+/// still owed. Read-only; a sale opens in the invoice screen for editing.
 class AdminMonthSalesScreen extends ConsumerStatefulWidget {
   const AdminMonthSalesScreen({super.key});
 
@@ -23,6 +23,9 @@ class AdminMonthSalesScreen extends ConsumerStatefulWidget {
 }
 
 class _AdminMonthSalesScreenState extends ConsumerState<AdminMonthSalesScreen> {
+  /// 0 = this month, 1 = last month, …
+  int _monthsAgo = 0;
+
   /// null = every source.
   InvoiceSource? _source;
   String _search = '';
@@ -36,16 +39,43 @@ class _AdminMonthSalesScreenState extends ConsumerState<AdminMonthSalesScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final async = ref.watch(monthInvoicesProvider);
+    final async = ref.watch(monthInvoicesProvider(_monthsAgo));
+    final now = DateTime.now();
     return Scaffold(
       appBar: AppBar(
-        title: Text('مبيعات شهر ${Formatters.month(DateTime.now())}'),
+        title: Text(
+          'مبيعات شهر ${Formatters.month(monthRange(now, _monthsAgo).from)}',
+        ),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(52),
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
+            child: Row(
+              children: [
+                for (var m = 0; m <= monthSalesMonthsBack; m++)
+                  Padding(
+                    padding: const EdgeInsetsDirectional.only(end: 8),
+                    child: ChoiceChip(
+                      label: Text(switch (m) {
+                        0 => 'الشهر ده',
+                        1 => 'الشهر اللي فات',
+                        _ => Formatters.month(monthRange(now, m).from),
+                      }),
+                      selected: _monthsAgo == m,
+                      onSelected: (_) => setState(() => _monthsAgo = m),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ),
       ),
       body: async.when(
         loading: () => const LoadingView(),
         error: (e, _) => ErrorView(
           message: 'تعذَّر تحميل فواتير الشهر',
-          onRetry: () => ref.invalidate(monthInvoicesProvider),
+          onRetry: () => ref.invalidate(monthInvoicesProvider(_monthsAgo)),
         ),
         data: (all) {
           final q = _search.toLowerCase();
@@ -103,7 +133,8 @@ class _AdminMonthSalesScreenState extends ConsumerState<AdminMonthSalesScreen> {
           ];
 
           return RefreshIndicator(
-            onRefresh: () async => ref.invalidate(monthInvoicesProvider),
+            onRefresh: () async =>
+                ref.invalidate(monthInvoicesProvider(_monthsAgo)),
             child: ListView.builder(
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
               itemCount: header.length + shown.length,

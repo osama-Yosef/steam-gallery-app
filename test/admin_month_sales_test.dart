@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:steam_gallery_app/core/supabase/all_rows.dart';
 import 'package:steam_gallery_app/core/theme/app_theme.dart';
 import 'package:steam_gallery_app/core/utils/formatters.dart';
 import 'package:steam_gallery_app/features/sales/data/month_invoices.dart';
@@ -35,12 +36,21 @@ MonthInvoice _invoice(
   lines: lines,
 );
 
-Future<void> _pump(WidgetTester tester, List<MonthInvoice> invoices) async {
+Future<void> _pump(
+  WidgetTester tester,
+  List<MonthInvoice> invoices, {
+  Map<int, List<MonthInvoice>> earlier = const {},
+}) async {
   await tester.binding.setSurfaceSize(const Size(420, 2000));
   addTearDown(() => tester.binding.setSurfaceSize(null));
   await tester.pumpWidget(
     ProviderScope(
-      overrides: [monthInvoicesProvider.overrideWith((ref) async => invoices)],
+      overrides: [
+        monthInvoicesProvider.overrideWith(
+          (ref, monthsAgo) async =>
+              monthsAgo == 0 ? invoices : earlier[monthsAgo] ?? const [],
+        ),
+      ],
       child: MaterialApp(
         theme: AppTheme.light(),
         home: const AdminMonthSalesScreen(),
@@ -117,6 +127,99 @@ void main() {
     expect(find.text('فاتورة #2 · صنايعي'), findsOneWidget);
     expect(find.text('فاتورة #1 · بيع مباشر'), findsNothing);
     expect(find.text('طلب #3 · أونلاين'), findsNothing);
+  });
+
+  testWidgets('last month and the one before', (tester) async {
+    final now = DateTime.now();
+    await _pump(
+      tester,
+      invoices,
+      earlier: {
+        1: [_invoice(50, InvoiceSource.walkIn, total: 700)],
+        2: [_invoice(60, InvoiceSource.online, total: 30)],
+      },
+    );
+    expect(
+      find.text(
+        'مبيعات شهر ${Formatters.month(DateTime(now.year, now.month))}',
+      ),
+      findsOneWidget,
+    );
+
+    await tester.tap(find.text('الشهر اللي فات'));
+    await tester.pumpAndSettle();
+    expect(
+      find.text(
+        'مبيعات شهر ${Formatters.month(DateTime(now.year, now.month - 1))}',
+      ),
+      findsOneWidget,
+    );
+    expect(find.text('فاتورة #50 · بيع مباشر'), findsOneWidget);
+    expect(find.text('فاتورة #1 · بيع مباشر'), findsNothing);
+    expect(find.text('إجمالي الفواتير المكتملة: 1'), findsOneWidget);
+
+    final before = Formatters.month(DateTime(now.year, now.month - 2));
+    await tester.tap(find.widgetWithText(ChoiceChip, before));
+    await tester.pumpAndSettle();
+    expect(find.text('مبيعات شهر $before'), findsOneWidget);
+    expect(find.text('طلب #60 · أونلاين'), findsOneWidget);
+    expect(find.text('فاتورة #50 · بيع مباشر'), findsNothing);
+
+    await tester.tap(find.text('الشهر ده'));
+    await tester.pumpAndSettle();
+    expect(find.text('فاتورة #1 · بيع مباشر'), findsOneWidget);
+  });
+
+  group('monthRange', () {
+    test('a whole calendar month, end exclusive', () {
+      final r = monthRange(DateTime(2026, 11, 3, 14), 1);
+      expect(r.from, DateTime(2026, 10));
+      expect(r.to, DateTime(2026, 11));
+    });
+
+    test('this month runs to the 1st of next month', () {
+      final r = monthRange(DateTime(2026, 11, 30), 0);
+      expect(r.from, DateTime(2026, 11));
+      expect(r.to, DateTime(2026, 12));
+    });
+
+    test('crosses the year', () {
+      final r = monthRange(DateTime(2027, 2, 1), 2);
+      expect(r.from, DateTime(2026, 12));
+      expect(r.to, DateTime(2027, 1));
+    });
+  });
+
+  group('reading a month past 1000 rows', () {
+    Future<List<int>> Function(int, int) server(int total, List<String> asks) =>
+        (from, to) async {
+          asks.add('$from-$to');
+          final end = to + 1 > total ? total : to + 1;
+          return from >= total
+              ? []
+              : List.generate(end - from, (i) => from + i);
+        };
+
+    test('keeps asking until a short page', () async {
+      final asks = <String>[];
+      final rows = await readAllPages(server(2345, asks));
+      expect(rows, hasLength(2345));
+      expect(rows.toSet(), hasLength(2345));
+      expect(asks, ['0-999', '1000-1999', '2000-2999']);
+    });
+
+    test('exactly a full page asks once more', () async {
+      final asks = <String>[];
+      final rows = await readAllPages(server(1000, asks));
+      expect(rows, hasLength(1000));
+      expect(asks, ['0-999', '1000-1999']);
+    });
+
+    test('a small month is one request', () async {
+      final asks = <String>[];
+      expect(await readAllPages(server(12, asks)), hasLength(12));
+      expect(asks, ['0-999']);
+    });
   });
 
   test('amounts are written in English digits', () {

@@ -1,5 +1,6 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../core/errors/app_exception.dart';
+import '../../../../core/supabase/all_rows.dart';
 import '../models/report_models.dart';
 import '../sales_totals.dart';
 
@@ -27,7 +28,7 @@ class SupabaseReportsRepository implements ReportsRepository {
   /// [from, to) as they stand after their last edit (see [SalesTotals]).
   Future<SalesTotals> _salesTotals(DateTime from, DateTime to) async {
     final (sales, orders) = await (
-      _allRows(
+      allRows(
         () => _client
             .from('sales')
             .select('id, total, discount')
@@ -36,7 +37,7 @@ class SupabaseReportsRepository implements ReportsRepository {
             .lt('created_at', _iso(to))
             .order('id'),
       ),
-      _allRows(
+      allRows(
         () => _client
             .from('orders')
             .select(
@@ -59,7 +60,7 @@ class SupabaseReportsRepository implements ReportsRepository {
     for (var i = 0; i < ids.length; i += 100) {
       final chunk = ids.sublist(i, i + 100 > ids.length ? ids.length : i + 100);
       saleLines.addAll(
-        await _allRows(
+        await allRows(
           () => _client
               .from('sale_items_with_returns')
               .select(
@@ -72,21 +73,6 @@ class SupabaseReportsRepository implements ReportsRepository {
     }
 
     return SalesTotals.from(sales: sales, saleLines: saleLines, orders: orders);
-  }
-
-  /// Every row of [query], a page at a time: the server returns at most
-  /// 1000 rows per request, which a long range can pass. [query] must be
-  /// ordered on a unique column so pages don't overlap.
-  Future<List<Map<String, dynamic>>> _allRows(
-    PostgrestTransformBuilder<List<Map<String, dynamic>>> Function() query,
-  ) async {
-    const page = 1000;
-    final rows = <Map<String, dynamic>>[];
-    while (true) {
-      final batch = await query().range(rows.length, rows.length + page - 1);
-      rows.addAll(batch);
-      if (batch.length < page) return rows;
-    }
   }
 
   Future<double> _expensesInRange(DateTime from, DateTime to) async {

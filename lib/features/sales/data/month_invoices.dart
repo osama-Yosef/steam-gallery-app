@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/errors/app_exception.dart';
+import '../../../core/supabase/all_rows.dart';
 import '../../../core/supabase/supabase_client_provider.dart';
 import '../../maintenance/data/models/technician_option.dart';
 import '../../orders/data/models/order.dart';
@@ -81,10 +82,26 @@ class MonthInvoice {
   double get remaining => (total - paid).clamp(0, double.infinity);
 }
 
-/// Every invoice since the 1st of this month, newest first. Read-only.
-final monthInvoicesProvider = FutureProvider.autoDispose<List<MonthInvoice>>(
-  (ref) => fetchMonthInvoices(ref.watch(supabaseClientProvider)),
+/// How many months back the month sales screen can go: this month, the
+/// one before and the one before that.
+const monthSalesMonthsBack = 2;
+
+/// The calendar month [monthsAgo] months before [now]'s: its 1st, and the
+/// 1st of the month after (exclusive). Local time, like the shop's day.
+({DateTime from, DateTime to}) monthRange(DateTime now, int monthsAgo) => (
+  from: DateTime(now.year, now.month - monthsAgo),
+  to: DateTime(now.year, now.month - monthsAgo + 1),
 );
+
+/// Every invoice of the month [monthsAgo] months back (0 = this month),
+/// newest first. Read-only.
+final monthInvoicesProvider = FutureProvider.autoDispose
+    .family<List<MonthInvoice>, int>(
+      (ref, monthsAgo) => fetchMonthInvoices(
+        ref.watch(supabaseClientProvider),
+        monthRange(DateTime.now(), monthsAgo),
+      ),
+    );
 
 /// Order statuses the dashboard counts as revenue (daily_sales_summary).
 const _countedOrderStatuses = {
@@ -94,22 +111,34 @@ const _countedOrderStatuses = {
   OrderStatus.completed,
 };
 
-Future<List<MonthInvoice>> fetchMonthInvoices(SupabaseClient client) async {
+Future<List<MonthInvoice>> fetchMonthInvoices(
+  SupabaseClient client,
+  ({DateTime from, DateTime to}) month,
+) async {
   try {
-    final now = DateTime.now();
-    final from = DateTime(now.year, now.month).toUtc().toIso8601String();
+    final from = month.from.toUtc().toIso8601String();
+    final to = month.to.toUtc().toIso8601String();
 
+    // A whole month can pass the server's 1000 rows a request: read it all,
+    // a page at a time (ordered by id so pages don't overlap; the list is
+    // sorted by date below).
     final (saleRows, orderRows, techRows) = await (
-      client
-          .from('sales')
-          .select()
-          .gte('created_at', from)
-          .order('created_at', ascending: false),
-      client
-          .from('orders')
-          .select()
-          .gte('created_at', from)
-          .order('created_at', ascending: false),
+      allRows(
+        () => client
+            .from('sales')
+            .select()
+            .gte('created_at', from)
+            .lt('created_at', to)
+            .order('id'),
+      ),
+      allRows(
+        () => client
+            .from('orders')
+            .select()
+            .gte('created_at', from)
+            .lt('created_at', to)
+            .order('id'),
+      ),
       client
           .from('technicians')
           .select('id, employee_code, users!technicians_id_fkey(full_name)'),
@@ -121,10 +150,13 @@ Future<List<MonthInvoice>> fetchMonthInvoices(SupabaseClient client) async {
 
     final saleLines = <String, List<InvoiceLine>>{};
     for (final ids in _chunks(saleRows.map((r) => r['id'] as String))) {
-      final rows = await client
-          .from('sale_items_with_returns')
-          .select()
-          .inFilter('sale_id', ids);
+      final rows = await allRows(
+        () => client
+            .from('sale_items_with_returns')
+            .select()
+            .inFilter('sale_id', ids)
+            .order('id'),
+      );
       for (final r in rows) {
         final i = SaleReturnItem.fromRow(r);
         (saleLines[r['sale_id'] as String] ??= []).add(
@@ -142,10 +174,13 @@ Future<List<MonthInvoice>> fetchMonthInvoices(SupabaseClient client) async {
 
     final orderLines = <String, List<InvoiceLine>>{};
     for (final ids in _chunks(orderRows.map((r) => r['id'] as String))) {
-      final rows = await client
-          .from('order_items_display')
-          .select()
-          .inFilter('order_id', ids);
+      final rows = await allRows(
+        () => client
+            .from('order_items_display')
+            .select()
+            .inFilter('order_id', ids)
+            .order('id'),
+      );
       for (final r in rows) {
         final i = OrderItem.fromRow(r);
         (orderLines[i.orderId] ??= []).add(
