@@ -48,7 +48,7 @@ final class AuthRepositoryProvider
   }
 }
 
-String _$authRepositoryHash() => r'157dd73bdf6ec0879936e7c10d1b03f5bf9bed55';
+String _$authRepositoryHash() => r'21ccb36d832bd67107b806b8e88fa43e393bf777';
 
 /// One instance per app run: it only holds the in-flight verification ID
 /// between "send code" and "confirm code", which is meaningless to keep

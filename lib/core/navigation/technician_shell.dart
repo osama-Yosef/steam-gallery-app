@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../offline/offline_widgets.dart';
+import '../router/route_names.dart';
 import 'glass_bottom_nav.dart';
 
 /// Floating glass pill bottom nav for the technician role — replaces the old
@@ -29,9 +31,14 @@ class TechnicianShell extends StatelessWidget {
         // NOT extendBody — see CustomerShell for why (FABs on per-branch
         // screens would end up hidden underneath this nav bar).
         body: navigationShell,
-        bottomNavigationBar: GlassBottomNav(
-          navigationShell: navigationShell,
-          items: _items,
+        bottomNavigationBar: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // He is out at customers' homes, where the connection is often
+            // weak: say so, and how many sales/jobs are waiting to sync.
+            const OfflineStatusBar(syncRoute: Routes.technicianSync),
+            GlassBottomNav(navigationShell: navigationShell, items: _items),
+          ],
         ),
       ),
     );

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:http/http.dart' as http;
 import 'package:steam_gallery_app/core/errors/app_exception.dart';
 import 'package:steam_gallery_app/core/offline/network_status.dart';
 import 'package:steam_gallery_app/core/offline/outbox.dart';
@@ -274,5 +275,66 @@ void main() {
     expect(outbox.pendingOf('walk_in_sale').single.id, 'a');
     expect(outbox.pendingOf('sale_edit', refId: 's1').single.id, 'e1');
     expect(outbox.pendingOf('sale_edit', refId: 's2'), isEmpty);
+  });
+
+  test('a stalled connection keeps the write instead of hanging', () async {
+    final stalled = testOutbox(
+      server: server,
+      store: store,
+      submitTimeout: const Duration(milliseconds: 50),
+    );
+    server.stall = Completer<void>();
+    final result = await stalled.submit(
+      rpc: 'rpc_admin_walk_in_sale',
+      params: {'p_client_request_id': 'a'},
+      label: 'بيع a',
+      kind: 'walk_in_sale',
+      requestId: 'a',
+    );
+    expect(result.queued, isTrue);
+    expect(stalled.pending.single.id, 'a');
+
+    // The connection recovers: the queued copy goes out and the queue is
+    // empty. The server may see the id twice (the late first attempt and
+    // the sync) — the RPC's client_request_id makes the second a no-op.
+    server.stall!.complete();
+    server.stall = null;
+    await stalled.sync();
+    expect(stalled.pending, isEmpty);
+    expect(server.calls.map((c) => c.params['p_client_request_id']).toSet(), {
+      'a',
+    });
+  });
+
+  test('a full day offline: 50 sales all arrive once, in order', () async {
+    server.online = false;
+    for (var i = 0; i < 50; i++) {
+      await sale('s$i');
+    }
+    expect(outbox.pending, hasLength(50));
+
+    // The connection drops again partway through the first sync.
+    server.online = true;
+    var sent = 0;
+    final realCall = server.call;
+    final cut = Outbox(
+      store: store,
+      rpc: (rpc, params) {
+        if (sent == 20) throw http.ClientException('Connection closed');
+        sent++;
+        return realCall(rpc, params);
+      },
+      currentUserId: () => 'admin-1',
+      retryEvery: null,
+    );
+    await cut.start();
+    await cut.sync();
+    expect(cut.pending, hasLength(30));
+
+    sent = -1000; // connection back for good
+    await cut.sync();
+    expect(cut.pending, isEmpty);
+    final ids = server.calls.map((c) => c.params['p_client_request_id']);
+    expect(ids, [for (var i = 0; i < 50; i++) 's$i']);
   });
 }

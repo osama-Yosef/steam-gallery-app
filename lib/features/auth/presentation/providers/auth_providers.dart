@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../../../core/firebase/firebase_phone_auth_service.dart';
 import '../../../../core/firebase/push_notification_service.dart';
+import '../../../../core/offline/outbox.dart';
 import '../../../../core/supabase/supabase_client_provider.dart';
 import '../../data/models/app_user.dart';
 import '../../data/models/auth_settings.dart';
@@ -13,7 +14,10 @@ part 'auth_providers.g.dart';
 
 @Riverpod(keepAlive: true)
 AuthRepository authRepository(Ref ref) {
-  return SupabaseAuthRepository(ref.watch(supabaseClientProvider));
+  return SupabaseAuthRepository(
+    ref.watch(supabaseClientProvider),
+    store: ref.watch(offlineStoreProvider),
+  );
 }
 
 /// One instance per app run: it only holds the in-flight verification ID

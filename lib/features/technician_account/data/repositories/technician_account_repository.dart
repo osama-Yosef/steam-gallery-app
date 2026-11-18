@@ -9,6 +9,9 @@ import '../models/technician_account_transaction.dart';
 import '../models/technician_supply.dart';
 import '../../../../core/offline/outbox.dart';
 
+/// [Outbox] kind of a technician's sale waiting to sync.
+const technicianSaleKind = 'technician_sale';
+
 abstract class TechnicianAccountRepository {
   /// All technicians' summaries at once — used by the admin Technicians
   /// report (Module 11). Admin sees every row via RLS on the underlying
@@ -30,7 +33,10 @@ abstract class TechnicianAccountRepository {
 
   Future<List<SaleItem>> getSaleItems(String saleId);
 
-  Future<String> recordSale({
+  /// The sale's id, or null when there was no connection: the sale is then
+  /// kept on the phone (Outbox, kind 'technician_sale') and sent when the
+  /// connection is back. [clientRequestId] makes a repeat a no-op (0090).
+  Future<String?> recordSale({
     required String technicianId,
     String? customerName,
     String? customerPhone,
@@ -47,6 +53,10 @@ abstract class TechnicianAccountRepository {
     /// the cash he collected.
     double transferAmount = 0,
     double walletAmount = 0,
+
+    /// Product names, in the order of [items] — only for showing a sale
+    /// that is waiting to sync.
+    List<String> itemNames = const [],
   });
 
   Future<void> recordSupply({
@@ -191,7 +201,7 @@ class SupabaseTechnicianAccountRepository
   }
 
   @override
-  Future<String> recordSale({
+  Future<String?> recordSale({
     required String technicianId,
     String? customerName,
     String? customerPhone,
@@ -204,32 +214,53 @@ class SupabaseTechnicianAccountRepository
     String? maintenanceRequestId,
     double transferAmount = 0,
     double walletAmount = 0,
+    List<String> itemNames = const [],
   }) async {
-    try {
-      final saleId = await _client.rpc(
-        'rpc_technician_sale',
-        params: {
-          'p_technician_id': technicianId,
-          'p_customer_id': null,
-          'p_customer_name': customerName,
-          'p_customer_phone': customerPhone,
-          'p_items': items.map((e) => e.toJson()).toList(),
-          'p_payment_method': paymentMethodToString(paymentMethod),
-          'p_discount': discount,
-          'p_paid_amount': paidAmount,
-          'p_client_request_id': clientRequestId,
-          'p_notes': notes,
-          'p_maintenance_request_id': maintenanceRequestId,
-          'p_transfer_amount': transferAmount,
-          'p_wallet_amount': walletAmount,
-        },
-      );
-      // Stock, tills and prices shown elsewhere refetch on this.
-      _outbox.markServerChanged();
-      return saleId as String;
-    } catch (e) {
-      throw AppException.from(e);
-    }
+    final total =
+        items.fold<double>(0, (t, l) => t + l.quantity * (l.unitPrice ?? 0)) -
+        discount;
+    final result = await _outbox.submit(
+      rpc: 'rpc_technician_sale',
+      params: {
+        'p_technician_id': technicianId,
+        'p_customer_id': null,
+        'p_customer_name': customerName,
+        'p_customer_phone': customerPhone,
+        'p_items': items.map((e) => e.toJson()).toList(),
+        'p_payment_method': paymentMethodToString(paymentMethod),
+        'p_discount': discount,
+        'p_paid_amount': paidAmount,
+        'p_client_request_id': clientRequestId,
+        'p_notes': notes,
+        'p_maintenance_request_id': maintenanceRequestId,
+        'p_transfer_amount': transferAmount,
+        'p_wallet_amount': walletAmount,
+      },
+      // Safe to send twice: the server answers a repeated
+      // p_client_request_id with the sale it already made.
+      requestId: clientRequestId,
+      kind: technicianSaleKind,
+      refId: maintenanceRequestId,
+      label: maintenanceRequestId == null
+          ? 'بيع من الشنطة · ${items.length} صنف'
+          : 'فاتورة صيانة · ${items.length} صنف',
+      meta: {
+        'technician_id': technicianId,
+        'customer_name': customerName,
+        'total': total,
+        'items': [
+          for (var k = 0; k < items.length; k++)
+            {
+              'product_id': items[k].productId,
+              'name': k < itemNames.length ? itemNames[k] : null,
+              'quantity': items[k].quantity,
+            },
+        ],
+      },
+    );
+    // Stock, tills and prices shown elsewhere refetch on this (Outbox fires
+    // it itself for a write that went straight through).
+    return result.queued ? null : result.data as String?;
   }
 
   @override

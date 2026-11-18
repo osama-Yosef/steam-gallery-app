@@ -23,13 +23,19 @@ class OfflineHttpClient extends http.BaseClient {
     : _inner = inner ?? http.Client();
 
   /// RPCs that only read. Their responses are cached like a select.
-  static bool _isReadOnlyRpc(String name) =>
+  /// test/offline_rpc_classification_test.dart fails on any RPC the app
+  /// calls directly that is neither listed here nor marked online-only.
+  static bool isReadOnlyRpc(String name) =>
       name.startsWith('rpc_get_') ||
       name.startsWith('rpc_my_') ||
       name == 'rpc_effective_prices' ||
       name == 'rpc_browse_products' ||
       name == 'rpc_offer_products' ||
-      name == 'rpc_check_service_availability';
+      name == 'rpc_check_service_availability' ||
+      name == 'rpc_month_report' ||
+      name == 'rpc_month_stock' ||
+      name == 'rpc_payroll_preview' ||
+      name == 'rpc_technician_warehouse_stock';
 
   /// A read that hangs on a bad connection should fall back to the cache
   /// rather than leave the screen spinning.
@@ -80,7 +86,7 @@ class OfflineHttpClient extends http.BaseClient {
     if (request.method == 'GET') {
       body = '';
     } else if (request.method == 'POST' && path.contains('/rest/v1/rpc/')) {
-      if (!_isReadOnlyRpc(path.split('/').last)) return null;
+      if (!isReadOnlyRpc(path.split('/').last)) return null;
       body = request is http.Request ? request.body : null;
       if (body == null) return null;
     } else {

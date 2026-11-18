@@ -10,6 +10,14 @@ class AppException implements Exception {
 
   const AppException(this.messageAr, [this.cause]);
 
+  /// The message shown when the server couldn't be reached at all.
+  static const offlineMessage = 'العملية دي محتاجة إنترنت';
+
+  /// The request never got a server answer (no connection, timeout) — as
+  /// opposed to the server refusing it. Screens use this to say "needs
+  /// internet" instead of a generic failure.
+  bool get isNetwork => cause != null && isNetworkError(cause!);
+
   factory AppException.from(Object error) {
     if (error is AppException) return error;
 
@@ -26,7 +34,7 @@ class AppException implements Exception {
     }
 
     if (isNetworkError(error)) {
-      return AppException('لا يوجد اتصال بالإنترنت', error);
+      return AppException(offlineMessage, error);
     }
 
     return AppException('حدث خطأ غير متوقع. حاول مرة أخرى.', error);

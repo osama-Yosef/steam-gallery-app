@@ -118,9 +118,18 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(AppException.from(e).messageAr)));
+        final error = AppException.from(e);
+        // The cart is only emptied once the order exists, so it's all still
+        // there for when the connection is back.
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              error.isNetwork
+                  ? 'الطلب محتاج إنترنت — سلتك محفوظة'
+                  : error.messageAr,
+            ),
+          ),
+        );
       }
     } finally {
       if (mounted) setState(() => _submitting = false);

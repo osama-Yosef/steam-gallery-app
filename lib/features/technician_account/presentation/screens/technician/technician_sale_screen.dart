@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:uuid/uuid.dart';
 import '../../../../../core/errors/app_exception.dart';
+import '../../../../../core/offline/offline_widgets.dart';
 import '../../../../../core/utils/formatters.dart';
 import '../../../../../core/utils/input_formatters.dart';
 import '../../../../../core/widgets/state_views.dart';
@@ -343,7 +344,7 @@ class _TechnicianSaleScreenState extends ConsumerState<TechnicianSaleScreen> {
     }
     setState(() => _submitting = true);
     try {
-      await ref
+      final saleId = await ref
           .read(technicianAccountRepositoryProvider)
           .recordSale(
             technicianId: technicianId,
@@ -372,8 +373,13 @@ class _TechnicianSaleScreenState extends ConsumerState<TechnicianSaleScreen> {
                 ? null
                 : _notesCtrl.text.trim(),
             maintenanceRequestId: widget.maintenanceRequestId,
+            itemNames: _lines.map((l) => l.productName).toList(),
           );
-      if (mounted) Navigator.of(context).pop(true);
+      if (!mounted) return;
+      // No connection: the sale is kept on the phone and sent later. The
+      // bag on screen already counts it out (pending sales are subtracted).
+      if (saleId == null) showSavedOfflineSnack(context, 'البيع اتسجل');
+      Navigator.of(context).pop(true);
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(

@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
 import '../../../../core/errors/app_exception.dart';
+import '../../../../core/offline/outbox.dart';
 import '../models/maintenance_image.dart';
 import '../models/maintenance_request.dart';
 import '../models/queue_position.dart';
@@ -9,6 +10,9 @@ import '../models/technician_option.dart';
 import '../../../../core/offline/offline_stream.dart';
 import '../../../../core/supabase/live_query.dart';
 import '../../../../core/utils/history_query.dart';
+
+/// [Outbox] kind of a maintenance job closed while offline.
+const maintenanceCompleteKind = 'maintenance_complete';
 
 abstract class MaintenanceRepository {
   /// [addressId] must be one of the customer's own saved, service-area-
@@ -74,7 +78,15 @@ abstract class MaintenanceRepository {
   Future<void> claim(String requestId);
 
   Future<void> start(String requestId);
-  Future<void> complete(String requestId, String? notes);
+
+  /// Closes the job, or keeps the close on the phone (Outbox, kind
+  /// [maintenanceCompleteKind]) when there is no connection. Sent through
+  /// rpc_replay (0097), so a repeat can't come back as refused.
+  Future<OutboxResult> complete(
+    String requestId,
+    String? notes, {
+    String? customerName,
+  });
   Future<void> cancel(String requestId, String reason);
 
   Future<List<TechnicianOption>> listTechnicians();
@@ -82,7 +94,10 @@ abstract class MaintenanceRepository {
 
 class SupabaseMaintenanceRepository implements MaintenanceRepository {
   final SupabaseClient _client;
-  SupabaseMaintenanceRepository(this._client);
+
+  /// Null only in tests that never close a job.
+  final Outbox? _outbox;
+  SupabaseMaintenanceRepository(this._client, [this._outbox]);
 
   @override
   Future<String> createRequest({
@@ -317,15 +332,25 @@ class SupabaseMaintenanceRepository implements MaintenanceRepository {
   }
 
   @override
-  Future<void> complete(String requestId, String? notes) async {
-    try {
-      await _client.rpc(
-        'rpc_complete_maintenance',
-        params: {'p_request_id': requestId, 'p_notes': notes},
-      );
-    } catch (e) {
-      throw AppException.from(e);
+  Future<OutboxResult> complete(
+    String requestId,
+    String? notes, {
+    String? customerName,
+  }) {
+    final outbox = _outbox;
+    if (outbox == null) {
+      throw StateError('SupabaseMaintenanceRepository needs the Outbox');
     }
+    return outbox.submit(
+      rpc: 'rpc_complete_maintenance',
+      params: {'p_request_id': requestId, 'p_notes': notes},
+      viaReplay: true,
+      kind: maintenanceCompleteKind,
+      refId: requestId,
+      label: customerName == null || customerName.isEmpty
+          ? 'قفل طلب صيانة'
+          : 'قفل طلب صيانة · $customerName',
+    );
   }
 
   @override
