@@ -1,4 +1,5 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import '../../../../core/offline/outbox.dart';
 import '../../../../core/supabase/supabase_client_provider.dart';
 import '../../data/models/maintenance_image.dart';
 import '../../data/models/maintenance_request.dart';
@@ -12,7 +13,10 @@ part 'maintenance_providers.g.dart';
 
 @Riverpod(keepAlive: true)
 MaintenanceRepository maintenanceRepository(Ref ref) {
-  return SupabaseMaintenanceRepository(ref.watch(supabaseClientProvider));
+  return SupabaseMaintenanceRepository(
+    ref.watch(supabaseClientProvider),
+    ref.watch(outboxProvider),
+  );
 }
 
 @riverpod

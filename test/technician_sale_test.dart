@@ -65,6 +65,7 @@ class _FakeRepo implements TechnicianAccountRepository {
     String? maintenanceRequestId,
     double transferAmount = 0,
     double walletAmount = 0,
+    List<String> itemNames = const [],
   }) async {
     calls.add((
       technicianId: technicianId,

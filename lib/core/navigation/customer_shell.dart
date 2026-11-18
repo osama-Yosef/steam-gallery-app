@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../features/cart/presentation/providers/cart_provider.dart';
+import '../offline/offline_widgets.dart';
 import 'glass_bottom_nav.dart';
 
 /// Floating glass pill bottom nav for the customer role — replaces the old
@@ -40,10 +41,18 @@ class CustomerShell extends ConsumerWidget {
         // (e.g. "طلب صيانة جديد") — extending the body behind this nav bar would
         // render those FABs underneath it, unreachable.
         body: navigationShell,
-        bottomNavigationBar: GlassBottomNav(
-          navigationShell: navigationShell,
-          items: _items,
-          badges: {_cartTab: cartCount},
+        bottomNavigationBar: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // A customer never queues writes — just say the app is showing
+            // what it saved, so a refused order makes sense.
+            const OfflineStatusBar(syncRoute: null),
+            GlassBottomNav(
+              navigationShell: navigationShell,
+              items: _items,
+              badges: {_cartTab: cartCount},
+            ),
+          ],
         ),
       ),
     );

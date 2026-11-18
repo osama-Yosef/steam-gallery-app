@@ -1,6 +1,7 @@
 abstract final class Routes {
   static const splash = '/splash';
   static const configMissing = '/config-missing';
+  static const offlineStart = '/offline-start';
   static const login = '/login';
   static const register = '/register';
 
@@ -173,6 +174,9 @@ abstract final class Routes {
       '/technician/bag/count/$countId';
 
   static const technicianSales = '/technician/bag/sales';
+
+  /// The technician's writes waiting to sync (sales, closed jobs).
+  static const technicianSync = '/technician/bag/sync';
   static String technicianSaleDetail(String id) => '/technician/bag/sales/$id';
   static const technicianAccount = '/technician/account';
   static const technicianAccountSupply = '/technician/account/supply';

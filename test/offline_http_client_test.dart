@@ -113,6 +113,27 @@ void main() {
     );
   });
 
+  // The month report, its stock figures and the technician's warehouse
+  // list used to fail with no connection: their names don't follow the
+  // rpc_get_ / rpc_my_ convention.
+  test('the month report and stock reads are kept for offline', () async {
+    for (final name in [
+      'rpc_month_report',
+      'rpc_month_stock',
+      'rpc_payroll_preview',
+      'rpc_technician_warehouse_stock',
+    ]) {
+      online = true;
+      final c = client();
+      final uri = Uri.parse('https://x.supabase.co/rest/v1/rpc/$name');
+      final first = await c.post(uri, body: '{"p_month":"2026-11-01"}');
+      await Future<void>.delayed(Duration.zero);
+      online = false;
+      final hit = await c.post(uri, body: '{"p_month":"2026-11-01"}');
+      expect(hit.body, first.body, reason: name);
+    }
+  });
+
   test('a body with newlines and quotes survives the cache intact', () async {
     // A raw newline in the body as well as an escaped one.
     const body = '[{"note":"line 1\\nline \\"2\\""}]\n';

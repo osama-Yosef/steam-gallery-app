@@ -114,6 +114,30 @@ void main() {
         Routes.login,
       );
     });
+
+    // Signing in again needs the internet too, so sending an offline user
+    // to login locked them out of the app until the connection came back.
+    test('no connection and nothing saved: the offline screen, not login', () {
+      expect(
+        _redirect(Routes.splash, status: ProfileStatus.offline),
+        Routes.offlineStart,
+      );
+      expect(
+        _redirect(Routes.adminHome, status: ProfileStatus.offline),
+        Routes.offlineStart,
+      );
+      expect(
+        _redirect(Routes.offlineStart, status: ProfileStatus.offline),
+        isNull,
+      );
+    });
+
+    test('the offline screen goes home once the profile loads', () {
+      expect(
+        _redirect(Routes.offlineStart, user: _user(role: AppRole.admin)),
+        isNot(Routes.offlineStart),
+      );
+    });
   });
 
   group('account state', () {

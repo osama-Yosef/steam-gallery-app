@@ -98,6 +98,7 @@ import '../../features/purchases/presentation/screens/admin/admin_purchase_invoi
 import '../../features/purchases/presentation/screens/admin/admin_purchase_invoice_form_screen.dart';
 import '../../features/purchases/presentation/screens/admin/admin_purchase_invoices_screen.dart';
 import '../../features/purchases/presentation/screens/admin/admin_suppliers_screen.dart';
+import '../../features/auth/presentation/screens/offline_start_screen.dart';
 import '../offline/offline_widgets.dart';
 import '../navigation/admin_sections_screen.dart';
 import '../navigation/admin_shell.dart';
@@ -106,6 +107,7 @@ import '../navigation/sales_shell.dart';
 import '../navigation/customer_shell.dart';
 import '../navigation/technician_shell.dart';
 import '../screens/config_missing_screen.dart';
+import '../errors/app_exception.dart';
 import '../supabase/supabase_client_provider.dart';
 import 'auth_redirect.dart';
 import 'go_router_refresh_stream.dart';
@@ -168,7 +170,11 @@ GoRouter appRouter(Ref ref) {
       if (cachedUser != null) {
         status = ProfileStatus.ready;
       } else if (profileAsync.hasError) {
-        status = ProfileStatus.error;
+        // No connection and nothing saved isn't a failed account: login
+        // needs the internet too, so it gets its own screen that retries.
+        status = AppException.from(profileAsync.error!).isNetwork
+            ? ProfileStatus.offline
+            : ProfileStatus.error;
       } else if (profileAsync.isLoading) {
         status = ProfileStatus.loading;
       } else {
@@ -193,6 +199,10 @@ GoRouter appRouter(Ref ref) {
       GoRoute(
         path: Routes.configMissing,
         builder: (_, _) => const ConfigMissingScreen(),
+      ),
+      GoRoute(
+        path: Routes.offlineStart,
+        builder: (_, _) => const OfflineStartScreen(),
       ),
       GoRoute(path: Routes.login, builder: (_, _) => const LoginScreen()),
       GoRoute(path: Routes.register, builder: (_, _) => const RegisterScreen()),
@@ -976,6 +986,10 @@ GoRouter appRouter(Ref ref) {
                   GoRoute(
                     path: 'transfer',
                     builder: (_, _) => const TechnicianBagTransferScreen(),
+                  ),
+                  GoRoute(
+                    path: 'sync',
+                    builder: (_, _) => const OfflineSyncScreen(),
                   ),
                   GoRoute(
                     path: 'sales',

@@ -138,6 +138,7 @@ class Outbox extends ChangeNotifier {
     Stream<void>? userChanges,
     NetworkStatus? network,
     this.retryEvery = const Duration(seconds: 20),
+    this.submitTimeout = const Duration(seconds: 15),
   }) : _store = store,
        _rpc = rpc,
        _currentUserId = currentUserId,
@@ -163,6 +164,12 @@ class Outbox extends ChangeNotifier {
   /// How often a non-empty queue is retried with no other trigger. Null
   /// turns the timer off (tests call [sync] themselves).
   final Duration? retryEvery;
+
+  /// How long [submit] waits for the server before keeping the write for
+  /// later. On a weak connection the request can hang for minutes; every
+  /// queued write is safe to send again (client_request_id or rpc_replay),
+  /// so a late answer to the first attempt does no harm.
+  final Duration submitTimeout;
 
   List<OutboxEntry> _all = [];
   bool _syncing = false;
@@ -272,7 +279,7 @@ class Outbox extends ChangeNotifier {
       return const OutboxResult.queued();
     }
     try {
-      final data = await _send(entry);
+      final data = await _send(entry).timeout(submitTimeout);
       _serverChanged.add(null);
       return OutboxResult.done(data);
     } catch (e) {
@@ -392,3 +399,9 @@ class Outbox extends ChangeNotifier {
 Outbox outbox(Ref ref) => throw UnimplementedError(
   'outboxProvider must be overridden with the Outbox started in main()',
 );
+
+/// The device store opened in main(), for data that must outlive the HTTP
+/// cache (the signed-in profile). Null in tests and when Supabase isn't
+/// configured; callers then simply don't keep anything.
+@Riverpod(keepAlive: true)
+OfflineStore? offlineStore(Ref ref) => null;

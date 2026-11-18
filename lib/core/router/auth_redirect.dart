@@ -12,8 +12,13 @@ enum ProfileStatus {
   /// Loaded, but no row — the sign-up trigger may still be provisioning it.
   missing,
 
-  /// Failed to load.
+  /// The server refused or failed the load.
   error,
+
+  /// The server couldn't be reached and nothing is saved on this device.
+  /// Not [error]: signing in again needs the internet too, so login would
+  /// only lock the user out until the connection is back.
+  offline,
 }
 
 /// Screens reachable without a session.
@@ -29,6 +34,7 @@ const _publicRoutes = {
 const _transitRoutes = {
   ..._publicRoutes,
   Routes.splash,
+  Routes.offlineStart,
   Routes.resetPassword,
   Routes.verifyPhone,
   Routes.addEmail,
@@ -64,6 +70,8 @@ String? resolveAuthRedirect({
   if (user == null) {
     return switch (profileStatus) {
       ProfileStatus.error => Routes.login,
+      ProfileStatus.offline =>
+        location == Routes.offlineStart ? null : Routes.offlineStart,
       _ => location == Routes.splash ? null : Routes.splash,
     };
   }

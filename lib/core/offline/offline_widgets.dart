@@ -21,12 +21,13 @@ void showSavedOfflineSnack(BuildContext context, [String? what]) {
   );
 }
 
-/// A strip above the admin content: offline notice, and how many writes are
+/// A strip above a shell's content: offline notice, and how many writes are
 /// waiting to sync (tap for the list). Hidden when online with nothing
 /// pending.
 class OfflineStatusBar extends ConsumerWidget {
-  /// Where the sync list lives for this shell (admin or sales).
-  final String syncRoute;
+  /// Where the sync list lives for this shell. Null for a shell that never
+  /// queues writes (the customer's): the strip then only says it's offline.
+  final String? syncRoute;
   const OfflineStatusBar({super.key, this.syncRoute = Routes.adminSync});
 
   @override
@@ -56,7 +57,7 @@ class OfflineStatusBar extends ConsumerWidget {
         return Material(
           color: color.withValues(alpha: 0.12),
           child: InkWell(
-            onTap: () => context.push(syncRoute),
+            onTap: syncRoute == null ? null : () => context.push(syncRoute!),
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
               child: Row(
@@ -86,7 +87,7 @@ class OfflineStatusBar extends ConsumerWidget {
                         color: color,
                       ),
                     )
-                  else if (pending + failed > 0)
+                  else if (syncRoute != null && pending + failed > 0)
                     Icon(Icons.chevron_left_rounded, size: 18, color: color),
                 ],
               ),

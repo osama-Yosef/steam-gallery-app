@@ -2,6 +2,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/brand.dart';
+import '../../../../core/errors/app_exception.dart';
+import '../../../../core/offline/network_status.dart';
 import '../../../../core/widgets/brand_logo.dart';
 import '../providers/auth_providers.dart';
 
@@ -45,6 +47,16 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
     if (!mounted) return;
     final profileAsync = ref.read(currentUserProfileProvider);
     if (profileAsync.value != null) return; // resolved fine — not stuck
+    // No connection is not "stuck": signing out here locked the user out of
+    // the app until the internet came back (signing in needs it too). The
+    // router moves to the offline screen; keep checking meanwhile.
+    final error = profileAsync.error;
+    if (!NetworkStatus.instance.isOnline ||
+        (error != null && AppException.from(error).isNetwork)) {
+      _checks = 0;
+      _scheduleCheck();
+      return;
+    }
     _checks++;
     if (profileAsync.isLoading && _checks < _maxChecks) {
       // Still legitimately in flight (e.g. a slow connection) — check again

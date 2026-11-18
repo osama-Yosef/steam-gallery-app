@@ -1,6 +1,10 @@
+import 'dart:async';
+import 'dart:convert';
 import 'dart:typed_data';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../core/errors/app_exception.dart';
+import '../../../../core/offline/network_status.dart';
+import '../../../../core/offline/offline_store.dart';
 import '../../../../core/utils/validators.dart';
 import '../models/app_user.dart';
 import '../models/auth_settings.dart';
@@ -156,7 +160,13 @@ abstract class AuthRepository {
 
 class SupabaseAuthRepository implements AuthRepository {
   final SupabaseClient _client;
-  SupabaseAuthRepository(this._client);
+
+  /// Keeps the last profile loaded for each user, so the app still knows
+  /// who is signed in (and which screens to show) with no connection.
+  final OfflineStore? _store;
+  SupabaseAuthRepository(this._client, {OfflineStore? store}) : _store = store;
+
+  static String _profileKey(String uid) => 'profile:$uid';
 
   @override
   Session? get currentSession => _client.auth.currentSession;
@@ -507,9 +517,33 @@ class SupabaseAuthRepository implements AuthRepository {
           .eq('id', uid)
           .maybeSingle();
       if (row == null) return null;
-      return AppUser.fromRow(row);
+      final user = AppUser.fromRow(row);
+      unawaited(_saveProfile(uid, row));
+      return user;
     } catch (e) {
+      if (isNetworkError(e)) {
+        final saved = await _savedProfile(uid);
+        if (saved != null) return saved;
+      }
       throw AppException.from(e);
+    }
+  }
+
+  Future<void> _saveProfile(String uid, Map<String, dynamic> row) async {
+    try {
+      await _store?.write(_profileKey(uid), jsonEncode(row));
+    } catch (_) {
+      // Best effort: the HTTP cache usually has it too.
+    }
+  }
+
+  Future<AppUser?> _savedProfile(String uid) async {
+    try {
+      final raw = await _store?.read(_profileKey(uid));
+      if (raw == null) return null;
+      return AppUser.fromRow(jsonDecode(raw) as Map<String, dynamic>);
+    } catch (_) {
+      return null;
     }
   }
 

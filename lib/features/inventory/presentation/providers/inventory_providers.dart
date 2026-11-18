@@ -7,6 +7,9 @@ import '../../data/repositories/inventory_repository.dart';
 import '../../../../core/utils/provider_cache.dart';
 import '../../../../core/offline/outbox.dart';
 
+import '../../../technician_account/data/repositories/technician_account_repository.dart';
+import '../state/bag_stock.dart';
+
 part 'inventory_providers.g.dart';
 
 @Riverpod(keepAlive: true)
@@ -37,8 +40,23 @@ Future<List<WarehouseStockItem>> assemblyStock(Ref ref) {
 Future<List<TechnicianBagStockItem>> technicianBagStock(
   Ref ref,
   String technicianId,
-) {
-  return ref.watch(inventoryRepositoryProvider).getBagStock(technicianId);
+) async {
+  // His sales still waiting to sync are already out of the bag: take them
+  // off, and reload when one is added or sent (the server then has it).
+  final outbox = ref.watch(outboxProvider);
+  List<OutboxEntry> pending() => outbox.pendingOf(technicianSaleKind);
+  final seen = pending().length;
+  void onQueueChange() {
+    if (pending().length != seen) ref.invalidateSelf();
+  }
+
+  outbox.addListener(onQueueChange);
+  ref.onDispose(() => outbox.removeListener(onQueueChange));
+
+  final bag = await ref
+      .watch(inventoryRepositoryProvider)
+      .getBagStock(technicianId);
+  return bagStockAfterPending(bag, pending(), technicianId);
 }
 
 @riverpod

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:http/http.dart' as http;
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:steam_gallery_app/core/offline/network_status.dart';
@@ -29,6 +31,9 @@ class FakeServer {
   final calls = <({String rpc, Map<String, dynamic> params})>[];
   bool online = true;
 
+  /// Set to make every call hang until completed (a stalled connection).
+  Completer<void>? stall;
+
   /// RPC name → the exception code the database raises for it (e.g.
   /// 'INSUFFICIENT_STOCK'), surfaced as a PostgrestException.
   final refusals = <String, String>{};
@@ -36,6 +41,8 @@ class FakeServer {
 
   Future<dynamic> call(String rpc, Map<String, dynamic> params) async {
     if (!online) throw http.ClientException('Failed host lookup');
+    final stalled = stall;
+    if (stalled != null) await stalled.future;
     calls.add((rpc: rpc, params: params));
     final refusal = refusals[rpc];
     if (refusal != null) throw PostgrestException(message: refusal);
@@ -50,6 +57,7 @@ Outbox testOutbox({
   OfflineStore? store,
   String? userId = 'admin-1',
   NetworkStatus? network,
+  Duration submitTimeout = const Duration(seconds: 15),
 }) {
   final s = server ?? FakeServer();
   return Outbox(
@@ -58,5 +66,6 @@ Outbox testOutbox({
     currentUserId: () => userId,
     network: network,
     retryEvery: null,
+    submitTimeout: submitTimeout,
   );
 }

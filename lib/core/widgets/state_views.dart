@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../offline/network_status.dart';
 import '../theme/app_colors.dart';
 
 /// The three states every async-data screen must handle explicitly
@@ -25,13 +26,46 @@ class LoadingView extends StatelessWidget {
   }
 }
 
-class ErrorView extends StatelessWidget {
+/// While the server can't be reached, an error here almost always means
+/// "nothing saved on this device for this screen yet" — so it says that,
+/// instead of a failure, and retries by itself once the connection is back.
+class ErrorView extends StatefulWidget {
   final String message;
   final VoidCallback? onRetry;
   const ErrorView({super.key, required this.message, this.onRetry});
 
+  static const offlineMessage = 'البيانات دي هتظهر لما النت يرجع';
+
+  @override
+  State<ErrorView> createState() => _ErrorViewState();
+}
+
+class _ErrorViewState extends State<ErrorView> {
+  NetworkStatus get _network => NetworkStatus.instance;
+  late bool _offline = !_network.isOnline;
+
+  @override
+  void initState() {
+    super.initState();
+    _network.addListener(_onNetwork);
+  }
+
+  @override
+  void dispose() {
+    _network.removeListener(_onNetwork);
+    super.dispose();
+  }
+
+  void _onNetwork() {
+    final offline = !_network.isOnline;
+    if (offline == _offline) return;
+    setState(() => _offline = offline);
+    if (!offline) widget.onRetry?.call();
+  }
+
   @override
   Widget build(BuildContext context) {
+    final onRetry = widget.onRetry;
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(24),
@@ -39,13 +73,15 @@ class ErrorView extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
-              Icons.error_outline,
+              _offline ? Icons.wifi_off : Icons.error_outline,
               size: 48,
-              color: Theme.of(context).colorScheme.error,
+              color: _offline
+                  ? Theme.of(context).colorScheme.onSurfaceVariant
+                  : Theme.of(context).colorScheme.error,
             ),
             const SizedBox(height: 12),
             Text(
-              message,
+              _offline ? ErrorView.offlineMessage : widget.message,
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodyLarge,
             ),
